@@ -240,7 +240,7 @@ Engineering tasks that improve reliability, performance, and maintainability —
 ## Feature Ideas — Grouped by Who Benefits
 
 ### For Admins & Management
-- [ ] **Announcements / notice board** — post school-wide notices (holidays, events, reminders); shown on the dashboard and optionally emailed to parents.
+- [x] **Announcements / notice board** — `/admin/announcements` full CRUD page; categories (General/Holiday/Event/Reminder), pinned flag, expiry date, banner image upload; public Notices section on LandingPage (hidden when no active announcements).
 - [ ] **Fee tracking** — record monthly fee payments per student; flag overdue accounts; export a payment summary.
 - [ ] **Events calendar** — a shared school calendar (sports day, field trips, parent-teacher meetings) visible to staff and optionally to parents.
 - [ ] **Report cards / term summaries** — auto-generate a PDF report card per student showing attendance rate, class, and a free-text remarks field; downloadable from the student profile page.

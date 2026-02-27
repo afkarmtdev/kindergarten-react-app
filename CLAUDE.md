@@ -26,7 +26,8 @@ kindergarten-app/
 │       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_name, gender); POST /bulk
 │       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
-│       │   └── gallery.ts     # CRUD + paginated GET (?page, limit, search)
+│       │   ├── gallery.ts     # CRUD + paginated GET (?page, limit, search)
+│       │   └── announcements.ts # CRUD + paginated GET (?page, limit, search, category); pinned-first ordering
 │       ├── middleware/
 │       │   └── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
 │       ├── lib/
@@ -35,35 +36,39 @@ kindergarten-app/
 │       ├── db/
 │       │   └── supabase.ts    # Supabase service-role client
 │       └── types/
-│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AdminUser, GalleryItem
+│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AdminUser, GalleryItem, Announcement
 │
 ├── frontend/
 │   └── src/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
 │       ├── pages/
-│       │   ├── LandingPage.tsx     # Public marketing page (hero, stats, features, gallery, testimonials, CTA)
+│       │   ├── LandingPage.tsx     # Public marketing page (hero, stats, features, gallery, notices, testimonials, CTA)
 │       │   ├── LoginPage.tsx       # Admin login form (dark mode aware)
 │       │   ├── DashboardPage.tsx   # Stats + today attendance + monthly summary
 │       │   ├── StudentsPage.tsx    # Grid, 12/page, search+filter, add/edit modal wired
 │       │   ├── AttendancePage.tsx  # Table, 20 students/page, bulk mark, status tabs, CSV export
 │       │   ├── ClassesPage.tsx     # Grid, 9/page, capacity bar, add/edit modal wired
-│       │   └── GalleryPage.tsx     # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
+│       │   ├── GalleryPage.tsx     # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
+│       │   ├── AnnouncementsPage.tsx # Grid, 9/page, search+category filter, pinned/expired badges, add/edit modal wired
+│       │   └── StudentProfilePage.tsx # /admin/students/:id — student info card, attendance history, quick stats
 │       ├── store/
 │       │   ├── studentsStore.ts    # page, search, classFilter, genderFilter, modal state
 │       │   ├── classesStore.ts     # page, search, modal state
 │       │   ├── attendanceStore.ts  # selectedDate, page, statusFilter, pendingChanges
-│       │   ├── galleryStore.ts     # page, search
-│       │   └── settingsStore.ts    # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
+│       │   ├── galleryStore.ts         # page, search
+│       │   ├── announcementsStore.ts   # page, search, categoryFilter
+│       │   └── settingsStore.ts        # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
-│       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader, EmptyState
+│       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader, EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
 │       │   │   └── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
 │       │   ├── admin/
 │       │   │   ├── StudentModal.tsx  # Add/Edit student form — full validation, dark mode, i18n
 │       │   │   ├── ClassModal.tsx    # Add/Edit classroom form — full validation, dark mode, i18n
-│       │   │   └── GalleryModal.tsx  # Add/Edit gallery photo — file upload, caption, order, visibility
+│       │   │   ├── GalleryModal.tsx       # Add/Edit gallery photo — file upload, caption, order, visibility
+│       │   │   └── AnnouncementModal.tsx  # Add/Edit announcement — title, body, category, banner upload, pinned, expiry
 │       │   └── layout/
 │       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet
 │       │       └── ProtectedRoute.tsx  # Redirects to /admin/login if no user
@@ -71,13 +76,13 @@ kindergarten-app/
 │       │   ├── useAuth.tsx    # AuthContext: user, loading, login(), logout()
 │       │   └── useT.ts        # Translation hook: const t = useT(); t('key', { vars })
 │       ├── lib/
-│       │   ├── api.ts             # Axios instance + studentsApi, attendanceApi, classesApi, authApi, galleryApi; publicApi (no-auth instance for landing page)
+│       │   ├── api.ts             # Axios instance + studentsApi, attendanceApi, classesApi, authApi, galleryApi, announcementsApi; publicApi (no-auth instance for landing page)
 │       │   ├── supabaseClient.ts  # Supabase browser client (anon key) — used for Storage uploads only
 │       │   └── translations.ts    # Full EN/MS translation map (~90 keys)
 │       └── types/
-│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem
+│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement
 │
-└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items + RLS policies
+└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items, announcements + RLS policies
 ```
 
 ## Database Schema
@@ -88,6 +93,8 @@ attendance     (id, student_id→students, date, status[present|absent|late|excu
                UNIQUE(student_id, date)
 gallery_items  (id, photo_url, caption, display_order, is_visible, created_at)
                RLS: authenticated users → full CRUD; anon users → SELECT WHERE is_visible = true
+announcements  (id, title, body, category[general|holiday|event|reminder], image_url, is_pinned, expires_at, created_at)
+               RLS: authenticated users → full CRUD; anon users → SELECT WHERE expires_at IS NULL OR expires_at >= today
 ```
 
 ## API Response Format
@@ -126,6 +133,7 @@ All list endpoints return paginated responses:
 - **StudentModal** (`components/admin/StudentModal.tsx`) — full add/edit form with client-side validation, dark mode, i18n. Opens from StudentsPage with `editingStudent` state (`null` = add mode, `Student` = edit mode).
 - **ClassModal** (`components/admin/ClassModal.tsx`) — same pattern for classrooms.
 - **GalleryModal** (`components/admin/GalleryModal.tsx`) — photo upload (Supabase Storage → `gallery-photos`), caption, display_order, is_visible toggle. Same add/edit pattern.
+- **AnnouncementModal** (`components/admin/AnnouncementModal.tsx`) — title, body, category select, banner upload (Supabase Storage → `announcement-banners`), pinned toggle (yellow), expiry date with clear button. Invalidates both `['announcements']` and `['announcements-public']` on success.
 - All modals use `useMutation` → `onSuccess`: `queryClient.invalidateQueries` + `toast.success`; `onError`: `toast.error`.
 
 ## Toast Notifications
@@ -150,9 +158,10 @@ All list endpoints return paginated responses:
 This project runs on the **free tier**. Key limits:
 - 500 MB database storage, 1 GB file storage, 50 MB max upload size
 - No automatic backups / point-in-time recovery
-- Two Storage buckets required (both must be created as **public** in the Supabase dashboard):
+- Three Storage buckets required (all must be created as **public** in the Supabase dashboard):
   - `student-photos` — student profile photo uploads (StudentModal)
   - `gallery-photos` — landing page gallery photo uploads (GalleryModal)
+  - `announcement-banners` — announcement banner image uploads (AnnouncementModal)
 
 ## Environment Variables
 **Backend** (`.env`):
@@ -185,6 +194,7 @@ cd frontend && bun install && bun dev  # → http://localhost:5173
 - [x] Student profile page — `/admin/students/:id`, attendance history table, quick stats, edit button
 - [ ] Parent portal (public-facing, read-only view for parents to check their child's attendance)
 - [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
+- [x] Announcements / notice board — `/admin/announcements`, category badges, pinned, expiry, banner image upload; public Notices section on LandingPage
 
 ### Low Priority / Nice to Have
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)

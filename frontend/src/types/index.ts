@@ -46,3 +46,14 @@ export interface GalleryItem {
   is_visible: boolean
   created_at: string
 }
+
+export interface Announcement {
+  id: string
+  title: string
+  body: string
+  category: 'general' | 'holiday' | 'event' | 'reminder'
+  image_url?: string
+  is_pinned: boolean
+  expires_at?: string
+  created_at: string
+}

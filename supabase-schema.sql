@@ -83,3 +83,31 @@ create policy "Auth users can delete gallery" on gallery_items for delete to aut
 
 -- Anonymous users (LandingPage visitors) — read visible items only
 create policy "Anyone can read visible gallery" on gallery_items for select to anon using (is_visible = true);
+
+-- Announcements
+create table announcements (
+  id          uuid primary key default uuid_generate_v4(),
+  title       text not null,
+  body        text not null,
+  category    text check (category in ('general','holiday','event','reminder')) not null default 'general',
+  image_url   text,
+  is_pinned   boolean not null default false,
+  expires_at  date,
+  created_at  timestamptz default now()
+);
+
+create index idx_announcements_created on announcements(created_at desc);
+create index idx_announcements_pinned  on announcements(is_pinned);
+
+alter table announcements enable row level security;
+
+-- Authenticated users (admin) — full CRUD
+create policy "Auth users can read announcements"   on announcements for select to authenticated using (true);
+create policy "Auth users can insert announcements" on announcements for insert to authenticated with check (true);
+create policy "Auth users can update announcements" on announcements for update to authenticated using (true);
+create policy "Auth users can delete announcements" on announcements for delete to authenticated using (true);
+
+-- Anonymous users (LandingPage visitors) — non-expired only
+create policy "Anyone can read active announcements" on announcements
+  for select to anon
+  using (expires_at is null or expires_at >= current_date);

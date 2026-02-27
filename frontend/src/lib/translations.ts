@@ -195,6 +195,34 @@ export const translations = {
     noGalleryPhotos: 'No photos yet',
     addFirstPhoto: 'Add your first gallery photo to get started!',
     removePhotoConfirm: 'Remove photo "{caption}"?',
+
+    // Admin — Announcements
+    announcements: 'Announcements',
+    addAnnouncement: 'Add Announcement',
+    editAnnouncement: 'Edit Announcement',
+    noAnnouncementsFound: 'No announcements yet',
+    addFirstAnnouncement: 'Post your first announcement to get started!',
+    announcementTitle: 'Title',
+    announcementBody: 'Message',
+    category: 'Category',
+    pinned: 'Pinned',
+    expiresAt: 'Expiry Date (optional)',
+    categoryGeneral: 'General',
+    categoryHoliday: 'Holiday',
+    categoryEvent: 'Event',
+    categoryReminder: 'Reminder',
+    pinnedBadge: 'Pinned',
+    expiredBadge: 'Expired',
+    allCategories: 'All Categories',
+    uploadBanner: 'Upload banner image',
+    changeBanner: 'Change banner image',
+    removeAnnouncementConfirm: 'Remove announcement "{title}"?',
+
+    // Landing page — Notices
+    noticesTitle: 'School Notices',
+    noticesSubtitle: 'Stay up to date with the latest news and announcements from KinderCare',
+    noticesEmptyTitle: 'All quiet for now!',
+    noticesEmptySubtitle: 'Check back soon for school news, upcoming events, and important updates.',
   },
 
   ms: {
@@ -393,6 +421,34 @@ export const translations = {
     noGalleryPhotos: 'Tiada foto lagi',
     addFirstPhoto: 'Tambah foto galeri pertama anda untuk bermula!',
     removePhotoConfirm: 'Buang foto "{caption}"?',
+
+    // Admin — Announcements
+    announcements: 'Pengumuman',
+    addAnnouncement: 'Tambah Pengumuman',
+    editAnnouncement: 'Edit Pengumuman',
+    noAnnouncementsFound: 'Tiada pengumuman lagi',
+    addFirstAnnouncement: 'Hantar pengumuman pertama anda untuk bermula!',
+    announcementTitle: 'Tajuk',
+    announcementBody: 'Mesej',
+    category: 'Kategori',
+    pinned: 'Ditanda',
+    expiresAt: 'Tarikh Tamat (pilihan)',
+    categoryGeneral: 'Umum',
+    categoryHoliday: 'Cuti',
+    categoryEvent: 'Acara',
+    categoryReminder: 'Peringatan',
+    pinnedBadge: 'Ditanda',
+    expiredBadge: 'Tamat',
+    allCategories: 'Semua Kategori',
+    uploadBanner: 'Muat naik imej banner',
+    changeBanner: 'Tukar imej banner',
+    removeAnnouncementConfirm: 'Buang pengumuman "{title}"?',
+
+    // Landing page — Notices
+    noticesTitle: 'Notis Sekolah',
+    noticesSubtitle: 'Ikuti berita dan pengumuman terkini daripada KinderCare',
+    noticesEmptyTitle: 'Tiada pengumuman buat masa ini!',
+    noticesEmptySubtitle: 'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',
   },
 } as const
 

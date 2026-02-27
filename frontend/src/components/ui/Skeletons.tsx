@@ -78,6 +78,24 @@ export function CuteLoader({ message = 'Loading...' }: { message?: string }) {
   )
 }
 
+export function AnnouncementCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <Bone className="w-full h-36 rounded-none" />
+      <div className="p-5 space-y-3">
+        <div className="flex gap-2">
+          <Bone className="h-5 w-16 rounded-full" />
+          <Bone className="h-5 w-12 rounded-full" />
+        </div>
+        <Bone className="h-5 w-3/4" />
+        <Bone className="h-3 w-full" />
+        <Bone className="h-3 w-5/6" />
+        <Bone className="h-3 w-24 mt-2" />
+      </div>
+    </div>
+  )
+}
+
 export function EmptyState({
   icon: Icon,
   title = 'Nothing here yet',
