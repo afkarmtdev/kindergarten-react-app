@@ -1,6 +1,28 @@
+import { z } from 'zod'
+
+// ── Env validation — fail fast before anything else ──────────────────────────
+const envSchema = z.object({
+  SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
+  FRONTEND_URL: z.string().url().optional().default('http://localhost:5173'),
+  PORT: z.coerce.number().int().positive().optional().default(3000),
+  NODE_ENV: z.enum(['development', 'production', 'test']).optional().default('development'),
+  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional().default('info'),
+})
+
+const envResult = envSchema.safeParse(process.env)
+if (!envResult.success) {
+  console.error('Missing or invalid environment variables:')
+  for (const [field, messages] of Object.entries(envResult.error.flatten().fieldErrors)) {
+    console.error(`  ${field}: ${(messages as string[]).join(', ')}`)
+  }
+  process.exit(1)
+}
+
+// ── Imports ───────────────────────────────────────────────────────────────────
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
+import { logger as honoLogger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 
 import auth from './routes/auth'
@@ -10,11 +32,22 @@ import classes from './routes/classes'
 import gallery from './routes/gallery'
 import { authMiddleware } from './middleware/auth'
 import { supabase } from './db/supabase'
+import { logger } from './lib/logger'
 
 const app = new Hono()
 
-// Global middleware
-app.use('*', logger())
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use('*', async (c, next) => {
+  await next()
+  c.header('X-Content-Type-Options', 'nosniff')
+  c.header('X-Frame-Options', 'DENY')
+  c.header('X-XSS-Protection', '1; mode=block')
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
+  c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+})
+
+// ── Global middleware ─────────────────────────────────────────────────────────
+app.use('*', honoLogger())
 app.use('*', prettyJSON())
 app.use(
   '*',
@@ -26,10 +59,10 @@ app.use(
   })
 )
 
-// Health check
+// ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }))
 
-// Public routes
+// ── Public routes (no auth) ───────────────────────────────────────────────────
 app.route('/api/auth', auth)
 
 // Public gallery read — no auth required (LandingPage visitors)
@@ -43,25 +76,25 @@ app.get('/api/public/gallery', async (c) => {
   return c.json({ data: data ?? [] })
 })
 
-// Protected routes
+// ── Protected routes ──────────────────────────────────────────────────────────
 app.use('/api/*', authMiddleware)
 app.route('/api/students', students)
 app.route('/api/attendance', attendance)
 app.route('/api/classes', classes)
 app.route('/api/gallery', gallery)
 
-// 404 handler
+// ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))
 
-// Error handler
+// ── Error handler ─────────────────────────────────────────────────────────────
 app.onError((err, c) => {
-  console.error(err)
+  logger.error({ err, path: c.req.path, method: c.req.method }, 'Unhandled error')
   return c.json({ error: 'Internal server error' }, 500)
 })
 
+// ── Start ─────────────────────────────────────────────────────────────────────
 const port = Number(process.env.PORT) || 3000
-
-console.log(`Server running on http://localhost:${port}`)
+logger.info(`Server running on http://localhost:${port}`)
 
 export default {
   port,

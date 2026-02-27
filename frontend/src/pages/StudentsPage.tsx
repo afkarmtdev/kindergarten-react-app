@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Plus, User, Trash2, Phone, Mail, Filter, Pencil, Upload } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { useStudentsStore } from '@/store/studentsStore'
@@ -34,7 +35,13 @@ export function StudentsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: studentsApi.delete,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['students'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      toast.success('Student removed')
+    },
+    onError: () => {
+      toast.error('Failed to remove student. Please try again.')
+    },
   })
 
   const students = data?.data ?? []

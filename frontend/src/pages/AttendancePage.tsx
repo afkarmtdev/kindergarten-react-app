@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import { CalendarCheck, Check, X, Clock, FileX, Save, Download } from 'lucide-react'
 import { attendanceApi, studentsApi } from '@/lib/api'
 import { useAttendanceStore } from '@/store/attendanceStore'
@@ -43,6 +44,10 @@ export function AttendancePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] })
       clearPending()
+      toast.success('Attendance saved')
+    },
+    onError: () => {
+      toast.error('Failed to save attendance. Please try again.')
     },
   })
 

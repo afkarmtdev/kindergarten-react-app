@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { X, Camera, Upload, Loader, Eye, EyeOff } from 'lucide-react'
 import { galleryApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
@@ -48,7 +49,11 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
       item ? galleryApi.update(item.id, data) : galleryApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gallery'] })
+      toast.success(item ? 'Photo updated' : 'Photo added')
       onClose()
+    },
+    onError: () => {
+      toast.error('Failed to save photo. Please try again.')
     },
   })
 

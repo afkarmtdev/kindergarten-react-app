@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Plus, Camera, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
 import { galleryApi } from '@/lib/api'
 import { useGalleryStore } from '@/store/galleryStore'
@@ -29,7 +30,13 @@ export function GalleryPage() {
 
   const deleteMutation = useMutation({
     mutationFn: galleryApi.delete,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['gallery'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery'] })
+      toast.success('Photo removed')
+    },
+    onError: () => {
+      toast.error('Failed to remove photo. Please try again.')
+    },
   })
 
   const items = data?.data ?? []

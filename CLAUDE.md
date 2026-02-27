@@ -22,13 +22,16 @@ kindergarten-app/
 │   └── src/
 │       ├── index.ts           # Hono app entry, CORS, middleware registration
 │       ├── routes/
-│       │   ├── auth.ts        # POST /api/auth/login, /logout, GET /me
-│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_name, gender)
+│       │   ├── auth.ts        # POST /api/auth/login (rate-limited), /logout, GET /me
+│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_name, gender); POST /bulk
 │       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
 │       │   └── gallery.ts     # CRUD + paginated GET (?page, limit, search)
 │       ├── middleware/
 │       │   └── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
+│       ├── lib/
+│       │   ├── logger.ts      # pino instance (pino-pretty in dev, JSON in prod)
+│       │   └── sanitise.ts    # stripHtml(str) + sanitiseStrings(obj) — applied before all inserts
 │       ├── db/
 │       │   └── supabase.ts    # Supabase service-role client
 │       └── types/
@@ -53,9 +56,10 @@ kindergarten-app/
 │       │   └── settingsStore.ts    # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
-│       │   │   ├── Skeletons.tsx   # StudentCardSkeleton, ClassCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader, EmptyState
-│       │   │   ├── Pagination.tsx  # Smart pagination with ellipsis, dark mode aware
-│       │   │   └── SearchBar.tsx   # Debounced 350ms, dark mode aware
+│       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader, EmptyState
+│       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
+│       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
+│       │   │   └── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
 │       │   ├── admin/
 │       │   │   ├── StudentModal.tsx  # Add/Edit student form — full validation, dark mode, i18n
 │       │   │   ├── ClassModal.tsx    # Add/Edit classroom form — full validation, dark mode, i18n
@@ -122,7 +126,25 @@ All list endpoints return paginated responses:
 - **StudentModal** (`components/admin/StudentModal.tsx`) — full add/edit form with client-side validation, dark mode, i18n. Opens from StudentsPage with `editingStudent` state (`null` = add mode, `Student` = edit mode).
 - **ClassModal** (`components/admin/ClassModal.tsx`) — same pattern for classrooms.
 - **GalleryModal** (`components/admin/GalleryModal.tsx`) — photo upload (Supabase Storage → `gallery-photos`), caption, display_order, is_visible toggle. Same add/edit pattern.
-- All modals use `useMutation` → on success call `queryClient.invalidateQueries`.
+- All modals use `useMutation` → `onSuccess`: `queryClient.invalidateQueries` + `toast.success`; `onError`: `toast.error`.
+
+## Toast Notifications
+- Library: `sonner` (installed in frontend). `<Toaster position="top-right" richColors duration={3000} />` lives in `App.tsx` outside the Router.
+- Every `useMutation` must have both `onSuccess` (with `toast.success`) and `onError` (with `toast.error`).
+- Toast messages are short English strings — not translated through `useT` (toasts are ephemeral, translation can be added later).
+- Pattern: `toast.success('Student updated')` / `toast.error('Failed to save student. Please try again.')`
+
+## Error Handling
+- `ErrorBoundary` class component (`components/ui/ErrorBoundary.tsx`) wraps every admin page route in `App.tsx`.
+- Renders a "Try again" reset card on uncaught render errors; logs to `console.error` for dev.
+- Does NOT wrap LandingPage or LoginPage (public pages handle their own errors).
+
+## Backend Security Conventions
+- **Input sanitisation**: all string fields in POST/PUT routes must be passed through `sanitiseStrings(body)` (from `lib/sanitise.ts`) before inserting into Supabase. For gallery caption only: use `stripHtml(caption)`.
+- **Rate limiting**: login route uses an in-memory Map (`loginAttempts`) — 10 attempts per IP per minute, returns 429. Reset is time-based (no external dep).
+- **Env validation**: zod schema at the top of `index.ts` validates all required env vars on startup; calls `process.exit(1)` with a clear message if any are missing/malformed.
+- **Security headers**: applied via `app.use('*', ...)` middleware on every response: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`.
+- **Logger**: use `logger` from `lib/logger.ts` (pino) in `index.ts`; pino-pretty in dev, JSON in prod. Route files do not use `console.log` — they return error responses instead.
 
 ## Supabase Plan
 This project runs on the **free tier**. Key limits:
@@ -162,6 +184,7 @@ cd frontend && bun install && bun dev  # → http://localhost:5173
 - [ ] Real-time attendance updates (Supabase Realtime subscriptions)
 - [x] Student profile page — `/admin/students/:id`, attendance history table, quick stats, edit button
 - [ ] Parent portal (public-facing, read-only view for parents to check their child's attendance)
+- [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
 
 ### Low Priority / Nice to Have
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
@@ -169,6 +192,15 @@ cd frontend && bun install && bun dev  # → http://localhost:5173
 - [ ] Print-friendly attendance sheet
 - [x] Mobile-responsive layout — hamburger drawer, responsive pages, responsive LandingPage
 - [ ] PWA / installable app for teachers marking attendance on phones
+
+### Technical Improvements (done)
+- [x] Toast notifications — `sonner`, all mutations have `onSuccess`/`onError` toasts
+- [x] Error boundaries — `ErrorBoundary` wraps every admin page in `App.tsx`
+- [x] Pino structured logger — `backend/src/lib/logger.ts`, used in error handler + startup log
+- [x] Rate limiting — `POST /api/auth/login` limited to 10 req/IP/min
+- [x] Input sanitisation — `sanitiseStrings` / `stripHtml` applied before all Supabase inserts
+- [x] Env validation — zod schema at server startup, `process.exit(1)` on missing vars
+- [x] Security headers — X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
 
 ## Known Conventions
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.

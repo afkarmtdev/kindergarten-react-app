@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Upload, X, CheckCircle, AlertCircle, FileText, Download } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
@@ -77,6 +78,9 @@ export function BulkImportModal({ open, onClose }: Props) {
       setResult(data)
       setStep('result')
       queryClient.invalidateQueries({ queryKey: ['students'] })
+    },
+    onError: () => {
+      toast.error('Import failed. Please check your file and try again.')
     },
   })
 

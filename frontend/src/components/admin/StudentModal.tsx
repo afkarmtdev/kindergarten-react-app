@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { X, User, Upload, Loader } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
@@ -58,7 +59,11 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
       student ? studentsApi.update(student.id, data) : studentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] })
+      toast.success(student ? 'Student updated' : 'Student added')
       onClose()
+    },
+    onError: () => {
+      toast.error('Failed to save student. Please try again.')
     },
   })
 

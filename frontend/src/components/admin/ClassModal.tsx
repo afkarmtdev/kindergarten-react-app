@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { X, School } from 'lucide-react'
 import { classesApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
@@ -41,7 +42,11 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
       classroom ? classesApi.update(classroom.id, data) : classesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] })
+      toast.success(classroom ? 'Class updated' : 'Class created')
       onClose()
+    },
+    onError: () => {
+      toast.error('Failed to save class. Please try again.')
     },
   })
 
