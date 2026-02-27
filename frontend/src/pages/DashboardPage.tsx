@@ -1,0 +1,200 @@
+import { useQuery } from '@tanstack/react-query'
+import { Users, CalendarCheck, School, TrendingUp } from 'lucide-react'
+import { studentsApi, attendanceApi, classesApi } from '@/lib/api'
+import { StatCardSkeleton } from '@/components/ui/Skeletons'
+import { useT } from '@/hooks/useT'
+import { format } from 'date-fns'
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  color,
+  sub,
+}: {
+  icon: typeof Users
+  label: string
+  value: string | number
+  color: string
+  sub?: string
+}) {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{label}</p>
+          <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mt-1">{value}</p>
+          {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
+        </div>
+        <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center shadow-sm`}>
+          <Icon className="text-white" size={22} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  present: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  late: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+  excused: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  absent: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+}
+
+const BAR_COLOR: Record<string, string> = {
+  present: 'bg-kinder-green',
+  late: 'bg-kinder-yellow',
+  excused: 'bg-kinder-blue',
+  absent: 'bg-red-400',
+}
+
+export function DashboardPage() {
+  const t = useT()
+  const today = format(new Date(), 'yyyy-MM-dd')
+
+  const { data: studentsData, isLoading: studentsLoading } = useQuery({
+    queryKey: ['students', { page: 1, limit: 1 }],
+    queryFn: () => studentsApi.getAll({ page: 1, limit: 1 }),
+    staleTime: 60_000,
+  })
+
+  const { data: classesData, isLoading: classesLoading } = useQuery({
+    queryKey: ['classes', { page: 1, limit: 1 }],
+    queryFn: () => classesApi.getAll({ page: 1, limit: 1 }),
+    staleTime: 60_000,
+  })
+
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: ['attendance-summary'],
+    queryFn: () => attendanceApi.getSummary(),
+    staleTime: 30_000,
+  })
+
+  const { data: todayData, isLoading: todayLoading } = useQuery({
+    queryKey: ['attendance', today, { limit: 10 }],
+    queryFn: () => attendanceApi.getByDate(today, { limit: 10 }),
+    staleTime: 15_000,
+  })
+
+  const totalStudents = studentsData?.meta?.total ?? 0
+  const totalClasses = classesData?.meta?.total ?? 0
+  const todayRecords: { id: string; status: string; students?: { full_name: string } }[] = todayData?.data ?? []
+  const presentToday = todayRecords.filter((r) => r.status === 'present').length
+
+  const totalPresent = (summary?.present ?? 0) + (summary?.late ?? 0)
+  const totalRecords = Object.values(summary ?? {}).reduce((a, b) => a + (b as number), 0)
+  const attendanceRate = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0
+
+  const statsLoading = studentsLoading || classesLoading || todayLoading
+
+  return (
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('dashboard')}</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {statsLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+        ) : (
+          <>
+            <StatCard icon={Users} label={t('totalStudents')} value={totalStudents} color="bg-kinder-blue" sub={t('enrolled')} />
+            <StatCard icon={School} label={t('classes')} value={totalClasses} color="bg-kinder-purple" sub={t('active')} />
+            <StatCard
+              icon={CalendarCheck}
+              label={t('presentToday')}
+              value={presentToday}
+              color="bg-kinder-green"
+              sub={t('ofStudents', { n: totalStudents })}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label={t('attendanceRate')}
+              value={`${attendanceRate}%`}
+              color="bg-kinder-orange"
+              sub={t('thisMonth')}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Bottom panels */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Today's Attendance */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('todayAttendance')}</h2>
+          {todayLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
+                  <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-1/2 animate-shimmer bg-[length:200%_100%]" />
+                  <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-16 animate-shimmer bg-[length:200%_100%]" />
+                </div>
+              ))}
+            </div>
+          ) : todayRecords.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <CalendarCheck size={32} className="mx-auto mb-2 opacity-40" />
+              <p className="text-sm font-medium">{t('noAttendanceYet')}</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {todayRecords.map((record) => (
+                <div key={record.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{record.students?.full_name}</span>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${STATUS_BADGE[record.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                    {t(record.status as 'present' | 'absent' | 'late' | 'excused')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Monthly Summary */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('monthlySummary')}</h2>
+          {summaryLoading ? (
+            <div className="space-y-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-1.5">
+                  <div className="flex justify-between">
+                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-16 animate-shimmer bg-[length:200%_100%]" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-8 animate-shimmer bg-[length:200%_100%]" />
+                  </div>
+                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full animate-shimmer bg-[length:200%_100%]" />
+                </div>
+              ))}
+            </div>
+          ) : !summary || totalRecords === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <TrendingUp size={32} className="mx-auto mb-2 opacity-40" />
+              <p className="text-sm font-medium">{t('noDataYet')}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {Object.entries(summary).map(([status, count]) => (
+                <div key={status}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="capitalize font-semibold text-gray-700 dark:text-gray-300">
+                      {t(status as 'present' | 'absent' | 'late' | 'excused')}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-500 font-medium">{count as number}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${BAR_COLOR[status] ?? 'bg-gray-400'}`}
+                      style={{ width: `${((count as number) / totalRecords) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

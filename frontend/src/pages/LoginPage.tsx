@@ -1,0 +1,107 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { GraduationCap, Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { APP_VERSION } from '@/lib/version'
+
+export function LoginPage() {
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await login(email, password)
+      navigate('/admin/dashboard')
+    } catch {
+      setError('Invalid email or password')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 font-display flex items-center justify-center p-4 transition-colors duration-200">
+      <div className="w-full max-w-md">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-10 border border-transparent dark:border-gray-800">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-kinder-orange rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 dark:shadow-orange-900/30">
+              <GraduationCap className="text-white" size={28} />
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">KinderCare Admin</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Sign in to your portal</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-kinder-orange focus:border-transparent transition-all text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="admin@kindercare.edu"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-kinder-orange focus:border-transparent transition-all text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-kinder-orange text-white py-3.5 rounded-xl font-bold hover:bg-orange-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-200 hover:-translate-y-0.5"
+            >
+              {loading ? 'Signing in...' : 'Sign In →'}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
+          KinderCare Management System · Secured by Supabase Auth
+        </p>
+        <p className="text-center text-xs text-gray-300 dark:text-gray-600 mt-1">
+          v{APP_VERSION}
+        </p>
+        <div className="text-center mt-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 hover:text-kinder-orange dark:hover:text-kinder-orange transition-colors"
+          >
+            <ArrowLeft size={12} />
+            Back to home
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}

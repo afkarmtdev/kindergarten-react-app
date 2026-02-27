@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Nunito', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Smooth transitions for dark mode + smooth anchor scrolling */
+  html {
+    transition: background-color 0.2s ease, color 0.2s ease;
+    scroll-behavior: smooth;
+  }
+
+  /* Dark mode scrollbar */
+  html.dark ::-webkit-scrollbar {
+    width: 8px;
+  }
+  html.dark ::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+  html.dark ::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 4px;
+  }
+  html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+
+  /* Light scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f9fafb;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+  }
+}
+
+@layer utilities {
+  .animate-shimmer {
+    animation: shimmer 1.6s ease-in-out infinite;
+    background-size: 200% 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
