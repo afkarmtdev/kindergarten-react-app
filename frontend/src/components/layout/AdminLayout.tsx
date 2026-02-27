@@ -13,6 +13,7 @@ import {
   ChevronUp,
   Menu,
   X,
+  Megaphone,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -33,6 +34,7 @@ export function AdminLayout() {
     { to: '/admin/attendance', icon: CalendarCheck, label: t('attendance') },
     { to: '/admin/classes', icon: School, label: t('classes') },
     { to: '/admin/gallery', icon: Images, label: t('gallery') },
+    { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
   ]
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>

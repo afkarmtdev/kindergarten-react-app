@@ -30,6 +30,7 @@ import students from './routes/students'
 import attendance from './routes/attendance'
 import classes from './routes/classes'
 import gallery from './routes/gallery'
+import announcements from './routes/announcements'
 import { authMiddleware } from './middleware/auth'
 import { supabase } from './db/supabase'
 import { logger } from './lib/logger'
@@ -76,12 +77,27 @@ app.get('/api/public/gallery', async (c) => {
   return c.json({ data: data ?? [] })
 })
 
+// Public announcements read — non-expired only (LandingPage visitors)
+app.get('/api/public/announcements', async (c) => {
+  const today = new Date().toISOString().split('T')[0]
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('*')
+    .or(`expires_at.is.null,expires_at.gte.${today}`)
+    .order('is_pinned', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(10)
+  if (error) return c.json({ error: error.message }, 500)
+  return c.json({ data: data ?? [] })
+})
+
 // ── Protected routes ──────────────────────────────────────────────────────────
 app.use('/api/*', authMiddleware)
 app.route('/api/students', students)
 app.route('/api/attendance', attendance)
 app.route('/api/classes', classes)
 app.route('/api/gallery', gallery)
+app.route('/api/announcements', announcements)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))

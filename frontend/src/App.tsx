@@ -14,6 +14,7 @@ import { AttendancePage } from '@/pages/AttendancePage'
 import { ClassesPage } from '@/pages/ClassesPage'
 import { GalleryPage } from '@/pages/GalleryPage'
 import { StudentProfilePage } from '@/pages/StudentProfilePage'
+import { AnnouncementsPage } from '@/pages/AnnouncementsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +53,7 @@ export default function App() {
               <Route path="attendance" element={<ErrorBoundary><AttendancePage /></ErrorBoundary>} />
               <Route path="classes" element={<ErrorBoundary><ClassesPage /></ErrorBoundary>} />
               <Route path="gallery" element={<ErrorBoundary><GalleryPage /></ErrorBoundary>} />
+              <Route path="announcements" element={<ErrorBoundary><AnnouncementsPage /></ErrorBoundary>} />
             </Route>
 
             {/* Catch all */}

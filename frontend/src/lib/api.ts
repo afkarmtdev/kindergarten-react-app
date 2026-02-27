@@ -103,3 +103,14 @@ export const galleryApi = {
   update: (id: string, data: unknown) => api.put(`/gallery/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/gallery/${id}`).then((r) => r.data),
 }
+
+export const announcementsApi = {
+  getAll: (filters: { page?: number; limit?: number; search?: string; category?: string } = {}) =>
+    api.get('/announcements', { params: filters }).then((r) => r.data as PaginatedResponse<import('@/types').Announcement>),
+  getById: (id: string) => api.get(`/announcements/${id}`).then((r) => r.data as import('@/types').Announcement),
+  create: (data: unknown) => api.post('/announcements', data).then((r) => r.data),
+  update: (id: string, data: unknown) => api.put(`/announcements/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/announcements/${id}`).then((r) => r.data),
+  getPublic: () =>
+    publicApi.get('/public/announcements').then((r) => r.data as { data: import('@/types').Announcement[] }),
+}

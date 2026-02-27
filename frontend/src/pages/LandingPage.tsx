@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Star, Heart, BookOpen, Sun, Music, Palette, Shield, Users, Moon, ArrowUp, Camera, Lock } from 'lucide-react'
+import { Star, Heart, BookOpen, Sun, Music, Palette, Shield, Users, Moon, ArrowUp, Camera, Lock, Megaphone, Pin, Calendar } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useSettingsStore } from '@/store/settingsStore'
-import { galleryApi } from '@/lib/api'
+import { galleryApi, announcementsApi } from '@/lib/api'
+import type { Announcement } from '@/types'
 
 // ─── CSS keyframe animations ─────────────────────────────────────────────────
 const KEYFRAMES = `
@@ -129,6 +130,21 @@ const TESTIMONIALS = [
   },
 ]
 
+// ─── Announcement category colours (landing page) ────────────────────────────
+const NOTICE_CATEGORY_COLORS: Record<Announcement['category'], string> = {
+  general:  'bg-kinder-blue/10 text-kinder-blue',
+  holiday:  'bg-kinder-green/10 text-kinder-green',
+  event:    'bg-kinder-purple/10 text-kinder-purple',
+  reminder: 'bg-kinder-yellow/10 text-yellow-600',
+}
+
+const NOTICE_CATEGORY_GRADIENTS: Record<Announcement['category'], string> = {
+  general:  'from-kinder-blue/20 to-kinder-blue/10',
+  holiday:  'from-kinder-green/20 to-kinder-green/10',
+  event:    'from-kinder-purple/20 to-kinder-purple/10',
+  reminder: 'from-kinder-yellow/20 to-kinder-yellow/10',
+}
+
 // ─── Gallery placeholder data ─────────────────────────────────────────────────
 const GALLERY_PLACEHOLDERS = [
   { id: 'p1', gradient: 'from-kinder-yellow/40 to-kinder-orange/30', label: 'Classroom Moments' },
@@ -151,6 +167,13 @@ export function LandingPage() {
     staleTime: 5 * 60 * 1000,
   })
   const galleryItems = galleryData?.data ?? []
+
+  const { data: announcementsData } = useQuery({
+    queryKey: ['announcements-public'],
+    queryFn: () => announcementsApi.getPublic(),
+    staleTime: 5 * 60 * 1000,
+  })
+  const notices = announcementsData?.data ?? []
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 320)
@@ -182,6 +205,7 @@ export function LandingPage() {
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-500 dark:text-gray-400">
             <a href="#about"    className="hover:text-kinder-orange transition-colors">{t('about')}</a>
             <a href="#programs" className="hover:text-kinder-orange transition-colors">{t('ourPrograms')}</a>
+            <a href="#notices" className="hover:text-kinder-orange transition-colors">{t('announcements')}</a>
             <a href="#contact"  className="hover:text-kinder-orange transition-colors">{t('contact')}</a>
           </div>
 
@@ -466,11 +490,100 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Wave: Gallery → Testimonials (purple) */}
-        <div className="mt-16">
-          <Wave fill="#C77DFF" />
-        </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════
+          NOTICES — always visible; cork board empty state when none
+      ════════════════════════════════════════════════════════ */}
+      <section id="notices" className="bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+              {t('noticesTitle')}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">{t('noticesSubtitle')}</p>
+          </div>
+
+          {notices.length > 0 ? (<div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {notices.slice(0, 6).map((notice) => (
+                <div
+                  key={notice.id}
+                  className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
+                    notice.is_pinned
+                      ? 'border-kinder-yellow dark:border-kinder-yellow'
+                      : 'border-gray-100 dark:border-gray-700'
+                  }`}
+                >
+                  {/* Banner or gradient */}
+                  {notice.image_url ? (
+                    <div className="h-36 overflow-hidden">
+                      <img
+                        src={notice.image_url}
+                        alt={notice.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).parentElement!.className =
+                            `h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`
+                          ;(e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className={`h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`} />
+                  )}
+
+                  <div className="p-5">
+                    {/* Category + pinned badges */}
+                    <div className="flex gap-1.5 flex-wrap mb-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${NOTICE_CATEGORY_COLORS[notice.category]}`}>
+                        {notice.category.charAt(0).toUpperCase() + notice.category.slice(1)}
+                      </span>
+                      {notice.is_pinned && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-kinder-yellow/20 text-yellow-700 dark:text-yellow-500 flex items-center gap-1">
+                          <Pin size={10} />
+                          {t('pinnedBadge')}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug mb-1.5 line-clamp-2">
+                      {notice.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed">
+                      {notice.body}
+                    </p>
+
+                    {notice.expires_at && (
+                      <div className="flex items-center gap-1 mt-3 text-xs text-gray-400 dark:text-gray-500">
+                        <Calendar size={11} />
+                        {new Date(notice.expires_at).toLocaleDateString('en-MY', {
+                          day: 'numeric', month: 'short', year: 'numeric',
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>) : (
+          <div className="flex justify-center px-4">
+            <div className="max-w-sm w-full bg-amber-50 dark:bg-amber-900/20 border-2 border-dashed border-amber-200 dark:border-amber-700 rounded-3xl p-10 text-center">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-800/40 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Megaphone size={28} className="text-amber-400 dark:text-amber-500" />
+              </div>
+              <h3 className="font-bold text-amber-800 dark:text-amber-300 text-lg mb-2">{t('noticesEmptyTitle')}</h3>
+              <p className="text-amber-600/80 dark:text-amber-400/70 text-sm leading-relaxed">
+                {t('noticesEmptySubtitle')}
+              </p>
+            </div>
+          </div>
+          )}
+
+          {/* Wave: Notices → Testimonials (purple) */}
+          <div className="mt-16">
+            <Wave fill="#C77DFF" />
+          </div>
+        </section>
 
       {/* ════════════════════════════════════════════════════════
           TESTIMONIALS — kinder-purple bg, star ratings
