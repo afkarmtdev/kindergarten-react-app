@@ -29,7 +29,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 font-display flex items-center justify-center p-4 transition-colors duration-200">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-10 border border-transparent dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 sm:p-10 border border-transparent dark:border-gray-800">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-kinder-orange rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 dark:shadow-orange-900/30">
               <GraduationCap className="text-white" size={28} />

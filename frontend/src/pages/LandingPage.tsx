@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Star, Heart, BookOpen, Sun, Music, Palette, Shield, Users, Moon, ArrowUp, Camera } from 'lucide-react'
+import { Star, Heart, BookOpen, Sun, Music, Palette, Shield, Users, Moon, ArrowUp, Camera, Lock } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useSettingsStore } from '@/store/settingsStore'
 import { galleryApi } from '@/lib/api'
@@ -167,7 +167,7 @@ export function LandingPage() {
           NAVBAR — sticky, glass blur
       ════════════════════════════════════════════════════════ */}
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 bg-kinder-orange rounded-2xl flex items-center justify-center shadow-md">
@@ -223,9 +223,10 @@ export function LandingPage() {
             {/* Admin Login CTA */}
             <Link
               to="/admin/login"
-              className="bg-kinder-orange text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-sm hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-md transition-all"
+              className="flex items-center justify-center gap-2 bg-kinder-orange text-white rounded-full font-bold text-sm shadow-sm hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-md transition-all w-9 h-9 sm:w-auto sm:h-auto sm:px-5 sm:py-2.5"
             >
-              {t('adminLogin')}
+              <Lock size={15} />
+              <span className="hidden sm:inline">{t('adminLogin')}</span>
             </Link>
           </div>
         </div>
@@ -307,7 +308,7 @@ export function LandingPage() {
         />
 
         {/* ── Hero content ── */}
-        <div className="relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-6 text-center">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6 text-center">
           {/* Enrollment badge */}
           <div className="lp-enter-0 inline-flex items-center gap-2 bg-kinder-orange/10 dark:bg-kinder-orange/20 border border-kinder-orange/30 text-kinder-orange px-5 py-2 rounded-full text-sm font-bold mb-8">
             <Star size={13} fill="#FF6B35" stroke="#FF6B35" />
@@ -315,7 +316,7 @@ export function LandingPage() {
           </div>
 
           {/* Big bubbly heading */}
-          <h1 className="lp-enter-1 text-6xl md:text-7xl lg:text-8xl font-extrabold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
+          <h1 className="lp-enter-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
             <span className="block">{t('heroPart1')}</span>
             <span className="relative inline-block text-kinder-orange mx-1">
               {t('heroHighlight')}
@@ -344,16 +345,16 @@ export function LandingPage() {
           </p>
 
           {/* CTA buttons */}
-          <div className="lp-enter-2 flex flex-wrap gap-4 justify-center mb-16">
+          <div className="lp-enter-2 flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <a
               href="#contact"
-              className="bg-kinder-orange text-white px-10 py-4 rounded-full font-extrabold text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-900/50 hover:bg-orange-600 transition-all duration-200"
+              className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-900/50 hover:bg-orange-600 transition-all duration-200 text-center"
             >
               {t('bookTour')}
             </a>
             <a
               href="#programs"
-              className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-10 py-4 rounded-full font-extrabold text-lg hover:-translate-y-1.5 hover:border-kinder-orange hover:text-kinder-orange dark:hover:border-kinder-orange dark:hover:text-kinder-orange transition-all duration-200"
+              className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg hover:-translate-y-1.5 hover:border-kinder-orange hover:text-kinder-orange dark:hover:border-kinder-orange dark:hover:text-kinder-orange transition-all duration-200 text-center"
             >
               {t('ourPrograms')}
             </a>
@@ -368,8 +369,8 @@ export function LandingPage() {
           STATS — kinder-orange bg, animated counters
       ════════════════════════════════════════════════════════ */}
       <section className="bg-kinder-orange">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <StatCounter target={500} suffix="+"  label={t('statsStudentsLabel')} />
             <StatCounter target={50}  suffix="+"  label={t('statsTeachersLabel')} />
             <StatCounter target={20}  suffix="+"  label={t('statsClassesLabel')} />
@@ -390,13 +391,13 @@ export function LandingPage() {
           FEATURES — white/dark bg, large icon cards
       ════════════════════════════════════════════════════════ */}
       <section id="programs" className="bg-white dark:bg-gray-950 py-24">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Section heading */}
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
               {t('featuresTitle')}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-lg max-w-xl mx-auto">
+            <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
               {t('featuresSubtitle')}
             </p>
           </div>
@@ -406,7 +407,7 @@ export function LandingPage() {
             {FEATURES.map(({ icon: Icon, color, titleKey, descKey }) => (
               <div
                 key={titleKey}
-                className="group bg-white dark:bg-gray-900 rounded-3xl p-8 border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-default"
+                className="group bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-8 border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-default"
               >
                 <div
                   className={`w-16 h-16 ${color} rounded-3xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}
@@ -430,21 +431,21 @@ export function LandingPage() {
           GALLERY — horizontal scroll strip
       ════════════════════════════════════════════════════════ */}
       <section id="gallery" className="bg-white dark:bg-gray-950 py-20 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-6 mb-10 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">{t('gallerySubtitle')}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">{t('gallerySubtitle')}</p>
         </div>
 
         {/* Scroll strip */}
-        <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory pl-6">
-          <div className="flex gap-4 w-max pr-6 pb-2">
+        <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory pl-4 sm:pl-6">
+          <div className="flex gap-4 w-max pr-4 sm:pr-6 pb-2">
             {galleryItems.length > 0
               ? galleryItems.map((item) => (
                   <div
                     key={item.id}
-                    className="snap-start w-72 h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+                    className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
                   >
                     <img
                       src={item.photo_url}
@@ -456,7 +457,7 @@ export function LandingPage() {
               : GALLERY_PLACEHOLDERS.map((p) => (
                   <div
                     key={p.id}
-                    className={`snap-start w-72 h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
+                    className={`snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
                   >
                     <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
                     <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">{p.label}</span>
@@ -475,13 +476,13 @@ export function LandingPage() {
           TESTIMONIALS — kinder-purple bg, star ratings
       ════════════════════════════════════════════════════════ */}
       <section className="bg-kinder-purple py-24">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Heading */}
           <div className="text-center mb-14">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
               {t('testimonialsTitle')}
             </h2>
-            <p className="text-white/70 text-lg">{t('testimonialsSubtitle')}</p>
+            <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
           </div>
 
           {/* Cards */}
@@ -489,7 +490,7 @@ export function LandingPage() {
             {TESTIMONIALS.map(({ quote, name, role }) => (
               <div
                 key={name}
-                className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-3xl p-8 hover:bg-white/20 transition-all"
+                className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-3xl p-6 sm:p-8 hover:bg-white/20 transition-all"
               >
                 {/* Star row */}
                 <div className="flex gap-1 mb-5">
@@ -518,7 +519,7 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section id="contact" className="bg-kinder-green py-24">
         {/* Floating accents */}
-        <div className="relative max-w-3xl mx-auto px-6 text-center overflow-hidden">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center overflow-hidden">
           <div className="lp-float absolute -top-8 -left-8 opacity-30 pointer-events-none" aria-hidden="true">
             <svg width="64" height="64" viewBox="0 0 64 64">
               <polygon points="32,4 60,58 4,58" fill="white" />
@@ -528,15 +529,15 @@ export function LandingPage() {
             <Star size={48} fill="white" stroke="white" />
           </div>
 
-          <h2 className="relative text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+          <h2 className="relative text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
             {t('ctaTitle')}
           </h2>
-          <p className="relative text-white/80 text-xl mb-10">{t('ctaSubtitle')}</p>
+          <p className="relative text-white/80 text-lg sm:text-xl mb-10">{t('ctaSubtitle')}</p>
 
           <div className="relative flex flex-wrap gap-4 justify-center">
             <a
               href="mailto:hello@kindercare.edu"
-              className="bg-white text-kinder-green px-10 py-4 rounded-full font-extrabold text-lg shadow-lg hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200"
+              className="bg-white text-kinder-green px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200"
             >
               {t('scheduleVisit')}
             </a>
@@ -568,7 +569,7 @@ export function LandingPage() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Scroll to top"
-        className={`fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+        className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
           showTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >

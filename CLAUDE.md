@@ -61,7 +61,7 @@ kindergarten-app/
 │       │   │   ├── ClassModal.tsx    # Add/Edit classroom form — full validation, dark mode, i18n
 │       │   │   └── GalleryModal.tsx  # Add/Edit gallery photo — file upload, caption, order, visibility
 │       │   └── layout/
-│       │       ├── AdminLayout.tsx     # Sidebar nav + settings panel (dark/lang toggles) + Outlet
+│       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet
 │       │       └── ProtectedRoute.tsx  # Redirects to /admin/login if no user
 │       ├── hooks/
 │       │   ├── useAuth.tsx    # AuthContext: user, loading, login(), logout()
@@ -109,6 +109,7 @@ All list endpoints return paginated responses:
 - Primary action buttons: `bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold`
 - Skeleton animation: CSS `animate-shimmer` defined in `index.css` using `bg-[length:200%_100%]`
 - All components are fully dark-mode aware using Tailwind `dark:` variants
+- All components are mobile-responsive using Tailwind breakpoint variants (`sm:`, `md:`, `lg:`)
 
 ## Settings & i18n Architecture
 - **settingsStore** (`store/settingsStore.ts`) — Zustand + `persist` middleware. Stores `darkMode` (bool) and `lang` (`'en' | 'ms'`). On `toggleDark()`, it directly adds/removes the `dark` class from `document.documentElement`. Settings are restored from `localStorage` on app load via `onRehydrateStorage`.
@@ -166,7 +167,8 @@ cd frontend && bun install && bun dev  # → http://localhost:5173
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
 - [ ] Bulk import students from CSV
 - [ ] Print-friendly attendance sheet
-- [ ] PWA / mobile-optimised layout for teachers marking attendance on phones
+- [x] Mobile-responsive layout — hamburger drawer, responsive pages, responsive LandingPage
+- [ ] PWA / installable app for teachers marking attendance on phones
 
 ## Known Conventions
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.
@@ -177,3 +179,5 @@ cd frontend && bun install && bun dev  # → http://localhost:5173
 - Mutations call `queryClient.invalidateQueries({ queryKey: ['resource'] })` on success
 - All new UI strings go into `lib/translations.ts` under both `en` and `ms` keys before use
 - All components must include `dark:` variants for every color/background/border class
+- All new pages must be mobile-responsive: `p-4 md:p-8` container padding, `text-2xl md:text-3xl` headings, header rows use `flex flex-col gap-4 md:flex-row md:items-center md:justify-between`, action buttons `w-full md:w-auto`, SearchBars `w-full md:w-72`
+- **AdminLayout mobile nav**: desktop sidebar is `hidden lg:flex`; mobile gets a top bar (hamburger + logo) + slide-in drawer with dark backdrop overlay. `sidebarOpen` state controls drawer visibility.

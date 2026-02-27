@@ -47,18 +47,18 @@ export function ClassesPage() {
   const closeModal = () => { setModalOpen(false); setEditingClass(null) }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('classes')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('classes')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {meta ? `${meta.total} ${t('classrooms')}` : t('loading')}
           </p>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100"
+          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
         >
           <Plus size={18} />
           {t('addClass')}
@@ -66,7 +66,7 @@ export function ClassesPage() {
       </div>
 
       {/* Search */}
-      <div className="mb-6 w-72">
+      <div className="mb-6 w-full md:w-72">
         <SearchBar value={search} onChange={setSearch} placeholder={t('searchClasses')} />
       </div>
 

@@ -40,18 +40,18 @@ export function GalleryPage() {
   const closeModal = () => { setModalOpen(false); setEditingItem(null) }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('gallery')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('gallery')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {meta ? `${meta.total} photos` : t('loading')}
           </p>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100"
+          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
         >
           <Plus size={18} />
           {t('addPhoto')}
@@ -59,7 +59,7 @@ export function GalleryPage() {
       </div>
 
       {/* Search */}
-      <div className="mb-6 w-72">
+      <div className="mb-6 w-full md:w-72">
         <SearchBar value={search} onChange={setSearch} placeholder="Search by caption..." />
       </div>
 
@@ -82,7 +82,7 @@ export function GalleryPage() {
                 className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
               >
                 {/* Photo thumbnail */}
-                <div className="relative w-full h-44 bg-gray-100 dark:bg-gray-800">
+                <div className="relative w-full h-36 sm:h-44 bg-gray-100 dark:bg-gray-800">
                   {item.photo_url ? (
                     <img
                       src={item.photo_url}
