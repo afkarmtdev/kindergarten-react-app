@@ -165,6 +165,26 @@ export const translations = {
     galleryTitle: 'Life at KinderCare',
     gallerySubtitle: 'A peek into our colourful, joyful classrooms',
 
+    // Student profile page
+    backToStudents: 'Back to Students',
+    attendanceHistory: 'Attendance History',
+    noAttendanceRecords: 'No attendance records yet',
+    totalRecorded: 'Total Recorded',
+    presentRate: 'Present Rate',
+
+    // Bulk import CSV
+    importCsv: 'Import CSV',
+    bulkImport: 'Bulk Import Students',
+    csvFormatHint: 'CSV columns: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
+    importPreview: 'Preview ({n} rows)',
+    validRows: '{n} valid',
+    invalidRows: '{n} invalid',
+    willBeSkipped: 'Invalid rows will be skipped',
+    importStudents: 'Import {n} Students',
+    importSuccess: 'Successfully imported {n} students',
+    importFailed: 'Failed rows',
+    importResult: 'Import Complete',
+
     // Admin — Gallery management
     gallery: 'Gallery',
     addPhoto: 'Add Photo',
@@ -342,6 +362,26 @@ export const translations = {
     // Landing page — Gallery
     galleryTitle: 'Kehidupan di KinderCare',
     gallerySubtitle: 'Sekilas pandang bilik darjah kami yang ceria',
+
+    // Student profile page
+    backToStudents: 'Kembali ke Pelajar',
+    attendanceHistory: 'Sejarah Kehadiran',
+    noAttendanceRecords: 'Tiada rekod kehadiran lagi',
+    totalRecorded: 'Jumlah Direkod',
+    presentRate: 'Kadar Hadir',
+
+    // Bulk import CSV
+    importCsv: 'Import CSV',
+    bulkImport: 'Import Pelajar Pukal',
+    csvFormatHint: 'Lajur CSV: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
+    importPreview: 'Pratonton ({n} baris)',
+    validRows: '{n} sah',
+    invalidRows: '{n} tidak sah',
+    willBeSkipped: 'Baris tidak sah akan dilangkau',
+    importStudents: 'Import {n} Pelajar',
+    importSuccess: 'Berjaya import {n} pelajar',
+    importFailed: 'Baris gagal',
+    importResult: 'Import Selesai',
 
     // Admin — Gallery management
     gallery: 'Galeri',

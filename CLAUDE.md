@@ -160,12 +160,12 @@ cd frontend && bun install && bun dev  # → http://localhost:5173
 - [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
 - [ ] Role-based access (superadmin vs teacher — schema has AdminUser.role already)
 - [ ] Real-time attendance updates (Supabase Realtime subscriptions)
-- [ ] Student profile page (individual attendance history, edit inline)
+- [x] Student profile page — `/admin/students/:id`, attendance history table, quick stats, edit button
 - [ ] Parent portal (public-facing, read-only view for parents to check their child's attendance)
 
 ### Low Priority / Nice to Have
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
-- [ ] Bulk import students from CSV
+- [x] Bulk import students from CSV — 3-step modal (upload → preview → result), skip bad rows, sample CSV download
 - [ ] Print-friendly attendance sheet
 - [x] Mobile-responsive layout — hamburger drawer, responsive pages, responsive LandingPage
 - [ ] PWA / installable app for teachers marking attendance on phones

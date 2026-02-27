@@ -60,6 +60,8 @@ export const studentsApi = {
   create: (data: unknown) => api.post('/students', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/students/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/students/${id}`).then((r) => r.data),
+  bulkImport: (students: Record<string, string>[]) =>
+    api.post<{ imported: number; failed: { row: number; reason: string }[] }>('/students/bulk', { students }).then((r) => r.data),
 }
 
 export const attendanceApi = {
