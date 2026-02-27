@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun add sonner)",
+      "Bash(bun add pino pino-pretty)",
+      "Bash(bun run tsc --noEmit)"
+    ]
+  }
+}

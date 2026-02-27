@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { sanitiseStrings } from '../lib/sanitise'
 
 const students = new Hono()
 
@@ -89,7 +90,7 @@ students.post('/bulk', async (c) => {
     if (!row.parent_name?.trim()) return failed.push({ row: rowNum, reason: 'parent_name is required' })
     if (!row.parent_email?.trim() || !emailRegex.test(row.parent_email)) return failed.push({ row: rowNum, reason: 'parent_email is invalid' })
     if (!row.parent_phone?.trim()) return failed.push({ row: rowNum, reason: 'parent_phone is required' })
-    valid.push({
+    valid.push(sanitiseStrings({
       full_name: row.full_name.trim(),
       date_of_birth: row.date_of_birth?.trim() || '',
       gender: row.gender,
@@ -97,7 +98,7 @@ students.post('/bulk', async (c) => {
       parent_name: row.parent_name.trim(),
       parent_email: row.parent_email.trim(),
       parent_phone: row.parent_phone.trim(),
-    })
+    }))
   })
 
   if (valid.length === 0) return c.json({ imported: 0, failed })
@@ -110,7 +111,7 @@ students.post('/bulk', async (c) => {
 
 // POST create student
 students.post('/', zValidator('json', studentSchema), async (c) => {
-  const body = c.req.valid('json')
+  const body = sanitiseStrings(c.req.valid('json'))
   const { data, error } = await supabase
     .from('students')
     .insert(body)
@@ -124,7 +125,7 @@ students.post('/', zValidator('json', studentSchema), async (c) => {
 // PUT update student
 students.put('/:id', zValidator('json', studentSchema.partial()), async (c) => {
   const { id } = c.req.param()
-  const body = c.req.valid('json')
+  const body = sanitiseStrings(c.req.valid('json'))
 
   const { data, error } = await supabase
     .from('students')

@@ -196,28 +196,77 @@ Things that would make this genuinely useful for a real kindergarten.
 | Student photo upload | Supabase Storage (`student-photos` bucket), file picker with preview |
 | Attendance export (CSV) | Frontend-only, date-stamped file download |
 | Gallery module | Admin CRUD + public horizontal scroll section on landing page, Supabase Storage (`gallery-photos` bucket), display order + visibility toggle |
+| Student profile page | Individual attendance history (paginated), quick stats strip, inline edit |
+| Bulk CSV import | Upload a CSV to create many students at once; invalid rows are highlighted and skipped; result report shown |
 
-### Nice to Have
-| Feature | Why | Rough Effort |
-|---------|-----|-------------|
-| Parent portal | Public-facing page parents log into to see their child's attendance | Large |
-| Role-based access | Teachers should only see their assigned class | Medium |
-| Email alerts to parents | Auto-email when child is marked absent | Medium |
-| Real-time attendance | Supabase Realtime so two teachers don't conflict | Medium |
-| Announcements board | School-wide notices on the dashboard | Small |
-| Student health notes | Allergies, medical conditions visible to teachers | Small |
-| Fee tracking | Track school fees per student, mark as paid/unpaid | Large |
-| Report cards | Generate and download PDF report cards per student | Large |
-| Mobile app | React Native with Expo — same backend, new frontend | Large |
-| Birthday reminders | Dashboard widget showing upcoming student birthdays | Small |
+---
 
-### Technical Improvements
-| Improvement | Why |
-|------------|-----|
-| End-to-end tests (Playwright) | Catch regressions before deployment |
-| API rate limiting | Protect backend from abuse |
-| Optimistic UI on mutations | Instant feedback on create/delete without waiting for server |
-| Error boundary components | Graceful error states per page instead of blank screens |
+## Technical Improvements Backlog
+
+Engineering tasks that improve reliability, performance, and maintainability — no new user-facing features.
+
+### Error Handling & Observability
+- [x] **Toast notifications** — `sonner` installed; success/error toasts on all create, update, delete, and save mutations across Students, Classes, Gallery, Attendance, and BulkImport.
+- [x] **Error boundaries** — `ErrorBoundary` class component wraps every admin page route in `App.tsx`; broken pages show a "Try again" card instead of blanking the whole portal.
+- [ ] **Crash logging (Sentry)** — integrate Sentry on both frontend (`@sentry/react`) and backend to capture unhandled exceptions and performance traces in production.
+- [x] **Structured backend logging** — `pino` + `pino-pretty` installed; unhandled errors logged via `logger.error` with request path/method; startup uses `logger.info`.
+
+### Security
+- [x] **Rate limiting** — simple in-memory rate limiter on `POST /api/auth/login`: 10 attempts per IP per 60-second window, returns HTTP 429 when exceeded.
+- [x] **Input sanitisation** — `stripHtml` helper strips `<tags>` from all free-text string fields before Supabase insert/update (students, classes, gallery caption).
+- [x] **Environment variable validation** — zod schema validated at server startup; missing/malformed vars print a clear error and `process.exit(1)` before the server starts.
+- [x] **HTTP security headers** — `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy` added via Hono middleware on every response.
+
+### Performance
+- [ ] **Code splitting** — wrap each admin page with `React.lazy()` + `<Suspense>` so the initial JS bundle doesn't load all pages upfront.
+- [ ] **Image optimisation** — compress/resize uploaded photos before storing them in Supabase Storage (e.g. via a Supabase Edge Function with `sharp`); saves storage quota and speeds page loads.
+- [ ] **Query prefetching** — prefetch the next page of results on list views so pagination feels instant (`queryClient.prefetchQuery`).
+
+### Type Safety & API Contract
+- [ ] **Shared types package** — extract shared TypeScript interfaces (`Student`, `AttendanceRecord`, etc.) into a `packages/types` workspace so frontend and backend always use the same shape; eliminates manual sync.
+- [ ] **API response validation** — use Zod to validate every request body on the backend, and `zodios` on the frontend to validate API responses at the boundary.
+
+### Testing
+- [ ] **E2E tests (Playwright)** — cover critical paths: login → mark attendance → export CSV; add student → verify in list; bulk CSV import with mixed valid/invalid rows.
+- [ ] **Unit tests for utilities** — `parseCsv`, `validateRow`, and `downloadSample` in `BulkImportModal` are pure functions — straightforward to test with `bun:test`.
+
+### Developer Experience
+- [ ] **Docker Compose setup** — `docker-compose.yml` so new contributors can `docker compose up` and get a local environment without manual setup.
+- [ ] **Pre-commit lint + format** — `eslint` + `prettier` with a `husky` pre-commit hook to keep code style consistent.
+- [ ] **CI pipeline** — GitHub Actions workflow: install → type-check → lint → run unit tests on every PR.
+
+---
+
+## Feature Ideas — Grouped by Who Benefits
+
+### For Admins & Management
+- [ ] **Announcements / notice board** — post school-wide notices (holidays, events, reminders); shown on the dashboard and optionally emailed to parents.
+- [ ] **Fee tracking** — record monthly fee payments per student; flag overdue accounts; export a payment summary.
+- [ ] **Events calendar** — a shared school calendar (sports day, field trips, parent-teacher meetings) visible to staff and optionally to parents.
+- [ ] **Report cards / term summaries** — auto-generate a PDF report card per student showing attendance rate, class, and a free-text remarks field; downloadable from the student profile page.
+- [ ] **Role-based access** — the DB schema already has `AdminUser.role`; implement `superadmin` vs `teacher` so teachers can only mark attendance for their own class and cannot add/delete students.
+- [ ] **Audit / activity log** — record who changed what and when for accountability (e.g. "attendance changed from absent → present by teacher@school.com at 9:14 am").
+- [ ] **Dashboard charts** — monthly attendance trend line + class breakdown pie chart using `recharts`; gives management a visual overview at a glance.
+
+### For Teachers
+- [ ] **Quick attendance from student profile** — mark today's attendance directly from the student profile page, not just from the attendance table.
+- [ ] **Class view** — a dedicated page for a single class showing its roster and today's attendance status so a teacher only sees their own students.
+- [ ] **Substitute teacher notes** — a staff-only text field per attendance record (e.g. "doctor letter submitted").
+- [ ] **Bulk attendance from class roster** — a "Mark Attendance" shortcut on the Classes page that pre-filters the attendance table to just that class.
+
+### For Parents
+- [ ] **Parent portal** — a read-only view (separate login via PIN or magic link) where a parent can see their child's attendance history without full admin access.
+- [ ] **Absence reason submission** — a simple public form where parents submit an absence reason / medical certificate for a specific date; admin sees the reason alongside the attendance record.
+- [ ] **Email / push notifications** — send an automated email (via Supabase Edge Function + Resend or SendGrid) when a child is marked absent so parents are immediately informed.
+- [ ] **Attendance summary email** — a weekly or monthly digest emailed to parents showing their child's attendance rate and any missed days.
+
+### For Everyone (UX Polish)
+- [ ] **Print-friendly attendance sheet** — a CSS `@media print` layout that renders the attendance table cleanly for schools that still want a paper backup.
+- [ ] **Mobile-optimised attendance marking** — a swipe-friendly card-based UI for teachers marking attendance on a phone or tablet.
+- [ ] **PWA / offline support** — cache the attendance marking page with a service worker so teachers can mark attendance without internet; sync when reconnected.
+- [ ] **Real-time attendance updates** — Supabase Realtime subscriptions so changes by one teacher appear live in another tab without a refresh.
+- [ ] **Global search (Cmd+K)** — a command palette to jump directly to any student's profile by name from anywhere in the admin portal.
+- [ ] **Birthday reminders** — a dashboard widget showing upcoming student birthdays this week.
 
 ---
 

@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Toaster } from 'sonner'
 import { AuthProvider } from '@/hooks/useAuth'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { AdminLayout } from '@/components/layout/AdminLayout'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -44,12 +46,12 @@ export default function App() {
               }
             >
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="students" element={<StudentsPage />} />
-              <Route path="students/:id" element={<StudentProfilePage />} />
-              <Route path="attendance" element={<AttendancePage />} />
-              <Route path="classes" element={<ClassesPage />} />
-              <Route path="gallery" element={<GalleryPage />} />
+              <Route path="dashboard" element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+              <Route path="students" element={<ErrorBoundary><StudentsPage /></ErrorBoundary>} />
+              <Route path="students/:id" element={<ErrorBoundary><StudentProfilePage /></ErrorBoundary>} />
+              <Route path="attendance" element={<ErrorBoundary><AttendancePage /></ErrorBoundary>} />
+              <Route path="classes" element={<ErrorBoundary><ClassesPage /></ErrorBoundary>} />
+              <Route path="gallery" element={<ErrorBoundary><GalleryPage /></ErrorBoundary>} />
             </Route>
 
             {/* Catch all */}
@@ -57,6 +59,13 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+
+      <Toaster
+        position="top-right"
+        richColors
+        duration={3000}
+        toastOptions={{ className: 'font-sans text-sm' }}
+      />
       {/* Devtools only in development */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

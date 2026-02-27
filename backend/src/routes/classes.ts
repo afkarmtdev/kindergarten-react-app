@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { sanitiseStrings } from '../lib/sanitise'
 
 const classes = new Hono()
 
@@ -89,7 +90,7 @@ classes.get('/:id', async (c) => {
 
 // POST create class
 classes.post('/', zValidator('json', classSchema), async (c) => {
-  const body = c.req.valid('json')
+  const body = sanitiseStrings(c.req.valid('json'))
   const { data, error } = await supabase
     .from('classrooms')
     .insert(body)
@@ -103,7 +104,7 @@ classes.post('/', zValidator('json', classSchema), async (c) => {
 // PUT update class
 classes.put('/:id', zValidator('json', classSchema.partial()), async (c) => {
   const { id } = c.req.param()
-  const body = c.req.valid('json')
+  const body = sanitiseStrings(c.req.valid('json'))
 
   const { data, error } = await supabase
     .from('classrooms')

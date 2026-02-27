@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Plus, School, Users, Trash2, Pencil } from 'lucide-react'
 import { classesApi } from '@/lib/api'
 import { useClassesStore } from '@/store/classesStore'
@@ -36,7 +37,13 @@ export function ClassesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: classesApi.delete,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['classes'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes'] })
+      toast.success('Class removed')
+    },
+    onError: () => {
+      toast.error('Failed to remove class. Please try again.')
+    },
   })
 
   const classes = data?.data ?? []
