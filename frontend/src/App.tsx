@@ -11,6 +11,7 @@ import { StudentsPage } from '@/pages/StudentsPage'
 import { AttendancePage } from '@/pages/AttendancePage'
 import { ClassesPage } from '@/pages/ClassesPage'
 import { GalleryPage } from '@/pages/GalleryPage'
+import { StudentProfilePage } from '@/pages/StudentProfilePage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,7 @@ export default function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="students" element={<StudentsPage />} />
+              <Route path="students/:id" element={<StudentProfilePage />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="classes" element={<ClassesPage />} />
               <Route path="gallery" element={<GalleryPage />} />

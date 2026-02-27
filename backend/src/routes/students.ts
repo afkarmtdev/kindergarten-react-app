@@ -70,6 +70,44 @@ students.get('/:id', async (c) => {
   return c.json(data)
 })
 
+// POST bulk import students
+students.post('/bulk', async (c) => {
+  const body = await c.req.json()
+  const rows: Record<string, string>[] = Array.isArray(body?.students) ? body.students : []
+
+  if (rows.length === 0) return c.json({ error: 'No students provided' }, 400)
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const valid: Record<string, string>[] = []
+  const failed: { row: number; reason: string }[] = []
+
+  rows.forEach((row, i) => {
+    const rowNum = i + 2 // 1-indexed + header row
+    if (!row.full_name?.trim()) return failed.push({ row: rowNum, reason: 'full_name is required' })
+    if (!['male', 'female'].includes(row.gender)) return failed.push({ row: rowNum, reason: 'gender must be male or female' })
+    if (!row.class_name?.trim()) return failed.push({ row: rowNum, reason: 'class_name is required' })
+    if (!row.parent_name?.trim()) return failed.push({ row: rowNum, reason: 'parent_name is required' })
+    if (!row.parent_email?.trim() || !emailRegex.test(row.parent_email)) return failed.push({ row: rowNum, reason: 'parent_email is invalid' })
+    if (!row.parent_phone?.trim()) return failed.push({ row: rowNum, reason: 'parent_phone is required' })
+    valid.push({
+      full_name: row.full_name.trim(),
+      date_of_birth: row.date_of_birth?.trim() || '',
+      gender: row.gender,
+      class_name: row.class_name.trim(),
+      parent_name: row.parent_name.trim(),
+      parent_email: row.parent_email.trim(),
+      parent_phone: row.parent_phone.trim(),
+    })
+  })
+
+  if (valid.length === 0) return c.json({ imported: 0, failed })
+
+  const { error } = await supabase.from('students').insert(valid)
+  if (error) return c.json({ error: error.message }, 500)
+
+  return c.json({ imported: valid.length, failed })
+})
+
 // POST create student
 students.post('/', zValidator('json', studentSchema), async (c) => {
   const body = c.req.valid('json')

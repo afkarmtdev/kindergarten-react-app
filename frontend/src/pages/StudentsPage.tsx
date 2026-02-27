@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Plus, User, Trash2, Phone, Mail, Filter, Pencil } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Plus, User, Trash2, Phone, Mail, Filter, Pencil, Upload } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { useStudentsStore } from '@/store/studentsStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { StudentCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { StudentModal } from '@/components/admin/StudentModal'
+import { BulkImportModal } from '@/components/admin/BulkImportModal'
 import { useT } from '@/hooks/useT'
 import type { Student } from '@/types'
 
@@ -20,6 +22,7 @@ export function StudentsPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [bulkModalOpen, setBulkModalOpen] = useState(false)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['students', { page, search, class_name: classFilter, gender: genderFilter }],
@@ -51,13 +54,22 @@ export function StudentsPage() {
             {meta ? `${meta.total} ${t('enrolled').toLowerCase()}` : t('loading')}
           </p>
         </div>
-        <button
-          onClick={openAdd}
-          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
-        >
-          <Plus size={18} />
-          {t('addStudent')}
-        </button>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button
+            onClick={() => setBulkModalOpen(true)}
+            className="flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex-1 md:flex-none"
+          >
+            <Upload size={16} />
+            {t('importCsv')}
+          </button>
+          <button
+            onClick={openAdd}
+            className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 flex-1 md:flex-none"
+          >
+            <Plus size={18} />
+            {t('addStudent')}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -120,9 +132,10 @@ export function StudentsPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {students.map((student: Student) => (
-              <div
+              <Link
                 key={student.id}
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
+                to={`/admin/students/${student.id}`}
+                className="block bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
               >
                 <div className="flex items-start gap-4">
                   {student.photo_url ? (
@@ -151,13 +164,15 @@ export function StudentsPage() {
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0">
                     <button
-                      onClick={() => openEdit(student)}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); openEdit(student) }}
                       className="text-gray-300 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors"
                     >
                       <Pencil size={14} />
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
                         if (confirm(t('removeConfirm', { name: student.full_name })))
                           deleteMutation.mutate(student.id)
                       }}
@@ -182,7 +197,7 @@ export function StudentsPage() {
                     <span>{student.parent_phone}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -199,11 +214,15 @@ export function StudentsPage() {
         />
       )}
 
-      {/* Modal */}
+      {/* Modals */}
       <StudentModal
         open={modalOpen}
         onClose={closeModal}
         student={editingStudent}
+      />
+      <BulkImportModal
+        open={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
       />
     </div>
   )
