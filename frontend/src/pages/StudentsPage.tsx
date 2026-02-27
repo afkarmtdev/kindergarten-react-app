@@ -42,18 +42,18 @@ export function StudentsPage() {
   const closeModal = () => { setModalOpen(false); setEditingStudent(null) }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('students')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('students')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {meta ? `${meta.total} ${t('enrolled').toLowerCase()}` : t('loading')}
           </p>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100"
+          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
         >
           <Plus size={18} />
           {t('addStudent')}
@@ -62,7 +62,7 @@ export function StudentsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
-        <div className="w-72">
+        <div className="w-full md:w-72">
           <SearchBar
             value={search}
             onChange={setSearch}
@@ -73,7 +73,7 @@ export function StudentsPage() {
         <select
           value={classFilter}
           onChange={(e) => setClassFilter(e.target.value)}
-          className="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
+          className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
         >
           <option value="">{t('allClasses')}</option>
           <option value="Sunflower">Sunflower</option>
@@ -85,7 +85,7 @@ export function StudentsPage() {
         <select
           value={genderFilter}
           onChange={(e) => setGenderFilter(e.target.value)}
-          className="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
+          className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
         >
           <option value="">{t('allGenders')}</option>
           <option value="male">{t('boys')}</option>

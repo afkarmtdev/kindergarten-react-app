@@ -88,14 +88,14 @@ export function DashboardPage() {
   const statsLoading = studentsLoading || classesLoading || todayLoading
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('dashboard')}</h1>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('dashboard')}</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-8">
         {statsLoading ? (
           Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (

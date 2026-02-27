@@ -100,32 +100,32 @@ export function AttendancePage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('attendance')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('attendance')}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 bg-white dark:bg-gray-800 dark:text-gray-200"
+            className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 bg-white dark:bg-gray-800 dark:text-gray-200"
           />
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+            className="flex items-center justify-center gap-2 flex-1 md:flex-none border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
           >
             <Download size={15} />
             {t('exportCsv')}
           </button>
           <button
             onClick={markAllPresent}
-            className="border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
+            className="flex-1 md:flex-none border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
           >
             {t('markAllPresent')}
           </button>
@@ -133,7 +133,7 @@ export function AttendancePage() {
             <button
               onClick={handleSave}
               disabled={bulkMutation.isPending}
-              className="flex items-center gap-2 bg-kinder-green text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-600 transition-all disabled:opacity-60 shadow-sm"
+              className="flex items-center justify-center gap-2 flex-1 md:flex-none bg-kinder-green text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-600 transition-all disabled:opacity-60 shadow-sm"
             >
               <Save size={16} />
               {bulkMutation.isPending ? t('saving') : saveLabel}
@@ -172,9 +172,9 @@ export function AttendancePage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60">
-              <th className="text-left px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('student')}</th>
-              <th className="text-left px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('class')}</th>
-              <th className="text-left px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('markAttendance')}</th>
+              <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('student')}</th>
+              <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('class')}</th>
+              <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('markAttendance')}</th>
             </tr>
           </thead>
           <tbody>
@@ -194,7 +194,7 @@ export function AttendancePage() {
                           : 'bg-gray-50/30 dark:bg-gray-800/30'
                       }`}
                     >
-                      <td className="px-6 py-3.5">
+                      <td className="px-3 md:px-6 py-2 md:py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                             {student.full_name[0]}
@@ -209,10 +209,10 @@ export function AttendancePage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-3.5">
+                      <td className="px-3 md:px-6 py-2 md:py-3.5">
                         <span className="text-sm text-gray-500 dark:text-gray-400">{student.class_name}</span>
                       </td>
-                      <td className="px-6 py-3.5">
+                      <td className="px-3 md:px-6 py-2 md:py-3.5">
                         <div className="flex gap-1.5 flex-wrap">
                           {(Object.keys(STATUS_CONFIG) as Status[]).map((s) => {
                             const { labelKey, icon: Icon, bg } = STATUS_CONFIG[s]
