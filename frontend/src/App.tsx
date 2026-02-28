@@ -34,6 +34,16 @@ const GalleryPage = lazy(() =>
 const AnnouncementsPage = lazy(() =>
   import('@/pages/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage }))
 )
+const SettingsPage = lazy(() =>
+  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+)
+const FeesPage = lazy(() => import('@/pages/FeesPage').then((m) => ({ default: m.FeesPage })))
+const FeePlansPage = lazy(() =>
+  import('@/pages/FeePlansPage').then((m) => ({ default: m.FeePlansPage }))
+)
+const FeeStatementPage = lazy(() =>
+  import('@/pages/FeeStatementPage').then((m) => ({ default: m.FeeStatementPage }))
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,6 +142,46 @@ export default function App() {
                   <ErrorBoundary>
                     <Suspense fallback={<CuteLoader />}>
                       <AnnouncementsPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="fees"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <FeesPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="fees/statement/:studentId"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <FeeStatementPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="fee-plans"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <FeePlansPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <SettingsPage />
                     </Suspense>
                   </ErrorBoundary>
                 }
