@@ -81,15 +81,32 @@ export function BearSpeechBubble({ message }: { message: string | null }) {
 
   return (
     <div
-      className={`absolute bottom-full right-0 mb-1 transition-opacity duration-150 pointer-events-none w-max max-w-[170px] ${
-        message ? 'opacity-100' : 'opacity-0'
+      className={`absolute bottom-full right-0 mb-1 pointer-events-none w-max max-w-[170px] transition-[opacity,transform] duration-200 ease-out ${
+        message ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-1'
       }`}
+      style={{ transformOrigin: 'bottom right' }}
     >
-      <div className="w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 leading-snug">
+      <div className="w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-[11px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-600 leading-snug">
         {isHint ? <RainbowText text={message!} /> : message}
       </div>
-      {/* Tail pointing down toward the bear's head */}
-      <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-gray-800 border-b border-r border-gray-100 dark:border-gray-700 rotate-45" />
+      {/* Tail — overlaps bubble by 1px so fill covers the bottom border seam */}
+      <svg
+        className="absolute right-4"
+        style={{ bottom: -6 }}
+        width="12"
+        height="7"
+        viewBox="0 0 12 7"
+        aria-hidden="true"
+      >
+        <polygon points="0,0 4,7 12,0" className="fill-white dark:fill-gray-800" />
+        {/* polyline = only the two diagonal sides, no top edge — seam stays hidden */}
+        <polyline
+          points="0,0 4,7 12,0"
+          fill="none"
+          strokeWidth="1"
+          className="stroke-gray-200 dark:stroke-gray-600"
+        />
+      </svg>
     </div>
   )
 }
