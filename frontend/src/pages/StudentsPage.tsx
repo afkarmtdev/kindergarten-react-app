@@ -11,6 +11,7 @@ import { StudentCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { StudentModal } from '@/components/admin/StudentModal'
 import { BulkImportModal } from '@/components/admin/BulkImportModal'
 import { useT } from '@/hooks/useT'
+import { isBirthdayToday } from '@/lib/utils'
 import type { Student } from '@/types'
 
 const LIMIT = 12
@@ -219,6 +220,11 @@ export function StudentsPage() {
                     >
                       {student.gender === 'male' ? t('boy') : t('girl')}
                     </span>
+                    {isBirthdayToday(student.date_of_birth) && (
+                      <span className="ml-1.5 inline-block bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-semibold px-2 py-0.5 rounded-full mt-1">
+                        {t('birthdayToday')}
+                      </span>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0">
                     <button
