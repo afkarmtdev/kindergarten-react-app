@@ -13,7 +13,15 @@ interface ParsedRow {
   error?: string
 }
 
-const CSV_HEADERS = ['full_name', 'date_of_birth', 'gender', 'class_name', 'parent_name', 'parent_email', 'parent_phone']
+const CSV_HEADERS = [
+  'full_name',
+  'date_of_birth',
+  'gender',
+  'class_name',
+  'parent_name',
+  'parent_email',
+  'parent_phone',
+]
 
 const SAMPLE_ROWS = [
   'Ahmad Hariz bin Fauzi,2019-03-15,male,Sunflower,Ahmad Fauzi,fauzi@email.com,0123456789',
@@ -38,19 +46,25 @@ function validateRow(row: Record<string, string>): string | undefined {
   if (!['male', 'female'].includes(row.gender)) return 'gender must be male or female'
   if (!row.class_name?.trim()) return 'class_name is required'
   if (!row.parent_name?.trim()) return 'parent_name is required'
-  if (!row.parent_email?.trim() || !EMAIL_REGEX.test(row.parent_email)) return 'parent_email is invalid'
+  if (!row.parent_email?.trim() || !EMAIL_REGEX.test(row.parent_email))
+    return 'parent_email is invalid'
   if (!row.parent_phone?.trim()) return 'parent_phone is required'
 }
 
 function parseCsv(text: string): ParsedRow[] {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
   if (lines.length < 2) return []
 
   const headers = lines[0].split(',').map((h) => h.trim().toLowerCase())
   return lines.slice(1).map((line, i) => {
     const values = line.split(',').map((v) => v.trim())
     const data: Record<string, string> = {}
-    headers.forEach((h, j) => { data[h] = values[j] ?? '' })
+    headers.forEach((h, j) => {
+      data[h] = values[j] ?? ''
+    })
     const error = validateRow(data)
     return { index: i + 2, data, error }
   })
@@ -68,12 +82,14 @@ export function BulkImportModal({ open, onClose }: Props) {
 
   const [step, setStep] = useState<Step>('idle')
   const [rows, setRows] = useState<ParsedRow[]>([])
-  const [result, setResult] = useState<{ imported: number; failed: { row: number; reason: string }[] } | null>(null)
+  const [result, setResult] = useState<{
+    imported: number
+    failed: { row: number; reason: string }[]
+  } | null>(null)
   const [fileName, setFileName] = useState('')
 
   const mutation = useMutation({
-    mutationFn: () =>
-      studentsApi.bulkImport(rows.filter((r) => !r.error).map((r) => r.data)),
+    mutationFn: () => studentsApi.bulkImport(rows.filter((r) => !r.error).map((r) => r.data)),
     onSuccess: (data) => {
       setResult(data)
       setStep('result')
@@ -115,10 +131,11 @@ export function BulkImportModal({ open, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-lg font-extrabold text-gray-900 dark:text-gray-100">{t('bulkImport')}</h2>
+          <h2 className="text-lg font-extrabold text-gray-900 dark:text-gray-100">
+            {t('bulkImport')}
+          </h2>
           <button
             onClick={handleClose}
             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-lg"
@@ -128,7 +145,6 @@ export function BulkImportModal({ open, onClose }: Props) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-
           {/* ── Step 1: idle ── */}
           {step === 'idle' && (
             <div className="space-y-5">
@@ -147,8 +163,13 @@ export function BulkImportModal({ open, onClose }: Props) {
                 onClick={() => fileRef.current?.click()}
                 className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center cursor-pointer hover:border-kinder-orange dark:hover:border-kinder-orange transition-colors group"
               >
-                <Upload size={32} className="mx-auto text-gray-300 dark:text-gray-600 group-hover:text-kinder-orange transition-colors mb-3" />
-                <p className="font-semibold text-gray-600 dark:text-gray-300 text-sm">Click to upload CSV</p>
+                <Upload
+                  size={32}
+                  className="mx-auto text-gray-300 dark:text-gray-600 group-hover:text-kinder-orange transition-colors mb-3"
+                />
+                <p className="font-semibold text-gray-600 dark:text-gray-300 text-sm">
+                  Click to upload CSV
+                </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">.csv files only</p>
               </div>
               <input
@@ -156,7 +177,10 @@ export function BulkImportModal({ open, onClose }: Props) {
                 type="file"
                 accept=".csv"
                 className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) handleFile(f)
+                }}
               />
             </div>
           )}
@@ -181,7 +205,9 @@ export function BulkImportModal({ open, onClose }: Props) {
                   </span>
                 )}
                 {invalidCount > 0 && (
-                  <span className="text-xs text-gray-400 dark:text-gray-500">{t('willBeSkipped')}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    {t('willBeSkipped')}
+                  </span>
                 )}
               </div>
 
@@ -190,11 +216,20 @@ export function BulkImportModal({ open, onClose }: Props) {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800">
-                      <th className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-bold w-10">Row</th>
+                      <th className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-bold w-10">
+                        Row
+                      </th>
                       {CSV_HEADERS.map((h) => (
-                        <th key={h} className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap">{h}</th>
+                        <th
+                          key={h}
+                          className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap"
+                        >
+                          {h}
+                        </th>
                       ))}
-                      <th className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-bold">Issue</th>
+                      <th className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-bold">
+                        Issue
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -205,7 +240,9 @@ export function BulkImportModal({ open, onClose }: Props) {
                           row.error ? 'bg-red-50/60 dark:bg-red-900/10' : ''
                         }`}
                       >
-                        <td className="px-3 py-1.5 text-gray-400 dark:text-gray-500">{row.index}</td>
+                        <td className="px-3 py-1.5 text-gray-400 dark:text-gray-500">
+                          {row.index}
+                        </td>
                         {CSV_HEADERS.map((h) => (
                           <td
                             key={h}
@@ -215,7 +252,9 @@ export function BulkImportModal({ open, onClose }: Props) {
                                 : 'text-gray-700 dark:text-gray-300'
                             }`}
                           >
-                            {row.data[h] || <span className="text-gray-300 dark:text-gray-600 italic">—</span>}
+                            {row.data[h] || (
+                              <span className="text-gray-300 dark:text-gray-600 italic">—</span>
+                            )}
                           </td>
                         ))}
                         <td className="px-3 py-1.5 text-red-500 dark:text-red-400 whitespace-nowrap">
@@ -241,8 +280,12 @@ export function BulkImportModal({ open, onClose }: Props) {
                 <CheckCircle size={32} className="text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-extrabold text-gray-900 dark:text-gray-100">{t('importResult')}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">{t('importSuccess', { n: result.imported })}</p>
+                <h3 className="text-xl font-extrabold text-gray-900 dark:text-gray-100">
+                  {t('importResult')}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                  {t('importSuccess', { n: result.imported })}
+                </p>
               </div>
 
               {result.failed.length > 0 && (
@@ -277,7 +320,11 @@ export function BulkImportModal({ open, onClose }: Props) {
           {step === 'preview' && (
             <>
               <button
-                onClick={() => { setStep('idle'); setRows([]); setFileName('') }}
+                onClick={() => {
+                  setStep('idle')
+                  setRows([])
+                  setFileName('')
+                }}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
               >
                 {t('cancel')}

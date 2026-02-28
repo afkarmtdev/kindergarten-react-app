@@ -61,7 +61,10 @@ auth.get('/me', async (c) => {
   if (!authHeader) return c.json({ error: 'No token' }, 401)
 
   const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error } = await supabase.auth.getUser(token)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token)
 
   if (error || !user) return c.json({ error: 'Invalid token' }, 401)
   return c.json(user)

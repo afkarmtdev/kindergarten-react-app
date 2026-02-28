@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { X, User, Upload, Loader } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
+import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import type { Student } from '@/types'
 
@@ -30,7 +31,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
   const t = useT()
   const queryClient = useQueryClient()
   const [form, setForm] = useState({ ...empty })
-  const [errors, setErrors] = useState<Partial<typeof empty>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof empty, string>>>({})
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -67,8 +68,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
     },
   })
 
-  const set = (k: keyof typeof form, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -77,12 +77,12 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
     setUploadError('')
     setUploading(true)
 
-    const ext = file.name.split('.').pop()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const compressed = await compressImage(file)
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
     const { error } = await supabase.storage
       .from('student-photos')
-      .upload(path, file, { upsert: false })
+      .upload(path, compressed, { upsert: false })
 
     if (error) {
       setUploadError(t('uploadFailed'))
@@ -90,16 +90,14 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
       return
     }
 
-    const { data: urlData } = supabase.storage
-      .from('student-photos')
-      .getPublicUrl(path)
+    const { data: urlData } = supabase.storage.from('student-photos').getPublicUrl(path)
 
     set('photo_url', urlData.publicUrl)
     setUploading(false)
   }
 
   const validate = () => {
-    const e: Partial<typeof empty> = {}
+    const e: Partial<Record<keyof typeof empty, string>> = {}
     if (!form.full_name.trim()) e.full_name = t('required')
     if (!form.date_of_birth) e.date_of_birth = t('required')
     if (!form.gender) e.gender = t('required')
@@ -130,10 +128,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -169,9 +164,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
               className={inputCls('full_name')}
               placeholder="Ahmad bin Abdullah"
             />
-            {errors.full_name && (
-              <p className="text-xs text-red-500 mt-1">{errors.full_name}</p>
-            )}
+            {errors.full_name && <p className="text-xs text-red-500 mt-1">{errors.full_name}</p>}
           </div>
 
           {/* DOB + Gender in a row */}
@@ -204,9 +197,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
                 <option value="male">{t('male')}</option>
                 <option value="female">{t('female')}</option>
               </select>
-              {errors.gender && (
-                <p className="text-xs text-red-500 mt-1">{errors.gender}</p>
-              )}
+              {errors.gender && <p className="text-xs text-red-500 mt-1">{errors.gender}</p>}
             </div>
           </div>
 
@@ -222,12 +213,12 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
             >
               <option value="">{t('selectClass')}</option>
               {CLASSES.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
-            {errors.class_name && (
-              <p className="text-xs text-red-500 mt-1">{errors.class_name}</p>
-            )}
+            {errors.class_name && <p className="text-xs text-red-500 mt-1">{errors.class_name}</p>}
           </div>
 
           <hr className="border-gray-100 dark:border-gray-700" />
@@ -296,7 +287,9 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
                     src={form.photo_url}
                     alt="preview"
                     className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).style.display = 'none'
+                    }}
                   />
                 ) : (
                   <User size={20} className="text-gray-300 dark:text-gray-600" />
@@ -341,9 +334,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
                 )}
               </div>
             </div>
-            {uploadError && (
-              <p className="text-xs text-red-500 mt-1">{uploadError}</p>
-            )}
+            {uploadError && <p className="text-xs text-red-500 mt-1">{uploadError}</p>}
           </div>
 
           {/* Error from server */}

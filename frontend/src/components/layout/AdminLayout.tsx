@@ -56,7 +56,9 @@ export function AdminLayout() {
             <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm">KinderCare</h1>
             <div className="flex items-center gap-1.5">
               <p className="text-xs text-gray-500 dark:text-gray-400">{t('adminPortal')}</p>
-              <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600">v{APP_VERSION}</span>
+              <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600">
+                v{APP_VERSION}
+              </span>
             </div>
           </div>
         </div>
@@ -65,12 +67,7 @@ export function AdminLayout() {
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={navLinkClass}
-            onClick={onNavClick}
-          >
+          <NavLink key={to} to={to} className={navLinkClass} onClick={onNavClick}>
             <Icon size={18} />
             {label}
           </NavLink>
@@ -146,7 +143,9 @@ export function AdminLayout() {
               {user?.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{user?.email}</p>
+              <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                {user?.email}
+              </p>
               <p className="text-xs text-gray-500 dark:text-gray-500">{t('administrator')}</p>
             </div>
             <div className="flex items-center gap-0.5">
@@ -180,7 +179,6 @@ export function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 font-display transition-colors duration-200">
-
       {/* Desktop sidebar — hidden on mobile */}
       <aside className="hidden lg:flex w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex-col shadow-sm transition-colors duration-200">
         <SidebarInner />
@@ -190,10 +188,7 @@ export function AdminLayout() {
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
           {/* Drawer panel */}
           <aside className="absolute inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 flex flex-col shadow-xl transition-colors duration-200">
             <button

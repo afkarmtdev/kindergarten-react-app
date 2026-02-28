@@ -126,7 +126,8 @@ export const translations = {
     heroPart1: 'Where little minds',
     heroHighlight: 'grow big',
     heroPart2: 'ideas',
-    heroSubtitle: 'A warm, loving kindergarten where curiosity is celebrated, friendships are formed, and every child discovers the joy of learning.',
+    heroSubtitle:
+      'A warm, loving kindergarten where curiosity is celebrated, friendships are formed, and every child discovers the joy of learning.',
     bookTour: 'Book a Tour',
     ourPrograms: 'Our Programs',
 
@@ -175,7 +176,8 @@ export const translations = {
     // Bulk import CSV
     importCsv: 'Import CSV',
     bulkImport: 'Bulk Import Students',
-    csvFormatHint: 'CSV columns: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
+    csvFormatHint:
+      'CSV columns: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
     importPreview: 'Preview ({n} rows)',
     validRows: '{n} valid',
     invalidRows: '{n} invalid',
@@ -222,7 +224,8 @@ export const translations = {
     noticesTitle: 'School Notices',
     noticesSubtitle: 'Stay up to date with the latest news and announcements from KinderCare',
     noticesEmptyTitle: 'All quiet for now!',
-    noticesEmptySubtitle: 'Check back soon for school news, upcoming events, and important updates.',
+    noticesEmptySubtitle:
+      'Check back soon for school news, upcoming events, and important updates.',
   },
 
   ms: {
@@ -352,7 +355,8 @@ export const translations = {
     heroPart1: 'Di mana minda kecil',
     heroHighlight: 'tumbuh besar',
     heroPart2: 'dengan idea',
-    heroSubtitle: 'Tadika yang mesra dan penuh kasih sayang di mana rasa ingin tahu dirai, persahabatan terbentuk, dan setiap kanak-kanak menemui kegembiraan pembelajaran.',
+    heroSubtitle:
+      'Tadika yang mesra dan penuh kasih sayang di mana rasa ingin tahu dirai, persahabatan terbentuk, dan setiap kanak-kanak menemui kegembiraan pembelajaran.',
     bookTour: 'Tempah Lawatan',
     ourPrograms: 'Program Kami',
 
@@ -364,7 +368,8 @@ export const translations = {
 
     // Landing page — Features
     featuresTitle: 'Segala yang diperlukan anak anda',
-    featuresSubtitle: 'Kurikulum holistik kami memupuk keseluruhan kanak-kanak — minda, tubuh, dan hati.',
+    featuresSubtitle:
+      'Kurikulum holistik kami memupuk keseluruhan kanak-kanak — minda, tubuh, dan hati.',
     featureLearnTitle: 'Belajar & Meneroka',
     featureLearnDesc: 'Pembelajaran praktikal melalui permainan dan penemuan',
     featureSafeTitle: 'Persekitaran Selamat',
@@ -401,7 +406,8 @@ export const translations = {
     // Bulk import CSV
     importCsv: 'Import CSV',
     bulkImport: 'Import Pelajar Pukal',
-    csvFormatHint: 'Lajur CSV: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
+    csvFormatHint:
+      'Lajur CSV: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
     importPreview: 'Pratonton ({n} baris)',
     validRows: '{n} sah',
     invalidRows: '{n} tidak sah',
@@ -448,7 +454,8 @@ export const translations = {
     noticesTitle: 'Notis Sekolah',
     noticesSubtitle: 'Ikuti berita dan pengumuman terkini daripada KinderCare',
     noticesEmptyTitle: 'Tiada pengumuman buat masa ini!',
-    noticesEmptySubtitle: 'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',
+    noticesEmptySubtitle:
+      'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',
   },
 } as const
 

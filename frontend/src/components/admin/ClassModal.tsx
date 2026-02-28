@@ -50,8 +50,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
     },
   })
 
-  const set = (k: keyof typeof form, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   const validate = () => {
     const e: Partial<typeof empty> = {}
@@ -85,10 +84,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md">
@@ -124,9 +120,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
               className={inputCls('name')}
               placeholder="Sunflower"
             />
-            {errors.name && (
-              <p className="text-xs text-red-500 mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </div>
 
           {/* Teacher Name */}
@@ -159,9 +153,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
               onChange={(e) => set('capacity', e.target.value)}
               className={inputCls('capacity')}
             />
-            {errors.capacity && (
-              <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>
-            )}
+            {errors.capacity && <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>}
           </div>
 
           {mutation.isError && (

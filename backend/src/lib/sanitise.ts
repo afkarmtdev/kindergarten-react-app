@@ -8,7 +8,7 @@ export function sanitiseStrings<T extends Record<string, unknown>>(obj: T): T {
   const result = { ...obj }
   for (const key of Object.keys(result)) {
     if (typeof result[key] === 'string') {
-      (result as Record<string, unknown>)[key] = stripHtml(result[key] as string)
+      ;(result as Record<string, unknown>)[key] = stripHtml(result[key] as string)
     }
   }
   return result

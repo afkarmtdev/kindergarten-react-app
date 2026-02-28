@@ -34,7 +34,9 @@ export function LoginPage() {
             <div className="w-16 h-16 bg-kinder-orange rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 dark:shadow-orange-900/30">
               <GraduationCap className="text-white" size={28} />
             </div>
-            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">KinderCare Admin</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+              KinderCare Admin
+            </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Sign in to your portal</p>
           </div>
 
@@ -47,9 +49,14 @@ export function LoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Email
+              </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Mail
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="email"
                   value={email}
@@ -62,9 +69,14 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Password
+              </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Lock
+                  size={16}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="password"
                   value={password}
@@ -89,9 +101,7 @@ export function LoginPage() {
         <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
           KinderCare Management System · Secured by Supabase Auth
         </p>
-        <p className="text-center text-xs text-gray-300 dark:text-gray-600 mt-1">
-          v{APP_VERSION}
-        </p>
+        <p className="text-center text-xs text-gray-300 dark:text-gray-600 mt-1">v{APP_VERSION}</p>
         <div className="text-center mt-4">
           <Link
             to="/"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, Megaphone, Pin, Calendar } from 'lucide-react'
@@ -14,16 +14,16 @@ import type { Announcement } from '@/types'
 const LIMIT = 9
 
 const CATEGORY_COLORS: Record<Announcement['category'], string> = {
-  general:  'bg-kinder-blue/10 text-kinder-blue',
-  holiday:  'bg-kinder-green/10 text-kinder-green',
-  event:    'bg-kinder-purple/10 text-kinder-purple',
+  general: 'bg-kinder-blue/10 text-kinder-blue',
+  holiday: 'bg-kinder-green/10 text-kinder-green',
+  event: 'bg-kinder-purple/10 text-kinder-purple',
   reminder: 'bg-kinder-yellow/10 text-yellow-600',
 }
 
 const CATEGORY_GRADIENTS: Record<Announcement['category'], string> = {
-  general:  'from-kinder-blue/20 to-kinder-blue/10',
-  holiday:  'from-kinder-green/20 to-kinder-green/10',
-  event:    'from-kinder-purple/20 to-kinder-purple/10',
+  general: 'from-kinder-blue/20 to-kinder-blue/10',
+  holiday: 'from-kinder-green/20 to-kinder-green/10',
+  event: 'from-kinder-purple/20 to-kinder-purple/10',
   reminder: 'from-kinder-yellow/20 to-kinder-yellow/10',
 }
 
@@ -49,9 +49,18 @@ export function AnnouncementsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Announcement | null>(null)
 
-  const openAdd = () => { setEditing(null); setModalOpen(true) }
-  const openEdit = (a: Announcement) => { setEditing(a); setModalOpen(true) }
-  const closeModal = () => { setModalOpen(false); setEditing(null) }
+  const openAdd = () => {
+    setEditing(null)
+    setModalOpen(true)
+  }
+  const openEdit = (a: Announcement) => {
+    setEditing(a)
+    setModalOpen(true)
+  }
+  const closeModal = () => {
+    setModalOpen(false)
+    setEditing(null)
+  }
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['announcements', { page, search, categoryFilter }],
@@ -80,6 +89,22 @@ export function AnnouncementsPage() {
   const announcements = data?.data ?? []
   const meta = data?.meta
 
+  useEffect(() => {
+    if (data && page < data.meta.totalPages) {
+      queryClient.prefetchQuery({
+        queryKey: ['announcements', { page: page + 1, search, categoryFilter }],
+        queryFn: () =>
+          announcementsApi.getAll({
+            page: page + 1,
+            limit: LIMIT,
+            search: search || undefined,
+            category: categoryFilter || undefined,
+          }),
+        staleTime: 30_000,
+      })
+    }
+  }, [data, page, search, categoryFilter, queryClient])
+
   return (
     <div className="p-4 md:p-8">
       {/* Page header */}
@@ -106,12 +131,9 @@ export function AnnouncementsPage() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="Search announcements..."
-          className="w-full md:w-72"
-        />
+        <div className="w-full md:w-72">
+          <SearchBar value={search} onChange={setSearch} placeholder="Search announcements..." />
+        </div>
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
@@ -126,7 +148,9 @@ export function AnnouncementsPage() {
       </div>
 
       {/* Grid */}
-      <div className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}
+      >
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: LIMIT }).map((_, i) => (
@@ -161,7 +185,7 @@ export function AnnouncementsPage() {
                           alt={a.title}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).parentElement!.className =
+                            ;(e.target as HTMLImageElement).parentElement!.className =
                               `h-36 bg-gradient-to-br ${CATEGORY_GRADIENTS[a.category]}`
                             ;(e.target as HTMLImageElement).style.display = 'none'
                           }}
@@ -173,8 +197,12 @@ export function AnnouncementsPage() {
 
                     {/* Badges overlay */}
                     <div className="absolute top-2.5 left-2.5 flex gap-1.5 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${CATEGORY_COLORS[a.category]}`}>
-                        {t(`category${a.category.charAt(0).toUpperCase()}${a.category.slice(1)}` as 'categoryGeneral')}
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${CATEGORY_COLORS[a.category]}`}
+                      >
+                        {t(
+                          `category${a.category.charAt(0).toUpperCase()}${a.category.slice(1)}` as 'categoryGeneral'
+                        )}
                       </span>
                       {a.is_pinned && (
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-kinder-yellow/20 text-yellow-700 dark:text-yellow-500 flex items-center gap-1">
@@ -220,7 +248,9 @@ export function AnnouncementsPage() {
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(t('removeAnnouncementConfirm').replace('{title}', a.title))) {
+                            if (
+                              confirm(t('removeAnnouncementConfirm').replace('{title}', a.title))
+                            ) {
                               deleteMutation.mutate(a.id)
                             }
                           }}
@@ -245,6 +275,8 @@ export function AnnouncementsPage() {
           <Pagination
             page={page}
             totalPages={meta.totalPages}
+            total={meta.total}
+            limit={LIMIT}
             onPageChange={setPage}
           />
         </div>

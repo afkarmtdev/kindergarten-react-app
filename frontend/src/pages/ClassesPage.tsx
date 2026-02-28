@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Plus, School, Users, Trash2, Pencil } from 'lucide-react'
@@ -49,16 +49,37 @@ export function ClassesPage() {
   const classes = data?.data ?? []
   const meta = data?.meta
 
-  const openAdd = () => { setEditingClass(null); setModalOpen(true) }
-  const openEdit = (cls: ClassRoom) => { setEditingClass(cls); setModalOpen(true) }
-  const closeModal = () => { setModalOpen(false); setEditingClass(null) }
+  useEffect(() => {
+    if (data && page < data.meta.totalPages) {
+      queryClient.prefetchQuery({
+        queryKey: ['classes', { page: page + 1, search }],
+        queryFn: () => classesApi.getAll({ page: page + 1, limit: LIMIT, search }),
+        staleTime: 30_000,
+      })
+    }
+  }, [data, page, search, queryClient])
+
+  const openAdd = () => {
+    setEditingClass(null)
+    setModalOpen(true)
+  }
+  const openEdit = (cls: ClassRoom) => {
+    setEditingClass(cls)
+    setModalOpen(true)
+  }
+  const closeModal = () => {
+    setModalOpen(false)
+    setEditingClass(null)
+  }
 
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('classes')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+            {t('classes')}
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {meta ? `${meta.total} ${t('classrooms')}` : t('loading')}
           </p>
@@ -77,10 +98,14 @@ export function ClassesPage() {
         <SearchBar value={search} onChange={setSearch} placeholder={t('searchClasses')} />
       </div>
 
-      <div className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}
+      >
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {Array.from({ length: LIMIT }).map((_, i) => <ClassCardSkeleton key={i} />)}
+            {Array.from({ length: LIMIT }).map((_, i) => (
+              <ClassCardSkeleton key={i} />
+            ))}
           </div>
         ) : classes.length === 0 ? (
           <EmptyState
@@ -93,7 +118,7 @@ export function ClassesPage() {
             {classes.map((cls: ClassRoom, i: number) => {
               const studentCount = Array.isArray(cls.students)
                 ? typeof cls.students[0] === 'object' && 'count' in (cls.students[0] as object)
-                  ? (cls.students[0] as { count: number }).count
+                  ? (cls.students[0] as unknown as { count: number }).count
                   : cls.students.length
                 : 0
               const fillPct = Math.min(Math.round((studentCount / cls.capacity) * 100), 100)
@@ -105,7 +130,9 @@ export function ClassesPage() {
                   className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
                 >
                   <div className="flex items-start justify-between mb-5">
-                    <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center shadow-sm`}>
+                    <div
+                      className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center shadow-sm`}
+                    >
                       <School className="text-white" size={22} />
                     </div>
                     <div className="flex gap-1.5">
@@ -128,7 +155,9 @@ export function ClassesPage() {
                   </div>
 
                   <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">{cls.name}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('teacher')}: {cls.teacher_name}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                    {t('teacher')}: {cls.teacher_name}
+                  </p>
 
                   <div className="mt-4">
                     <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
@@ -136,7 +165,10 @@ export function ClassesPage() {
                         <Users size={12} />
                         <span>{t('students_count', { n: studentCount })}</span>
                       </div>
-                      <span className={fillPct >= 90 ? 'text-red-500 font-semibold' : ''}>{fillPct}{t('full')}</span>
+                      <span className={fillPct >= 90 ? 'text-red-500 font-semibold' : ''}>
+                        {fillPct}
+                        {t('full')}
+                      </span>
                     </div>
                     <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5">
                       <div
@@ -144,7 +176,9 @@ export function ClassesPage() {
                         style={{ width: `${fillPct}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{t('capacity', { n: cls.capacity })}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                      {t('capacity', { n: cls.capacity })}
+                    </p>
                   </div>
                 </div>
               )
@@ -165,11 +199,7 @@ export function ClassesPage() {
       )}
 
       {/* Modal */}
-      <ClassModal
-        open={modalOpen}
-        onClose={closeModal}
-        classroom={editingClass}
-      />
+      <ClassModal open={modalOpen} onClose={closeModal} classroom={editingClass} />
     </div>
   )
 }

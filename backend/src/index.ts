@@ -7,7 +7,10 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().optional().default('http://localhost:5173'),
   PORT: z.coerce.number().int().positive().optional().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).optional().default('development'),
-  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional().default('info'),
+  LOG_LEVEL: z
+    .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
+    .optional()
+    .default('info'),
 })
 
 const envResult = envSchema.safeParse(process.env)

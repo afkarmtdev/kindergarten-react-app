@@ -72,18 +72,11 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single class with students
 classes.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data: cls, error } = await supabase
-    .from('classrooms')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data: cls, error } = await supabase.from('classrooms').select('*').eq('id', id).single()
 
   if (error) return c.json({ error: error.message }, 404)
 
-  const { data: students } = await supabase
-    .from('students')
-    .select('*')
-    .eq('class_name', cls.name)
+  const { data: students } = await supabase.from('students').select('*').eq('class_name', cls.name)
 
   return c.json({ ...cls, students: students ?? [] })
 })
@@ -91,11 +84,7 @@ classes.get('/:id', async (c) => {
 // POST create class
 classes.post('/', zValidator('json', classSchema), async (c) => {
   const body = sanitiseStrings(c.req.valid('json'))
-  const { data, error } = await supabase
-    .from('classrooms')
-    .insert(body)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('classrooms').insert(body).select().single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)

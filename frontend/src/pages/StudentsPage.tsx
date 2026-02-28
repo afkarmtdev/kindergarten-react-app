@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Plus, User, Trash2, Phone, Mail, Filter, Pencil, Upload } from 'lucide-react'
@@ -18,8 +18,16 @@ const LIMIT = 12
 export function StudentsPage() {
   const t = useT()
   const queryClient = useQueryClient()
-  const { page, search, classFilter, genderFilter, setPage, setSearch, setClassFilter, setGenderFilter } =
-    useStudentsStore()
+  const {
+    page,
+    search,
+    classFilter,
+    genderFilter,
+    setPage,
+    setSearch,
+    setClassFilter,
+    setGenderFilter,
+  } = useStudentsStore()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
@@ -28,7 +36,13 @@ export function StudentsPage() {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['students', { page, search, class_name: classFilter, gender: genderFilter }],
     queryFn: () =>
-      studentsApi.getAll({ page, limit: LIMIT, search, class_name: classFilter, gender: genderFilter }),
+      studentsApi.getAll({
+        page,
+        limit: LIMIT,
+        search,
+        class_name: classFilter,
+        gender: genderFilter,
+      }),
     placeholderData: (prev) => prev,
     staleTime: 30_000,
   })
@@ -47,16 +61,47 @@ export function StudentsPage() {
   const students = data?.data ?? []
   const meta = data?.meta
 
-  const openAdd = () => { setEditingStudent(null); setModalOpen(true) }
-  const openEdit = (s: Student) => { setEditingStudent(s); setModalOpen(true) }
-  const closeModal = () => { setModalOpen(false); setEditingStudent(null) }
+  useEffect(() => {
+    if (data && page < data.meta.totalPages) {
+      queryClient.prefetchQuery({
+        queryKey: [
+          'students',
+          { page: page + 1, search, class_name: classFilter, gender: genderFilter },
+        ],
+        queryFn: () =>
+          studentsApi.getAll({
+            page: page + 1,
+            limit: LIMIT,
+            search,
+            class_name: classFilter,
+            gender: genderFilter,
+          }),
+        staleTime: 30_000,
+      })
+    }
+  }, [data, page, search, classFilter, genderFilter, queryClient])
+
+  const openAdd = () => {
+    setEditingStudent(null)
+    setModalOpen(true)
+  }
+  const openEdit = (s: Student) => {
+    setEditingStudent(s)
+    setModalOpen(true)
+  }
+  const closeModal = () => {
+    setModalOpen(false)
+    setEditingStudent(null)
+  }
 
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('students')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+            {t('students')}
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {meta ? `${meta.total} ${t('enrolled').toLowerCase()}` : t('loading')}
           </p>
@@ -82,11 +127,7 @@ export function StudentsPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="w-full md:w-72">
-          <SearchBar
-            value={search}
-            onChange={setSearch}
-            placeholder={t('searchStudents')}
-          />
+          <SearchBar value={search} onChange={setSearch} placeholder={t('searchStudents')} />
         </div>
 
         <select
@@ -113,7 +154,11 @@ export function StudentsPage() {
 
         {(search || classFilter || genderFilter) && (
           <button
-            onClick={() => { setSearch(''); setClassFilter(''); setGenderFilter('') }}
+            onClick={() => {
+              setSearch('')
+              setClassFilter('')
+              setGenderFilter('')
+            }}
             className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2"
           >
             <Filter size={12} />
@@ -123,7 +168,9 @@ export function StudentsPage() {
       </div>
 
       {/* Grid */}
-      <div className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}
+      >
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: LIMIT }).map((_, i) => (
@@ -157,21 +204,29 @@ export function StudentsPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">{student.full_name}</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">
+                      {student.full_name}
+                    </h3>
                     <span className="inline-block bg-orange-50 dark:bg-orange-900/30 text-kinder-orange text-xs font-semibold px-2 py-0.5 rounded-full mt-1">
                       {student.class_name}
                     </span>
-                    <span className={`ml-1.5 inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
-                      student.gender === 'male'
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : 'bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
-                    }`}>
+                    <span
+                      className={`ml-1.5 inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
+                        student.gender === 'male'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                          : 'bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
+                      }`}
+                    >
                       {student.gender === 'male' ? t('boy') : t('girl')}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0">
                     <button
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); openEdit(student) }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        openEdit(student)
+                      }}
                       className="text-gray-300 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors"
                     >
                       <Pencil size={14} />
@@ -193,7 +248,9 @@ export function StudentsPage() {
                 <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 space-y-2">
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <User size={11} className="flex-shrink-0" />
-                    <span className="truncate">{t('parent')}: {student.parent_name}</span>
+                    <span className="truncate">
+                      {t('parent')}: {student.parent_name}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <Mail size={11} className="flex-shrink-0" />
@@ -222,15 +279,8 @@ export function StudentsPage() {
       )}
 
       {/* Modals */}
-      <StudentModal
-        open={modalOpen}
-        onClose={closeModal}
-        student={editingStudent}
-      />
-      <BulkImportModal
-        open={bulkModalOpen}
-        onClose={() => setBulkModalOpen(false)}
-      />
+      <StudentModal open={modalOpen} onClose={closeModal} student={editingStudent} />
+      <BulkImportModal open={bulkModalOpen} onClose={() => setBulkModalOpen(false)} />
     </div>
   )
 }
