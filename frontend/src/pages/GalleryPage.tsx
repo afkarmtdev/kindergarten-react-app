@@ -9,11 +9,13 @@ import { SearchBar } from '@/components/ui/SearchBar'
 import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { GalleryModal } from '@/components/admin/GalleryModal'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { GalleryItem } from '@/types'
 
 const LIMIT = 9
 
 export function GalleryPage() {
+  usePageTitle('Gallery')
   const t = useT()
   const queryClient = useQueryClient()
   const { page, search, setPage, setSearch } = useGalleryStore()

@@ -11,12 +11,14 @@ import { StudentCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { StudentModal } from '@/components/admin/StudentModal'
 import { BulkImportModal } from '@/components/admin/BulkImportModal'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { isBirthdayToday } from '@/lib/utils'
 import type { Student } from '@/types'
 
 const LIMIT = 12
 
 export function StudentsPage() {
+  usePageTitle('Students')
   const t = useT()
   const queryClient = useQueryClient()
   const {
