@@ -26,7 +26,9 @@ function StatCard({
           <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mt-1">{value}</p>
           {sub && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>}
         </div>
-        <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center shadow-sm`}>
+        <div
+          className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center shadow-sm`}
+        >
           <Icon className="text-white" size={22} />
         </div>
       </div>
@@ -78,11 +80,14 @@ export function DashboardPage() {
 
   const totalStudents = studentsData?.meta?.total ?? 0
   const totalClasses = classesData?.meta?.total ?? 0
-  const todayRecords: { id: string; status: string; students?: { full_name: string } }[] = todayData?.data ?? []
+  const todayRecords: { id: string; status: string; students?: { full_name: string } }[] =
+    todayData?.data ?? []
   const presentToday = todayRecords.filter((r) => r.status === 'present').length
 
   const totalPresent = (summary?.present ?? 0) + (summary?.late ?? 0)
-  const totalRecords = Object.values(summary ?? {}).reduce((a, b) => a + (b as number), 0)
+  const totalRecords = summary
+    ? summary.present + summary.absent + summary.late + summary.excused
+    : 0
   const attendanceRate = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0
 
   const statsLoading = studentsLoading || classesLoading || todayLoading
@@ -90,8 +95,12 @@ export function DashboardPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('dashboard')}</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          {t('dashboard')}
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+          {format(new Date(), 'EEEE, MMMM d, yyyy')}
+        </p>
       </div>
 
       {/* Stats */}
@@ -100,8 +109,20 @@ export function DashboardPage() {
           Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard icon={Users} label={t('totalStudents')} value={totalStudents} color="bg-kinder-blue" sub={t('enrolled')} />
-            <StatCard icon={School} label={t('classes')} value={totalClasses} color="bg-kinder-purple" sub={t('active')} />
+            <StatCard
+              icon={Users}
+              label={t('totalStudents')}
+              value={totalStudents}
+              color="bg-kinder-blue"
+              sub={t('enrolled')}
+            />
+            <StatCard
+              icon={School}
+              label={t('classes')}
+              value={totalClasses}
+              color="bg-kinder-purple"
+              sub={t('active')}
+            />
             <StatCard
               icon={CalendarCheck}
               label={t('presentToday')}
@@ -124,11 +145,16 @@ export function DashboardPage() {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Today's Attendance */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('todayAttendance')}</h2>
+          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
+            {t('todayAttendance')}
+          </h2>
           {todayLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800">
+                <div
+                  key={i}
+                  className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800"
+                >
                   <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-1/2 animate-shimmer bg-[length:200%_100%]" />
                   <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-16 animate-shimmer bg-[length:200%_100%]" />
                 </div>
@@ -142,9 +168,16 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {todayRecords.map((record) => (
-                <div key={record.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
-                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{record.students?.full_name}</span>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${STATUS_BADGE[record.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                <div
+                  key={record.id}
+                  className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0"
+                >
+                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    {record.students?.full_name}
+                  </span>
+                  <span
+                    className={`text-xs px-2.5 py-1 rounded-full font-semibold ${STATUS_BADGE[record.status] ?? 'bg-gray-100 text-gray-600'}`}
+                  >
                     {t(record.status as 'present' | 'absent' | 'late' | 'excused')}
                   </span>
                 </div>
@@ -181,7 +214,9 @@ export function DashboardPage() {
                     <span className="capitalize font-semibold text-gray-700 dark:text-gray-300">
                       {t(status as 'present' | 'absent' | 'late' | 'excused')}
                     </span>
-                    <span className="text-gray-400 dark:text-gray-500 font-medium">{count as number}</span>
+                    <span className="text-gray-400 dark:text-gray-500 font-medium">
+                      {count as number}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
                     <div

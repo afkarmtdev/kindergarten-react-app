@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { X, Megaphone, Upload, Loader, Pin } from 'lucide-react'
 import { announcementsApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
+import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import type { Announcement } from '@/types'
 
@@ -88,12 +89,12 @@ export function AnnouncementModal({ open, onClose, announcement }: AnnouncementM
     setUploadError('')
     setUploading(true)
 
-    const ext = file.name.split('.').pop()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const compressed = await compressImage(file)
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
     const { error } = await supabase.storage
       .from('announcement-banners')
-      .upload(path, file, { upsert: false })
+      .upload(path, compressed, { upsert: false })
 
     if (error) {
       setUploadError(t('uploadFailed'))
@@ -101,9 +102,7 @@ export function AnnouncementModal({ open, onClose, announcement }: AnnouncementM
       return
     }
 
-    const { data: urlData } = supabase.storage
-      .from('announcement-banners')
-      .getPublicUrl(path)
+    const { data: urlData } = supabase.storage.from('announcement-banners').getPublicUrl(path)
 
     set('image_url', urlData.publicUrl)
     setUploading(false)
@@ -254,7 +253,9 @@ export function AnnouncementModal({ open, onClose, announcement }: AnnouncementM
                   src={form.image_url}
                   alt="banner preview"
                   className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).style.display = 'none'
+                  }}
                 />
               </div>
             )}

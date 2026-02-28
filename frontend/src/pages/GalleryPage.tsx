@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Plus, Camera, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
@@ -42,16 +42,37 @@ export function GalleryPage() {
   const items = data?.data ?? []
   const meta = data?.meta
 
-  const openAdd = () => { setEditingItem(null); setModalOpen(true) }
-  const openEdit = (item: GalleryItem) => { setEditingItem(item); setModalOpen(true) }
-  const closeModal = () => { setModalOpen(false); setEditingItem(null) }
+  useEffect(() => {
+    if (data && page < data.meta.totalPages) {
+      queryClient.prefetchQuery({
+        queryKey: ['gallery', { page: page + 1, search }],
+        queryFn: () => galleryApi.getAll({ page: page + 1, limit: LIMIT, search }),
+        staleTime: 30_000,
+      })
+    }
+  }, [data, page, search, queryClient])
+
+  const openAdd = () => {
+    setEditingItem(null)
+    setModalOpen(true)
+  }
+  const openEdit = (item: GalleryItem) => {
+    setEditingItem(item)
+    setModalOpen(true)
+  }
+  const closeModal = () => {
+    setModalOpen(false)
+    setEditingItem(null)
+  }
 
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('gallery')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+            {t('gallery')}
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {meta ? `${meta.total} photos` : t('loading')}
           </p>
@@ -70,10 +91,14 @@ export function GalleryPage() {
         <SearchBar value={search} onChange={setSearch} placeholder="Search by caption..." />
       </div>
 
-      <div className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}
+      >
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {Array.from({ length: LIMIT }).map((_, i) => <ClassCardSkeleton key={i} />)}
+            {Array.from({ length: LIMIT }).map((_, i) => (
+              <ClassCardSkeleton key={i} />
+            ))}
           </div>
         ) : items.length === 0 ? (
           <EmptyState
@@ -102,11 +127,11 @@ export function GalleryPage() {
                     </div>
                   )}
                   {/* Visible badge overlay */}
-                  <div className={`absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    item.is_visible
-                      ? 'bg-kinder-green text-white'
-                      : 'bg-gray-500 text-white'
-                  }`}>
+                  <div
+                    className={`absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      item.is_visible ? 'bg-kinder-green text-white' : 'bg-gray-500 text-white'
+                    }`}
+                  >
                     {item.is_visible ? <Eye size={10} /> : <EyeOff size={10} />}
                     {item.is_visible ? 'Visible' : 'Hidden'}
                   </div>
@@ -161,11 +186,7 @@ export function GalleryPage() {
       )}
 
       {/* Modal */}
-      <GalleryModal
-        open={modalOpen}
-        onClose={closeModal}
-        item={editingItem}
-      />
+      <GalleryModal open={modalOpen} onClose={closeModal} item={editingItem} />
     </div>
   )
 }
