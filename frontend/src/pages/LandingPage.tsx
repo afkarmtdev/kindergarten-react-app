@@ -27,6 +27,7 @@ import { galleryApi, announcementsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
+import { BearSpeechBubble, pickBearMessage } from '@/components/landing/bear/BearSpeechBubble'
 import type { Announcement } from '@/types'
 
 // ─── CSS keyframe animations ─────────────────────────────────────────────────
@@ -237,25 +238,6 @@ const NOTICE_CATEGORY_GRADIENTS: Record<Announcement['category'], string> = {
   event: 'from-kinder-purple/20 to-kinder-purple/10',
   reminder: 'from-kinder-yellow/20 to-kinder-yellow/10',
 }
-
-// ─── Bear mascot random messages ─────────────────────────────────────────────
-const BEAR_MESSAGES = [
-  'Hello there!',
-  'Rawr!',
-  'You found me!',
-  'High five!',
-  "Let's learn today!",
-  'Stay curious!',
-  'Be kind always!',
-  'Adventure awaits!',
-  'Woo-hoo!',
-  "You're awesome!",
-  'Best day ever!',
-  'Keep exploring!',
-  'I like your style!',
-  'Learning is fun!',
-  'Ready for fun?',
-]
 
 // ─── Gallery placeholder data ─────────────────────────────────────────────────
 const GALLERY_PLACEHOLDERS = [
@@ -524,21 +506,10 @@ export function LandingPage() {
           className="bear-mascot hidden lg:block absolute bottom-24 left-16 xl:left-28 cursor-pointer z-20"
           style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.13))' }}
           aria-hidden="true"
-          onMouseEnter={() =>
-            setBearMessage(BEAR_MESSAGES[Math.floor(Math.random() * BEAR_MESSAGES.length)])
-          }
+          onMouseEnter={() => setBearMessage(pickBearMessage())}
           onMouseLeave={() => setBearMessage(null)}
         >
-          {/* Speech bubble — HTML so message length is unconstrained */}
-          <div
-            className={`absolute bottom-full right-0 mb-1 transition-opacity duration-150 pointer-events-none ${bearMessage ? 'opacity-100' : 'opacity-0'}`}
-          >
-            <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 whitespace-nowrap">
-              {bearMessage}
-            </div>
-            {/* Tail pointing down toward the bear's head */}
-            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-gray-800 border-b border-r border-gray-100 dark:border-gray-700 rotate-45" />
-          </div>
+          <BearSpeechBubble message={bearMessage} />
           <BaseBearMascot />
         </div>
 
