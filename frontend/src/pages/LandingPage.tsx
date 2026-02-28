@@ -17,10 +17,14 @@ import {
   Megaphone,
   Pin,
   Calendar,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useSettingsStore } from '@/store/settingsStore'
 import { galleryApi, announcementsApi } from '@/lib/api'
+import { APP_NAME } from '@/lib/version'
 import type { Announcement } from '@/types'
 
 // ─── CSS keyframe animations ─────────────────────────────────────────────────
@@ -46,13 +50,32 @@ const KEYFRAMES = `
     from { opacity: 0; transform: translateY(36px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .lp-float      { animation: lp-float      4s   ease-in-out infinite; }
-  .lp-float-alt  { animation: lp-float-alt  5.5s ease-in-out infinite; }
-  .lp-float-slow { animation: lp-float-slow 7s   ease-in-out infinite; }
-  .lp-spin-slow  { animation: lp-spin-slow  12s  linear     infinite; }
-  .lp-enter-0    { animation: lp-entrance 0.8s ease         both; }
-  .lp-enter-1    { animation: lp-entrance 0.8s ease 0.18s   both; }
-  .lp-enter-2    { animation: lp-entrance 0.8s ease 0.36s   both; }
+  @keyframes lp-slide-in {
+    from { opacity: 0; transform: translateX(28px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes lp-card-exit {
+    from { opacity: 1; transform: translateX(0px) scale(1); }
+    to   { opacity: 0; transform: translateX(-40px) scale(0.96); }
+  }
+  @keyframes lp-card-enter {
+    from { opacity: 0; transform: translateX(40px) scale(0.96); }
+    to   { opacity: 1; transform: translateX(0px) scale(1); }
+  }
+  .lp-float        { animation: lp-float      4s   ease-in-out infinite; }
+  .lp-float-alt    { animation: lp-float-alt  5.5s ease-in-out infinite; }
+  .lp-float-slow   { animation: lp-float-slow 7s   ease-in-out infinite; }
+  .lp-spin-slow    { animation: lp-spin-slow  12s  linear     infinite; }
+  .lp-enter-0      { animation: lp-entrance   0.8s ease         both; }
+  .lp-slide-in     { animation: lp-slide-in   0.35s ease        both; }
+  .lp-enter-1      { animation: lp-entrance   0.8s ease 0.18s   both; }
+  .lp-enter-2      { animation: lp-entrance   0.8s ease 0.36s   both; }
+  .lp-card-exit    { animation: lp-card-exit  0.15s ease        forwards; }
+  .lp-card-enter   { animation: lp-card-enter 0.18s ease        both; }
+  @keyframes lp-progress {
+    from { width: 0%; }
+    to   { width: 100%; }
+  }
 `
 
 // ─── Wavy SVG divider ────────────────────────────────────────────────────────
@@ -160,14 +183,12 @@ const FEATURES = [
 // ─── Testimonials data ────────────────────────────────────────────────────────
 const TESTIMONIALS = [
   {
-    quote:
-      'KinderCare has been a wonderful experience for our daughter. She comes home every day excited to share what she learned!',
+    quote: `${APP_NAME} has been a wonderful experience for our daughter. She comes home every day excited to share what she learned!`,
     name: 'Puan Siti Rahimah',
     role: 'Parent of Aisyah, Sunflower Class',
   },
   {
-    quote:
-      "The teachers are incredibly dedicated. Our son's confidence has grown so much since joining KinderCare.",
+    quote: `The teachers are incredibly dedicated. Our son's confidence has grown so much since joining ${APP_NAME}.`,
     name: 'Encik Ahmad Fauzi',
     role: 'Parent of Haziq, Rainbow Class',
   },
@@ -209,6 +230,11 @@ export function LandingPage() {
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
   const [showTop, setShowTop] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [activeTestimonial, setActiveTestimonial] = useState(0)
+  const [displayIndex, setDisplayIndex] = useState(0)
+  const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
+  const [isPaused, setIsPaused] = useState(false)
 
   const { data: galleryData } = useQuery({
     queryKey: ['gallery-public'],
@@ -230,6 +256,37 @@ export function LandingPage() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    if (lightboxIndex === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxIndex(null)
+      if (e.key === 'ArrowLeft')
+        setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : galleryItems.length - 1))
+      if (e.key === 'ArrowRight')
+        setLightboxIndex((i) => (i !== null && i < galleryItems.length - 1 ? i + 1 : 0))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightboxIndex, galleryItems.length])
+
+  useEffect(() => {
+    if (isPaused) return
+    const timer = setInterval(() => {
+      setActiveTestimonial((i) => (i + 1) % TESTIMONIALS.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [isPaused, activeTestimonial])
+
+  // Slide out → swap content → slide in
+  useEffect(() => {
+    setCardAnim('exit')
+    const swap = setTimeout(() => {
+      setDisplayIndex(activeTestimonial)
+      setCardAnim('enter')
+    }, 150)
+    return () => clearTimeout(swap)
+  }, [activeTestimonial])
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 font-display overflow-x-hidden transition-colors duration-200">
       {/* Inject keyframe CSS */}
@@ -246,7 +303,7 @@ export function LandingPage() {
               <span className="text-white font-extrabold text-base">K</span>
             </div>
             <span className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">
-              KinderCare
+              {APP_NAME}
             </span>
           </div>
 
@@ -558,10 +615,11 @@ export function LandingPage() {
         <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory pl-4 sm:pl-6">
           <div className="flex gap-4 w-max pr-4 sm:pr-6 pb-2">
             {galleryItems.length > 0
-              ? galleryItems.map((item) => (
+              ? galleryItems.map((item, idx) => (
                   <div
                     key={item.id}
-                    className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+                    onClick={() => setLightboxIndex(idx)}
+                    className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer"
                   >
                     <img
                       src={item.photo_url}
@@ -607,7 +665,7 @@ export function LandingPage() {
               {notices.slice(0, 6).map((notice) => (
                 <div
                   key={notice.id}
-                  className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
+                  className={`flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
                     notice.is_pinned
                       ? 'border-kinder-yellow dark:border-kinder-yellow'
                       : 'border-gray-100 dark:border-gray-700'
@@ -633,7 +691,7 @@ export function LandingPage() {
                     />
                   )}
 
-                  <div className="p-5">
+                  <div className="p-5 flex flex-col flex-1">
                     {/* Category + pinned badges */}
                     <div className="flex gap-1.5 flex-wrap mb-3">
                       <span
@@ -657,7 +715,7 @@ export function LandingPage() {
                     </p>
 
                     {notice.expires_at && (
-                      <div className="flex items-center gap-1 mt-3 text-xs text-gray-400 dark:text-gray-500">
+                      <div className="flex items-center gap-1 mt-auto pt-3 text-xs text-gray-400 dark:text-gray-500">
                         <Calendar size={11} />
                         {new Date(notice.expires_at).toLocaleDateString('en-MY', {
                           day: 'numeric',
@@ -672,10 +730,10 @@ export function LandingPage() {
             </div>
           </div>
         ) : (
-          <div className="flex justify-center px-4">
-            <div className="max-w-sm w-full bg-amber-50 dark:bg-amber-900/20 border-2 border-dashed border-amber-200 dark:border-amber-700 rounded-3xl p-10 text-center">
-              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-800/40 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                <Megaphone size={28} className="text-amber-400 dark:text-amber-500" />
+          <div className="max-w-2xl mx-auto px-4 sm:px-6">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-dashed border-amber-200 dark:border-amber-700 rounded-3xl p-10 text-center">
+              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-800/40 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Megaphone size={26} className="text-amber-400 dark:text-amber-500" />
               </div>
               <h3 className="font-bold text-amber-800 dark:text-amber-300 text-lg mb-2">
                 {t('noticesEmptyTitle')}
@@ -706,26 +764,74 @@ export function LandingPage() {
             <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
           </div>
 
-          {/* Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ quote, name, role }) => (
+          {/* Carousel */}
+          <div
+            className="max-w-2xl mx-auto"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
+            <div className="relative">
+              {/* Ghost cards — count matches remaining testimonials (max 2) */}
+              {TESTIMONIALS.length >= 3 && (
+                <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/5 border border-white/[0.08] rounded-3xl" />
+              )}
+              {TESTIMONIALS.length >= 2 && (
+                <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/10 border border-white/[0.12] rounded-3xl" />
+              )}
+
+              {/* Active card — crossfade on content swap */}
               <div
-                key={name}
-                className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-3xl p-6 sm:p-8 hover:bg-white/20 transition-all"
+                className={`relative z-10 bg-white/20 backdrop-blur-sm border border-white/25 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
               >
-                {/* Star row */}
                 <div className="flex gap-1 mb-5">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} size={16} fill="#FFD93D" stroke="#FFD93D" />
                   ))}
                 </div>
-                <p className="text-white/90 leading-relaxed mb-6 italic">"{quote}"</p>
+                <p className="text-white/90 leading-relaxed mb-6 italic text-lg">
+                  &ldquo;{TESTIMONIALS[displayIndex].quote}&rdquo;
+                </p>
                 <div className="border-t border-white/20 pt-4">
-                  <p className="font-extrabold text-white">{name}</p>
-                  <p className="text-white/60 text-sm mt-0.5">{role}</p>
+                  <p className="font-extrabold text-white">{TESTIMONIALS[displayIndex].name}</p>
+                  <p className="text-white/60 text-sm mt-0.5">{TESTIMONIALS[displayIndex].role}</p>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Dot navigation — active pill doubles as progress bar; hidden when only 1 */}
+            {TESTIMONIALS.length > 1 && (
+              <div className="flex justify-center gap-2 mt-6">
+                {TESTIMONIALS.map((_, i) =>
+                  i === activeTestimonial ? (
+                    <button
+                      key={i}
+                      onClick={() => setActiveTestimonial(i)}
+                      className="relative w-10 h-2.5 bg-white/20 rounded-full overflow-hidden"
+                    >
+                      <div
+                        key={displayIndex}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(255,255,255,0.75)',
+                          borderRadius: '9999px',
+                          animation: 'lp-progress 4s linear both',
+                          animationPlayState: isPaused ? 'paused' : 'running',
+                        }}
+                      />
+                    </button>
+                  ) : (
+                    <button
+                      key={i}
+                      onClick={() => setActiveTestimonial(i)}
+                      className="w-2.5 h-2.5 bg-white/30 hover:bg-white/60 rounded-full transition-colors duration-300"
+                    />
+                  )
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -785,10 +891,10 @@ export function LandingPage() {
           <div className="w-8 h-8 bg-kinder-orange rounded-xl flex items-center justify-center">
             <span className="text-white font-extrabold text-xs">K</span>
           </div>
-          <span className="font-extrabold text-white text-lg">KinderCare</span>
+          <span className="font-extrabold text-white text-lg">{APP_NAME}</span>
         </div>
         <p className="text-gray-400 text-sm">
-          © {new Date().getFullYear()} KinderCare. Made with care for little learners.
+          © {new Date().getFullYear()} {APP_NAME}. Made with care for little learners.
         </p>
       </footer>
 
@@ -804,6 +910,66 @@ export function LandingPage() {
       >
         <ArrowUp size={22} strokeWidth={2.5} />
       </button>
+
+      {/* ── Gallery lightbox ── */}
+      {lightboxIndex !== null && galleryItems.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+            {/* Close */}
+            <button
+              onClick={() => setLightboxIndex(null)}
+              className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors"
+            >
+              <X size={28} />
+            </button>
+
+            {/* Image — key forces remount so lp-enter-0 replays on navigation */}
+            <img
+              key={lightboxIndex}
+              src={galleryItems[lightboxIndex].photo_url}
+              alt={galleryItems[lightboxIndex].caption ?? 'Gallery photo'}
+              className="w-full max-h-[75vh] object-contain rounded-2xl lp-enter-0"
+            />
+
+            {galleryItems[lightboxIndex].caption && (
+              <p className="text-white/70 text-center mt-3 text-sm">
+                {galleryItems[lightboxIndex].caption}
+              </p>
+            )}
+
+            <p className="text-white/40 text-center text-xs mt-1">
+              {lightboxIndex + 1} / {galleryItems.length}
+            </p>
+
+            {/* Prev */}
+            {galleryItems.length > 1 && (
+              <button
+                onClick={() =>
+                  setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : galleryItems.length - 1))
+                }
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-white/70 hover:text-white transition-colors"
+              >
+                <ChevronLeft size={36} />
+              </button>
+            )}
+
+            {/* Next */}
+            {galleryItems.length > 1 && (
+              <button
+                onClick={() =>
+                  setLightboxIndex((i) => (i !== null && i < galleryItems.length - 1 ? i + 1 : 0))
+                }
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 text-white/70 hover:text-white transition-colors"
+              >
+                <ChevronRight size={36} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
