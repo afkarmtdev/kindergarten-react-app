@@ -1,7 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Star, Heart, BookOpen, Sun, Music, Palette, Shield, Users, Moon, ArrowUp, Camera, Lock, Megaphone, Pin, Calendar } from 'lucide-react'
+import {
+  Star,
+  Heart,
+  BookOpen,
+  Sun,
+  Music,
+  Palette,
+  Shield,
+  Users,
+  Moon,
+  ArrowUp,
+  Camera,
+  Lock,
+  Megaphone,
+  Pin,
+  Calendar,
+} from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useSettingsStore } from '@/store/settingsStore'
 import { galleryApi, announcementsApi } from '@/lib/api'
@@ -103,28 +119,61 @@ function StatCounter({ target, suffix, label }: { target: number; suffix: string
 
 // ─── Features data ────────────────────────────────────────────────────────────
 const FEATURES = [
-  { icon: BookOpen, color: 'bg-kinder-blue',   titleKey: 'featureLearnTitle',   descKey: 'featureLearnDesc'   },
-  { icon: Shield,   color: 'bg-kinder-pink',   titleKey: 'featureSafeTitle',    descKey: 'featureSafeDesc'    },
-  { icon: Music,    color: 'bg-kinder-purple', titleKey: 'featureArtsTitle',    descKey: 'featureArtsDesc'    },
-  { icon: Palette,  color: 'bg-kinder-green',  titleKey: 'featurePlayTitle',    descKey: 'featurePlayDesc'    },
-  { icon: Sun,      color: 'bg-kinder-yellow', titleKey: 'featureOutdoorTitle', descKey: 'featureOutdoorDesc' },
-  { icon: Users,    color: 'bg-kinder-orange', titleKey: 'featureClassTitle',   descKey: 'featureClassDesc'   },
+  {
+    icon: BookOpen,
+    color: 'bg-kinder-blue',
+    titleKey: 'featureLearnTitle',
+    descKey: 'featureLearnDesc',
+  },
+  {
+    icon: Shield,
+    color: 'bg-kinder-pink',
+    titleKey: 'featureSafeTitle',
+    descKey: 'featureSafeDesc',
+  },
+  {
+    icon: Music,
+    color: 'bg-kinder-purple',
+    titleKey: 'featureArtsTitle',
+    descKey: 'featureArtsDesc',
+  },
+  {
+    icon: Palette,
+    color: 'bg-kinder-green',
+    titleKey: 'featurePlayTitle',
+    descKey: 'featurePlayDesc',
+  },
+  {
+    icon: Sun,
+    color: 'bg-kinder-yellow',
+    titleKey: 'featureOutdoorTitle',
+    descKey: 'featureOutdoorDesc',
+  },
+  {
+    icon: Users,
+    color: 'bg-kinder-orange',
+    titleKey: 'featureClassTitle',
+    descKey: 'featureClassDesc',
+  },
 ] as const
 
 // ─── Testimonials data ────────────────────────────────────────────────────────
 const TESTIMONIALS = [
   {
-    quote: 'KinderCare has been a wonderful experience for our daughter. She comes home every day excited to share what she learned!',
+    quote:
+      'KinderCare has been a wonderful experience for our daughter. She comes home every day excited to share what she learned!',
     name: 'Puan Siti Rahimah',
     role: 'Parent of Aisyah, Sunflower Class',
   },
   {
-    quote: "The teachers are incredibly dedicated. Our son's confidence has grown so much since joining KinderCare.",
+    quote:
+      "The teachers are incredibly dedicated. Our son's confidence has grown so much since joining KinderCare.",
     name: 'Encik Ahmad Fauzi',
     role: 'Parent of Haziq, Rainbow Class',
   },
   {
-    quote: "A safe, nurturing environment with a fantastic curriculum. We couldn't be happier with our choice!",
+    quote:
+      "A safe, nurturing environment with a fantastic curriculum. We couldn't be happier with our choice!",
     name: 'Mrs. Priya Krishnan',
     role: 'Parent of Arjun, Butterfly Class',
   },
@@ -132,27 +181,27 @@ const TESTIMONIALS = [
 
 // ─── Announcement category colours (landing page) ────────────────────────────
 const NOTICE_CATEGORY_COLORS: Record<Announcement['category'], string> = {
-  general:  'bg-kinder-blue/10 text-kinder-blue',
-  holiday:  'bg-kinder-green/10 text-kinder-green',
-  event:    'bg-kinder-purple/10 text-kinder-purple',
+  general: 'bg-kinder-blue/10 text-kinder-blue',
+  holiday: 'bg-kinder-green/10 text-kinder-green',
+  event: 'bg-kinder-purple/10 text-kinder-purple',
   reminder: 'bg-kinder-yellow/10 text-yellow-600',
 }
 
 const NOTICE_CATEGORY_GRADIENTS: Record<Announcement['category'], string> = {
-  general:  'from-kinder-blue/20 to-kinder-blue/10',
-  holiday:  'from-kinder-green/20 to-kinder-green/10',
-  event:    'from-kinder-purple/20 to-kinder-purple/10',
+  general: 'from-kinder-blue/20 to-kinder-blue/10',
+  holiday: 'from-kinder-green/20 to-kinder-green/10',
+  event: 'from-kinder-purple/20 to-kinder-purple/10',
   reminder: 'from-kinder-yellow/20 to-kinder-yellow/10',
 }
 
 // ─── Gallery placeholder data ─────────────────────────────────────────────────
 const GALLERY_PLACEHOLDERS = [
   { id: 'p1', gradient: 'from-kinder-yellow/40 to-kinder-orange/30', label: 'Classroom Moments' },
-  { id: 'p2', gradient: 'from-kinder-blue/30 to-kinder-purple/20',   label: 'Art & Craft' },
-  { id: 'p3', gradient: 'from-kinder-green/30 to-kinder-blue/20',    label: 'Outdoor Play' },
-  { id: 'p4', gradient: 'from-kinder-pink/30 to-kinder-purple/30',   label: 'Story Time' },
+  { id: 'p2', gradient: 'from-kinder-blue/30 to-kinder-purple/20', label: 'Art & Craft' },
+  { id: 'p3', gradient: 'from-kinder-green/30 to-kinder-blue/20', label: 'Outdoor Play' },
+  { id: 'p4', gradient: 'from-kinder-pink/30 to-kinder-purple/30', label: 'Story Time' },
   { id: 'p5', gradient: 'from-kinder-orange/30 to-kinder-yellow/20', label: 'Music & Dance' },
-  { id: 'p6', gradient: 'from-kinder-purple/30 to-kinder-pink/20',   label: 'Science Explore' },
+  { id: 'p6', gradient: 'from-kinder-purple/30 to-kinder-pink/20', label: 'Science Explore' },
 ]
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -203,10 +252,18 @@ export function LandingPage() {
 
           {/* Nav links */}
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-500 dark:text-gray-400">
-            <a href="#about"    className="hover:text-kinder-orange transition-colors">{t('about')}</a>
-            <a href="#programs" className="hover:text-kinder-orange transition-colors">{t('ourPrograms')}</a>
-            <a href="#notices" className="hover:text-kinder-orange transition-colors">{t('announcements')}</a>
-            <a href="#contact"  className="hover:text-kinder-orange transition-colors">{t('contact')}</a>
+            <a href="#about" className="hover:text-kinder-orange transition-colors">
+              {t('about')}
+            </a>
+            <a href="#programs" className="hover:text-kinder-orange transition-colors">
+              {t('ourPrograms')}
+            </a>
+            <a href="#notices" className="hover:text-kinder-orange transition-colors">
+              {t('announcements')}
+            </a>
+            <a href="#contact" className="hover:text-kinder-orange transition-colors">
+              {t('contact')}
+            </a>
           </div>
 
           {/* Settings toggles */}
@@ -265,57 +322,90 @@ export function LandingPage() {
       >
         {/* ── Floating decorative shapes ── */}
         {/* Triangle top-left */}
-        <div className="lp-float absolute top-16 left-6 opacity-60 pointer-events-none" aria-hidden="true">
+        <div
+          className="lp-float absolute top-16 left-6 opacity-60 pointer-events-none"
+          aria-hidden="true"
+        >
           <svg width="60" height="60" viewBox="0 0 60 60">
             <polygon points="30,4 56,54 4,54" fill="#FFD93D" />
           </svg>
         </div>
 
         {/* Circle top-right */}
-        <div className="lp-float-alt absolute top-20 right-10 opacity-50 pointer-events-none" style={{ animationDelay: '1s' }} aria-hidden="true">
+        <div
+          className="lp-float-alt absolute top-20 right-10 opacity-50 pointer-events-none"
+          style={{ animationDelay: '1s' }}
+          aria-hidden="true"
+        >
           <svg width="52" height="52" viewBox="0 0 52 52">
             <circle cx="26" cy="26" r="24" fill="#4D96FF" />
           </svg>
         </div>
 
         {/* Heart left-center */}
-        <div className="lp-float absolute top-1/3 left-10 opacity-55 pointer-events-none" style={{ animationDelay: '0.5s' }} aria-hidden="true">
+        <div
+          className="lp-float absolute top-1/3 left-10 opacity-55 pointer-events-none"
+          style={{ animationDelay: '0.5s' }}
+          aria-hidden="true"
+        >
           <Heart size={44} fill="#FF85A2" stroke="#FF85A2" />
         </div>
 
         {/* Spinning star near heading */}
-        <div className="lp-spin-slow absolute top-24 left-1/3 opacity-45 pointer-events-none" aria-hidden="true">
+        <div
+          className="lp-spin-slow absolute top-24 left-1/3 opacity-45 pointer-events-none"
+          aria-hidden="true"
+        >
           <Star size={30} fill="#FF6B35" stroke="#FF6B35" />
         </div>
 
         {/* Rounded square bottom-right */}
-        <div className="lp-float-slow absolute bottom-36 right-14 opacity-40 pointer-events-none" aria-hidden="true">
+        <div
+          className="lp-float-slow absolute bottom-36 right-14 opacity-40 pointer-events-none"
+          aria-hidden="true"
+        >
           <svg width="68" height="68" viewBox="0 0 68 68">
             <rect x="6" y="6" width="56" height="56" rx="18" fill="#6BCB77" />
           </svg>
         </div>
 
         {/* Small circle left */}
-        <div className="lp-float-alt absolute top-1/2 left-16 opacity-40 pointer-events-none" style={{ animationDelay: '2s' }} aria-hidden="true">
+        <div
+          className="lp-float-alt absolute top-1/2 left-16 opacity-40 pointer-events-none"
+          style={{ animationDelay: '2s' }}
+          aria-hidden="true"
+        >
           <svg width="38" height="38" viewBox="0 0 38 38">
             <circle cx="19" cy="19" r="17" fill="#C77DFF" />
           </svg>
         </div>
 
         {/* Triangle right-center */}
-        <div className="lp-float absolute top-1/3 right-20 opacity-35 pointer-events-none" style={{ animationDelay: '1.5s' }} aria-hidden="true">
+        <div
+          className="lp-float absolute top-1/3 right-20 opacity-35 pointer-events-none"
+          style={{ animationDelay: '1.5s' }}
+          aria-hidden="true"
+        >
           <svg width="48" height="48" viewBox="0 0 48 48">
             <polygon points="24,2 46,44 2,44" fill="#FF6B35" />
           </svg>
         </div>
 
         {/* Star bottom-center */}
-        <div className="lp-float-alt absolute bottom-40 right-1/3 opacity-60 pointer-events-none" style={{ animationDelay: '0.8s' }} aria-hidden="true">
+        <div
+          className="lp-float-alt absolute bottom-40 right-1/3 opacity-60 pointer-events-none"
+          style={{ animationDelay: '0.8s' }}
+          aria-hidden="true"
+        >
           <Star size={24} fill="#FFD93D" stroke="#FFD93D" />
         </div>
 
         {/* Heart right side */}
-        <div className="lp-float-slow absolute top-1/2 right-6 opacity-45 pointer-events-none" style={{ animationDelay: '1.2s' }} aria-hidden="true">
+        <div
+          className="lp-float-slow absolute top-1/2 right-6 opacity-45 pointer-events-none"
+          style={{ animationDelay: '1.2s' }}
+          aria-hidden="true"
+        >
           <Heart size={32} fill="#FF85A2" stroke="#FF85A2" />
         </div>
 
@@ -395,10 +485,10 @@ export function LandingPage() {
       <section className="bg-kinder-orange">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
-            <StatCounter target={500} suffix="+"  label={t('statsStudentsLabel')} />
-            <StatCounter target={50}  suffix="+"  label={t('statsTeachersLabel')} />
-            <StatCounter target={20}  suffix="+"  label={t('statsClassesLabel')} />
-            <StatCounter target={5}   suffix=" ★" label={t('statsRatingLabel')} />
+            <StatCounter target={500} suffix="+" label={t('statsStudentsLabel')} />
+            <StatCounter target={50} suffix="+" label={t('statsTeachersLabel')} />
+            <StatCounter target={20} suffix="+" label={t('statsClassesLabel')} />
+            <StatCounter target={5} suffix=" ★" label={t('statsRatingLabel')} />
           </div>
         </div>
 
@@ -441,25 +531,27 @@ export function LandingPage() {
                 <h3 className="font-extrabold text-gray-900 dark:text-white text-xl mb-3">
                   {t(titleKey)}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
-                  {t(descKey)}
-                </p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{t(descKey)}</p>
               </div>
             ))}
           </div>
         </div>
-
       </section>
 
       {/* ════════════════════════════════════════════════════════
           GALLERY — horizontal scroll strip
       ════════════════════════════════════════════════════════ */}
-      <section id="gallery" className="bg-white dark:bg-gray-950 py-20 transition-colors duration-200">
+      <section
+        id="gallery"
+        className="bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">{t('gallerySubtitle')}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
+            {t('gallerySubtitle')}
+          </p>
         </div>
 
         {/* Scroll strip */}
@@ -484,26 +576,33 @@ export function LandingPage() {
                     className={`snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
                   >
                     <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">{p.label}</span>
+                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                      {p.label}
+                    </span>
                   </div>
                 ))}
           </div>
         </div>
-
       </section>
 
       {/* ════════════════════════════════════════════════════════
           NOTICES — always visible; cork board empty state when none
       ════════════════════════════════════════════════════════ */}
-      <section id="notices" className="bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
-              {t('noticesTitle')}
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">{t('noticesSubtitle')}</p>
-          </div>
+      <section
+        id="notices"
+        className="bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+            {t('noticesTitle')}
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
+            {t('noticesSubtitle')}
+          </p>
+        </div>
 
-          {notices.length > 0 ? (<div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {notices.length > 0 ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {notices.slice(0, 6).map((notice) => (
                 <div
@@ -522,20 +621,24 @@ export function LandingPage() {
                         alt={notice.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).parentElement!.className =
+                          ;(e.target as HTMLImageElement).parentElement!.className =
                             `h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`
                           ;(e.target as HTMLImageElement).style.display = 'none'
                         }}
                       />
                     </div>
                   ) : (
-                    <div className={`h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`} />
+                    <div
+                      className={`h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`}
+                    />
                   )}
 
                   <div className="p-5">
                     {/* Category + pinned badges */}
                     <div className="flex gap-1.5 flex-wrap mb-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${NOTICE_CATEGORY_COLORS[notice.category]}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${NOTICE_CATEGORY_COLORS[notice.category]}`}
+                      >
                         {notice.category.charAt(0).toUpperCase() + notice.category.slice(1)}
                       </span>
                       {notice.is_pinned && (
@@ -557,7 +660,9 @@ export function LandingPage() {
                       <div className="flex items-center gap-1 mt-3 text-xs text-gray-400 dark:text-gray-500">
                         <Calendar size={11} />
                         {new Date(notice.expires_at).toLocaleDateString('en-MY', {
-                          day: 'numeric', month: 'short', year: 'numeric',
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
                         })}
                       </div>
                     )}
@@ -565,25 +670,28 @@ export function LandingPage() {
                 </div>
               ))}
             </div>
-          </div>) : (
+          </div>
+        ) : (
           <div className="flex justify-center px-4">
             <div className="max-w-sm w-full bg-amber-50 dark:bg-amber-900/20 border-2 border-dashed border-amber-200 dark:border-amber-700 rounded-3xl p-10 text-center">
               <div className="w-16 h-16 bg-amber-100 dark:bg-amber-800/40 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <Megaphone size={28} className="text-amber-400 dark:text-amber-500" />
               </div>
-              <h3 className="font-bold text-amber-800 dark:text-amber-300 text-lg mb-2">{t('noticesEmptyTitle')}</h3>
+              <h3 className="font-bold text-amber-800 dark:text-amber-300 text-lg mb-2">
+                {t('noticesEmptyTitle')}
+              </h3>
               <p className="text-amber-600/80 dark:text-amber-400/70 text-sm leading-relaxed">
                 {t('noticesEmptySubtitle')}
               </p>
             </div>
           </div>
-          )}
+        )}
 
-          {/* Wave: Notices → Testimonials (purple) */}
-          <div className="mt-16">
-            <Wave fill="#C77DFF" />
-          </div>
-        </section>
+        {/* Wave: Notices → Testimonials (purple) */}
+        <div className="mt-16">
+          <Wave fill="#C77DFF" />
+        </div>
+      </section>
 
       {/* ════════════════════════════════════════════════════════
           TESTIMONIALS — kinder-purple bg, star ratings
@@ -633,12 +741,18 @@ export function LandingPage() {
       <section id="contact" className="bg-kinder-green py-24">
         {/* Floating accents */}
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center overflow-hidden">
-          <div className="lp-float absolute -top-8 -left-8 opacity-30 pointer-events-none" aria-hidden="true">
+          <div
+            className="lp-float absolute -top-8 -left-8 opacity-30 pointer-events-none"
+            aria-hidden="true"
+          >
             <svg width="64" height="64" viewBox="0 0 64 64">
               <polygon points="32,4 60,58 4,58" fill="white" />
             </svg>
           </div>
-          <div className="lp-float-alt absolute -bottom-4 -right-4 opacity-25 pointer-events-none" aria-hidden="true">
+          <div
+            className="lp-float-alt absolute -bottom-4 -right-4 opacity-25 pointer-events-none"
+            aria-hidden="true"
+          >
             <Star size={48} fill="white" stroke="white" />
           </div>
 
@@ -683,7 +797,9 @@ export function LandingPage() {
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Scroll to top"
         className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-          showTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
+          showTop
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
         <ArrowUp size={22} strokeWidth={2.5} />

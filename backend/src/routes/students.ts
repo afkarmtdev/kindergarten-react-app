@@ -38,7 +38,9 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
     .range(from, to)
 
   if (search) {
-    query = query.or(`full_name.ilike.%${search}%,parent_name.ilike.%${search}%,parent_email.ilike.%${search}%`)
+    query = query.or(
+      `full_name.ilike.%${search}%,parent_name.ilike.%${search}%,parent_email.ilike.%${search}%`
+    )
   }
   if (class_name) query = query.eq('class_name', class_name)
   if (gender) query = query.eq('gender', gender)
@@ -85,20 +87,27 @@ students.post('/bulk', async (c) => {
   rows.forEach((row, i) => {
     const rowNum = i + 2 // 1-indexed + header row
     if (!row.full_name?.trim()) return failed.push({ row: rowNum, reason: 'full_name is required' })
-    if (!['male', 'female'].includes(row.gender)) return failed.push({ row: rowNum, reason: 'gender must be male or female' })
-    if (!row.class_name?.trim()) return failed.push({ row: rowNum, reason: 'class_name is required' })
-    if (!row.parent_name?.trim()) return failed.push({ row: rowNum, reason: 'parent_name is required' })
-    if (!row.parent_email?.trim() || !emailRegex.test(row.parent_email)) return failed.push({ row: rowNum, reason: 'parent_email is invalid' })
-    if (!row.parent_phone?.trim()) return failed.push({ row: rowNum, reason: 'parent_phone is required' })
-    valid.push(sanitiseStrings({
-      full_name: row.full_name.trim(),
-      date_of_birth: row.date_of_birth?.trim() || '',
-      gender: row.gender,
-      class_name: row.class_name.trim(),
-      parent_name: row.parent_name.trim(),
-      parent_email: row.parent_email.trim(),
-      parent_phone: row.parent_phone.trim(),
-    }))
+    if (!['male', 'female'].includes(row.gender))
+      return failed.push({ row: rowNum, reason: 'gender must be male or female' })
+    if (!row.class_name?.trim())
+      return failed.push({ row: rowNum, reason: 'class_name is required' })
+    if (!row.parent_name?.trim())
+      return failed.push({ row: rowNum, reason: 'parent_name is required' })
+    if (!row.parent_email?.trim() || !emailRegex.test(row.parent_email))
+      return failed.push({ row: rowNum, reason: 'parent_email is invalid' })
+    if (!row.parent_phone?.trim())
+      return failed.push({ row: rowNum, reason: 'parent_phone is required' })
+    valid.push(
+      sanitiseStrings({
+        full_name: row.full_name.trim(),
+        date_of_birth: row.date_of_birth?.trim() || '',
+        gender: row.gender,
+        class_name: row.class_name.trim(),
+        parent_name: row.parent_name.trim(),
+        parent_email: row.parent_email.trim(),
+        parent_phone: row.parent_phone.trim(),
+      })
+    )
   })
 
   if (valid.length === 0) return c.json({ imported: 0, failed })
@@ -112,11 +121,7 @@ students.post('/bulk', async (c) => {
 // POST create student
 students.post('/', zValidator('json', studentSchema), async (c) => {
   const body = sanitiseStrings(c.req.valid('json'))
-  const { data, error } = await supabase
-    .from('students')
-    .insert(body)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('students').insert(body).select().single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)

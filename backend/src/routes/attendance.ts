@@ -123,9 +123,7 @@ attendance.get('/stats/summary', async (c) => {
   const targetYear = year || new Date().getFullYear()
 
   const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`
-  const endDate = new Date(Number(targetYear), Number(targetMonth), 0)
-    .toISOString()
-    .split('T')[0]
+  const endDate = new Date(Number(targetYear), Number(targetMonth), 0).toISOString().split('T')[0]
 
   const { data, error } = await supabase
     .from('attendance')

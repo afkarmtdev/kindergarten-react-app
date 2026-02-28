@@ -55,20 +55,29 @@ api.interceptors.response.use(
 
 export const studentsApi = {
   getAll: (filters: StudentFilters = {}) =>
-    api.get('/students', { params: filters }).then((r) => r.data as PaginatedResponse<import('@/types').Student>),
+    api
+      .get('/students', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Student>),
   getById: (id: string) => api.get(`/students/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post('/students', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/students/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/students/${id}`).then((r) => r.data),
   bulkImport: (students: Record<string, string>[]) =>
-    api.post<{ imported: number; failed: { row: number; reason: string }[] }>('/students/bulk', { students }).then((r) => r.data),
+    api
+      .post<{
+        imported: number
+        failed: { row: number; reason: string }[]
+      }>('/students/bulk', { students })
+      .then((r) => r.data),
 }
 
 export const attendanceApi = {
   getByDate: (date: string, filters: AttendanceFilters = {}) =>
     api.get(`/attendance/date/${date}`, { params: filters }).then((r) => r.data),
-  getByStudent: (id: string, params?: { from?: string; to?: string; page?: number; limit?: number }) =>
-    api.get(`/attendance/student/${id}`, { params }).then((r) => r.data),
+  getByStudent: (
+    id: string,
+    params?: { from?: string; to?: string; page?: number; limit?: number }
+  ) => api.get(`/attendance/student/${id}`, { params }).then((r) => r.data),
   mark: (data: unknown) => api.post('/attendance', data).then((r) => r.data),
   bulkMark: (records: unknown[]) => api.post('/attendance/bulk', records).then((r) => r.data),
   getSummary: (month?: number, year?: number) =>
@@ -77,7 +86,9 @@ export const attendanceApi = {
 
 export const classesApi = {
   getAll: (filters: ClassFilters = {}) =>
-    api.get('/classes', { params: filters }).then((r) => r.data as PaginatedResponse<import('@/types').ClassRoom>),
+    api
+      .get('/classes', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').ClassRoom>),
   getById: (id: string) => api.get(`/classes/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post('/classes', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/classes/${id}`, data).then((r) => r.data),
@@ -96,9 +107,13 @@ const publicApi = axios.create({ baseURL: '/api' })
 
 export const galleryApi = {
   getVisible: () =>
-    publicApi.get('/public/gallery').then((r) => r.data as { data: import('@/types').GalleryItem[] }),
+    publicApi
+      .get('/public/gallery')
+      .then((r) => r.data as { data: import('@/types').GalleryItem[] }),
   getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
-    api.get('/gallery', { params: filters }).then((r) => r.data as PaginatedResponse<import('@/types').GalleryItem>),
+    api
+      .get('/gallery', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').GalleryItem>),
   create: (data: unknown) => api.post('/gallery', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/gallery/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/gallery/${id}`).then((r) => r.data),
@@ -106,11 +121,16 @@ export const galleryApi = {
 
 export const announcementsApi = {
   getAll: (filters: { page?: number; limit?: number; search?: string; category?: string } = {}) =>
-    api.get('/announcements', { params: filters }).then((r) => r.data as PaginatedResponse<import('@/types').Announcement>),
-  getById: (id: string) => api.get(`/announcements/${id}`).then((r) => r.data as import('@/types').Announcement),
+    api
+      .get('/announcements', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Announcement>),
+  getById: (id: string) =>
+    api.get(`/announcements/${id}`).then((r) => r.data as import('@/types').Announcement),
   create: (data: unknown) => api.post('/announcements', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/announcements/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/announcements/${id}`).then((r) => r.data),
   getPublic: () =>
-    publicApi.get('/public/announcements').then((r) => r.data as { data: import('@/types').Announcement[] }),
+    publicApi
+      .get('/public/announcements')
+      .then((r) => r.data as { data: import('@/types').Announcement[] }),
 }

@@ -33,9 +33,10 @@ export function Pagination({ page, totalPages, total, limit, onPageChange }: Pag
     <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
       <p className="text-sm text-gray-500 dark:text-gray-400">
         {t('showing')}{' '}
-        <span className="font-semibold text-gray-700 dark:text-gray-200">{start}–{end}</span>{' '}
-        {t('of')}{' '}
-        <span className="font-semibold text-gray-700 dark:text-gray-200">{total}</span>
+        <span className="font-semibold text-gray-700 dark:text-gray-200">
+          {start}–{end}
+        </span>{' '}
+        {t('of')} <span className="font-semibold text-gray-700 dark:text-gray-200">{total}</span>
       </p>
 
       <div className="flex items-center gap-1">
@@ -49,7 +50,9 @@ export function Pagination({ page, totalPages, total, limit, onPageChange }: Pag
 
         {pages.map((p, i) =>
           p === '...' ? (
-            <span key={`ellipsis-${i}`} className="px-2 py-1 text-gray-400 text-sm">…</span>
+            <span key={`ellipsis-${i}`} className="px-2 py-1 text-gray-400 text-sm">
+              …
+            </span>
           ) : (
             <button
               key={p}

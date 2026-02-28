@@ -7,18 +7,18 @@ import { sanitiseStrings } from '../lib/sanitise'
 const announcements = new Hono()
 
 const announcementSchema = z.object({
-  title:      z.string().min(1),
-  body:       z.string().min(1),
-  category:   z.enum(['general', 'holiday', 'event', 'reminder']).default('general'),
-  image_url:  z.string().optional(),
-  is_pinned:  z.boolean().default(false),
+  title: z.string().min(1),
+  body: z.string().min(1),
+  category: z.enum(['general', 'holiday', 'event', 'reminder']).default('general'),
+  image_url: z.string().optional(),
+  is_pinned: z.boolean().default(false),
   expires_at: z.string().optional(),
 })
 
 const paginationSchema = z.object({
-  page:     z.coerce.number().int().min(1).default(1),
-  limit:    z.coerce.number().int().min(1).max(50).default(9),
-  search:   z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(9),
+  search: z.string().optional(),
   category: z.enum(['general', 'holiday', 'event', 'reminder', '']).optional(),
 })
 
@@ -60,11 +60,7 @@ announcements.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single announcement
 announcements.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data, error } = await supabase
-    .from('announcements')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data, error } = await supabase.from('announcements').select('*').eq('id', id).single()
 
   if (error) return c.json({ error: error.message }, 404)
   return c.json(data)
@@ -74,11 +70,7 @@ announcements.get('/:id', async (c) => {
 announcements.post('/', zValidator('json', announcementSchema), async (c) => {
   const raw = c.req.valid('json')
   const body = sanitiseStrings({ ...raw })
-  const { data, error } = await supabase
-    .from('announcements')
-    .insert(body)
-    .select()
-    .single()
+  const { data, error } = await supabase.from('announcements').insert(body).select().single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
