@@ -72,3 +72,66 @@ export interface AdminUser {
   full_name: string
   role: 'superadmin' | 'teacher' | 'staff'
 }
+
+// ─── Document Numbering ───────────────────────────────────────────────────────
+export type SegmentResetBy = 'no_reset' | 'monthly' | 'yearly'
+
+export interface DocumentSegment {
+  order: number
+  type: 'constant' | 'year' | 'month' | 'serial'
+  value?: string
+  total_chars?: number
+  reset_by?: SegmentResetBy
+  start_from?: number
+}
+
+export interface DocumentNumberingConfig {
+  id: string
+  document_type: string
+  segments: DocumentSegment[]
+  current_serial: number
+  last_reset_at: string | null
+  updated_at: string
+}
+
+// ─── Fees ─────────────────────────────────────────────────────────────────────
+export type FeeType = 'tuition' | 'activity' | 'uniform' | 'registration' | 'other'
+export type FeeStatus = 'unpaid' | 'partial' | 'paid' | 'waived'
+
+export interface FeePlan {
+  id: string
+  name: string
+  type: FeeType
+  amount: number
+  description?: string
+  created_at: string
+}
+
+export interface FeeRecord {
+  id: string
+  student_id: string
+  type: FeeType
+  description: string
+  amount_owed: number
+  amount_paid: number
+  discount_amount: number
+  discount_reason?: string
+  receipt_number?: string
+  status: FeeStatus
+  due_date?: string
+  paid_at?: string
+  created_at: string
+  // Joined from students table (Supabase FK join)
+  students?: {
+    full_name: string
+    class_name: string
+    photo_url?: string
+  } | null
+}
+
+export interface FeesSummary {
+  total_owed: number
+  total_paid: number
+  total_outstanding: number
+  overdue_count: number
+}
