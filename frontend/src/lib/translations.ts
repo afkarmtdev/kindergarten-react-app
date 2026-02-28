@@ -1,3 +1,5 @@
+import { APP_NAME } from './version'
+
 export const translations = {
   en: {
     // Nav
@@ -155,15 +157,15 @@ export const translations = {
 
     // Landing page — Testimonials
     testimonialsTitle: 'What parents say',
-    testimonialsSubtitle: 'Hear from our happy KinderCare families',
+    testimonialsSubtitle: `Hear from our happy ${APP_NAME} families`,
 
     // Landing page — CTA
     ctaTitle: 'Ready to join our family?',
-    ctaSubtitle: 'Schedule a visit and see why parents love KinderCare.',
+    ctaSubtitle: `Schedule a visit and see why parents love ${APP_NAME}.`,
     scheduleVisit: 'Schedule a Visit',
 
     // Landing page — Gallery
-    galleryTitle: 'Life at KinderCare',
+    galleryTitle: `Life at ${APP_NAME}`,
     gallerySubtitle: 'A peek into our colourful, joyful classrooms',
 
     // Student profile page
@@ -222,7 +224,7 @@ export const translations = {
 
     // Landing page — Notices
     noticesTitle: 'School Notices',
-    noticesSubtitle: 'Stay up to date with the latest news and announcements from KinderCare',
+    noticesSubtitle: `Stay up to date with the latest news and announcements from ${APP_NAME}`,
     noticesEmptyTitle: 'All quiet for now!',
     noticesEmptySubtitle:
       'Check back soon for school news, upcoming events, and important updates.',
@@ -385,15 +387,15 @@ export const translations = {
 
     // Landing page — Testimonials
     testimonialsTitle: 'Apa kata ibu bapa',
-    testimonialsSubtitle: 'Dengar dari keluarga KinderCare yang gembira',
+    testimonialsSubtitle: `Dengar dari keluarga ${APP_NAME} yang gembira`,
 
     // Landing page — CTA
     ctaTitle: 'Bersedia untuk menyertai keluarga kami?',
-    ctaSubtitle: 'Jadualkan lawatan dan lihat mengapa ibu bapa menyukai KinderCare.',
+    ctaSubtitle: `Jadualkan lawatan dan lihat mengapa ibu bapa menyukai ${APP_NAME}.`,
     scheduleVisit: 'Jadualkan Lawatan',
 
     // Landing page — Gallery
-    galleryTitle: 'Kehidupan di KinderCare',
+    galleryTitle: `Kehidupan di ${APP_NAME}`,
     gallerySubtitle: 'Sekilas pandang bilik darjah kami yang ceria',
 
     // Student profile page
@@ -452,7 +454,7 @@ export const translations = {
 
     // Landing page — Notices
     noticesTitle: 'Notis Sekolah',
-    noticesSubtitle: 'Ikuti berita dan pengumuman terkini daripada KinderCare',
+    noticesSubtitle: `Ikuti berita dan pengumuman terkini daripada ${APP_NAME}`,
     noticesEmptyTitle: 'Tiada pengumuman buat masa ini!',
     noticesEmptySubtitle:
       'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { GraduationCap, Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { APP_VERSION } from '@/lib/version'
+import { APP_VERSION, APP_NAME } from '@/lib/version'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -35,7 +35,7 @@ export function LoginPage() {
               <GraduationCap className="text-white" size={28} />
             </div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
-              KinderCare Admin
+              {APP_NAME} Admin
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Sign in to your portal</p>
           </div>
@@ -99,7 +99,7 @@ export function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
-          KinderCare Management System · Secured by Supabase Auth
+          {APP_NAME} Management System · Secured by Supabase Auth
         </p>
         <p className="text-center text-xs text-gray-300 dark:text-gray-600 mt-1">v{APP_VERSION}</p>
         <div className="text-center mt-4">

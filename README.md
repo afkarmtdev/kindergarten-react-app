@@ -302,10 +302,11 @@ Engineering tasks that improve reliability, performance, and maintainability —
 - [x] **Announcements / notice board** — `/admin/announcements` full CRUD page; categories (General/Holiday/Event/Reminder), pinned flag, expiry date, banner image upload; public Notices section on LandingPage (hidden when no active announcements).
 - [ ] **Fee tracking** — record monthly fee payments per student; flag overdue accounts; export a payment summary.
 - [ ] **Events calendar** — a shared school calendar (sports day, field trips, parent-teacher meetings) visible to staff and optionally to parents.
-- [ ] **Report cards / term summaries** — auto-generate a PDF report card per student showing attendance rate, class, and a free-text remarks field; downloadable from the student profile page.
+- [ ] **Monthly attendance report PDF** — auto-generate a per-student or per-class PDF showing attendance rate and present/absent breakdown; downloadable from the dashboard or student profile page.
 - [ ] **Role-based access** — the DB schema already has `AdminUser.role`; implement `superadmin` vs `teacher` so teachers can only mark attendance for their own class and cannot add/delete students.
 - [ ] **Audit / activity log** — record who changed what and when for accountability (e.g. "attendance changed from absent → present by teacher@school.com at 9:14 am").
 - [ ] **Dashboard charts** — monthly attendance trend line + class breakdown pie chart using `recharts`; gives management a visual overview at a glance.
+- [ ] **Live stats on landing page** — pull real numbers from the DB (total students enrolled, attendance rate this month, active classes) and animate them counting up on scroll; makes the landing page feel alive.
 
 ### For Teachers
 
@@ -313,12 +314,17 @@ Engineering tasks that improve reliability, performance, and maintainability —
 - [ ] **Class view** — a dedicated page for a single class showing its roster and today's attendance status so a teacher only sees their own students.
 - [ ] **Substitute teacher notes** — a staff-only text field per attendance record (e.g. "doctor letter submitted").
 - [ ] **Bulk attendance from class roster** — a "Mark Attendance" shortcut on the Classes page that pre-filters the attendance table to just that class.
+- [ ] **QR code attendance** — each student gets a printable QR card; teacher scans it to mark present. Fast for large classes.
+- [ ] **Confetti on full attendance** — fire a small confetti burst when all students for the day are marked present; small touch, memorable moment.
+- [ ] **Birthday widget on dashboard** — "3 students have birthdays this week" card with their names; gives teachers something to celebrate with kids and parents.
+- [ ] **Attendance streak badge on student profile** — "14 days present in a row" badge; gives teachers something to celebrate with students and motivates good habits.
+- [ ] **Drag-and-drop gallery reordering** — drag photos into position instead of editing `display_order` manually.
 
 ### For Parents
 
 - [ ] **Parent portal** — a read-only view (separate login via PIN or magic link) where a parent can see their child's attendance history without full admin access.
 - [ ] **Absence reason submission** — a simple public form where parents submit an absence reason / medical certificate for a specific date; admin sees the reason alongside the attendance record.
-- [ ] **Email / push notifications** — send an automated email (via Supabase Edge Function + Resend or SendGrid) when a child is marked absent so parents are immediately informed.
+- [ ] **WhatsApp notification** — send a WhatsApp message (via Twilio or WhatsApp Business API) when a child is marked absent; more practical than email for most Malaysian parents.
 - [ ] **Attendance summary email** — a weekly or monthly digest emailed to parents showing their child's attendance rate and any missed days.
 
 ### For Everyone (UX Polish)
@@ -328,6 +334,7 @@ Engineering tasks that improve reliability, performance, and maintainability —
 - [ ] **PWA / offline support** — cache the attendance marking page with a service worker so teachers can mark attendance without internet; sync when reconnected.
 - [ ] **Real-time attendance updates** — Supabase Realtime subscriptions so changes by one teacher appear live in another tab without a refresh.
 - [ ] **Global search (Cmd+K)** — a command palette to jump directly to any student's profile by name from anywhere in the admin portal.
+- [ ] **Interactive gallery lightbox** — click a gallery photo to expand it in a smooth overlay instead of a static grid.
 - [ ] **Birthday reminders** — a dashboard widget showing upcoming student birthdays this week.
 
 ---

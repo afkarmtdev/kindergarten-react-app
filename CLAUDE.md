@@ -45,7 +45,7 @@ kindergarten-app/
 │   └── src/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
 │       ├── pages/
-│       │   ├── LandingPage.tsx     # Public marketing page (hero, stats, features, gallery, notices, testimonials, CTA)
+│       │   ├── LandingPage.tsx     # Public marketing page (hero, stats, features, gallery+lightbox, notices, testimonials carousel, CTA)
 │       │   ├── LoginPage.tsx       # Admin login form (dark mode aware)
 │       │   ├── DashboardPage.tsx   # Stats + today attendance + monthly summary
 │       │   ├── StudentsPage.tsx    # Grid, 12/page, search+filter, add/edit modal wired
@@ -243,6 +243,7 @@ bun run format:check  # Prettier — dry-run (CI-safe)
 ## Known Conventions
 
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.
+- **Brand name** (`APP_NAME`) and **version** (`APP_VERSION`) are exported from `frontend/src/lib/version.ts` — the single source of truth. Never hardcode the school name anywhere else; always import and reference `APP_NAME`.
 - All new routes must be added to `backend/src/index.ts` and protected with `authMiddleware` unless public
 - **Public API endpoints** (needed by LandingPage or other unauthenticated views) must be registered as `app.get('/api/public/...')` BEFORE the `app.use('/api/*', authMiddleware)` line in `index.ts`. Use `publicApi` (no-auth Axios instance in `api.ts`) to call them from the frontend.
 - New pages must be registered in `App.tsx` and added to the sidebar nav array in `AdminLayout.tsx`
