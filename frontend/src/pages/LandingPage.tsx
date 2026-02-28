@@ -26,6 +26,7 @@ import { useSettingsStore } from '@/store/settingsStore'
 import { galleryApi, announcementsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
 import { SecretArcade } from '@/components/landing/SecretArcade'
+import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import type { Announcement } from '@/types'
 
 // ─── CSS keyframe animations ─────────────────────────────────────────────────
@@ -76,6 +77,27 @@ const KEYFRAMES = `
   @keyframes lp-progress {
     from { width: 0%; }
     to   { width: 100%; }
+  }
+  @keyframes lp-bear-wave {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(-70deg); }
+    50%  { transform: rotate(-30deg); }
+    75%  { transform: rotate(-60deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes lp-bear-jump {
+    0%   { transform: translateY(0); }
+    25%  { transform: translateY(-20px); }
+    50%  { transform: translateY(-8px); }
+    68%  { transform: translateY(-16px); }
+    84%  { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
+  }
+  .bear-mascot:hover {
+    animation: lp-bear-jump 0.55s ease-out;
+  }
+  .bear-mascot:hover .bear-arm-wave {
+    animation: lp-bear-wave 1s ease-in-out;
   }
 `
 
@@ -216,6 +238,25 @@ const NOTICE_CATEGORY_GRADIENTS: Record<Announcement['category'], string> = {
   reminder: 'from-kinder-yellow/20 to-kinder-yellow/10',
 }
 
+// ─── Bear mascot random messages ─────────────────────────────────────────────
+const BEAR_MESSAGES = [
+  'Hello there!',
+  'Rawr!',
+  'You found me!',
+  'High five!',
+  "Let's learn today!",
+  'Stay curious!',
+  'Be kind always!',
+  'Adventure awaits!',
+  'Woo-hoo!',
+  "You're awesome!",
+  'Best day ever!',
+  'Keep exploring!',
+  'I like your style!',
+  'Learning is fun!',
+  'Ready for fun?',
+]
+
 // ─── Gallery placeholder data ─────────────────────────────────────────────────
 const GALLERY_PLACEHOLDERS = [
   { id: 'p1', gradient: 'from-kinder-yellow/40 to-kinder-orange/30', label: 'Classroom Moments' },
@@ -236,6 +277,7 @@ export function LandingPage() {
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
   const [isPaused, setIsPaused] = useState(false)
+  const [bearMessage, setBearMessage] = useState<string | null>(null)
 
   const { data: galleryData } = useQuery({
     queryKey: ['gallery-public'],
@@ -300,9 +342,7 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-kinder-orange rounded-2xl flex items-center justify-center shadow-md">
-              <span className="text-white font-extrabold text-base">K</span>
-            </div>
+            <BearLogo size={40} />
             <span className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">
               {APP_NAME}
             </span>
@@ -478,6 +518,29 @@ export function LandingPage() {
           style={{ background: 'radial-gradient(circle, #4D96FF, transparent 70%)' }}
           aria-hidden="true"
         />
+
+        {/* ── Bear mascot ── */}
+        <div
+          className="bear-mascot hidden lg:block absolute bottom-24 left-16 xl:left-28 cursor-pointer z-20"
+          style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.13))' }}
+          aria-hidden="true"
+          onMouseEnter={() =>
+            setBearMessage(BEAR_MESSAGES[Math.floor(Math.random() * BEAR_MESSAGES.length)])
+          }
+          onMouseLeave={() => setBearMessage(null)}
+        >
+          {/* Speech bubble — HTML so message length is unconstrained */}
+          <div
+            className={`absolute bottom-full right-0 mb-1 transition-opacity duration-150 pointer-events-none ${bearMessage ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 whitespace-nowrap">
+              {bearMessage}
+            </div>
+            {/* Tail pointing down toward the bear's head */}
+            <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-white dark:bg-gray-800 border-b border-r border-gray-100 dark:border-gray-700 rotate-45" />
+          </div>
+          <BaseBearMascot />
+        </div>
 
         {/* ── Hero content ── */}
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6 text-center">
@@ -889,9 +952,7 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <footer className="bg-gray-900 py-10 text-center font-display">
         <div className="flex items-center justify-center gap-2.5 mb-3">
-          <div className="w-8 h-8 bg-kinder-orange rounded-xl flex items-center justify-center">
-            <span className="text-white font-extrabold text-xs">K</span>
-          </div>
+          <BearLogo size={32} />
           <span className="font-extrabold text-white text-lg">{APP_NAME}</span>
         </div>
         <p className="text-gray-400 text-sm">

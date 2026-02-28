@@ -48,34 +48,40 @@ const SECRET = [1, 3, 0, 2]
 // ══════════════════════════════════════════════════════
 //  MAIN EXPORT
 // ══════════════════════════════════════════════════════
+type PanelStatus = 'idle' | 'wrong' | 'granted' | 'initializing'
+
 export function SecretArcade() {
   const [clickSeq, setClickSeq] = useState<number[]>([])
-  const [flash, setFlash] = useState<'none' | 'wrong' | 'right'>('none')
+  const [status, setStatus] = useState<PanelStatus>('idle')
   const [gameKey, setGameKey] = useState(0)
   const [gameOpen, setGameOpen] = useState(false)
   const [gameIdx, setGameIdx] = useState(0)
 
   function handleShapeClick(idx: number) {
+    if (status !== 'idle') return
     const newSeq = [...clickSeq, idx].slice(-SECRET.length)
     setClickSeq(newSeq)
     if (newSeq.length < SECRET.length) return
 
     const isRight = newSeq.every((v, i) => v === SECRET[i])
     if (isRight) {
-      setFlash('right')
+      setStatus('granted')
       setTimeout(() => {
-        setFlash('none')
-        setClickSeq([])
-        setGameKey((k) => k + 1)
-        setGameIdx(0)
-        setGameOpen(true)
-      }, 400)
+        setStatus('initializing')
+        setTimeout(() => {
+          setStatus('idle')
+          setClickSeq([])
+          setGameKey((k) => k + 1)
+          setGameIdx(0)
+          setGameOpen(true)
+        }, 1200)
+      }, 1000)
     } else {
-      setFlash('wrong')
+      setStatus('wrong')
       setTimeout(() => {
-        setFlash('none')
+        setStatus('idle')
         setClickSeq([])
-      }, 500)
+      }, 800)
     }
   }
 
@@ -83,14 +89,30 @@ export function SecretArcade() {
     <>
       {/* ── Access Panel ─────────────────────────────── */}
       <div className="flex flex-col items-center gap-2 mt-6 pt-4 border-t border-gray-800">
-        <p className="text-gray-600 text-xs tracking-widest uppercase font-semibold">
-          Access Panel
+        <p
+          className={`text-xs tracking-widest uppercase font-bold transition-colors duration-300 ${
+            status === 'wrong'
+              ? 'text-red-500'
+              : status === 'granted'
+                ? 'text-kinder-green'
+                : status === 'initializing'
+                  ? 'text-kinder-green animate-pulse'
+                  : 'text-gray-600'
+          }`}
+        >
+          {status === 'wrong'
+            ? 'ACCESS DENIED'
+            : status === 'granted'
+              ? 'ACCESS GRANTED'
+              : status === 'initializing'
+                ? 'INITIALIZING SECRET...'
+                : 'Access Panel'}
         </p>
         <div
           className={`flex items-center gap-2 px-4 py-2 rounded-2xl border transition-all duration-300 ${
-            flash === 'right'
+            status === 'granted' || status === 'initializing'
               ? 'border-kinder-green/60 bg-kinder-green/10'
-              : flash === 'wrong'
+              : status === 'wrong'
                 ? 'border-red-500/60 bg-red-500/10'
                 : 'border-gray-700/60 bg-gray-800/40'
           }`}
