@@ -7,6 +7,7 @@ import { useAttendanceStore } from '@/store/attendanceStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { Student, AttendanceRecord } from '@/types'
 
 const LIMIT = 20
@@ -41,6 +42,7 @@ const STATUS_CONFIG = {
 type Status = keyof typeof STATUS_CONFIG
 
 export function AttendancePage() {
+  usePageTitle('Attendance')
   const t = useT()
   const queryClient = useQueryClient()
   const {

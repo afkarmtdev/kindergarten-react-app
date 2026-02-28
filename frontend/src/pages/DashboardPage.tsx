@@ -3,6 +3,7 @@ import { Users, CalendarCheck, School, TrendingUp, Gift } from 'lucide-react'
 import { studentsApi, attendanceApi, classesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { isBirthdayToday } from '@/lib/utils'
 import { format } from 'date-fns'
 
@@ -52,6 +53,7 @@ const BAR_COLOR: Record<string, string> = {
 }
 
 export function DashboardPage() {
+  usePageTitle('Dashboard')
   const t = useT()
   const today = format(new Date(), 'yyyy-MM-dd')
 

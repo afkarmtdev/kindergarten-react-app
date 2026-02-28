@@ -21,6 +21,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { StudentModal } from '@/components/admin/StudentModal'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { Student, AttendanceRecord } from '@/types'
 
 const LIMIT = 15
@@ -62,6 +63,8 @@ export function StudentProfilePage() {
     queryFn: () => studentsApi.getById(id!),
     enabled: !!id,
   })
+
+  usePageTitle(student?.full_name)
 
   const { data: historyData, isLoading: historyLoading } = useQuery({
     queryKey: ['attendance-history', id, page],

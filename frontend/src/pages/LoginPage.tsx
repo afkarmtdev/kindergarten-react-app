@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import { GraduationCap, Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export function LoginPage() {
+  usePageTitle('Admin Login')
   const { login } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')

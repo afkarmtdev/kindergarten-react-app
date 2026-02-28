@@ -22,6 +22,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSettingsStore } from '@/store/settingsStore'
 import { galleryApi, announcementsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
@@ -251,6 +252,7 @@ const GALLERY_PLACEHOLDERS = [
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function LandingPage() {
+  usePageTitle()
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
   const [showTop, setShowTop] = useState(false)

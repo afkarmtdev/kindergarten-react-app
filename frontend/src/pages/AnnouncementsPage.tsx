@@ -9,6 +9,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { AnnouncementCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { Announcement } from '@/types'
 
 const LIMIT = 9
@@ -41,6 +42,7 @@ function formatDate(dateStr: string) {
 }
 
 export function AnnouncementsPage() {
+  usePageTitle('Announcements')
   const t = useT()
   const queryClient = useQueryClient()
   const { page, search, categoryFilter, setPage, setSearch, setCategoryFilter } =

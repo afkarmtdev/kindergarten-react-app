@@ -9,6 +9,7 @@ import { SearchBar } from '@/components/ui/SearchBar'
 import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { ClassModal } from '@/components/admin/ClassModal'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { ClassRoom } from '@/types'
 
 const LIMIT = 9
@@ -21,6 +22,7 @@ const CLASS_COLORS = [
 ]
 
 export function ClassesPage() {
+  usePageTitle('Classes')
   const t = useT()
   const queryClient = useQueryClient()
   const { page, search, setPage, setSearch } = useClassesStore()
