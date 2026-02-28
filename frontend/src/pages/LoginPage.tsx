@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { GraduationCap, Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
+import { AdminBearIcon } from '@/components/layout/AdminLayout'
 import { useAuth } from '@/hooks/useAuth'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -34,7 +35,7 @@ export function LoginPage() {
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 sm:p-10 border border-transparent dark:border-gray-800">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-kinder-orange rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 dark:shadow-orange-900/30">
-              <GraduationCap className="text-white" size={28} />
+              <AdminBearIcon size={40} />
             </div>
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
               {APP_NAME} Admin

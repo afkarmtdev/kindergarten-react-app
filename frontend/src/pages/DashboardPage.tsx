@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { Users, CalendarCheck, School, TrendingUp, Gift } from 'lucide-react'
-import { studentsApi, attendanceApi, classesApi } from '@/lib/api'
+import { Users, CalendarCheck, School, TrendingUp, Gift, Wallet } from 'lucide-react'
+import { studentsApi, attendanceApi, classesApi, feesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -56,6 +56,7 @@ export function DashboardPage() {
   usePageTitle('Dashboard')
   const t = useT()
   const today = format(new Date(), 'yyyy-MM-dd')
+  const currentMonth = format(new Date(), 'yyyy-MM')
 
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['students', { page: 1, limit: 1 }],
@@ -81,6 +82,12 @@ export function DashboardPage() {
     staleTime: 15_000,
   })
 
+  const { data: feesSummary, isLoading: feesLoading } = useQuery({
+    queryKey: ['fees-summary', currentMonth],
+    queryFn: () => feesApi.getSummary(currentMonth),
+    staleTime: 60_000,
+  })
+
   const { data: birthdayData } = useQuery({
     queryKey: ['students-birthday-check'],
     queryFn: () => studentsApi.getAll({ page: 1, limit: 100 }),
@@ -99,11 +106,12 @@ export function DashboardPage() {
 
   const totalPresent = (summary?.present ?? 0) + (summary?.late ?? 0)
   const totalRecords = summary
-    ? summary.present + summary.absent + summary.late + summary.excused
+    ? (summary.present ?? 0) + (summary.absent ?? 0) + (summary.late ?? 0) + (summary.excused ?? 0)
     : 0
   const attendanceRate = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0
 
   const statsLoading = studentsLoading || classesLoading || todayLoading
+  const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
 
   return (
     <div className="p-4 md:p-8">
@@ -154,13 +162,76 @@ export function DashboardPage() {
         )}
       </div>
 
+      {/* Fee Collection Summary */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-8 h-8 bg-kinder-orange rounded-xl flex items-center justify-center flex-shrink-0">
+            <Wallet size={16} className="text-white" />
+          </div>
+          <h2 className="font-bold text-gray-900 dark:text-gray-100">
+            {t('feeCollection')}
+            <span className="ml-2 text-xs font-semibold text-gray-400 dark:text-gray-500">
+              {currentMonth}
+            </span>
+          </h2>
+        </div>
+        {feesLoading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-shimmer bg-[length:200%_100%]"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+                {t('totalCharged')}
+              </p>
+              <p className="text-xl font-extrabold text-gray-900 dark:text-gray-100 tabular-nums">
+                {formatRM(feesSummary?.total_owed ?? 0)}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+                {t('totalCollected')}
+              </p>
+              <p className="text-xl font-extrabold text-kinder-green tabular-nums">
+                {formatRM(feesSummary?.total_paid ?? 0)}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+                {t('outstanding')}
+              </p>
+              <p className="text-xl font-extrabold text-kinder-orange tabular-nums">
+                {formatRM(feesSummary?.total_outstanding ?? 0)}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+                {t('overdueCount')}
+              </p>
+              <p className="text-xl font-extrabold text-red-500 tabular-nums">
+                {feesSummary?.overdue_count ?? 0}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Bottom panels */}
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {/* Today's Attendance */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
-            {t('todayAttendance')}
-          </h2>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-kinder-green rounded-xl flex items-center justify-center flex-shrink-0">
+              <CalendarCheck size={16} className="text-white" />
+            </div>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('todayAttendance')}</h2>
+          </div>
           {todayLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -248,7 +319,12 @@ export function DashboardPage() {
 
         {/* Monthly Summary */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">{t('monthlySummary')}</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center flex-shrink-0">
+              <TrendingUp size={16} className="text-white" />
+            </div>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('monthlySummary')}</h2>
+          </div>
           {summaryLoading ? (
             <div className="space-y-5">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -265,6 +341,7 @@ export function DashboardPage() {
             <div className="text-center py-10 text-gray-400">
               <TrendingUp size={32} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm font-medium">{t('noDataYet')}</p>
+              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">{t('noDataYetSub')}</p>
             </div>
           ) : (
             <div className="space-y-4">

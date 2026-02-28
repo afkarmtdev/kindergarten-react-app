@@ -34,6 +34,8 @@ import attendance from './routes/attendance'
 import classes from './routes/classes'
 import gallery from './routes/gallery'
 import announcements from './routes/announcements'
+import documentNumbering from './routes/documentNumbering'
+import fees, { feePlans } from './routes/fees'
 import { authMiddleware } from './middleware/auth'
 import { supabase } from './db/supabase'
 import { logger } from './lib/logger'
@@ -101,6 +103,9 @@ app.route('/api/attendance', attendance)
 app.route('/api/classes', classes)
 app.route('/api/gallery', gallery)
 app.route('/api/announcements', announcements)
+app.route('/api/document-numbering', documentNumbering)
+app.route('/api/fee-plans', feePlans)
+app.route('/api/fees', fees)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))

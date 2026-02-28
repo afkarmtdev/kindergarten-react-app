@@ -119,6 +119,59 @@ export const galleryApi = {
   delete: (id: string) => api.delete(`/gallery/${id}`).then((r) => r.data),
 }
 
+export const feePlansApi = {
+  getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
+    api
+      .get('/fee-plans', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').FeePlan>),
+  create: (data: unknown) => api.post('/fee-plans', data).then((r) => r.data),
+  update: (id: string, data: unknown) => api.put(`/fee-plans/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/fee-plans/${id}`).then((r) => r.data),
+}
+
+export const feesApi = {
+  getAll: (
+    filters: {
+      page?: number
+      limit?: number
+      search?: string
+      status?: string
+      month?: string
+      class_name?: string
+    } = {}
+  ) =>
+    api
+      .get('/fees', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').FeeRecord>),
+  create: (data: unknown) => api.post('/fees', data).then((r) => r.data),
+  generate: (data: unknown) => api.post('/fees/generate', data).then((r) => r.data),
+  update: (id: string, data: unknown) => api.put(`/fees/${id}`, data).then((r) => r.data),
+  recordPayment: (id: string, data: { amount: number }) =>
+    api
+      .put(`/fees/${id}/payment`, data)
+      .then((r) => r.data as import('@/types').FeeRecord & { this_payment: number }),
+  delete: (id: string) => api.delete(`/fees/${id}`).then((r) => r.data),
+  getStatement: (studentId: string, year: number) =>
+    api.get(`/fees/statement/${studentId}`, { params: { year } }).then((r) => r.data),
+  exportCsv: (month: string) =>
+    api
+      .get('/fees/export', { params: { month }, responseType: 'blob' })
+      .then((r) => r.data as Blob),
+  getSummary: (month: string) =>
+    api
+      .get('/fees/summary', { params: { month } })
+      .then((r) => r.data as import('@/types').FeesSummary),
+}
+
+export const documentNumberingApi = {
+  get: (type: string) =>
+    api
+      .get(`/document-numbering/${type}`)
+      .then((r) => r.data as { data: import('@/types').DocumentNumberingConfig | null }),
+  update: (type: string, data: unknown) =>
+    api.put(`/document-numbering/${type}`, data).then((r) => r.data),
+}
+
 export const announcementsApi = {
   getAll: (filters: { page?: number; limit?: number; search?: string; category?: string } = {}) =>
     api
