@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Loader } from 'lucide-react'
+import { useT } from '@/hooks/useT'
+import type { TranslationKey } from '@/lib/translations'
 
 function Bone({ className = '' }: { className?: string }) {
   return (
@@ -69,11 +72,38 @@ export function StatCardSkeleton() {
   )
 }
 
-export function CuteLoader({ message = 'Loading...' }: { message?: string }) {
+const LOADING_KEYS: TranslationKey[] = [
+  'loadingMsg0',
+  'loadingMsg1',
+  'loadingMsg2',
+  'loadingMsg3',
+  'loadingMsg4',
+  'loadingMsg5',
+  'loadingMsg6',
+  'loadingMsg7',
+  'loadingMsg8',
+  'loadingMsg9',
+  'loadingMsg10',
+  'loadingMsg11',
+]
+
+export function CuteLoader() {
+  const t = useT()
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * LOADING_KEYS.length))
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIdx((i) => (i + 1) % LOADING_KEYS.length)
+    }, 1800)
+    return () => clearInterval(timer)
+  }, [])
+
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
       <Loader size={32} className="text-kinder-orange animate-spin" />
-      <p className="text-gray-400 dark:text-gray-500 font-semibold text-sm">{message}</p>
+      <p className="text-gray-400 dark:text-gray-500 font-semibold text-sm">
+        {t(LOADING_KEYS[idx])}
+      </p>
     </div>
   )
 }

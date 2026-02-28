@@ -228,6 +228,26 @@ export const translations = {
     noticesEmptyTitle: 'All quiet for now!',
     noticesEmptySubtitle:
       'Check back soon for school news, upcoming events, and important updates.',
+
+    // Loading messages (CuteLoader)
+    loadingMsg0: 'Counting crayons...',
+    loadingMsg1: 'Tying shoelaces...',
+    loadingMsg2: 'Sharpening pencils...',
+    loadingMsg3: 'Feeding the goldfish...',
+    loadingMsg4: 'Sorting building blocks...',
+    loadingMsg5: 'Drawing rainbows...',
+    loadingMsg6: 'Watering the sunflowers...',
+    loadingMsg7: 'Lining up the teddy bears...',
+    loadingMsg8: 'Singing the ABCs...',
+    loadingMsg9: 'Chasing butterflies...',
+    loadingMsg10: 'Blowing up balloons...',
+    loadingMsg11: 'Reading storytime books...',
+
+    // Birthdays
+    todaysBirthdays: "Today's Birthdays",
+    birthdayToday: 'Birthday today!',
+    noBirthdaysToday: 'No birthdays today',
+    noBirthdaysSub: 'Check back tomorrow!',
   },
 
   ms: {
@@ -458,6 +478,26 @@ export const translations = {
     noticesEmptyTitle: 'Tiada pengumuman buat masa ini!',
     noticesEmptySubtitle:
       'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',
+
+    // Loading messages (CuteLoader)
+    loadingMsg0: 'Mengira krayon...',
+    loadingMsg1: 'Mengikat tali kasut...',
+    loadingMsg2: 'Menajamkan pensel...',
+    loadingMsg3: 'Memberi makan ikan emas...',
+    loadingMsg4: 'Menyusun blok bangunan...',
+    loadingMsg5: 'Melukis pelangi...',
+    loadingMsg6: 'Menyiram bunga matahari...',
+    loadingMsg7: 'Mengatur teddy bear...',
+    loadingMsg8: 'Menyanyikan ABC...',
+    loadingMsg9: 'Mengejar rama-rama...',
+    loadingMsg10: 'Meniup belon...',
+    loadingMsg11: 'Membaca buku cerita...',
+
+    // Birthdays
+    todaysBirthdays: 'Hari Jadi Hari Ini',
+    birthdayToday: 'Hari jadi hari ini!',
+    noBirthdaysToday: 'Tiada hari jadi hari ini',
+    noBirthdaysSub: 'Semak semula esok!',
   },
 } as const
 
