@@ -237,6 +237,7 @@ bun run format:check  # Prettier — dry-run (CI-safe)
 
 ### Low Priority / Nice to Have
 
+- [ ] Attendance heatmap on student profile — GitHub contribution-grid style; each cell = 1 school day, coloured by status (green=present, red=absent, yellow=late, blue=excused, gray=no record); last 12 weeks visible; pure frontend, no new backend endpoint (data already exists in attendance history)
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
 - [ ] Print-friendly attendance sheet
 - [ ] PWA / installable app for teachers marking attendance on phones
@@ -244,6 +245,7 @@ bun run format:check  # Prettier — dry-run (CI-safe)
 
 ## Known Conventions
 
+- **One component per file** — every React component goes in its own `.tsx` file. Never define multiple exported components in one file. If a feature needs several sub-components, create a subfolder (e.g. `arcade/`) and give each sub-component its own file. The parent/orchestrator file imports from that subfolder.
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.
 - **Brand name** (`APP_NAME`) and **version** (`APP_VERSION`) are exported from `frontend/src/lib/version.ts` — the single source of truth. Never hardcode the school name anywhere else; always import and reference `APP_NAME`.
 - All new routes must be added to `backend/src/index.ts` and protected with `authMiddleware` unless public
