@@ -19,7 +19,7 @@ import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useT } from '@/hooks/useT'
-import { APP_VERSION } from '@/lib/version'
+import { APP_VERSION, APP_NAME } from '@/lib/version'
 
 export function AdminLayout() {
   const { user, logout } = useAuth()
@@ -53,7 +53,7 @@ export function AdminLayout() {
             <GraduationCap className="text-white" size={20} />
           </div>
           <div>
-            <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm">KinderCare</h1>
+            <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</h1>
             <div className="flex items-center gap-1.5">
               <p className="text-xs text-gray-500 dark:text-gray-400">{t('adminPortal')}</p>
               <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600">
@@ -218,7 +218,7 @@ export function AdminLayout() {
             <div className="w-7 h-7 bg-kinder-orange rounded-xl flex items-center justify-center">
               <GraduationCap className="text-white" size={14} />
             </div>
-            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">KinderCare</span>
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</span>
           </div>
         </header>
 
