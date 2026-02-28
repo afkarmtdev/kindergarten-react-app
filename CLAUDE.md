@@ -47,7 +47,7 @@ kindergarten-app/
 │       ├── pages/
 │       │   ├── LandingPage.tsx     # Public marketing page (hero, stats, features, gallery+lightbox, notices, testimonials carousel, CTA)
 │       │   ├── LoginPage.tsx       # Admin login form (dark mode aware)
-│       │   ├── DashboardPage.tsx   # Stats + today attendance + monthly summary
+│       │   ├── DashboardPage.tsx   # Stats + today attendance + monthly summary + today's birthdays widget
 │       │   ├── StudentsPage.tsx    # Grid, 12/page, search+filter, add/edit modal wired
 │       │   ├── AttendancePage.tsx  # Table, 20 students/page, bulk mark, status tabs, CSV export
 │       │   ├── ClassesPage.tsx     # Grid, 9/page, capacity bar, add/edit modal wired
@@ -63,7 +63,7 @@ kindergarten-app/
 │       │   └── settingsStore.ts        # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
-│       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader, EmptyState
+│       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
 │       │   │   └── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
@@ -81,7 +81,9 @@ kindergarten-app/
 │       ├── lib/
 │       │   ├── api.ts             # Axios instance + studentsApi, attendanceApi, classesApi, authApi, galleryApi, announcementsApi; publicApi (no-auth instance for landing page)
 │       │   ├── supabaseClient.ts  # Supabase browser client (anon key) — used for Storage uploads only
-│       │   └── translations.ts    # Full EN/MS translation map (~90 keys)
+│       │   ├── translations.ts    # Full EN/MS translation map (~106 keys)
+│       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
+│       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
 │       └── types/
 │           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement
 │

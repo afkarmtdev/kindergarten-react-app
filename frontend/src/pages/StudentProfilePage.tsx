@@ -13,8 +13,10 @@ import {
   FileX,
   Pencil,
   CalendarCheck,
+  Gift,
 } from 'lucide-react'
 import { studentsApi, attendanceApi } from '@/lib/api'
+import { isBirthdayToday } from '@/lib/utils'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { StudentModal } from '@/components/admin/StudentModal'
@@ -167,6 +169,12 @@ export function StudentProfilePage() {
                   {s.date_of_birth && (
                     <span className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-semibold px-2.5 py-1 rounded-full">
                       {format(new Date(s.date_of_birth + 'T00:00:00'), 'dd MMM yyyy')}
+                    </span>
+                  )}
+                  {s.date_of_birth && isBirthdayToday(s.date_of_birth) && (
+                    <span className="inline-flex items-center gap-1.5 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-semibold px-2.5 py-1 rounded-full">
+                      <Gift size={11} />
+                      {t('birthdayToday')}
                     </span>
                   )}
                 </div>
