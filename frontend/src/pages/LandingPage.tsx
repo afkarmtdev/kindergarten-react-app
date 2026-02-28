@@ -25,6 +25,7 @@ import { useT } from '@/hooks/useT'
 import { useSettingsStore } from '@/store/settingsStore'
 import { galleryApi, announcementsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
+import { SecretArcade } from '@/components/landing/SecretArcade'
 import type { Announcement } from '@/types'
 
 // ─── CSS keyframe animations ─────────────────────────────────────────────────
@@ -896,6 +897,7 @@ export function LandingPage() {
         <p className="text-gray-400 text-sm">
           © {new Date().getFullYear()} {APP_NAME}. Made with care for little learners.
         </p>
+        <SecretArcade />
       </footer>
 
       {/* ── Scroll-to-top button ── */}
