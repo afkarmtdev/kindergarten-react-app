@@ -28,7 +28,6 @@ import { galleryApi, announcementsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
-import { BearSpeechBubble, pickBearMessage } from '@/components/landing/bear/BearSpeechBubble'
 import type { Announcement } from '@/types'
 
 // ─── CSS keyframe animations ─────────────────────────────────────────────────
@@ -79,27 +78,6 @@ const KEYFRAMES = `
   @keyframes lp-progress {
     from { width: 0%; }
     to   { width: 100%; }
-  }
-  @keyframes lp-bear-wave {
-    0%   { transform: rotate(0deg); }
-    25%  { transform: rotate(-70deg); }
-    50%  { transform: rotate(-30deg); }
-    75%  { transform: rotate(-60deg); }
-    100% { transform: rotate(0deg); }
-  }
-  @keyframes lp-bear-jump {
-    0%   { transform: translateY(0); }
-    25%  { transform: translateY(-20px); }
-    50%  { transform: translateY(-8px); }
-    68%  { transform: translateY(-16px); }
-    84%  { transform: translateY(-4px); }
-    100% { transform: translateY(0); }
-  }
-  .bear-mascot:hover {
-    animation: lp-bear-jump 0.55s ease-out;
-  }
-  .bear-mascot:hover .bear-arm-wave {
-    animation: lp-bear-wave 1s ease-in-out;
   }
 `
 
@@ -261,7 +239,6 @@ export function LandingPage() {
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
   const [isPaused, setIsPaused] = useState(false)
-  const [bearMessage, setBearMessage] = useState<string | null>(null)
 
   const { data: galleryData } = useQuery({
     queryKey: ['gallery-public'],
@@ -505,13 +482,10 @@ export function LandingPage() {
 
         {/* ── Bear mascot ── */}
         <div
-          className="bear-mascot hidden lg:block absolute bottom-24 left-16 xl:left-28 cursor-pointer z-20"
+          className="hidden lg:block absolute bottom-24 left-16 xl:left-28 z-20"
           style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.13))' }}
           aria-hidden="true"
-          onMouseEnter={() => setBearMessage(pickBearMessage())}
-          onMouseLeave={() => setBearMessage(null)}
         >
-          <BearSpeechBubble message={bearMessage} />
           <BaseBearMascot />
         </div>
 
