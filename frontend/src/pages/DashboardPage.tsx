@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { Users, CalendarCheck, School, TrendingUp } from 'lucide-react'
+import { Users, CalendarCheck, School, TrendingUp, Gift } from 'lucide-react'
 import { studentsApi, attendanceApi, classesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
+import { isBirthdayToday } from '@/lib/utils'
 import { format } from 'date-fns'
 
 function StatCard({
@@ -78,6 +79,16 @@ export function DashboardPage() {
     staleTime: 15_000,
   })
 
+  const { data: birthdayData } = useQuery({
+    queryKey: ['students-birthday-check'],
+    queryFn: () => studentsApi.getAll({ page: 1, limit: 100 }),
+    staleTime: 60_000,
+  })
+
+  const birthdayStudents = (birthdayData?.data ?? []).filter((s) =>
+    isBirthdayToday(s.date_of_birth)
+  )
+
   const totalStudents = studentsData?.meta?.total ?? 0
   const totalClasses = classesData?.meta?.total ?? 0
   const todayRecords: { id: string; status: string; students?: { full_name: string } }[] =
@@ -142,7 +153,7 @@ export function DashboardPage() {
       </div>
 
       {/* Bottom panels */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {/* Today's Attendance */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4">
@@ -179,6 +190,53 @@ export function DashboardPage() {
                     className={`text-xs px-2.5 py-1 rounded-full font-semibold ${STATUS_BADGE[record.status] ?? 'bg-gray-100 text-gray-600'}`}
                   >
                     {t(record.status as 'present' | 'absent' | 'late' | 'excused')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Birthdays */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-kinder-yellow rounded-xl flex items-center justify-center flex-shrink-0">
+              <Gift size={16} className="text-white" />
+            </div>
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('todaysBirthdays')}</h2>
+          </div>
+          {birthdayStudents.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <Gift size={32} className="mx-auto mb-2 opacity-40" />
+              <p className="text-sm font-medium">{t('noBirthdaysToday')}</p>
+              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">{t('noBirthdaysSub')}</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {birthdayStudents.map((student) => (
+                <div
+                  key={student.id}
+                  className="flex items-center gap-3 py-2 border-b border-gray-50 dark:border-gray-800 last:border-0"
+                >
+                  {student.photo_url ? (
+                    <img
+                      src={student.photo_url}
+                      alt={student.full_name}
+                      className="w-8 h-8 rounded-xl object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-kinder-yellow rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-bold text-xs">{student.full_name[0]}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                      {student.full_name}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{student.class_name}</p>
+                  </div>
+                  <span className="text-xs bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
+                    {t('birthdayToday')}
                   </span>
                 </div>
               ))}
