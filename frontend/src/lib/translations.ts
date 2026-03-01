@@ -272,6 +272,13 @@ export const translations = {
     formatSaved: 'Format saved',
     autoIndicator: 'Auto',
     formatWarning: 'Changing the format will not renumber existing receipts.',
+    serialMustBeLast: 'Serial number must be the last segment',
+    noNumberingSetup:
+      'Receipt numbering is not configured. Please set it up in Settings before recording payments.',
+    confirmFormatChange: 'Change Receipt Format?',
+    confirmFormatChangeBody:
+      'You have existing receipts. This only affects future receipts — existing receipt numbers remain unchanged.',
+    confirmFormatChangeBtn: 'Yes, change format',
 
     // Fee Plans
     feePlans: 'Fee Plans',
@@ -645,6 +652,13 @@ export const translations = {
     formatSaved: 'Format disimpan',
     autoIndicator: 'Auto',
     formatWarning: 'Menukar format tidak akan menomborkan semula resit yang sedia ada.',
+    serialMustBeLast: 'No. siri mestilah segmen terakhir',
+    noNumberingSetup:
+      'Penomboran resit belum dikonfigurasikan. Sila tetapkan dalam Tetapan dahulu.',
+    confirmFormatChange: 'Tukar Format Resit?',
+    confirmFormatChangeBody:
+      'Terdapat resit sedia ada. Ini hanya memberi kesan kepada resit masa hadapan — nombor resit sedia ada tidak berubah.',
+    confirmFormatChangeBtn: 'Ya, tukar format',
 
     // Fee Plans
     feePlans: 'Pelan Fi',

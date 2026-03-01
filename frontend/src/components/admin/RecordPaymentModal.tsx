@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, Receipt } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { X, Receipt, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
-import { feesApi } from '@/lib/api'
+import { feesApi, documentNumberingApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import type { FeeRecord } from '@/types'
 
@@ -15,6 +15,14 @@ interface Props {
 export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
+
+  const { data: numberingData, isLoading: numberingLoading } = useQuery({
+    queryKey: ['document-numbering', 'receipt'],
+    queryFn: () => documentNumberingApi.get('receipt'),
+    staleTime: 60_000,
+  })
+
+  const numberingConfigured = !numberingLoading && !!numberingData?.data
 
   const balance =
     Number(record.amount_owed) - Number(record.discount_amount) - Number(record.amount_paid)
@@ -76,6 +84,14 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
         </div>
 
         <div className="p-6">
+          {/* Numbering not configured warning */}
+          {!numberingLoading && !numberingConfigured && (
+            <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 mb-5">
+              <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800 dark:text-amber-300">{t('noNumberingSetup')}</p>
+            </div>
+          )}
+
           {/* Student + description */}
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 mb-5">
             <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">
@@ -144,7 +160,7 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
               </button>
               <button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || !numberingConfigured}
                 className="flex-1 bg-kinder-orange text-white px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60 hover:bg-orange-600 transition-colors"
               >
                 {mutation.isPending ? t('saving2') : t('recordPayment')}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
-import { AdminBearIcon } from '@/components/layout/AdminLayout'
+import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { useAuth } from '@/hooks/useAuth'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
 import { usePageTitle } from '@/hooks/usePageTitle'
