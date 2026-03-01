@@ -2,6 +2,7 @@
 // Visual improvements: shadow-lg, rounded-2xl, bounce pop-in, symmetric tail.
 // RainbowText is duplicated here so V2 is self-contained; logic imports from V1.
 
+import { useEffect, useRef, useState } from 'react'
 import { BEAR_HINTS } from './BearSpeechBubble'
 
 function RainbowText({ text }: { text: string }) {
@@ -38,13 +39,39 @@ function RainbowText({ text }: { text: string }) {
 }
 
 export function BearSpeechBubbleV2({ message }: { message: string | null }) {
-  const isHint = message !== null && BEAR_HINTS.includes(message)
+  // Keep the last non-null message so the text stays readable during the fade-out.
+  const [displayMessage, setDisplayMessage] = useState<string | null>(null)
+  const [visible, setVisible] = useState(false)
+  const unmountTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (message) {
+      if (unmountTimer.current) clearTimeout(unmountTimer.current)
+      setDisplayMessage(message)
+      setVisible(true)
+    } else {
+      setVisible(false)
+      // Remove from DOM only after the CSS dismiss animation finishes.
+      unmountTimer.current = setTimeout(() => setDisplayMessage(null), 150)
+    }
+    return () => {
+      if (unmountTimer.current) clearTimeout(unmountTimer.current)
+    }
+  }, [message])
+
+  if (!displayMessage) return null
+
+  const isHint = BEAR_HINTS.includes(displayMessage)
 
   return (
     <div
       className={`absolute bottom-full right-0 mb-2 pointer-events-none w-max max-w-[180px]
-        transition-[opacity,transform] duration-200 ease-out
-        ${message ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-1'}`}
+        transition-[opacity,transform]
+        ${
+          visible
+            ? 'opacity-100 scale-100 translate-y-0 duration-200 ease-out'
+            : 'opacity-0 scale-0 translate-y-2 duration-150 ease-in'
+        }`}
       style={{ transformOrigin: 'bottom right' }}
     >
       <div
@@ -53,13 +80,14 @@ export function BearSpeechBubbleV2({ message }: { message: string | null }) {
           border border-gray-200 dark:border-gray-600
           shadow-lg leading-snug"
       >
-        {isHint ? <RainbowText text={message!} /> : message}
+        {isHint ? <RainbowText text={displayMessage} /> : displayMessage}
       </div>
 
       {/* Tail — right-aligned, points down toward bear; overlaps bubble by 1px to hide seam */}
+      {/* right-8 keeps tail off the rounded corner (rounded-2xl = 16px radius = right-4 is exactly the curve start) */}
       <svg
-        className="absolute right-4"
-        style={{ bottom: -6 }}
+        className="absolute right-8"
+        style={{ bottom: -5 }}
         width="12"
         height="7"
         viewBox="0 0 12 7"
