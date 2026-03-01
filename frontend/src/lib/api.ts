@@ -32,7 +32,7 @@ export interface AttendanceFilters {
 }
 
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api`,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -103,7 +103,7 @@ export const authApi = {
 }
 
 // Public Axios instance — no auth interceptors (used by LandingPage)
-const publicApi = axios.create({ baseURL: '/api' })
+const publicApi = axios.create({ baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api` })
 
 export const galleryApi = {
   getVisible: () =>
