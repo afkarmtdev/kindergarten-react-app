@@ -23,7 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     if (token) {
-      authApi.me()
+      authApi
+        .me()
         .then(setUser)
         .catch(() => localStorage.removeItem('access_token'))
         .finally(() => setLoading(false))
@@ -45,12 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- context + hook intentionally co-located
 export const useAuth = () => {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')

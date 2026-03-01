@@ -1,3 +1,5 @@
+import { APP_NAME } from './version'
+
 export const translations = {
   en: {
     // Nav
@@ -27,6 +29,7 @@ export const translations = {
     monthlySummary: 'Monthly Summary',
     noAttendanceYet: 'No attendance recorded yet today',
     noDataYet: 'No data for this month yet',
+    noDataYetSub: 'Shows a status breakdown once attendance is marked this month',
     ofStudents: 'of {n} students',
 
     // Students page
@@ -126,7 +129,8 @@ export const translations = {
     heroPart1: 'Where little minds',
     heroHighlight: 'grow big',
     heroPart2: 'ideas',
-    heroSubtitle: 'A warm, loving kindergarten where curiosity is celebrated, friendships are formed, and every child discovers the joy of learning.',
+    heroSubtitle:
+      'A warm, loving kindergarten where curiosity is celebrated, friendships are formed, and every child discovers the joy of learning.',
     bookTour: 'Book a Tour',
     ourPrograms: 'Our Programs',
 
@@ -154,16 +158,37 @@ export const translations = {
 
     // Landing page — Testimonials
     testimonialsTitle: 'What parents say',
-    testimonialsSubtitle: 'Hear from our happy KinderCare families',
+    testimonialsSubtitle: `Hear from our happy ${APP_NAME} families`,
 
     // Landing page — CTA
     ctaTitle: 'Ready to join our family?',
-    ctaSubtitle: 'Schedule a visit and see why parents love KinderCare.',
+    ctaSubtitle: `Schedule a visit and see why parents love ${APP_NAME}.`,
     scheduleVisit: 'Schedule a Visit',
 
     // Landing page — Gallery
-    galleryTitle: 'Life at KinderCare',
+    galleryTitle: `Life at ${APP_NAME}`,
     gallerySubtitle: 'A peek into our colourful, joyful classrooms',
+
+    // Student profile page
+    backToStudents: 'Back to Students',
+    attendanceHistory: 'Attendance History',
+    noAttendanceRecords: 'No attendance records yet',
+    totalRecorded: 'Total Recorded',
+    presentRate: 'Present Rate',
+
+    // Bulk import CSV
+    importCsv: 'Import CSV',
+    bulkImport: 'Bulk Import Students',
+    csvFormatHint:
+      'CSV columns: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
+    importPreview: 'Preview ({n} rows)',
+    validRows: '{n} valid',
+    invalidRows: '{n} invalid',
+    willBeSkipped: 'Invalid rows will be skipped',
+    importStudents: 'Import {n} Students',
+    importSuccess: 'Successfully imported {n} students',
+    importFailed: 'Failed rows',
+    importResult: 'Import Complete',
 
     // Admin — Gallery management
     gallery: 'Gallery',
@@ -175,6 +200,184 @@ export const translations = {
     noGalleryPhotos: 'No photos yet',
     addFirstPhoto: 'Add your first gallery photo to get started!',
     removePhotoConfirm: 'Remove photo "{caption}"?',
+
+    // Admin — Announcements
+    announcements: 'Announcements',
+    addAnnouncement: 'Add Announcement',
+    editAnnouncement: 'Edit Announcement',
+    noAnnouncementsFound: 'No announcements yet',
+    addFirstAnnouncement: 'Post your first announcement to get started!',
+    announcementTitle: 'Title',
+    announcementBody: 'Message',
+    category: 'Category',
+    pinned: 'Pinned',
+    expiresAt: 'Expiry Date (optional)',
+    categoryGeneral: 'General',
+    categoryHoliday: 'Holiday',
+    categoryEvent: 'Event',
+    categoryReminder: 'Reminder',
+    pinnedBadge: 'Pinned',
+    expiredBadge: 'Expired',
+    allCategories: 'All Categories',
+    uploadBanner: 'Upload banner image',
+    changeBanner: 'Change banner image',
+    removeAnnouncementConfirm: 'Remove announcement "{title}"?',
+
+    // Landing page — Notices
+    noticesTitle: 'School Notices',
+    noticesSubtitle: `Stay up to date with the latest news and announcements from ${APP_NAME}`,
+    noticesEmptyTitle: 'All quiet for now!',
+    noticesEmptySubtitle:
+      'Check back soon for school news, upcoming events, and important updates.',
+
+    // Loading messages (CuteLoader)
+    loadingMsg0: 'Counting crayons...',
+    loadingMsg1: 'Tying shoelaces...',
+    loadingMsg2: 'Sharpening pencils...',
+    loadingMsg3: 'Feeding the goldfish...',
+    loadingMsg4: 'Sorting building blocks...',
+    loadingMsg5: 'Drawing rainbows...',
+    loadingMsg6: 'Watering the sunflowers...',
+    loadingMsg7: 'Lining up the teddy bears...',
+    loadingMsg8: 'Singing the ABCs...',
+    loadingMsg9: 'Chasing butterflies...',
+    loadingMsg10: 'Blowing up balloons...',
+    loadingMsg11: 'Reading storytime books...',
+
+    // Birthdays
+    todaysBirthdays: "Today's Birthdays",
+    birthdayToday: 'Birthday today!',
+    noBirthdaysToday: 'No birthdays today',
+    noBirthdaysSub: 'Check back tomorrow!',
+
+    // Settings page
+    settingsPage: 'Settings',
+    documentNumbering: 'Receipt Number Format',
+    documentNumberingDesc: 'Configure how receipt numbers are automatically generated',
+    segmentType: 'Type',
+    segmentConstant: 'Constant',
+    segmentYear: 'Year',
+    segmentMonth: 'Month',
+    segmentSerial: 'Serial No.',
+    segmentValue: 'Value',
+    segmentTotalChars: 'Total Chars',
+    segmentResetBy: 'Reset By',
+    segmentStartFrom: 'Start From',
+    resetNoReset: 'No Reset',
+    resetMonthly: 'Monthly',
+    resetYearly: 'Yearly',
+    addSegment: 'Add Segment',
+    saveFormat: 'Save Format',
+    formatPreview: 'Preview',
+    formatSaved: 'Format saved',
+    autoIndicator: 'Auto',
+    formatWarning: 'Changing the format will not renumber existing receipts.',
+    serialMustBeLast: 'Serial number must be the last segment',
+    noNumberingSetup:
+      'Receipt numbering is not configured. Please set it up in Settings before recording payments.',
+    confirmFormatChange: 'Change Receipt Format?',
+    confirmFormatChangeBody:
+      'You have existing receipts. This only affects future receipts — existing receipt numbers remain unchanged.',
+    confirmFormatChangeBtn: 'Yes, change format',
+
+    // Fee Plans
+    feePlans: 'Fee Plans',
+    fees: 'Fees',
+    addFeePlan: 'Add Fee Plan',
+    editFeePlan: 'Edit Fee Plan',
+    searchFeePlans: 'Search plans...',
+    noFeePlansFound: 'No fee plans yet',
+    addFirstFeePlan: 'Create a fee plan to quickly generate fees for your classes!',
+    feePlanName: 'Plan Name',
+    feeType: 'Fee Type',
+    feeAmount: 'Amount (RM)',
+    feeDescription: 'Description (optional)',
+    usePlan: 'Use Plan',
+    removeFeePlanConfirm: 'Remove fee plan "{name}"?',
+    feeTypeTuition: 'Tuition',
+    feeTypeActivity: 'Activity',
+    feeTypeUniform: 'Uniform',
+    feeTypeRegistration: 'Registration',
+    feeTypeOther: 'Other',
+
+    // Fees page
+    generateFees: 'Generate Fees',
+    addFeeRecord: 'Add Fee Record',
+    editFeeRecord: 'Edit Fee Record',
+    searchFees: 'Search by student name...',
+    noFeesFound: 'No fee records found',
+    addFirstFee: 'Generate fees or add individual records to get started!',
+    feeStudent: 'Student',
+    feeClass: 'Class',
+    feeDesc: 'Description',
+    feeDueDate: 'Due Date',
+    feeOwed: 'Owed',
+    feeDiscount: 'Discount',
+    feePaid: 'Paid',
+    feeStatus: 'Status',
+    feeBalance: 'Balance',
+    feeStatusUnpaid: 'Unpaid',
+    feeStatusPartial: 'Partial',
+    feeStatusPaid: 'Paid',
+    feeStatusWaived: 'Waived',
+    allStatuses: 'All Statuses',
+    recordPayment: 'Record Payment',
+    printReceipt: 'Print Receipt',
+    removeFeeConfirm: 'Remove this fee record?',
+    discountReason: 'Discount Reason',
+    discountAmount: 'Discount Amount (RM)',
+
+    // Generate fees modal
+    generateFeesTitle: 'Generate Fees',
+    useFeePlan: 'Use a Fee Plan',
+    customFee: 'Custom Fee',
+    selectPlan: 'Select a fee plan',
+    targetClass: 'Target',
+    allStudents: 'All Students',
+    selectTargetClass: 'Select a class',
+    dueDate: 'Due Date',
+    generatePreview: 'Preview: {n} students will receive this fee',
+    confirmGenerate: 'Confirm & Generate',
+    generating: 'Generating...',
+
+    // Record payment modal
+    recordPaymentTitle: 'Record Payment',
+    paymentAmount: 'Payment Amount (RM)',
+    totalOwed: 'Total Owed',
+    totalPaid: 'Total Paid',
+    balanceRemaining: 'Balance Remaining',
+    paymentSuccess: 'Payment recorded',
+
+    // Receipt
+    receiptTitle: 'RECEIPT',
+    receiptNumber: 'Receipt No.',
+    receiptDate: 'Date',
+    billTo: 'Bill To',
+    receiptDescription: 'Description',
+    receiptAmountOwed: 'Amount',
+    receiptDiscount: 'Discount',
+    receiptTotal: 'Total',
+    receiptPreviouslyPaid: 'Previously Paid',
+    receiptThisPayment: 'This Payment',
+    receiptBalance: 'Balance Due',
+    receiptThankYou: 'Thank you for your payment!',
+    printButton: 'Print',
+    closeReceipt: 'Close',
+
+    // Annual fee statement
+    feeStatement: 'Fee Statement',
+    feeStatementTitle: 'Annual Fee Statement',
+    statementYear: 'Year',
+    statementTotalPaid: 'Total Paid',
+    viewStatement: 'View Statement',
+    printStatement: 'Print Statement',
+
+    // Fee collection dashboard card
+    feeCollection: 'Fee Collection',
+    totalCharged: 'Total Charged',
+    totalCollected: 'Total Collected',
+    outstanding: 'Outstanding',
+    overdueCount: 'Overdue',
   },
 
   ms: {
@@ -205,6 +408,7 @@ export const translations = {
     monthlySummary: 'Ringkasan Bulanan',
     noAttendanceYet: 'Tiada kehadiran direkodkan hari ini',
     noDataYet: 'Tiada data untuk bulan ini',
+    noDataYetSub: 'Menunjukkan pecahan status apabila kehadiran direkodkan bulan ini',
     ofStudents: 'daripada {n} pelajar',
 
     // Students page
@@ -304,7 +508,8 @@ export const translations = {
     heroPart1: 'Di mana minda kecil',
     heroHighlight: 'tumbuh besar',
     heroPart2: 'dengan idea',
-    heroSubtitle: 'Tadika yang mesra dan penuh kasih sayang di mana rasa ingin tahu dirai, persahabatan terbentuk, dan setiap kanak-kanak menemui kegembiraan pembelajaran.',
+    heroSubtitle:
+      'Tadika yang mesra dan penuh kasih sayang di mana rasa ingin tahu dirai, persahabatan terbentuk, dan setiap kanak-kanak menemui kegembiraan pembelajaran.',
     bookTour: 'Tempah Lawatan',
     ourPrograms: 'Program Kami',
 
@@ -316,7 +521,8 @@ export const translations = {
 
     // Landing page — Features
     featuresTitle: 'Segala yang diperlukan anak anda',
-    featuresSubtitle: 'Kurikulum holistik kami memupuk keseluruhan kanak-kanak — minda, tubuh, dan hati.',
+    featuresSubtitle:
+      'Kurikulum holistik kami memupuk keseluruhan kanak-kanak — minda, tubuh, dan hati.',
     featureLearnTitle: 'Belajar & Meneroka',
     featureLearnDesc: 'Pembelajaran praktikal melalui permainan dan penemuan',
     featureSafeTitle: 'Persekitaran Selamat',
@@ -332,16 +538,37 @@ export const translations = {
 
     // Landing page — Testimonials
     testimonialsTitle: 'Apa kata ibu bapa',
-    testimonialsSubtitle: 'Dengar dari keluarga KinderCare yang gembira',
+    testimonialsSubtitle: `Dengar dari keluarga ${APP_NAME} yang gembira`,
 
     // Landing page — CTA
     ctaTitle: 'Bersedia untuk menyertai keluarga kami?',
-    ctaSubtitle: 'Jadualkan lawatan dan lihat mengapa ibu bapa menyukai KinderCare.',
+    ctaSubtitle: `Jadualkan lawatan dan lihat mengapa ibu bapa menyukai ${APP_NAME}.`,
     scheduleVisit: 'Jadualkan Lawatan',
 
     // Landing page — Gallery
-    galleryTitle: 'Kehidupan di KinderCare',
+    galleryTitle: `Kehidupan di ${APP_NAME}`,
     gallerySubtitle: 'Sekilas pandang bilik darjah kami yang ceria',
+
+    // Student profile page
+    backToStudents: 'Kembali ke Pelajar',
+    attendanceHistory: 'Sejarah Kehadiran',
+    noAttendanceRecords: 'Tiada rekod kehadiran lagi',
+    totalRecorded: 'Jumlah Direkod',
+    presentRate: 'Kadar Hadir',
+
+    // Bulk import CSV
+    importCsv: 'Import CSV',
+    bulkImport: 'Import Pelajar Pukal',
+    csvFormatHint:
+      'Lajur CSV: full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone',
+    importPreview: 'Pratonton ({n} baris)',
+    validRows: '{n} sah',
+    invalidRows: '{n} tidak sah',
+    willBeSkipped: 'Baris tidak sah akan dilangkau',
+    importStudents: 'Import {n} Pelajar',
+    importSuccess: 'Berjaya import {n} pelajar',
+    importFailed: 'Baris gagal',
+    importResult: 'Import Selesai',
 
     // Admin — Gallery management
     gallery: 'Galeri',
@@ -353,6 +580,184 @@ export const translations = {
     noGalleryPhotos: 'Tiada foto lagi',
     addFirstPhoto: 'Tambah foto galeri pertama anda untuk bermula!',
     removePhotoConfirm: 'Buang foto "{caption}"?',
+
+    // Admin — Announcements
+    announcements: 'Pengumuman',
+    addAnnouncement: 'Tambah Pengumuman',
+    editAnnouncement: 'Edit Pengumuman',
+    noAnnouncementsFound: 'Tiada pengumuman lagi',
+    addFirstAnnouncement: 'Hantar pengumuman pertama anda untuk bermula!',
+    announcementTitle: 'Tajuk',
+    announcementBody: 'Mesej',
+    category: 'Kategori',
+    pinned: 'Ditanda',
+    expiresAt: 'Tarikh Tamat (pilihan)',
+    categoryGeneral: 'Umum',
+    categoryHoliday: 'Cuti',
+    categoryEvent: 'Acara',
+    categoryReminder: 'Peringatan',
+    pinnedBadge: 'Ditanda',
+    expiredBadge: 'Tamat',
+    allCategories: 'Semua Kategori',
+    uploadBanner: 'Muat naik imej banner',
+    changeBanner: 'Tukar imej banner',
+    removeAnnouncementConfirm: 'Buang pengumuman "{title}"?',
+
+    // Landing page — Notices
+    noticesTitle: 'Notis Sekolah',
+    noticesSubtitle: `Ikuti berita dan pengumuman terkini daripada ${APP_NAME}`,
+    noticesEmptyTitle: 'Tiada pengumuman buat masa ini!',
+    noticesEmptySubtitle:
+      'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',
+
+    // Loading messages (CuteLoader)
+    loadingMsg0: 'Mengira krayon...',
+    loadingMsg1: 'Mengikat tali kasut...',
+    loadingMsg2: 'Menajamkan pensel...',
+    loadingMsg3: 'Memberi makan ikan emas...',
+    loadingMsg4: 'Menyusun blok bangunan...',
+    loadingMsg5: 'Melukis pelangi...',
+    loadingMsg6: 'Menyiram bunga matahari...',
+    loadingMsg7: 'Mengatur teddy bear...',
+    loadingMsg8: 'Menyanyikan ABC...',
+    loadingMsg9: 'Mengejar rama-rama...',
+    loadingMsg10: 'Meniup belon...',
+    loadingMsg11: 'Membaca buku cerita...',
+
+    // Birthdays
+    todaysBirthdays: 'Hari Jadi Hari Ini',
+    birthdayToday: 'Hari jadi hari ini!',
+    noBirthdaysToday: 'Tiada hari jadi hari ini',
+    noBirthdaysSub: 'Semak semula esok!',
+
+    // Settings page
+    settingsPage: 'Tetapan',
+    documentNumbering: 'Format Nombor Resit',
+    documentNumberingDesc: 'Tetapkan cara nombor resit dijana secara automatik',
+    segmentType: 'Jenis',
+    segmentConstant: 'Tetap',
+    segmentYear: 'Tahun',
+    segmentMonth: 'Bulan',
+    segmentSerial: 'No. Siri',
+    segmentValue: 'Nilai',
+    segmentTotalChars: 'Jumlah Aksara',
+    segmentResetBy: 'Set Semula',
+    segmentStartFrom: 'Mula Dari',
+    resetNoReset: 'Tiada Set Semula',
+    resetMonthly: 'Bulanan',
+    resetYearly: 'Tahunan',
+    addSegment: 'Tambah Segmen',
+    saveFormat: 'Simpan Format',
+    formatPreview: 'Pratonton',
+    formatSaved: 'Format disimpan',
+    autoIndicator: 'Auto',
+    formatWarning: 'Menukar format tidak akan menomborkan semula resit yang sedia ada.',
+    serialMustBeLast: 'No. siri mestilah segmen terakhir',
+    noNumberingSetup:
+      'Penomboran resit belum dikonfigurasikan. Sila tetapkan dalam Tetapan dahulu.',
+    confirmFormatChange: 'Tukar Format Resit?',
+    confirmFormatChangeBody:
+      'Terdapat resit sedia ada. Ini hanya memberi kesan kepada resit masa hadapan — nombor resit sedia ada tidak berubah.',
+    confirmFormatChangeBtn: 'Ya, tukar format',
+
+    // Fee Plans
+    feePlans: 'Pelan Fi',
+    fees: 'Fi',
+    addFeePlan: 'Tambah Pelan Fi',
+    editFeePlan: 'Edit Pelan Fi',
+    searchFeePlans: 'Cari pelan...',
+    noFeePlansFound: 'Tiada pelan fi lagi',
+    addFirstFeePlan: 'Cipta pelan fi untuk menjana fi bagi kelas anda dengan cepat!',
+    feePlanName: 'Nama Pelan',
+    feeType: 'Jenis Fi',
+    feeAmount: 'Amaun (RM)',
+    feeDescription: 'Penerangan (pilihan)',
+    usePlan: 'Guna Pelan',
+    removeFeePlanConfirm: 'Buang pelan fi "{name}"?',
+    feeTypeTuition: 'Yuran',
+    feeTypeActivity: 'Aktiviti',
+    feeTypeUniform: 'Uniform',
+    feeTypeRegistration: 'Pendaftaran',
+    feeTypeOther: 'Lain-lain',
+
+    // Fees page
+    generateFees: 'Jana Fi',
+    addFeeRecord: 'Tambah Rekod Fi',
+    editFeeRecord: 'Edit Rekod Fi',
+    searchFees: 'Cari nama pelajar...',
+    noFeesFound: 'Tiada rekod fi ditemui',
+    addFirstFee: 'Jana fi atau tambah rekod individu untuk bermula!',
+    feeStudent: 'Pelajar',
+    feeClass: 'Kelas',
+    feeDesc: 'Penerangan',
+    feeDueDate: 'Tarikh Akhir',
+    feeOwed: 'Perlu Dibayar',
+    feeDiscount: 'Diskaun',
+    feePaid: 'Telah Dibayar',
+    feeStatus: 'Status',
+    feeBalance: 'Baki',
+    feeStatusUnpaid: 'Belum Bayar',
+    feeStatusPartial: 'Separa',
+    feeStatusPaid: 'Selesai',
+    feeStatusWaived: 'Dikecualikan',
+    allStatuses: 'Semua Status',
+    recordPayment: 'Rekod Pembayaran',
+    printReceipt: 'Cetak Resit',
+    removeFeeConfirm: 'Buang rekod fi ini?',
+    discountReason: 'Sebab Diskaun',
+    discountAmount: 'Amaun Diskaun (RM)',
+
+    // Generate fees modal
+    generateFeesTitle: 'Jana Fi',
+    useFeePlan: 'Guna Pelan Fi',
+    customFee: 'Fi Tersuai',
+    selectPlan: 'Pilih pelan fi',
+    targetClass: 'Sasaran',
+    allStudents: 'Semua Pelajar',
+    selectTargetClass: 'Pilih kelas',
+    dueDate: 'Tarikh Akhir',
+    generatePreview: 'Pratonton: {n} pelajar akan menerima fi ini',
+    confirmGenerate: 'Sahkan & Jana',
+    generating: 'Menjana...',
+
+    // Record payment modal
+    recordPaymentTitle: 'Rekod Pembayaran',
+    paymentAmount: 'Amaun Pembayaran (RM)',
+    totalOwed: 'Jumlah Perlu Dibayar',
+    totalPaid: 'Jumlah Telah Dibayar',
+    balanceRemaining: 'Baki Belum Bayar',
+    paymentSuccess: 'Pembayaran direkodkan',
+
+    // Receipt
+    receiptTitle: 'RESIT',
+    receiptNumber: 'No. Resit',
+    receiptDate: 'Tarikh',
+    billTo: 'Kepada',
+    receiptDescription: 'Penerangan',
+    receiptAmountOwed: 'Amaun',
+    receiptDiscount: 'Diskaun',
+    receiptTotal: 'Jumlah',
+    receiptPreviouslyPaid: 'Bayaran Sebelum',
+    receiptThisPayment: 'Bayaran Ini',
+    receiptBalance: 'Baki Tertunggak',
+    receiptThankYou: 'Terima kasih atas pembayaran anda!',
+    printButton: 'Cetak',
+    closeReceipt: 'Tutup',
+
+    // Annual fee statement
+    feeStatement: 'Penyata Fi',
+    feeStatementTitle: 'Penyata Fi Tahunan',
+    statementYear: 'Tahun',
+    statementTotalPaid: 'Jumlah Dibayar',
+    viewStatement: 'Lihat Penyata',
+    printStatement: 'Cetak Penyata',
+
+    // Fee collection dashboard card
+    feeCollection: 'Kutipan Fi',
+    totalCharged: 'Jumlah Dicaj',
+    totalCollected: 'Jumlah Dikutip',
+    outstanding: 'Tertunggak',
+    overdueCount: 'Tertunggak',
   },
 } as const
 

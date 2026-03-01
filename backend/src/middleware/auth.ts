@@ -10,7 +10,10 @@ export async function authMiddleware(c: Context, next: Next) {
 
   const token = authHeader.split(' ')[1]
 
-  const { data: { user }, error } = await supabase.auth.getUser(token)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token)
 
   if (error || !user) {
     return c.json({ error: 'Invalid token' }, 401)

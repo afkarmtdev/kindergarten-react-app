@@ -15,7 +15,7 @@ const attendanceSchema = z.object({
 
 const datePageSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(1000).default(20),
   search: z.string().optional(),
   status: z.enum(['present', 'absent', 'late', 'excused', '']).optional(),
 })
@@ -123,9 +123,7 @@ attendance.get('/stats/summary', async (c) => {
   const targetYear = year || new Date().getFullYear()
 
   const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`
-  const endDate = new Date(Number(targetYear), Number(targetMonth), 0)
-    .toISOString()
-    .split('T')[0]
+  const endDate = new Date(Number(targetYear), Number(targetMonth), 0).toISOString().split('T')[0]
 
   const { data, error } = await supabase
     .from('attendance')

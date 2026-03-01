@@ -83,3 +83,89 @@ create policy "Auth users can delete gallery" on gallery_items for delete to aut
 
 -- Anonymous users (LandingPage visitors) — read visible items only
 create policy "Anyone can read visible gallery" on gallery_items for select to anon using (is_visible = true);
+
+-- Announcements
+create table announcements (
+  id          uuid primary key default uuid_generate_v4(),
+  title       text not null,
+  body        text not null,
+  category    text check (category in ('general','holiday','event','reminder')) not null default 'general',
+  image_url   text,
+  is_pinned   boolean not null default false,
+  expires_at  date,
+  created_at  timestamptz default now()
+);
+
+create index idx_announcements_created on announcements(created_at desc);
+create index idx_announcements_pinned  on announcements(is_pinned);
+
+alter table announcements enable row level security;
+
+-- Authenticated users (admin) — full CRUD
+create policy "Auth users can read announcements"   on announcements for select to authenticated using (true);
+create policy "Auth users can insert announcements" on announcements for insert to authenticated with check (true);
+create policy "Auth users can update announcements" on announcements for update to authenticated using (true);
+create policy "Auth users can delete announcements" on announcements for delete to authenticated using (true);
+
+-- Anonymous users (LandingPage visitors) — non-expired only
+create policy "Anyone can read active announcements" on announcements
+  for select to anon
+  using (expires_at is null or expires_at >= current_date);
+
+-- Document Numbering
+create table document_numbering (
+  id             uuid primary key default uuid_generate_v4(),
+  document_type  text unique not null,
+  segments       jsonb not null default '[]',
+  current_serial integer not null default 0,
+  last_reset_at  timestamptz,
+  updated_at     timestamptz default now()
+);
+
+alter table document_numbering enable row level security;
+create policy "Auth users can read doc numbering"   on document_numbering for select to authenticated using (true);
+create policy "Auth users can insert doc numbering" on document_numbering for insert to authenticated with check (true);
+create policy "Auth users can update doc numbering" on document_numbering for update to authenticated using (true);
+
+-- Fee Plans
+create table fee_plans (
+  id          uuid primary key default uuid_generate_v4(),
+  name        text not null,
+  type        text check (type in ('tuition','activity','uniform','registration','other')) not null default 'tuition',
+  amount      numeric(10,2) not null,
+  description text,
+  created_at  timestamptz default now()
+);
+
+alter table fee_plans enable row level security;
+create policy "Auth users can read fee plans"   on fee_plans for select to authenticated using (true);
+create policy "Auth users can insert fee plans" on fee_plans for insert to authenticated with check (true);
+create policy "Auth users can update fee plans" on fee_plans for update to authenticated using (true);
+create policy "Auth users can delete fee plans" on fee_plans for delete to authenticated using (true);
+
+-- Fee Records
+create table fee_records (
+  id              uuid primary key default uuid_generate_v4(),
+  student_id      uuid references students(id) on delete cascade not null,
+  type            text check (type in ('tuition','activity','uniform','registration','other')) not null default 'tuition',
+  description     text not null,
+  amount_owed     numeric(10,2) not null,
+  amount_paid     numeric(10,2) not null default 0,
+  discount_amount numeric(10,2) not null default 0,
+  discount_reason text,
+  receipt_number  text unique,
+  status          text check (status in ('unpaid','partial','paid','waived')) not null default 'unpaid',
+  due_date        date,
+  paid_at         timestamptz,
+  created_at      timestamptz default now()
+);
+
+create index idx_fee_records_student  on fee_records(student_id);
+create index idx_fee_records_status   on fee_records(status);
+create index idx_fee_records_due_date on fee_records(due_date);
+
+alter table fee_records enable row level security;
+create policy "Auth users can read fee records"   on fee_records for select to authenticated using (true);
+create policy "Auth users can insert fee records" on fee_records for insert to authenticated with check (true);
+create policy "Auth users can update fee records" on fee_records for update to authenticated using (true);
+create policy "Auth users can delete fee records" on fee_records for delete to authenticated using (true);

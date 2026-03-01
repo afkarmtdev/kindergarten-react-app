@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { stripHtml } from '../lib/sanitise'
 
 const gallery = new Hono()
 
@@ -52,11 +53,7 @@ gallery.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single gallery item
 gallery.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data, error } = await supabase
-    .from('gallery_items')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data, error } = await supabase.from('gallery_items').select('*').eq('id', id).single()
 
   if (error) return c.json({ error: error.message }, 404)
   return c.json(data)
@@ -64,12 +61,9 @@ gallery.get('/:id', async (c) => {
 
 // POST create gallery item
 gallery.post('/', zValidator('json', gallerySchema), async (c) => {
-  const body = c.req.valid('json')
-  const { data, error } = await supabase
-    .from('gallery_items')
-    .insert(body)
-    .select()
-    .single()
+  const raw = c.req.valid('json')
+  const body = { ...raw, caption: raw.caption ? stripHtml(raw.caption) : raw.caption }
+  const { data, error } = await supabase.from('gallery_items').insert(body).select().single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -78,7 +72,8 @@ gallery.post('/', zValidator('json', gallerySchema), async (c) => {
 // PUT update gallery item
 gallery.put('/:id', zValidator('json', gallerySchema.partial()), async (c) => {
   const { id } = c.req.param()
-  const body = c.req.valid('json')
+  const raw = c.req.valid('json')
+  const body = { ...raw, caption: raw.caption ? stripHtml(raw.caption) : raw.caption }
 
   const { data, error } = await supabase
     .from('gallery_items')

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { X, School } from 'lucide-react'
 import { classesApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
@@ -41,12 +42,15 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
       classroom ? classesApi.update(classroom.id, data) : classesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] })
+      toast.success(classroom ? 'Class updated' : 'Class created')
       onClose()
+    },
+    onError: () => {
+      toast.error('Failed to save class. Please try again.')
     },
   })
 
-  const set = (k: keyof typeof form, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   const validate = () => {
     const e: Partial<typeof empty> = {}
@@ -80,10 +84,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md">
@@ -119,9 +120,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
               className={inputCls('name')}
               placeholder="Sunflower"
             />
-            {errors.name && (
-              <p className="text-xs text-red-500 mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </div>
 
           {/* Teacher Name */}
@@ -154,9 +153,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
               onChange={(e) => set('capacity', e.target.value)}
               className={inputCls('capacity')}
             />
-            {errors.capacity && (
-              <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>
-            )}
+            {errors.capacity && <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>}
           </div>
 
           {mutation.isError && (

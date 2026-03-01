@@ -10,8 +10,29 @@ const loginSchema = z.object({
   password: z.string().min(6),
 })
 
+// ── Simple in-memory rate limiter: 10 attempts per IP per minute ──────────────
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const record = loginAttempts.get(ip)
+
+  if (!record || now > record.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + 60_000 })
+    return true
+  }
+  if (record.count >= 10) return false
+  record.count++
+  return true
+}
+
 // POST login
 auth.post('/login', zValidator('json', loginSchema), async (c) => {
+  const ip = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown'
+  if (!checkRateLimit(ip)) {
+    return c.json({ error: 'Too many login attempts. Please wait a minute and try again.' }, 429)
+  }
+
   const { email, password } = c.req.valid('json')
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -40,7 +61,10 @@ auth.get('/me', async (c) => {
   if (!authHeader) return c.json({ error: 'No token' }, 401)
 
   const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error } = await supabase.auth.getUser(token)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token)
 
   if (error || !user) return c.json({ error: 'Invalid token' }, 401)
   return c.json(user)

@@ -1,29 +1,61 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import { CalendarCheck, Check, X, Clock, FileX, Save, Download } from 'lucide-react'
 import { attendanceApi, studentsApi } from '@/lib/api'
 import { useAttendanceStore } from '@/store/attendanceStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { Student, AttendanceRecord } from '@/types'
 
 const LIMIT = 20
 
 const STATUS_CONFIG = {
-  present: { labelKey: 'present' as const, icon: Check, bg: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-400 dark:border-green-800', dot: 'bg-green-500' },
-  absent:  { labelKey: 'absent'  as const, icon: X,     bg: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800',       dot: 'bg-red-500' },
-  late:    { labelKey: 'late'    as const, icon: Clock,  bg: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800', dot: 'bg-yellow-500' },
-  excused: { labelKey: 'excused' as const, icon: FileX,  bg: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800', dot: 'bg-blue-500' },
+  present: {
+    labelKey: 'present' as const,
+    icon: Check,
+    bg: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-400 dark:border-green-800',
+    dot: 'bg-green-500',
+  },
+  absent: {
+    labelKey: 'absent' as const,
+    icon: X,
+    bg: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800',
+    dot: 'bg-red-500',
+  },
+  late: {
+    labelKey: 'late' as const,
+    icon: Clock,
+    bg: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800',
+    dot: 'bg-yellow-500',
+  },
+  excused: {
+    labelKey: 'excused' as const,
+    icon: FileX,
+    bg: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800',
+    dot: 'bg-blue-500',
+  },
 } as const
 
 type Status = keyof typeof STATUS_CONFIG
 
 export function AttendancePage() {
+  usePageTitle('Attendance')
   const t = useT()
   const queryClient = useQueryClient()
-  const { selectedDate, page, statusFilter, pendingChanges, setDate, setPage, setStatusFilter, setPending, clearPending } =
-    useAttendanceStore()
+  const {
+    selectedDate,
+    page,
+    statusFilter,
+    pendingChanges,
+    setDate,
+    setPage,
+    setStatusFilter,
+    setPending,
+    clearPending,
+  } = useAttendanceStore()
 
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['students', { page, limit: LIMIT }],
@@ -43,6 +75,10 @@ export function AttendancePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] })
       clearPending()
+      toast.success('Attendance saved')
+    },
+    onError: () => {
+      toast.error('Failed to save attendance. Please try again.')
     },
   })
 
@@ -61,7 +97,10 @@ export function AttendancePage() {
       ? Object.entries(pendingChanges).filter(([, s]) => s === statusFilter)
       : Object.entries(pendingChanges)
     const toSave = filtered.map(([student_id, status]) => ({
-      student_id, status, date: selectedDate, recorded_by: 'admin',
+      student_id,
+      status,
+      date: selectedDate,
+      recorded_by: 'admin',
     }))
     if (toSave.length === 0) return
     bulkMutation.mutate(toSave)
@@ -73,16 +112,17 @@ export function AttendancePage() {
     ? students.filter((s: Student) => getStatus(s.id) === statusFilter)
     : students
 
-  const saveLabel = pendingCount === 1
-    ? t('saveChanges', { n: pendingCount })
-    : t('saveChangesPlural', { n: pendingCount })
+  const saveLabel =
+    pendingCount === 1
+      ? t('saveChanges', { n: pendingCount })
+      : t('saveChangesPlural', { n: pendingCount })
 
   const handleExportCsv = async () => {
     const all = await attendanceApi.getByDate(selectedDate, { limit: 1000 })
     const rows = all.data ?? []
 
     const header = 'Student Name,Class,Status,Notes,Date'
-    const lines = rows.map((r) => {
+    const lines = rows.map((r: AttendanceRecord) => {
       const name = (r.students?.full_name ?? '').replace(/,/g, ' ')
       const cls = (r.students?.class_name ?? '').replace(/,/g, ' ')
       const notes = (r.notes ?? '').replace(/,/g, ' ')
@@ -100,32 +140,34 @@ export function AttendancePage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{t('attendance')}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+            {t('attendance')}
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
             {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 bg-white dark:bg-gray-800 dark:text-gray-200"
+            className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 bg-white dark:bg-gray-800 dark:text-gray-200"
           />
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+            className="flex items-center justify-center gap-2 flex-1 md:flex-none border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
           >
             <Download size={15} />
             {t('exportCsv')}
           </button>
           <button
             onClick={markAllPresent}
-            className="border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
+            className="flex-1 md:flex-none border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
           >
             {t('markAllPresent')}
           </button>
@@ -133,7 +175,7 @@ export function AttendancePage() {
             <button
               onClick={handleSave}
               disabled={bulkMutation.isPending}
-              className="flex items-center gap-2 bg-kinder-green text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-600 transition-all disabled:opacity-60 shadow-sm"
+              className="flex items-center justify-center gap-2 flex-1 md:flex-none bg-kinder-green text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-600 transition-all disabled:opacity-60 shadow-sm"
             >
               <Save size={16} />
               {bulkMutation.isPending ? t('saving') : saveLabel}
@@ -172,9 +214,15 @@ export function AttendancePage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60">
-              <th className="text-left px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('student')}</th>
-              <th className="text-left px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('class')}</th>
-              <th className="text-left px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('markAttendance')}</th>
+              <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {t('student')}
+              </th>
+              <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {t('class')}
+              </th>
+              <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {t('markAttendance')}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -190,17 +238,19 @@ export function AttendancePage() {
                         isPending
                           ? 'bg-amber-50/40 dark:bg-amber-900/10'
                           : i % 2 === 0
-                          ? 'bg-white dark:bg-gray-900'
-                          : 'bg-gray-50/30 dark:bg-gray-800/30'
+                            ? 'bg-white dark:bg-gray-900'
+                            : 'bg-gray-50/30 dark:bg-gray-800/30'
                       }`}
                     >
-                      <td className="px-6 py-3.5">
+                      <td className="px-3 md:px-6 py-2 md:py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                             {student.full_name[0]}
                           </div>
                           <div>
-                            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{student.full_name}</span>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                              {student.full_name}
+                            </span>
                             {isPending && (
                               <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded-full font-semibold">
                                 {t('unsaved')}
@@ -209,10 +259,12 @@ export function AttendancePage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-3.5">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{student.class_name}</span>
+                      <td className="px-3 md:px-6 py-2 md:py-3.5">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {student.class_name}
+                        </span>
                       </td>
-                      <td className="px-6 py-3.5">
+                      <td className="px-3 md:px-6 py-2 md:py-3.5">
                         <div className="flex gap-1.5 flex-wrap">
                           {(Object.keys(STATUS_CONFIG) as Status[]).map((s) => {
                             const { labelKey, icon: Icon, bg } = STATUS_CONFIG[s]
@@ -244,9 +296,11 @@ export function AttendancePage() {
           <EmptyState
             icon={CalendarCheck}
             title={t('noStudentsToShow')}
-            subtitle={statusFilter
-              ? t('noStudentsMarked', { status: t(statusFilter as Status) })
-              : t('noStudentsEnrolled')}
+            subtitle={
+              statusFilter
+                ? t('noStudentsMarked', { status: t(statusFilter as Status) })
+                : t('noStudentsEnrolled')
+            }
           />
         )}
       </div>

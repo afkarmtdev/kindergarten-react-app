@@ -8,7 +8,12 @@ interface SearchBarProps {
   debounceMs?: number
 }
 
-export function SearchBar({ value, onChange, placeholder = 'Search...', debounceMs = 350 }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChange,
+  placeholder = 'Search...',
+  debounceMs = 350,
+}: SearchBarProps) {
   const [local, setLocal] = useState(value)
 
   useEffect(() => {
@@ -34,7 +39,10 @@ export function SearchBar({ value, onChange, placeholder = 'Search...', debounce
       />
       {local && (
         <button
-          onClick={() => { setLocal(''); onChange('') }}
+          onClick={() => {
+            setLocal('')
+            onChange('')
+          }}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
         >
           <X size={14} />

@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { sanitiseStrings } from '../lib/sanitise'
 
 const classes = new Hono()
 
@@ -71,30 +72,19 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single class with students
 classes.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data: cls, error } = await supabase
-    .from('classrooms')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data: cls, error } = await supabase.from('classrooms').select('*').eq('id', id).single()
 
   if (error) return c.json({ error: error.message }, 404)
 
-  const { data: students } = await supabase
-    .from('students')
-    .select('*')
-    .eq('class_name', cls.name)
+  const { data: students } = await supabase.from('students').select('*').eq('class_name', cls.name)
 
   return c.json({ ...cls, students: students ?? [] })
 })
 
 // POST create class
 classes.post('/', zValidator('json', classSchema), async (c) => {
-  const body = c.req.valid('json')
-  const { data, error } = await supabase
-    .from('classrooms')
-    .insert(body)
-    .select()
-    .single()
+  const body = sanitiseStrings(c.req.valid('json'))
+  const { data, error } = await supabase.from('classrooms').insert(body).select().single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -103,7 +93,7 @@ classes.post('/', zValidator('json', classSchema), async (c) => {
 // PUT update class
 classes.put('/:id', zValidator('json', classSchema.partial()), async (c) => {
   const { id } = c.req.param()
-  const body = c.req.valid('json')
+  const body = sanitiseStrings(c.req.valid('json'))
 
   const { data, error } = await supabase
     .from('classrooms')

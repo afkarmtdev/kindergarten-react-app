@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- Background pill -->
+  <rect width="16" height="16" rx="3" fill="#FF6B35" />
+
+  <!-- Outer ears -->
+  <rect x="1" y="0" width="3" height="3" fill="#4A2A0E" />
+  <rect x="12" y="0" width="3" height="3" fill="#4A2A0E" />
+  <!-- Inner ears (pink) -->
+  <rect x="2" y="0" width="2" height="2" fill="#FFB3C6" />
+  <rect x="13" y="0" width="2" height="2" fill="#FFB3C6" />
+
+  <!-- Head -->
+  <rect x="1" y="2" width="14" height="12" fill="#7B5230" />
+  <!-- Face (lighter muzzle) -->
+  <rect x="4" y="5" width="8" height="6" fill="#C8956B" />
+
+  <!-- Cheeks -->
+  <rect x="4" y="8" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
+  <rect x="10" y="8" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
+
+  <!-- Eyes -->
+  <rect x="4" y="5" width="2" height="2" fill="#1A1A1A" />
+  <rect x="10" y="5" width="2" height="2" fill="#1A1A1A" />
+
+  <!-- Nose -->
+  <rect x="6" y="8" width="4" height="2" fill="#1A1A1A" />
+</svg>

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { X, Camera, Upload, Loader, Eye, EyeOff } from 'lucide-react'
 import { galleryApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
+import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import type { GalleryItem } from '@/types'
 
@@ -48,7 +50,11 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
       item ? galleryApi.update(item.id, data) : galleryApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gallery'] })
+      toast.success(item ? 'Photo updated' : 'Photo added')
       onClose()
+    },
+    onError: () => {
+      toast.error('Failed to save photo. Please try again.')
     },
   })
 
@@ -62,12 +68,12 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
     setUploadError('')
     setUploading(true)
 
-    const ext = file.name.split('.').pop()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const compressed = await compressImage(file)
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
     const { error } = await supabase.storage
       .from('gallery-photos')
-      .upload(path, file, { upsert: false })
+      .upload(path, compressed, { upsert: false })
 
     if (error) {
       setUploadError(t('uploadFailed'))
@@ -75,9 +81,7 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
       return
     }
 
-    const { data: urlData } = supabase.storage
-      .from('gallery-photos')
-      .getPublicUrl(path)
+    const { data: urlData } = supabase.storage.from('gallery-photos').getPublicUrl(path)
 
     set('photo_url', urlData.publicUrl)
     setUploading(false)
@@ -135,7 +139,9 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
                   src={form.photo_url}
                   alt="preview"
                   className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).style.display = 'none'
+                  }}
                 />
               </div>
             )}

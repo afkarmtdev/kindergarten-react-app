@@ -14,7 +14,9 @@
 
   /* Smooth transitions for dark mode + smooth anchor scrolling */
   html {
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
     scroll-behavior: smooth;
   }
 
@@ -57,6 +59,21 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes rainbow-char {
+  0%   { color: hsl(0,   100%, 60%); }
+  14%  { color: hsl(30,  100%, 55%); }
+  28%  { color: hsl(60,  100%, 50%); }
+  42%  { color: hsl(120, 100%, 45%); }
+  57%  { color: hsl(180, 100%, 45%); }
+  71%  { color: hsl(240, 100%, 65%); }
+  85%  { color: hsl(300, 100%, 60%); }
+  100% { color: hsl(360, 100%, 60%); }
 }
