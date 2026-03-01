@@ -71,9 +71,12 @@ kindergarten-app/
 │       │   │   ├── StudentModal.tsx  # Add/Edit student form — full validation, dark mode, i18n
 │       │   │   ├── ClassModal.tsx    # Add/Edit classroom form — full validation, dark mode, i18n
 │       │   │   ├── GalleryModal.tsx       # Add/Edit gallery photo — file upload, caption, order, visibility
-│       │   │   └── AnnouncementModal.tsx  # Add/Edit announcement — title, body, category, banner upload, pinned, expiry
+│       │   │   ├── AnnouncementModal.tsx  # Add/Edit announcement — title, body, category, banner upload, pinned, expiry
+│       │   │   ├── AdminBearIcon.tsx      # Pixel-art SVG bear (viewBox 24×26); eyeState?: 'open'|'half'|'closed'
+│       │   │   ├── AdminBearSpeechBubble.tsx  # Admin-only bubble; variant: 'sleeping'|'waking'|'hidden'; sleeping animates z/z/Z
+│       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
 │       │   └── layout/
-│       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet
+│       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet; uses AdminBearLogo (desktop) + AdminBearIcon (mobile)
 │       │       └── ProtectedRoute.tsx  # Redirects to /admin/login if no user
 │       ├── hooks/
 │       │   ├── useAuth.tsx    # AuthContext: user, loading, login(), logout()
@@ -460,6 +463,23 @@ Add `supabase-schema.sql` entries for both new tables + RLS (authenticated only 
 - [ ] Print-friendly attendance sheet
 - [ ] PWA / installable app for teachers marking attendance on phones
 - [ ] Global search (Cmd+K) — command palette to jump to any student by name
+
+## Admin Bear (Sidebar Easter Egg)
+
+- **`AdminBearIcon.tsx`** (`components/admin/`) — standalone pixel-art SVG, viewBox 24×26 (ears+head 0-18, blazer+tie 18-26); dark navy blazer (#1E2B4A) + blue tie (#4D96FF). Prop `eyeState?: 'open'|'half'|'closed'` shifts eye rect: open=3×3 (y=8), half=3×2 droopy (y=9), closed=3×1 thin line (y=10). Used in AdminBearLogo, AdminLayout mobile top bar, LoginPage.
+- **`AdminBearLogo.tsx`** (`components/admin/`) — idle doze easter egg. Wraps `AdminBearIcon` in the orange rounded square and manages a 4-state idle machine. All keyframes self-contained via `dangerouslySetInnerHTML`.
+  - `active → sleepy (90s) → asleep (180s total) → waking (400ms) → active`
+  - `sleepy`: gentle 3s sway ±2.5deg, eyes → `half`
+  - `asleep`: deep 4s nod ±5-7deg, eyes → `closed`, zzz bubble visible
+  - `waking`: 0.4s shake, eyes snap → `open`, wake message for 2s then fades
+  - Activity events on `document`: `mousemove`, `mousedown`, `keydown`, `click`, `scroll`, `touchstart` (200ms debounce)
+  - **Critical timer pattern**: `wakeMsgTimerRef` must NOT be cleared in Effect 2's cleanup — doing so cancels it when phase flips to `active`. Only clear it in Effect 1's unmount cleanup.
+- **`AdminBearSpeechBubble.tsx`** (`components/admin/`) — admin-only bubble, separate from landing page bubbles. Props: `variant: 'sleeping'|'waking'|'hidden'`, `message?: string`.
+  - Position: `absolute top-full left-0 mt-1` — below the orange square, anchored to its left edge (bear is at top of sidebar so `bottom-full` goes off-screen)
+  - Tail points UP: `top: -6`, `points="0,7 6,0 12,7"` at `left-5`
+  - Sleeping: three staggered z/z/Z spans animated with `admin-bear-zzz` keyframe (floats up 5px, delays 0s/0.3s/0.6s)
+  - `pointer-events-none` + `z-10` (floats above nav items, never blocks clicks)
+  - Mobile top bar keeps plain `<AdminBearIcon size={22} />` — no idle logic, no bubble
 
 ## Known Conventions
 

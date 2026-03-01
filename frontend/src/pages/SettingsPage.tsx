@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { documentNumberingApi } from '@/lib/api'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -39,6 +39,8 @@ export function SettingsPage() {
 
   const [segments, setSegments] = useState<LocalSegment[]>([])
   const [isDirty, setIsDirty] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['document-numbering', 'receipt'],
@@ -72,17 +74,20 @@ export function SettingsPage() {
     onError: () => toast.error('Failed to save format. Please try again.'),
   })
 
-  const handleSave = () => {
+  const doSave = () => {
     const clean: DocumentSegment[] = segments.map(({ _id, ...s }, i) => ({
       ...s,
       order: i + 1,
     }))
-
-    // Warn if receipts already exist
-    if (data?.data && data.data.current_serial > 0) {
-      toast.warning(t('formatWarning'))
-    }
     mutation.mutate(clean)
+  }
+
+  const handleSave = () => {
+    if (data?.data && data.data.current_serial > 0) {
+      setShowConfirm(true)
+      return
+    }
+    doSave()
   }
 
   const update = useCallback((id: string, patch: Partial<LocalSegment>) => {
@@ -104,6 +109,7 @@ export function SettingsPage() {
   }
 
   const preview = buildPreview(segments)
+  const lastIsSerial = segments.length > 0 && segments[segments.length - 1].type === 'serial'
 
   return (
     <div className="p-4 md:p-8 max-w-2xl">
@@ -113,72 +119,125 @@ export function SettingsPage() {
 
       {/* Document Numbering Card */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
-            {t('documentNumbering')}
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            {t('documentNumberingDesc')}
-          </p>
-        </div>
-
-        <div className="p-6 space-y-6">
-          {/* Live preview */}
-          <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl px-4 py-3 border border-orange-100 dark:border-orange-900/40">
-            <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-1">
-              {t('formatPreview')}
-            </p>
-            <p className="text-xl font-mono font-bold text-gray-900 dark:text-gray-100 tracking-wider">
-              {preview || <span className="text-gray-400 text-base">—</span>}
+        {/* Clickable header */}
+        <button
+          type="button"
+          onClick={() => setIsOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors rounded-t-2xl"
+        >
+          <div>
+            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+              {t('documentNumbering')}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              {t('documentNumberingDesc')}
             </p>
           </div>
-
-          {/* Segment rows */}
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse"
-                />
-              ))}
-            </div>
+          {isOpen ? (
+            <ChevronUp size={18} className="text-gray-400 flex-shrink-0" />
           ) : (
-            <div className="space-y-3">
-              {segments.map((seg, idx) => (
-                <SegmentRow
-                  key={seg._id}
-                  seg={seg}
-                  index={idx}
-                  total={segments.length}
-                  onUpdate={(patch) => update(seg._id, patch)}
-                  onRemove={() => removeSegment(seg._id)}
-                />
-              ))}
-            </div>
+            <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
           )}
+        </button>
 
-          {/* Add segment */}
-          <button
-            onClick={addSegment}
-            className="flex items-center gap-2 text-sm font-semibold text-kinder-orange hover:text-orange-600 transition-colors"
-          >
-            <Plus size={16} />
-            {t('addSegment')}
-          </button>
+        {isOpen && (
+          <div className="p-6 space-y-6 border-t border-gray-100 dark:border-gray-800">
+            {/* Live preview */}
+            <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl px-4 py-3 border border-orange-100 dark:border-orange-900/40">
+              <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-1">
+                {t('formatPreview')}
+              </p>
+              <p className="text-xl font-mono font-bold text-gray-900 dark:text-gray-100 tracking-wider">
+                {preview || <span className="text-gray-400 text-base">—</span>}
+              </p>
+            </div>
 
-          {/* Save */}
-          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
-            <button
-              onClick={handleSave}
-              disabled={!isDirty || mutation.isPending}
-              className="bg-kinder-orange text-white px-6 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40 hover:bg-orange-600 transition-colors"
-            >
-              {mutation.isPending ? t('saving2') : t('saveFormat')}
-            </button>
+            {/* Segment rows */}
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {segments.map((seg, idx) => (
+                  <SegmentRow
+                    key={seg._id}
+                    seg={seg}
+                    index={idx}
+                    total={segments.length}
+                    onUpdate={(patch) => update(seg._id, patch)}
+                    onRemove={() => removeSegment(seg._id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Add segment — disabled when last segment is serial */}
+            <div>
+              <button
+                onClick={addSegment}
+                disabled={lastIsSerial}
+                className="flex items-center gap-2 text-sm font-semibold text-kinder-orange hover:text-orange-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+              >
+                <Plus size={16} />
+                {t('addSegment')}
+              </button>
+              {lastIsSerial && (
+                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                  {t('serialMustBeLast')}
+                </p>
+              )}
+            </div>
+
+            {/* Save */}
+            <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+              <button
+                onClick={handleSave}
+                disabled={!isDirty || mutation.isPending}
+                className="bg-kinder-orange text-white px-6 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40 hover:bg-orange-600 transition-colors"
+              >
+                {mutation.isPending ? t('saving2') : t('saveFormat')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Confirm format change dialog */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm border border-gray-100 dark:border-gray-800 p-6">
+            <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {t('confirmFormatChange')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              {t('confirmFormatChangeBody')}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirm(false)
+                  doSave()
+                }}
+                className="flex-1 bg-kinder-orange text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-600 transition-colors"
+              >
+                {t('confirmFormatChangeBtn')}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

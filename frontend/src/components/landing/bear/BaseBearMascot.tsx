@@ -12,7 +12,32 @@
 //   bear-mascot class + z-20 must be on the WRAPPER DIV in LandingPage, not here
 
 import { useState, useEffect, useRef } from 'react'
-import { BearSpeechBubble, pickBearMessage } from './BearSpeechBubble'
+import { pickBearMessage } from './BearSpeechBubble'
+import { BearSpeechBubbleV2 as BearSpeechBubble } from './BearSpeechBubbleV2'
+
+type BearAnim = 'rest' | 'hover' | 'dance' | 'shimmy' | 'wobble' | 'groove' | 'spin' | 'bounce'
+
+const IDLE_DANCES: BearAnim[] = ['dance', 'shimmy', 'wobble', 'groove', 'spin', 'bounce']
+
+const DANCE_DURATION: Record<string, number> = {
+  dance: 1400,
+  shimmy: 750,
+  wobble: 1250,
+  groove: 1650,
+  spin: 1050,
+  bounce: 750,
+}
+
+const ANIM_CLASS: Record<BearAnim, string> = {
+  rest: '',
+  hover: 'bear-jumping',
+  dance: 'bear-dancing',
+  shimmy: 'bear-shimmying',
+  wobble: 'bear-wobbling',
+  groove: 'bear-grooving',
+  spin: 'bear-spinning',
+  bounce: 'bear-bouncing',
+}
 
 // All bear-specific keyframes + animation classes live here so the component
 // is fully self-contained. LandingPage.tsx no longer needs any bear CSS.
@@ -47,31 +72,112 @@ const BEAR_KEYFRAMES = `
     80%  { transform: rotate(-60deg); }
     100% { transform: rotate(0deg); }
   }
-  .bear-jumping                { animation: lp-bear-jump  0.55s ease-out    both; }
-  .bear-jumping .bear-arm-wave { animation: lp-bear-wave  1s    ease-in-out both; }
-  .bear-dancing                { animation: lp-bear-dance 1.4s  ease-in-out both; }
-  .bear-dancing .bear-arm-wave { animation: lp-arm-dance  1.4s  ease-in-out both; }
+  @keyframes lp-bear-shimmy {
+    0%   { transform: translateX(0); }
+    13%  { transform: translateX(-5px); }
+    25%  { transform: translateX(5px); }
+    38%  { transform: translateX(-5px); }
+    50%  { transform: translateX(5px); }
+    63%  { transform: translateX(-4px); }
+    75%  { transform: translateX(4px); }
+    88%  { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+  }
+  @keyframes lp-arm-shimmy {
+    0%   { transform: rotate(0deg); }
+    20%  { transform: rotate(-45deg); }
+    40%  { transform: rotate(-10deg); }
+    60%  { transform: rotate(-45deg); }
+    80%  { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes lp-bear-wobble {
+    0%   { transform: rotate(0deg); }
+    20%  { transform: rotate(-8deg); }
+    40%  { transform: rotate(8deg); }
+    60%  { transform: rotate(-6deg); }
+    80%  { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes lp-arm-wobble {
+    0%   { transform: rotate(0deg); }
+    20%  { transform: rotate(-35deg); }
+    40%  { transform: rotate(20deg); }
+    60%  { transform: rotate(-25deg); }
+    80%  { transform: rotate(15deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes lp-bear-groove {
+    0%   { transform: translateX(0) rotate(0deg); }
+    25%  { transform: translateX(-6px) rotate(-4deg); }
+    50%  { transform: translateX(0) rotate(0deg); }
+    75%  { transform: translateX(6px) rotate(4deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+  }
+  @keyframes lp-arm-groove {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(-50deg); }
+    50%  { transform: rotate(-10deg); }
+    75%  { transform: rotate(-50deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes lp-bear-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes lp-bear-bounce {
+    0%   { transform: translateY(0); }
+    25%  { transform: translateY(-14px); }
+    50%  { transform: translateY(-4px); }
+    70%  { transform: translateY(-10px); }
+    85%  { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes lp-arm-bounce {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(-65deg); }
+    50%  { transform: rotate(-20deg); }
+    70%  { transform: rotate(-55deg); }
+    100% { transform: rotate(0deg); }
+  }
+  .bear-jumping                  { animation: lp-bear-jump    0.55s ease-out    both; }
+  .bear-jumping   .bear-arm-wave { animation: lp-bear-wave    1s    ease-in-out both; }
+  .bear-dancing                  { animation: lp-bear-dance   1.4s  ease-in-out both; }
+  .bear-dancing   .bear-arm-wave { animation: lp-arm-dance    1.4s  ease-in-out both; }
+  .bear-shimmying                { animation: lp-bear-shimmy  0.75s ease-in-out both; }
+  .bear-shimmying .bear-arm-wave { animation: lp-arm-shimmy   0.75s ease-in-out both; }
+  .bear-wobbling                 { animation: lp-bear-wobble  1.2s  ease-in-out both; }
+  .bear-wobbling  .bear-arm-wave { animation: lp-arm-wobble   1.2s  ease-in-out both; }
+  .bear-grooving                 { animation: lp-bear-groove  1.6s  ease-in-out both; }
+  .bear-grooving  .bear-arm-wave { animation: lp-arm-groove   1.6s  ease-in-out both; }
+  .bear-spinning                 { animation: lp-bear-spin    1.0s  ease-in-out both; }
+  .bear-bouncing                 { animation: lp-bear-bounce  0.7s  ease-out    both; }
+  .bear-bouncing  .bear-arm-wave { animation: lp-arm-bounce   0.7s  ease-out    both; }
 `
 
 export function BaseBearMascot() {
-  const [bearAnim, setBearAnim] = useState<'rest' | 'dance' | 'hover'>('rest')
+  const [bearAnim, setBearAnim] = useState<BearAnim>('rest')
   const [bearMessage, setBearMessage] = useState<string | null>(null)
   const bearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isHoveredRef = useRef(false)
+  const isVisibleRef = useRef(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const danceRef = useRef<(() => void) | null>(null)
 
-  // Periodic idle dance — every 5–8 s, skipped while hovered
+  // Periodic idle dance — every 5–8 s, random move each time, skipped while hovered or off-screen
   useEffect(() => {
     const dance = () => {
       if (bearTimerRef.current) clearTimeout(bearTimerRef.current)
       bearTimerRef.current = setTimeout(
         () => {
+          if (!isVisibleRef.current) return // off-screen — observer will restart when back in view
           if (!isHoveredRef.current) {
-            setBearAnim('dance')
+            const pick = IDLE_DANCES[Math.floor(Math.random() * IDLE_DANCES.length)]
+            setBearAnim(pick)
             bearTimerRef.current = setTimeout(() => {
               setBearAnim('rest')
               dance()
-            }, 1400)
+            }, DANCE_DURATION[pick])
           } else {
             dance() // hovered — skip this round, try again later
           }
@@ -86,13 +192,32 @@ export function BaseBearMascot() {
     }
   }, [])
 
+  // Pause the dance cycle when the bear scrolls out of view, resume when back
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting
+        if (entry.isIntersecting) {
+          danceRef.current?.() // restart cycle when bear comes back into view
+        } else {
+          if (bearTimerRef.current) clearTimeout(bearTimerRef.current)
+          setBearAnim('rest')
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: BEAR_KEYFRAMES }} />
       <div
-        className={`bear-mascot cursor-pointer ${
-          bearAnim === 'dance' ? 'bear-dancing' : bearAnim === 'hover' ? 'bear-jumping' : ''
-        }`}
+        ref={wrapperRef}
+        className={`bear-mascot cursor-pointer ${ANIM_CLASS[bearAnim]}`}
         onMouseEnter={() => {
           isHoveredRef.current = true
           if (bearTimerRef.current) clearTimeout(bearTimerRef.current)
@@ -187,8 +312,8 @@ export function BearLogo({ size = 40 }: { size?: number }) {
       {/* Face */}
       <rect x="4" y="5" width="8" height="6" fill="#C8956B" />
       {/* Cheeks — lighter pink */}
-      <rect x="4" y="9" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
-      <rect x="10" y="9" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
+      <rect x="4" y="8" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
+      <rect x="10" y="8" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
       {/* Eyes */}
       <rect x="4" y="5" width="2" height="2" fill="#1A1A1A" />
       <rect x="10" y="5" width="2" height="2" fill="#1A1A1A" />
