@@ -37,10 +37,10 @@ but not universal enough for CLAUDE.md?
 
 **Quick reference:**
 
-| Where | What goes here |
-|---|---|
-| `CLAUDE.md` | Stable conventions, architecture, design system, security rules, project structure |
-| `memory/` | Session learnings, debugging wins, user preferences, narrowly scoped patterns |
+| Where                       | What goes here                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                 | Stable conventions, architecture, design system, security rules, project structure     |
+| `memory/`                   | Session learnings, debugging wins, user preferences, narrowly scoped patterns          |
 | `.claude/commands/skill.md` | Complex repeatable tasks — scaffold a page, build the bear mascot, add a backend route |
 
 **When in doubt, say so.** If new knowledge comes up and it's unclear where it belongs, tell the user which bucket you think it fits and why, then ask for confirmation before writing.
@@ -70,8 +70,10 @@ kindergarten-app/
 │       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_name, gender); POST /bulk
 │       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
-│       │   ├── gallery.ts     # CRUD + paginated GET (?page, limit, search)
-│       │   └── announcements.ts # CRUD + paginated GET (?page, limit, search, category); pinned-first ordering
+│       │   ├── gallery.ts           # CRUD + paginated GET (?page, limit, search)
+│       │   ├── announcements.ts     # CRUD + paginated GET (?page, limit, search, category); pinned-first ordering
+│       │   ├── documentNumbering.ts # GET/PUT /api/document-numbering/:type; exports generateNextNumber()
+│       │   └── fees.ts              # CRUD for fee_plans + fee_records; /payment, /generate, /export, /summary
 │       ├── middleware/
 │       │   └── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
 │       ├── lib/
@@ -86,22 +88,61 @@ kindergarten-app/
 │   └── src/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
 │       ├── pages/
-│       │   ├── LandingPage.tsx     # Public marketing page (hero, stats, features, gallery+lightbox, notices, testimonials carousel, CTA)
-│       │   ├── LoginPage.tsx       # Admin login form (dark mode aware)
-│       │   ├── DashboardPage.tsx   # Stats + today attendance + monthly summary + today's birthdays widget
-│       │   ├── StudentsPage.tsx    # Grid, 12/page, search+filter, add/edit modal wired
-│       │   ├── AttendancePage.tsx  # Table, 20 students/page, bulk mark, status tabs, CSV export
-│       │   ├── ClassesPage.tsx     # Grid, 9/page, capacity bar, add/edit modal wired
-│       │   ├── GalleryPage.tsx     # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
-│       │   ├── AnnouncementsPage.tsx # Grid, 9/page, search+category filter, pinned/expired badges, add/edit modal wired
-│       │   └── StudentProfilePage.tsx # /admin/students/:id — student info card, attendance history, quick stats
+│       │   ├── landing/
+│       │   │   ├── LandingPage.tsx  # Public marketing page (hero, stats, features, gallery+lightbox, notices, testimonials, CTA)
+│       │   │   ├── constants.ts     # FEATURES, TESTIMONIALS, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
+│       │   │   └── components/
+│       │   │       ├── Wave.tsx         # SVG decorative wave divider
+│       │   │       └── StatCounter.tsx  # Animated number counter with intersection observer
+│       │   ├── dashboard/
+│       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays widget
+│       │   │   └── components/
+│       │   │       └── StatCard.tsx     # Icon + label + value + optional sub-label card
+│       │   ├── students/
+│       │   │   ├── StudentsPage.tsx     # Grid, 12/page, search+filter, add/edit modal wired
+│       │   │   └── components/
+│       │   │       └── StudentCard.tsx  # Student photo, name, class, birthday badge, edit/delete actions
+│       │   ├── attendance/
+│       │   │   ├── AttendancePage.tsx   # Table, 20 students/page, bulk mark, status tabs, CSV export
+│       │   │   ├── constants.ts         # STATUS_CONFIG map, Status type
+│       │   │   └── components/
+│       │   │       └── AttendanceRow.tsx # Single student table row with status-mark buttons
+│       │   ├── announcements/
+│       │   │   ├── AnnouncementsPage.tsx # Grid, 9/page, search+category filter, pinned/expired badges
+│       │   │   ├── constants.ts          # CATEGORY_COLORS, CATEGORY_GRADIENTS, isExpired(), formatDate()
+│       │   │   └── components/
+│       │   │       └── AnnouncementCard.tsx # Card with category badge, pin/expiry, edit/delete
+│       │   ├── student-profile/
+│       │   │   ├── StudentProfilePage.tsx # /admin/students/:id — orchestrator
+│       │   │   ├── constants.ts           # STATUS_CONFIG, Status type
+│       │   │   └── components/
+│       │   │       ├── StudentInfoCard.tsx        # Photo, name, class, parent contact, quick stats
+│       │   │       └── AttendanceHistoryTable.tsx # Paginated history with status badges
+│       │   ├── fees/
+│       │   │   ├── FeesPage.tsx    # Fee records table, 20/page, filters, payment/receipt modals
+│       │   │   ├── constants.ts    # STATUS_STYLES, TYPE_STYLES, typeLabel(), formatRM()
+│       │   │   └── components/
+│       │   │       └── FeeTableRow.tsx # Fee record row with pay/receipt/edit/delete actions
+│       │   ├── settings/
+│       │   │   ├── SettingsPage.tsx   # /admin/settings — mini-nav orchestrator (NAV_SECTIONS config)
+│       │   │   └── components/
+│       │   │       ├── DocumentNumberingSection.tsx  # Segment builder + preview + save
+│       │   │       ├── SchoolInfoSection.tsx         # Logo upload, school name, address, phone, email
+│       │   │       └── AppearanceSection.tsx         # Dark mode toggle + EN/BM language picker
+│       │   ├── LoginPage.tsx        # Admin login form (dark mode aware)
+│       │   ├── ClassesPage.tsx      # Grid, 9/page, capacity bar, add/edit modal wired
+│       │   ├── GalleryPage.tsx      # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
+│       │   ├── FeePlansPage.tsx     # Fee plan cards, 9/page, add/edit/delete, "Use Plan" action
+│       │   └── FeeStatementPage.tsx # /admin/fees/statement/:studentId — annual printable statement
 │       ├── store/
-│       │   ├── studentsStore.ts    # page, search, classFilter, genderFilter, modal state
-│       │   ├── classesStore.ts     # page, search, modal state
-│       │   ├── attendanceStore.ts  # selectedDate, page, statusFilter, pendingChanges
-│       │   ├── galleryStore.ts         # page, search
-│       │   ├── announcementsStore.ts   # page, search, categoryFilter
-│       │   └── settingsStore.ts        # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
+│       │   ├── studentsStore.ts      # page, search, classFilter, genderFilter, modal state
+│       │   ├── classesStore.ts       # page, search, modal state
+│       │   ├── attendanceStore.ts    # selectedDate, page, statusFilter, pendingChanges
+│       │   ├── galleryStore.ts       # page, search
+│       │   ├── announcementsStore.ts # page, search, categoryFilter
+│       │   ├── feesStore.ts          # page, search, statusFilter, monthFilter, classFilter
+│       │   ├── feePlansStore.ts      # page, search
+│       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
 │       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
@@ -109,10 +150,14 @@ kindergarten-app/
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
 │       │   │   └── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
 │       │   ├── admin/
-│       │   │   ├── StudentModal.tsx  # Add/Edit student form — full validation, dark mode, i18n
-│       │   │   ├── ClassModal.tsx    # Add/Edit classroom form — full validation, dark mode, i18n
+│       │   │   ├── StudentModal.tsx       # Add/Edit student form — full validation, dark mode, i18n
+│       │   │   ├── ClassModal.tsx         # Add/Edit classroom form — full validation, dark mode, i18n
 │       │   │   ├── GalleryModal.tsx       # Add/Edit gallery photo — file upload, caption, order, visibility
 │       │   │   ├── AnnouncementModal.tsx  # Add/Edit announcement — title, body, category, banner upload, pinned, expiry
+│       │   │   ├── FeeRecordModal.tsx     # Add/Edit fee record — student picker, type, amount, discount, due date
+│       │   │   ├── GenerateFeesModal.tsx  # 3-step: pick plan → pick target (class/all) → confirm bulk generate
+│       │   │   ├── RecordPaymentModal.tsx # Record payment — shows balance, amount input, assigns receipt number
+│       │   │   ├── ReceiptView.tsx        # Printable receipt — window.print() + @media print CSS
 │       │   │   ├── AdminBearIcon.tsx      # Pixel-art SVG bear (viewBox 24×26); eyeState?: 'open'|'half'|'closed'
 │       │   │   ├── AdminBearSpeechBubble.tsx  # Admin-only bubble; variant: 'sleeping'|'waking'|'hidden'; sleeping animates z/z/Z
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
@@ -123,15 +168,15 @@ kindergarten-app/
 │       │   ├── useAuth.tsx    # AuthContext: user, loading, login(), logout()
 │       │   └── useT.ts        # Translation hook: const t = useT(); t('key', { vars })
 │       ├── lib/
-│       │   ├── api.ts             # Axios instance + studentsApi, attendanceApi, classesApi, authApi, galleryApi, announcementsApi; publicApi (no-auth instance for landing page)
+│       │   ├── api.ts             # Axios instance + studentsApi, attendanceApi, classesApi, authApi, galleryApi, announcementsApi, feesApi, feePlansApi, documentNumberingApi; publicApi (no-auth)
 │       │   ├── supabaseClient.ts  # Supabase browser client (anon key) — used for Storage uploads only
 │       │   ├── translations.ts    # Full EN/MS translation map (~106 keys)
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
 │       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
 │       └── types/
-│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement
+│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement, FeeRecord, FeePlan, DocumentNumberingConfig, FeesSummary
 │
-└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items, announcements + RLS policies
+└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items, announcements, document_numbering, fee_plans, fee_records + RLS policies
 ```
 
 ## Database Schema
@@ -143,8 +188,15 @@ attendance     (id, student_id→students, date, status[present|absent|late|excu
                UNIQUE(student_id, date)
 gallery_items  (id, photo_url, caption, display_order, is_visible, created_at)
                RLS: authenticated users → full CRUD; anon users → SELECT WHERE is_visible = true
-announcements  (id, title, body, category[general|holiday|event|reminder], image_url, is_pinned, expires_at, created_at)
-               RLS: authenticated users → full CRUD; anon users → SELECT WHERE expires_at IS NULL OR expires_at >= today
+announcements      (id, title, body, category[general|holiday|event|reminder], image_url, is_pinned, expires_at, created_at)
+                   RLS: authenticated users → full CRUD; anon users → SELECT WHERE expires_at IS NULL OR expires_at >= today
+document_numbering (id, document_type UNIQUE, segments jsonb, current_serial int, last_reset_at timestamptz, updated_at)
+                   RLS: authenticated only
+fee_plans          (id, name, type[tuition|activity|uniform|registration|other], amount, description, created_at)
+                   RLS: authenticated only
+fee_records        (id, student_id→students, type, description, amount_owed, amount_paid, discount_amount, discount_reason, receipt_number UNIQUE, status[unpaid|partial|paid|waived], due_date, paid_at, created_at)
+                   RLS: authenticated only
+                   Status derivation (backend): waived if discount>=owed; paid if paid>=(owed-discount); partial if paid>0; unpaid otherwise
 ```
 
 ## API Response Format
@@ -269,221 +321,25 @@ bun run format:check  # Prettier — dry-run (CI-safe)
 - `lint-staged` config lives in root `package.json` under the `"lint-staged"` key
 - `useAuth.tsx` has `// eslint-disable-next-line react-refresh/only-export-components` — context + hook co-location is intentional, suppress is correct
 
-## Planned Modules — Ready to Build
+## Built Modules
 
-These two modules have been fully designed and approved. Implement them in the order listed below.
+### Document Numbering
 
----
+Admins configure receipt number format via a segment builder UI (`pages/settings/components/DocumentNumberingSection.tsx`). Segment types: `constant` (free text prefix/suffix), `year` (4-char auto), `month` (2-char auto), `serial` (zero-padded, reset_by: no_reset/monthly/yearly). Live preview updates as segments change.
 
-### 1. Document Numbering Module (build first — fee module depends on it)
+- Backend: `backend/src/routes/documentNumbering.ts` — `GET/PUT /api/document-numbering/:type` + exported `generateNextNumber(type: string): Promise<string>` (handles auto-reset + atomic serial increment)
+- Frontend: `pages/settings/components/DocumentNumberingSection.tsx`
+- DB: `document_numbering` (see Database Schema)
 
-Admins configure their own receipt number format via a segment builder UI. No hardcoded format.
+### Fee Collection
 
-**Where it lives:** New page `/admin/settings` (sidebar nav item "Settings", `Settings` icon from lucide-react). Starts with just Document Numbering; expandable to school info etc. later.
+Front-office fee collection — records payments, generates receipts, tracks balances. Not a full accounting system.
 
-**DB table: `document_numbering`**
-
-```sql
-id              uuid PK DEFAULT gen_random_uuid()
-document_type   text UNIQUE    -- 'receipt' (extensible: 'invoice', etc.)
-segments        jsonb          -- ordered array of segment config objects (see below)
-current_serial  integer DEFAULT 0
-last_reset_at   timestamptz    -- used to detect when to auto-reset the serial
-updated_at      timestamptz DEFAULT now()
-```
-
-Segments JSONB — array of objects in display order, concatenated to form the number:
-
-```json
-[
-  { "order": 1, "type": "constant", "value": "RCP-" },
-  { "order": 2, "type": "year" },
-  { "order": 3, "type": "month" },
-  { "order": 4, "type": "serial", "total_chars": 4, "reset_by": "monthly", "start_from": 1 }
-]
-```
-
-**Segment types (all optional — admins add only what they need, in any order):**
-| Type | Output example | Configurable fields |
-|------|---------------|---------------------|
-| `constant` | `RCP-` | `value` (free text, e.g. "RCP-", "INV/", "-"); **not required** — skip entirely for numeric-only formats |
-| `year` | `2026` | none (always 4 chars) |
-| `month` | `02` | none (always 2 chars) |
-| `serial` | `0001` | `total_chars` (zero-padded), `reset_by` (no_reset/monthly/yearly), `start_from` |
-
-**Example configs (constant is absent in some):**
-
-- `RCP-` + year + `-` + serial(3, yearly) → `RCP-2026-001`
-- year + month + serial(5, monthly) → `202602-00001`
-- serial(6, no_reset) → `000001`
-- `INV/` + serial(6, no_reset) → `INV/000001`
-
-**Backend routes** (`backend/src/routes/documentNumbering.ts`):
-
-- `GET /api/document-numbering/:type` — fetch config for a document type
-- `PUT /api/document-numbering/:type` — save config (warns if receipts already exist)
-- Internal exported function `generateNextNumber(type: string): Promise<string>` — called by the fees route at payment time; handles auto-reset logic + increments `current_serial` atomically
-
-**Auto-reset logic in `generateNextNumber`:**
-
-- Load config; check `reset_by` on the serial segment
-- `monthly`: if `last_reset_at` is from a different year+month → reset `current_serial` to `start_from - 1`
-- `yearly`: if `last_reset_at` is from a different year → reset `current_serial` to `start_from - 1`
-- Increment `current_serial` by 1, then assemble and return the formatted string
-- Update `last_reset_at = now()` and `current_serial` in one UPDATE call
-
-**Frontend UI — Segment Builder:**
-
-- Live **Summary** preview at top (e.g. `RCP-2026-001`) — updates as admin edits segments
-- Numbered rows, each with: Type dropdown → dynamic fields appear based on type:
-  - `constant`: Value text input
-  - `year` / `month`: read-only "Auto" indicator
-  - `serial`: Total Chars number input + Reset By dropdown (No Reset / Monthly / Yearly) + Start From number input
-- `+` button adds a new segment row; trash icon removes a row (min 1)
-- Save button — if `current_serial > 0`, show warning toast: "Changing format won't renumber existing receipts"
-- On save, call `PUT /api/document-numbering/receipt`
-
-**New files for this module:**
-
-```
-backend/src/routes/documentNumbering.ts   # routes + exported generateNextNumber()
-frontend/src/pages/SettingsPage.tsx        # /admin/settings — Document Numbering section
-frontend/src/store/settingsPageStore.ts    # minimal — just tracks any local form dirty state
-```
-
----
-
-### 2. Fee Collection Module (build second)
-
-Front-office fee collection only — records payments received, generates receipts, tracks outstanding balances. Not a full accounting system.
-
-**Selected features (approved):**
-
-1. Partial payments — track `amount_paid` vs `amount_owed`; status auto-derives
-2. Sibling discount / fee waiver — `discount_amount` + `discount_reason` fields
-3. Annual fee statement — printable per-student, useful for Malaysia LHDN child education tax relief
-4. Sequential receipt numbers — assigned at payment time via Document Numbering module
-5. ~~WhatsApp reminders~~ — **deferred**, not in scope
-6. Outstanding balance dashboard card — shows current month totals + overdue count on DashboardPage
-
-**DB tables:**
-
-`fee_plans` — reusable templates; admins create once and apply to a whole class in bulk:
-
-```sql
-id           uuid PK DEFAULT gen_random_uuid()
-name         text           -- "Monthly Tuition Jan 2026"
-type         text           -- tuition | activity | uniform | registration | other
-amount       numeric(10,2)
-description  text
-created_at   timestamptz DEFAULT now()
-```
-
-`fee_records` — the actual ledger; one row per student per charge:
-
-```sql
-id              uuid PK DEFAULT gen_random_uuid()
-student_id      uuid REFERENCES students(id) ON DELETE CASCADE
-type            text           -- tuition | activity | uniform | registration | other
-description     text           -- "January 2026 Tuition — Aisha binti Ahmad"
-amount_owed     numeric(10,2)
-amount_paid     numeric(10,2) DEFAULT 0       -- Feature 1: partial payments
-discount_amount numeric(10,2) DEFAULT 0       -- Feature 2: sibling discount / waiver
-discount_reason text                          -- "Sibling discount", "Waived – financial hardship"
-receipt_number  text UNIQUE                   -- Feature 4: assigned at payment; null until first payment
-status          text DEFAULT 'unpaid'         -- unpaid | partial | paid | waived
-due_date        date
-paid_at         timestamptz
-created_at      timestamptz DEFAULT now()
-```
-
-Status derivation rule (enforced in backend, not a DB trigger):
-
-- `waived` → discount_amount >= amount_owed
-- `paid` → amount_paid >= (amount_owed - discount_amount)
-- `partial` → amount_paid > 0
-- `unpaid` → amount_paid = 0
-
-**Backend routes** (`backend/src/routes/fees.ts`):
-
-| Method | Path                             | Description                                                                                                      |
-| ------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/fee-plans`                 | List plans (paginated)                                                                                           |
-| POST   | `/api/fee-plans`                 | Create plan                                                                                                      |
-| PUT    | `/api/fee-plans/:id`             | Edit plan                                                                                                        |
-| DELETE | `/api/fee-plans/:id`             | Delete plan                                                                                                      |
-| GET    | `/api/fees`                      | List records — ?page, limit, search, status, month, student_id                                                   |
-| POST   | `/api/fees`                      | Create single fee record                                                                                         |
-| POST   | `/api/fees/generate`             | Bulk-generate records from a plan for a class or all students                                                    |
-| PUT    | `/api/fees/:id`                  | Edit record (description, amount_owed, discount, due_date)                                                       |
-| PUT    | `/api/fees/:id/payment`          | Record a payment — adds to amount_paid, recalcs status, assigns receipt number via generateNextNumber('receipt') |
-| DELETE | `/api/fees/:id`                  | Delete record (only if status = unpaid)                                                                          |
-| GET    | `/api/fees/statement/:studentId` | Annual statement — all records for a student in ?year=2026                                                       |
-| GET    | `/api/fees/export`               | Monthly CSV — ?month=2026-02                                                                                     |
-| GET    | `/api/fees/summary`              | Dashboard card — ?month=2026-02 → { total_owed, total_paid, total_outstanding, overdue_count }                   |
-
-**Admin UI — 2 new pages:**
-
-`/admin/fees` — Fee Records (table, not grid — fees are tabular):
-
-- Columns: Student | Class | Type | Description | Due Date | Owed | Discount | Paid | Status badge | Actions
-- Status badges: unpaid=red, partial=yellow, paid=green, waived=gray
-- Filters: status dropdown + month picker + class filter + search by student name
-- Row actions: "Record Payment" button | Edit | Print Receipt | Delete (unpaid only)
-- Top bar buttons: "Generate Fees" (bulk modal) + "Export CSV" + search
-
-`/admin/fee-plans` — Fee Plans (card grid, 9/page):
-
-- Cards show: plan name, type badge, amount, description
-- "Use Plan" button → opens GenerateFeesModal pre-filled
-- Standard add/edit/delete pattern
-
-**Modals:**
-
-- `FeeRecordModal` — add/edit single record: student picker (autocomplete), type select, description, amount_owed, discount_amount, discount_reason, due_date
-- `GenerateFeesModal` — 3 steps: (1) pick plan or enter ad hoc amount+type+description, (2) pick target — all students or one class, (3) preview count + confirm → bulk POST
-- `RecordPaymentModal` — shows balance remaining = amount_owed - discount_amount - amount_paid; amount input (max = remaining); assigns receipt number on submit
-- `ReceiptView` — printable receipt: school name, receipt number, date, student name, class, description, amount table (owed / discount / paid), footer "Thank you"; `window.print()` + `@media print` CSS (no new deps)
-- Annual statement: rendered inline on a `/admin/fees/statement/:studentId?year=YYYY` route or a dedicated print page; same `window.print()` approach
-
-**Feature 6 — Dashboard card:**
-
-- New stat card on DashboardPage: "Fee Collection — [current month]"
-- Shows: Total Charged | Total Collected | Outstanding | Overdue count
-- Uses `GET /api/fees/summary?month=YYYY-MM`
-- Overdue = status unpaid or partial AND due_date < today
-
-**New files for this module:**
-
-```
-backend/src/routes/fees.ts
-frontend/src/pages/FeesPage.tsx
-frontend/src/pages/FeePlansPage.tsx
-frontend/src/store/feesStore.ts            # page, search, statusFilter, monthFilter
-frontend/src/store/feePlansStore.ts        # page, search
-frontend/src/components/admin/FeeRecordModal.tsx
-frontend/src/components/admin/GenerateFeesModal.tsx
-frontend/src/components/admin/RecordPaymentModal.tsx
-frontend/src/components/admin/ReceiptView.tsx
-```
-
-Two new sidebar nav items (Settings, Fees — and fee-plans accessible from Fees page top bar).
-Add `feesApi` + `feePlansApi` + `documentNumberingApi` to `frontend/src/lib/api.ts`.
-Add new types (`FeeRecord`, `FeePlan`, `DocumentNumberingConfig`, `FeesSummary`) to `frontend/src/types/index.ts`.
-Add new translation keys for all UI strings to `frontend/src/lib/translations.ts`.
-Add `supabase-schema.sql` entries for both new tables + RLS (authenticated only — no public access).
-
-**Suggested build order:**
-
-1. DB schema (both tables) + `supabase-schema.sql` update
-2. Document Numbering backend (`documentNumbering.ts`) + `generateNextNumber` function
-3. Settings page frontend (segment builder UI)
-4. Fee Plans backend + frontend (simpler, no payment logic)
-5. Fee Records backend (all routes including `/payment` which calls `generateNextNumber`)
-6. Fee Records frontend — FeesPage table + all modals
-7. Dashboard card (add `GET /api/fees/summary` call to DashboardPage)
-
----
+- Backend: `backend/src/routes/fees.ts` — CRUD for `fee_plans` + `fee_records`; `PUT /payment` (records payment + assigns receipt via `generateNextNumber`); `POST /generate` (bulk from plan); `GET /export` (CSV); `GET /summary` (dashboard card); `GET /statement/:studentId` (annual printable)
+- Frontend: `pages/fees/FeesPage.tsx` (table, 20/page) + `FeePlansPage.tsx` (card grid, 9/page) + `FeeStatementPage.tsx` (printable)
+- Modals: `FeeRecordModal` (add/edit), `GenerateFeesModal` (3-step: plan → target → confirm), `RecordPaymentModal` (balance + amount input), `ReceiptView` (window.print())
+- Dashboard: Fee summary card on DashboardPage via `GET /api/fees/summary?month=YYYY-MM` (total owed/paid/outstanding, overdue count)
+- DB: `fee_plans` + `fee_records` (see Database Schema); status derived in backend: waived→paid→partial→unpaid
 
 ## Remaining Backlog (prioritised)
 
@@ -511,7 +367,18 @@ Full implementation details — eye states, idle machine timing, critical timer 
 
 ## Known Conventions
 
-- **One component per file** — every React component goes in its own `.tsx` file. Never define multiple exported components in one file. If a feature needs several sub-components, create a subfolder (e.g. `arcade/`) and give each sub-component its own file. The parent/orchestrator file imports from that subfolder.
+- **One component, one purpose, one file** — every React component goes in its own `.tsx` file with a single exported component. Never define multiple exported components in one file.
+- **Page folder structure** — any page that has sub-components uses a folder named after the page. The orchestrator sits at the folder root; sub-components live in a `components/` subfolder inside it:
+  ```
+  pages/
+    settings/
+      SettingsPage.tsx          ← orchestrator only (nav, routing between panels)
+      components/
+        SchoolInfoSection.tsx   ← one component, one purpose
+        AppearanceSection.tsx
+        DocumentNumberingSection.tsx
+  ```
+  Simple pages with no sub-components stay as a flat `.tsx` file directly in `pages/` (e.g. `LoginPage.tsx`, `ClassesPage.tsx`, `GalleryPage.tsx`). Upgrade to a folder only when a `components/` subfolder is actually needed.
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.
 - **Brand name** (`APP_NAME`) and **version** (`APP_VERSION`) are exported from `frontend/src/lib/version.ts` — the single source of truth. Never hardcode the school name anywhere else; always import and reference `APP_NAME`.
 - All new routes must be added to `backend/src/index.ts` and protected with `authMiddleware` unless public

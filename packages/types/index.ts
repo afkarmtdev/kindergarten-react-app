@@ -135,3 +135,14 @@ export interface FeesSummary {
   total_outstanding: number
   overdue_count: number
 }
+
+// ─── School Info ──────────────────────────────────────────────────────────────
+export interface SchoolInfo {
+  id: string
+  school_name: string
+  address: string
+  phone: string
+  email: string
+  logo_url: string | null
+  updated_at: string
+}
