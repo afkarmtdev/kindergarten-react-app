@@ -172,6 +172,12 @@ export const documentNumberingApi = {
     api.put(`/document-numbering/${type}`, data).then((r) => r.data),
 }
 
+export const schoolInfoApi = {
+  get: () =>
+    api.get('/school-info').then((r) => r.data as { data: import('@/types').SchoolInfo | null }),
+  update: (data: unknown) => api.put('/school-info', data).then((r) => r.data),
+}
+
 export const announcementsApi = {
   getAll: (filters: { page?: number; limit?: number; search?: string; category?: string } = {}) =>
     api

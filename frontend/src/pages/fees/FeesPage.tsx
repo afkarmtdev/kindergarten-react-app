@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Zap, Download, Pencil, Trash2, Receipt, FileText, LayoutList } from 'lucide-react'
+import { Plus, Zap, Download, LayoutList } from 'lucide-react'
 import { toast } from 'sonner'
 import { feesApi, classesApi } from '@/lib/api'
 import { useFeesStore } from '@/store/feesStore'
@@ -14,27 +14,10 @@ import { FeeRecordModal } from '@/components/admin/FeeRecordModal'
 import { GenerateFeesModal } from '@/components/admin/GenerateFeesModal'
 import { RecordPaymentModal } from '@/components/admin/RecordPaymentModal'
 import { ReceiptView } from '@/components/admin/ReceiptView'
+import { FeeTableRow } from './components/FeeTableRow'
 import type { FeeRecord } from '@/types'
 
 const LIMIT = 20
-
-const STATUS_STYLES: Record<string, string> = {
-  unpaid:
-    'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/40',
-  partial:
-    'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-900/40',
-  paid: 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-900/40',
-  waived:
-    'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
-}
-
-const TYPE_STYLES: Record<string, string> = {
-  tuition: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300',
-  activity: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-300',
-  uniform: 'bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-300',
-  registration: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-300',
-  other: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
-}
 
 export function FeesPage() {
   usePageTitle('Fees')
@@ -123,19 +106,6 @@ export function FeesPage() {
     }
     return map[s] ?? s
   }
-
-  const typeLabel = (tp: string) => {
-    const map: Record<string, string> = {
-      tuition: t('feeTypeTuition'),
-      activity: t('feeTypeActivity'),
-      uniform: t('feeTypeUniform'),
-      registration: t('feeTypeRegistration'),
-      other: t('feeTypeOther'),
-    }
-    return map[tp] ?? tp
-  }
-
-  const formatRM = (v: number | string) => `RM ${Number(v).toFixed(2)}`
 
   const selectCls =
     'px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 focus:border-kinder-orange transition-colors'
@@ -263,111 +233,18 @@ export function FeesPage() {
                   </td>
                 </tr>
               ) : (
-                records.map((record) => {
-                  return (
-                    <tr
-                      key={record.id}
-                      className="hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors"
-                    >
-                      {/* Student */}
-                      <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                          {record.students?.full_name ?? '—'}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {record.students?.class_name}
-                        </p>
-                      </td>
-                      {/* Type */}
-                      <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${TYPE_STYLES[record.type] ?? TYPE_STYLES.other}`}
-                        >
-                          {typeLabel(record.type)}
-                        </span>
-                      </td>
-                      {/* Description */}
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-40 truncate hidden md:table-cell">
-                        {record.description}
-                      </td>
-                      {/* Due date */}
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400 hidden lg:table-cell">
-                        {record.due_date ?? '—'}
-                      </td>
-                      {/* Owed */}
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100 tabular-nums">
-                        {formatRM(record.amount_owed)}
-                      </td>
-                      {/* Paid */}
-                      <td className="px-4 py-3 text-right font-semibold text-green-600 dark:text-green-400 tabular-nums hidden md:table-cell">
-                        {formatRM(record.amount_paid)}
-                      </td>
-                      {/* Status */}
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${STATUS_STYLES[record.status] ?? ''}`}
-                        >
-                          {statusLabel(record.status)}
-                        </span>
-                      </td>
-                      {/* Actions */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1 justify-end">
-                          {/* Record payment — only for unpaid/partial */}
-                          {(record.status === 'unpaid' || record.status === 'partial') && (
-                            <button
-                              onClick={() => setPaymentRecord(record)}
-                              title={t('recordPayment')}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-green hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
-                            >
-                              <Receipt size={14} />
-                            </button>
-                          )}
-                          {/* Print receipt */}
-                          {record.receipt_number && (
-                            <button
-                              onClick={() =>
-                                setReceiptData({ record, amount: Number(record.amount_paid) })
-                              }
-                              title={t('printReceipt')}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-blue hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
-                            >
-                              <FileText size={14} />
-                            </button>
-                          )}
-                          {/* View statement */}
-                          <Link
-                            to={`/admin/fees/statement/${record.student_id}`}
-                            title={t('viewStatement')}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-purple hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors"
-                          >
-                            <FileText size={14} />
-                          </Link>
-                          {/* Edit */}
-                          <button
-                            onClick={() => setEditRecord(record)}
-                            title={t('editFeeRecord')}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-blue hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          {/* Delete (unpaid only) */}
-                          {record.status === 'unpaid' && (
-                            <button
-                              onClick={() => {
-                                if (confirm(t('removeFeeConfirm'))) deleteMutation.mutate(record.id)
-                              }}
-                              title="Delete"
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
+                records.map((record) => (
+                  <FeeTableRow
+                    key={record.id}
+                    record={record}
+                    onPay={setPaymentRecord}
+                    onPrintReceipt={(r) =>
+                      setReceiptData({ record: r, amount: Number(r.amount_paid) })
+                    }
+                    onEdit={setEditRecord}
+                    onDelete={(id) => deleteMutation.mutate(id)}
+                  />
+                ))
               )}
             </tbody>
           </table>
