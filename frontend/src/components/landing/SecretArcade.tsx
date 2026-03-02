@@ -5,7 +5,7 @@ import { MemoryGame } from '@/components/landing/arcade/MemoryGame'
 import { SimonGame } from '@/components/landing/arcade/SimonGame'
 import { WhackGame } from '@/components/landing/arcade/WhackGame'
 import { QuickTap } from '@/components/landing/arcade/QuickTap'
-import { PokemonBattle } from '@/components/landing/arcade/PokemonBattle'
+import { PokemonBattle, prefetchPokemonCache } from '@/components/landing/arcade/PokemonBattle'
 import { FishingGame } from '@/components/landing/arcade/FishingGame'
 
 // ── Game registry ─────────────────────────────────────
@@ -65,6 +65,7 @@ export function SecretArcade() {
 
     const isRight = newSeq.every((v, i) => v === SECRET[i])
     if (isRight) {
+      prefetchPokemonCache()
       setStatus('granted')
       setTimeout(() => {
         setStatus('initializing')
