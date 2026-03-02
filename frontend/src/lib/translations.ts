@@ -112,8 +112,15 @@ export const translations = {
     uploading: 'Uploading...',
     uploadFailed: 'Upload failed. Please try again.',
 
-    // Attendance export
+    // Attendance export & print
     exportCsv: 'Export CSV',
+    printAttendance: 'Print',
+    printModeBlank: 'Blank Sheet',
+    printModeFilled: 'Filled Sheet',
+    printAttendanceTitle: 'Attendance Sheet',
+    printLegend: 'P = Present    A = Absent    L = Late    E = Excused',
+    printNotes: 'Notes',
+    printNo: '#',
 
     // Validation / errors
     required: 'This field is required',
@@ -516,8 +523,15 @@ export const translations = {
     uploading: 'Memuat naik...',
     uploadFailed: 'Muat naik gagal. Sila cuba lagi.',
 
-    // Attendance export
+    // Attendance export & print
     exportCsv: 'Eksport CSV',
+    printAttendance: 'Cetak',
+    printModeBlank: 'Lembaran Kosong',
+    printModeFilled: 'Lembaran Terisi',
+    printAttendanceTitle: 'Lembaran Kehadiran',
+    printLegend: 'H = Hadir    TH = Tidak Hadir    L = Lewat    D = Dimaafkan',
+    printNotes: 'Nota',
+    printNo: '#',
 
     // Validation / errors
     required: 'Medan ini diperlukan',

@@ -1,15 +1,18 @@
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { CalendarCheck, Save, Download } from 'lucide-react'
+import { CalendarCheck, Save, Download, Printer } from 'lucide-react'
 import { attendanceApi, studentsApi } from '@/lib/api'
 import { useAttendanceStore } from '@/store/attendanceStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useAttendanceRealtime } from '@/hooks/useAttendanceRealtime'
 import { STATUS_CONFIG, type Status } from './constants'
 import { AttendanceRow } from './components/AttendanceRow'
+import { AttendancePrintView } from './components/AttendancePrintView'
 import type { Student, AttendanceRecord } from '@/types'
 
 const LIMIT = 20
@@ -18,6 +21,7 @@ export function AttendancePage() {
   usePageTitle('Attendance')
   const t = useT()
   const queryClient = useQueryClient()
+  const [printOpen, setPrintOpen] = useState(false)
   const {
     selectedDate,
     page,
@@ -30,6 +34,8 @@ export function AttendancePage() {
     clearPending,
   } = useAttendanceStore()
 
+  useAttendanceRealtime(selectedDate)
+
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['students', { page, limit: LIMIT }],
     queryFn: () => studentsApi.getAll({ page, limit: LIMIT }),
@@ -41,6 +47,13 @@ export function AttendancePage() {
     queryKey: ['attendance', selectedDate],
     queryFn: () => attendanceApi.getByDate(selectedDate, { limit: 999 }),
     staleTime: 30_000,
+  })
+
+  const { data: allStudentsData } = useQuery({
+    queryKey: ['students-print'],
+    queryFn: () => studentsApi.getAll({ limit: 100 }),
+    enabled: printOpen,
+    staleTime: 60_000,
   })
 
   const bulkMutation = useMutation({
@@ -139,6 +152,13 @@ export function AttendancePage() {
             {t('exportCsv')}
           </button>
           <button
+            onClick={() => setPrintOpen(true)}
+            className="flex items-center justify-center gap-2 flex-1 md:flex-none border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+          >
+            <Printer size={15} />
+            {t('printAttendance')}
+          </button>
+          <button
             onClick={markAllPresent}
             className="flex-1 md:flex-none border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
           >
@@ -234,6 +254,16 @@ export function AttendancePage() {
           total={meta.total}
           limit={LIMIT}
           onPageChange={setPage}
+        />
+      )}
+
+      {printOpen && (
+        <AttendancePrintView
+          students={allStudentsData?.data ?? []}
+          records={records}
+          selectedDate={selectedDate}
+          classFilter=""
+          onClose={() => setPrintOpen(false)}
         />
       )}
     </div>

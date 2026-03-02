@@ -10,11 +10,12 @@ import { feesApi } from '@/lib/api'
 import type { FeeRecord } from '@/types'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { APP_NAME } from '@/lib/version'
+import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 
 export function FeeStatementPage() {
   const { studentId } = useParams<{ studentId: string }>()
   const t = useT()
+  const { schoolName, address, logoUrl } = useSchoolInfo()
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
 
@@ -107,9 +108,15 @@ export function FeeStatementPage() {
           <div className="statement-print bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
             {/* Statement header */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-800 text-center">
+              {logoUrl && <img src={logoUrl} alt="" className="h-12 mx-auto mb-2 object-contain" />}
               <h1 className="text-xl font-extrabold text-gray-900 dark:text-gray-100">
-                {APP_NAME}
+                {schoolName}
               </h1>
+              {address && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 whitespace-pre-line">
+                  {address}
+                </p>
+              )}
               <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mt-1">
                 {t('feeStatementTitle')}
               </h2>
