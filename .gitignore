@@ -30,6 +30,9 @@ desktop.ini
 *.swp
 *.swo
 
+# Claude Code — local permission overrides (user-specific, do not share)
+.claude/settings.local.json
+
 # Logs
 *.log
 npm-debug.log*

@@ -4,6 +4,47 @@
 
 A full-stack kindergarten management system. Built for a school to manage students, classes, and daily attendance.
 
+## Knowledge Routing
+
+Every time new knowledge surfaces during a session — a discovered pattern, a convention, a complex workflow, a user preference — Claude must decide where it belongs before the session ends. Always evaluate and place it; never leave it floating.
+
+**Use this decision tree:**
+
+```
+Is it a reusable, invocable task with complex/arcane steps
+that would be easy to forget or get wrong?
+  YES → Create or update a skill file in .claude/commands/
+         Good signals: multiple easy-to-miss steps, critical gotchas,
+         benefits from auto-triggering on keywords, multi-file scaffolding
+
+  NO ↓
+
+Is it a stable project-wide convention that every Claude session
+needs to know upfront — architecture, design rules, security patterns?
+  YES → Add to CLAUDE.md (this file)
+         Good signals: applies to ALL tasks, governs how code is written,
+         won't change unless the project architecture changes
+
+  NO ↓
+
+Is it a session-learned insight — a debugging solution, a user
+preference, a pattern discovered during work, something project-specific
+but not universal enough for CLAUDE.md?
+  YES → Write to memory/ (MEMORY.md or a topic file)
+         Good signals: "I learned this during a session", recurring problem,
+         user workflow preference, narrowly scoped fix or workaround
+```
+
+**Quick reference:**
+
+| Where | What goes here |
+|---|---|
+| `CLAUDE.md` | Stable conventions, architecture, design system, security rules, project structure |
+| `memory/` | Session learnings, debugging wins, user preferences, narrowly scoped patterns |
+| `.claude/commands/skill.md` | Complex repeatable tasks — scaffold a page, build the bear mascot, add a backend route |
+
+**When in doubt, say so.** If new knowledge comes up and it's unclear where it belongs, tell the user which bucket you think it fits and why, then ask for confirmation before writing.
+
 ## Tech Stack
 
 | Layer          | Technology                                                 |
@@ -466,20 +507,7 @@ Add `supabase-schema.sql` entries for both new tables + RLS (authenticated only 
 
 ## Admin Bear (Sidebar Easter Egg)
 
-- **`AdminBearIcon.tsx`** (`components/admin/`) — standalone pixel-art SVG, viewBox 24×26 (ears+head 0-18, blazer+tie 18-26); dark navy blazer (#1E2B4A) + blue tie (#4D96FF). Prop `eyeState?: 'open'|'half'|'closed'` shifts eye rect: open=3×3 (y=8), half=3×2 droopy (y=9), closed=3×1 thin line (y=10). Used in AdminBearLogo, AdminLayout mobile top bar, LoginPage.
-- **`AdminBearLogo.tsx`** (`components/admin/`) — idle doze easter egg. Wraps `AdminBearIcon` in the orange rounded square and manages a 4-state idle machine. All keyframes self-contained via `dangerouslySetInnerHTML`.
-  - `active → sleepy (90s) → asleep (180s total) → waking (400ms) → active`
-  - `sleepy`: gentle 3s sway ±2.5deg, eyes → `half`
-  - `asleep`: deep 4s nod ±5-7deg, eyes → `closed`, zzz bubble visible
-  - `waking`: 0.4s shake, eyes snap → `open`, wake message for 2s then fades
-  - Activity events on `document`: `mousemove`, `mousedown`, `keydown`, `click`, `scroll`, `touchstart` (200ms debounce)
-  - **Critical timer pattern**: `wakeMsgTimerRef` must NOT be cleared in Effect 2's cleanup — doing so cancels it when phase flips to `active`. Only clear it in Effect 1's unmount cleanup.
-- **`AdminBearSpeechBubble.tsx`** (`components/admin/`) — admin-only bubble, separate from landing page bubbles. Props: `variant: 'sleeping'|'waking'|'hidden'`, `message?: string`.
-  - Position: `absolute top-full left-0 mt-1` — below the orange square, anchored to its left edge (bear is at top of sidebar so `bottom-full` goes off-screen)
-  - Tail points UP: `top: -6`, `points="0,7 6,0 12,7"` at `left-5`
-  - Sleeping: three staggered z/z/Z spans animated with `admin-bear-zzz` keyframe (floats up 5px, delays 0s/0.3s/0.6s)
-  - `pointer-events-none` + `z-10` (floats above nav items, never blocks clicks)
-  - Mobile top bar keeps plain `<AdminBearIcon size={22} />` — no idle logic, no bubble
+Full implementation details — eye states, idle machine timing, critical timer pattern, bubble positioning, mobile vs desktop rules — live in the `/build-a-bear` skill (`.claude/commands/build-a-bear.md`). Use `/build-a-bear` whenever modifying the bear mascot.
 
 ## Known Conventions
 
@@ -489,7 +517,8 @@ Add `supabase-schema.sql` entries for both new tables + RLS (authenticated only 
 - All new routes must be added to `backend/src/index.ts` and protected with `authMiddleware` unless public
 - **Public API endpoints** (needed by LandingPage or other unauthenticated views) must be registered as `app.get('/api/public/...')` BEFORE the `app.use('/api/*', authMiddleware)` line in `index.ts`. Use `publicApi` (no-auth Axios instance in `api.ts`) to call them from the frontend.
 - New pages must be registered in `App.tsx` and added to the sidebar nav array in `AdminLayout.tsx`
-- New list pages must: use Zustand for UI state, React Query for data, include `Pagination` and `SearchBar`, show skeleton on `isLoading`, dim on `isFetching`
+- New admin list pages follow the full scaffold checklist in the `/new-page` skill — Zustand store, React Query, Pagination, SearchBar, skeleton, dim, dark mode, mobile responsive, registration
+- New backend routes follow the full checklist in the `/new-route` skill — sanitisation, paginated response shape, no console.log, register in index.ts
 - Mutations call `queryClient.invalidateQueries({ queryKey: ['resource'] })` on success
 - All new UI strings go into `lib/translations.ts` under both `en` and `ms` keys before use
 - All components must include `dark:` variants for every color/background/border class
