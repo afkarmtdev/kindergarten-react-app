@@ -8,6 +8,7 @@ import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { type Status } from './constants'
 import { StudentInfoCard } from './components/StudentInfoCard'
+import { AttendanceHeatmap } from './components/AttendanceHeatmap'
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
 import type { Student, AttendanceRecord } from '@/types'
 
@@ -104,6 +105,8 @@ export function StudentProfilePage() {
             totalAll={totalAll}
             onEdit={() => setEditModalOpen(true)}
           />
+
+          <AttendanceHeatmap studentId={s.id} />
 
           <AttendanceHistoryTable
             records={records}

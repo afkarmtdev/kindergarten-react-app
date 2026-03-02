@@ -171,6 +171,9 @@ export const translations = {
 
     // Student profile page
     backToStudents: 'Back to Students',
+    attendanceHeatmap: 'Attendance Heatmap',
+    last12Weeks: 'Last 12 weeks',
+    noRecord: 'No record',
     attendanceHistory: 'Attendance History',
     noAttendanceRecords: 'No attendance records yet',
     totalRecorded: 'Total Recorded',
@@ -573,6 +576,9 @@ export const translations = {
 
     // Student profile page
     backToStudents: 'Kembali ke Pelajar',
+    attendanceHeatmap: 'Carta Kehadiran',
+    last12Weeks: '12 minggu lepas',
+    noRecord: 'Tiada rekod',
     attendanceHistory: 'Sejarah Kehadiran',
     noAttendanceRecords: 'Tiada rekod kehadiran lagi',
     totalRecorded: 'Jumlah Direkod',
