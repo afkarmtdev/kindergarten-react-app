@@ -1,50 +1,27 @@
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
-import { CalendarCheck, Check, X, Clock, FileX, Save, Download } from 'lucide-react'
+import { CalendarCheck, Save, Download, Printer } from 'lucide-react'
 import { attendanceApi, studentsApi } from '@/lib/api'
 import { useAttendanceStore } from '@/store/attendanceStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useAttendanceRealtime } from '@/hooks/useAttendanceRealtime'
+import { STATUS_CONFIG, type Status } from './constants'
+import { AttendanceRow } from './components/AttendanceRow'
+import { AttendancePrintView } from './components/AttendancePrintView'
 import type { Student, AttendanceRecord } from '@/types'
 
 const LIMIT = 20
-
-const STATUS_CONFIG = {
-  present: {
-    labelKey: 'present' as const,
-    icon: Check,
-    bg: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-400 dark:border-green-800',
-    dot: 'bg-green-500',
-  },
-  absent: {
-    labelKey: 'absent' as const,
-    icon: X,
-    bg: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800',
-    dot: 'bg-red-500',
-  },
-  late: {
-    labelKey: 'late' as const,
-    icon: Clock,
-    bg: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800',
-    dot: 'bg-yellow-500',
-  },
-  excused: {
-    labelKey: 'excused' as const,
-    icon: FileX,
-    bg: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-400 dark:border-blue-800',
-    dot: 'bg-blue-500',
-  },
-} as const
-
-type Status = keyof typeof STATUS_CONFIG
 
 export function AttendancePage() {
   usePageTitle('Attendance')
   const t = useT()
   const queryClient = useQueryClient()
+  const [printOpen, setPrintOpen] = useState(false)
   const {
     selectedDate,
     page,
@@ -57,6 +34,8 @@ export function AttendancePage() {
     clearPending,
   } = useAttendanceStore()
 
+  useAttendanceRealtime(selectedDate)
+
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['students', { page, limit: LIMIT }],
     queryFn: () => studentsApi.getAll({ page, limit: LIMIT }),
@@ -68,6 +47,13 @@ export function AttendancePage() {
     queryKey: ['attendance', selectedDate],
     queryFn: () => attendanceApi.getByDate(selectedDate, { limit: 999 }),
     staleTime: 30_000,
+  })
+
+  const { data: allStudentsData } = useQuery({
+    queryKey: ['students-print'],
+    queryFn: () => studentsApi.getAll({ limit: 100 }),
+    enabled: printOpen,
+    staleTime: 60_000,
   })
 
   const bulkMutation = useMutation({
@@ -166,6 +152,13 @@ export function AttendancePage() {
             {t('exportCsv')}
           </button>
           <button
+            onClick={() => setPrintOpen(true)}
+            className="flex items-center justify-center gap-2 flex-1 md:flex-none border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+          >
+            <Printer size={15} />
+            {t('printAttendance')}
+          </button>
+          <button
             onClick={markAllPresent}
             className="flex-1 md:flex-none border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
           >
@@ -228,67 +221,16 @@ export function AttendancePage() {
           <tbody>
             {studentsLoading
               ? Array.from({ length: 8 }).map((_, i) => <TableRowSkeleton key={i} cols={3} />)
-              : filteredStudents.map((student: Student, i: number) => {
-                  const status = getStatus(student.id)
-                  const isPending = !!pendingChanges[student.id]
-                  return (
-                    <tr
-                      key={student.id}
-                      className={`border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors ${
-                        isPending
-                          ? 'bg-amber-50/40 dark:bg-amber-900/10'
-                          : i % 2 === 0
-                            ? 'bg-white dark:bg-gray-900'
-                            : 'bg-gray-50/30 dark:bg-gray-800/30'
-                      }`}
-                    >
-                      <td className="px-3 md:px-6 py-2 md:py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                            {student.full_name[0]}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                              {student.full_name}
-                            </span>
-                            {isPending && (
-                              <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded-full font-semibold">
-                                {t('unsaved')}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 md:px-6 py-2 md:py-3.5">
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {student.class_name}
-                        </span>
-                      </td>
-                      <td className="px-3 md:px-6 py-2 md:py-3.5">
-                        <div className="flex gap-1.5 flex-wrap">
-                          {(Object.keys(STATUS_CONFIG) as Status[]).map((s) => {
-                            const { labelKey, icon: Icon, bg } = STATUS_CONFIG[s]
-                            const isActive = status === s
-                            return (
-                              <button
-                                key={s}
-                                onClick={() => setPending(student.id, s)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                                  isActive
-                                    ? bg
-                                    : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300'
-                                }`}
-                              >
-                                <Icon size={11} />
-                                {t(labelKey)}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
+              : filteredStudents.map((student: Student, i: number) => (
+                  <AttendanceRow
+                    key={student.id}
+                    student={student}
+                    status={getStatus(student.id)}
+                    isPending={!!pendingChanges[student.id]}
+                    index={i}
+                    onMark={setPending}
+                  />
+                ))}
           </tbody>
         </table>
 
@@ -312,6 +254,16 @@ export function AttendancePage() {
           total={meta.total}
           limit={LIMIT}
           onPageChange={setPage}
+        />
+      )}
+
+      {printOpen && (
+        <AttendancePrintView
+          students={allStudentsData?.data ?? []}
+          records={records}
+          selectedDate={selectedDate}
+          classFilter=""
+          onClose={() => setPrintOpen(false)}
         />
       )}
     </div>

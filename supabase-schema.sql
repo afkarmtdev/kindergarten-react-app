@@ -169,3 +169,19 @@ create policy "Auth users can read fee records"   on fee_records for select to a
 create policy "Auth users can insert fee records" on fee_records for insert to authenticated with check (true);
 create policy "Auth users can update fee records" on fee_records for update to authenticated using (true);
 create policy "Auth users can delete fee records" on fee_records for delete to authenticated using (true);
+
+-- School Info (single-row config)
+create table school_info (
+  id          uuid primary key default gen_random_uuid(),
+  school_name text not null default '',
+  address     text not null default '',
+  phone       text not null default '',
+  email       text not null default '',
+  logo_url    text,
+  updated_at  timestamptz default now()
+);
+
+alter table school_info enable row level security;
+create policy "Auth users can read school info"   on school_info for select to authenticated using (true);
+create policy "Auth users can insert school info" on school_info for insert to authenticated with check (true);
+create policy "Auth users can update school info" on school_info for update to authenticated using (true);

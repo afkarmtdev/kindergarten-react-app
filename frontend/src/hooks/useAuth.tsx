@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { authApi } from '@/lib/api'
+import { supabase } from '@/lib/supabaseClient'
 
 interface User {
   id: string
@@ -25,8 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       authApi
         .me()
-        .then(setUser)
-        .catch(() => localStorage.removeItem('access_token'))
+        .then((u) => {
+          setUser(u)
+          const refreshToken = localStorage.getItem('refresh_token') ?? ''
+          supabase.auth.setSession({ access_token: token, refresh_token: refreshToken })
+        })
+        .catch(() => {
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+        })
         .finally(() => setLoading(false))
     } else {
       setLoading(false)
@@ -36,12 +44,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const { user, session } = await authApi.login(email, password)
     localStorage.setItem('access_token', session.access_token)
+    localStorage.setItem('refresh_token', session.refresh_token ?? '')
+    await supabase.auth.setSession({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token ?? '',
+    })
     setUser(user)
   }
 
   const logout = async () => {
     await authApi.logout()
     localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    await supabase.auth.signOut()
     setUser(null)
   }
 

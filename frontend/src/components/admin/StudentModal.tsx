@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { X, User, Upload, Loader } from 'lucide-react'
-import { studentsApi } from '@/lib/api'
+import { studentsApi, classesApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
@@ -13,8 +13,6 @@ interface StudentModalProps {
   onClose: () => void
   student?: Student | null
 }
-
-const CLASSES = ['Sunflower', 'Rainbow', 'Butterfly', 'Star', 'Moonbeam', 'Galaxy']
 
 const empty = {
   full_name: '',
@@ -30,6 +28,14 @@ const empty = {
 export function StudentModal({ open, onClose, student }: StudentModalProps) {
   const t = useT()
   const queryClient = useQueryClient()
+
+  const { data: classesData } = useQuery({
+    queryKey: ['classes', { page: 1, search: '' }],
+    queryFn: () => classesApi.getAll({ limit: 50 }),
+    staleTime: 60_000,
+  })
+  const classes = classesData?.data ?? []
+
   const [form, setForm] = useState({ ...empty })
   const [errors, setErrors] = useState<Partial<Record<keyof typeof empty, string>>>({})
   const [uploading, setUploading] = useState(false)
@@ -212,9 +218,9 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
               className={inputCls('class_name')}
             >
               <option value="">{t('selectClass')}</option>
-              {CLASSES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {classes.map((cls) => (
+                <option key={cls.id} value={cls.name}>
+                  {cls.name}
                 </option>
               ))}
             </select>

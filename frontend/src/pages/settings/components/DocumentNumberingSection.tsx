@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Trash2, GripVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { documentNumberingApi } from '@/lib/api'
-import { usePageTitle } from '@/hooks/usePageTitle'
 import { useT } from '@/hooks/useT'
 import type { DocumentSegment } from '@/types'
 
 type SegmentType = 'constant' | 'year' | 'month' | 'serial'
 
 interface LocalSegment extends DocumentSegment {
-  _id: string // local React key
+  _id: string
 }
 
 let _uid = 0
@@ -32,22 +31,28 @@ function buildPreview(segments: LocalSegment[]): string {
     .join('')
 }
 
-export function SettingsPage() {
-  usePageTitle('Settings')
+function defaultSegments(): LocalSegment[] {
+  return [
+    { _id: uid(), order: 1, type: 'constant', value: 'RCP-' },
+    { _id: uid(), order: 2, type: 'year' },
+    { _id: uid(), order: 3, type: 'month' },
+    { _id: uid(), order: 4, type: 'serial', total_chars: 4, reset_by: 'monthly', start_from: 1 },
+  ]
+}
+
+export function DocumentNumberingSection({ documentType }: { documentType: string }) {
   const t = useT()
   const queryClient = useQueryClient()
 
   const [segments, setSegments] = useState<LocalSegment[]>([])
   const [isDirty, setIsDirty] = useState(false)
-  const [isOpen, setIsOpen] = useState(true)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['document-numbering', 'receipt'],
-    queryFn: () => documentNumberingApi.get('receipt'),
+    queryKey: ['document-numbering', documentType],
+    queryFn: () => documentNumberingApi.get(documentType),
   })
 
-  // Populate local state when data loads
   useEffect(() => {
     if (data?.data) {
       const loaded: LocalSegment[] = (data.data.segments ?? []).map((s) => ({
@@ -57,7 +62,6 @@ export function SettingsPage() {
       setSegments(loaded.length > 0 ? loaded : defaultSegments())
       setIsDirty(false)
     } else if (data && !data.data) {
-      // No config yet — show a sensible default
       setSegments(defaultSegments())
       setIsDirty(false)
     }
@@ -65,7 +69,7 @@ export function SettingsPage() {
 
   const mutation = useMutation({
     mutationFn: (segs: DocumentSegment[]) =>
-      documentNumberingApi.update('receipt', { segments: segs }),
+      documentNumberingApi.update(documentType, { segments: segs }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['document-numbering'] })
       toast.success(t('formatSaved'))
@@ -112,100 +116,72 @@ export function SettingsPage() {
   const lastIsSerial = segments.length > 0 && segments[segments.length - 1].type === 'serial'
 
   return (
-    <div className="p-4 md:p-8 max-w-2xl">
-      <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-8">
-        {t('settingsPage')}
-      </h1>
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-6">
+      <div>
+        <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+          {t('documentNumbering')}
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          {t('documentNumberingDesc')}
+        </p>
+      </div>
 
-      {/* Document Numbering Card */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-        {/* Clickable header */}
+      {/* Live preview */}
+      <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl px-4 py-3 border border-orange-100 dark:border-orange-900/40">
+        <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-1">
+          {t('formatPreview')}
+        </p>
+        <p className="text-xl font-mono font-bold text-gray-900 dark:text-gray-100 tracking-wider">
+          {preview || <span className="text-gray-400 text-base">—</span>}
+        </p>
+      </div>
+
+      {/* Segment rows */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {segments.map((seg, idx) => (
+            <SegmentRow
+              key={seg._id}
+              seg={seg}
+              index={idx}
+              total={segments.length}
+              onUpdate={(patch) => update(seg._id, patch)}
+              onRemove={() => removeSegment(seg._id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add segment */}
+      <div>
         <button
-          type="button"
-          onClick={() => setIsOpen((v) => !v)}
-          className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-gray-50/60 dark:hover:bg-gray-800/40 transition-colors rounded-t-2xl"
+          onClick={addSegment}
+          disabled={lastIsSerial}
+          className="flex items-center gap-2 text-sm font-semibold text-kinder-orange hover:text-orange-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
         >
-          <div>
-            <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
-              {t('documentNumbering')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {t('documentNumberingDesc')}
-            </p>
-          </div>
-          {isOpen ? (
-            <ChevronUp size={18} className="text-gray-400 flex-shrink-0" />
-          ) : (
-            <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
-          )}
+          <Plus size={16} />
+          {t('addSegment')}
         </button>
-
-        {isOpen && (
-          <div className="p-6 space-y-6 border-t border-gray-100 dark:border-gray-800">
-            {/* Live preview */}
-            <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl px-4 py-3 border border-orange-100 dark:border-orange-900/40">
-              <p className="text-xs font-semibold text-orange-500 uppercase tracking-widest mb-1">
-                {t('formatPreview')}
-              </p>
-              <p className="text-xl font-mono font-bold text-gray-900 dark:text-gray-100 tracking-wider">
-                {preview || <span className="text-gray-400 text-base">—</span>}
-              </p>
-            </div>
-
-            {/* Segment rows */}
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {segments.map((seg, idx) => (
-                  <SegmentRow
-                    key={seg._id}
-                    seg={seg}
-                    index={idx}
-                    total={segments.length}
-                    onUpdate={(patch) => update(seg._id, patch)}
-                    onRemove={() => removeSegment(seg._id)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Add segment — disabled when last segment is serial */}
-            <div>
-              <button
-                onClick={addSegment}
-                disabled={lastIsSerial}
-                className="flex items-center gap-2 text-sm font-semibold text-kinder-orange hover:text-orange-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
-              >
-                <Plus size={16} />
-                {t('addSegment')}
-              </button>
-              {lastIsSerial && (
-                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
-                  {t('serialMustBeLast')}
-                </p>
-              )}
-            </div>
-
-            {/* Save */}
-            <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
-              <button
-                onClick={handleSave}
-                disabled={!isDirty || mutation.isPending}
-                className="bg-kinder-orange text-white px-6 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40 hover:bg-orange-600 transition-colors"
-              >
-                {mutation.isPending ? t('saving2') : t('saveFormat')}
-              </button>
-            </div>
-          </div>
+        {lastIsSerial && (
+          <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">{t('serialMustBeLast')}</p>
         )}
+      </div>
+
+      {/* Save */}
+      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+        <button
+          onClick={handleSave}
+          disabled={!isDirty || mutation.isPending}
+          className="bg-kinder-orange text-white px-6 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-40 hover:bg-orange-600 transition-colors"
+        >
+          {mutation.isPending ? t('saving2') : t('saveFormat')}
+        </button>
       </div>
 
       {/* Confirm format change dialog */}
@@ -242,7 +218,7 @@ export function SettingsPage() {
   )
 }
 
-// ── Segment row component ─────────────────────────────────────────────────────
+// ── Segment row ───────────────────────────────────────────────────────────────
 function SegmentRow({
   seg,
   index,
@@ -276,17 +252,14 @@ function SegmentRow({
 
   return (
     <div className="flex items-start gap-2 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/40">
-      {/* Drag handle (visual only) */}
       <div className="mt-2 text-gray-300 dark:text-gray-600 cursor-grab">
         <GripVertical size={16} />
       </div>
 
-      {/* Row number */}
       <span className="mt-2 text-xs font-bold text-gray-400 dark:text-gray-500 w-4 flex-shrink-0">
         {index + 1}
       </span>
 
-      {/* Type dropdown */}
       <div className="flex-shrink-0 w-36">
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
           {t('segmentType')}
@@ -312,7 +285,6 @@ function SegmentRow({
         </select>
       </div>
 
-      {/* Dynamic fields */}
       <div className="flex gap-2 flex-1 flex-wrap">
         {seg.type === 'constant' && (
           <div className="flex-1 min-w-24">
@@ -391,7 +363,6 @@ function SegmentRow({
         )}
       </div>
 
-      {/* Remove button */}
       <button
         onClick={onRemove}
         disabled={total <= 1}
@@ -401,13 +372,4 @@ function SegmentRow({
       </button>
     </div>
   )
-}
-
-function defaultSegments(): LocalSegment[] {
-  return [
-    { _id: uid(), order: 1, type: 'constant', value: 'RCP-' },
-    { _id: uid(), order: 2, type: 'year' },
-    { _id: uid(), order: 3, type: 'month' },
-    { _id: uid(), order: 4, type: 'serial', total_chars: 4, reset_by: 'monthly', start_from: 1 },
-  ]
 }

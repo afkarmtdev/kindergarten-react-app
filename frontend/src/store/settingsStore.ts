@@ -16,6 +16,8 @@ function applyDark(dark: boolean) {
   } else {
     document.documentElement.classList.remove('dark')
   }
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) meta.setAttribute('content', dark ? '#1f2937' : '#FF6B35')
 }
 
 export const useSettingsStore = create<SettingsState>()(

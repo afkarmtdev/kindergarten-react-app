@@ -112,8 +112,15 @@ export const translations = {
     uploading: 'Uploading...',
     uploadFailed: 'Upload failed. Please try again.',
 
-    // Attendance export
+    // Attendance export & print
     exportCsv: 'Export CSV',
+    printAttendance: 'Print',
+    printModeBlank: 'Blank Sheet',
+    printModeFilled: 'Filled Sheet',
+    printAttendanceTitle: 'Attendance Sheet',
+    printLegend: 'P = Present    A = Absent    L = Late    E = Excused',
+    printNotes: 'Notes',
+    printNo: '#',
 
     // Validation / errors
     required: 'This field is required',
@@ -171,6 +178,9 @@ export const translations = {
 
     // Student profile page
     backToStudents: 'Back to Students',
+    attendanceHeatmap: 'Attendance Heatmap',
+    last12Weeks: 'Last 12 weeks',
+    noRecord: 'No record',
     attendanceHistory: 'Attendance History',
     noAttendanceRecords: 'No attendance records yet',
     totalRecorded: 'Total Recorded',
@@ -279,6 +289,28 @@ export const translations = {
     confirmFormatChangeBody:
       'You have existing receipts. This only affects future receipts — existing receipt numbers remain unchanged.',
     confirmFormatChangeBtn: 'Yes, change format',
+    settingsDocumentNumbering: 'Document Numbering',
+    settingsNavReceipt: 'Receipt',
+    settingsAppearance: 'Appearance',
+    settingsNavTheme: 'Theme & Language',
+    settingsAppearanceDesc: 'Customize how the app looks and feels',
+    settingsDarkModeDesc: 'Switch between light and dark interface',
+    settingsLanguageDesc: 'Choose your preferred display language',
+    settingsSchoolInfo: 'School Info',
+    settingsNavSchoolInfo: 'General',
+    settingsSchoolInfoDesc: 'Shown on receipts and printed documents',
+    settingsSchoolName: 'School Name',
+    settingsSchoolNamePlaceholder: 'e.g. Tadika Cahaya Ilmu',
+    settingsAddress: 'Address',
+    settingsAddressPlaceholder: 'e.g. No. 1, Jalan ABC, 12345 Kuala Lumpur',
+    settingsPhone: 'Phone',
+    settingsPhonePlaceholder: 'e.g. 03-1234 5678',
+    settingsEmail: 'Email',
+    settingsEmailPlaceholder: 'e.g. info@sekolah.edu.my',
+    settingsLogo: 'School Logo',
+    settingsLogoUpload: 'Upload Logo',
+    settingsLogoChange: 'Change Logo',
+    settingsSchoolInfoSaved: 'School info saved',
 
     // Fee Plans
     feePlans: 'Fee Plans',
@@ -491,8 +523,15 @@ export const translations = {
     uploading: 'Memuat naik...',
     uploadFailed: 'Muat naik gagal. Sila cuba lagi.',
 
-    // Attendance export
+    // Attendance export & print
     exportCsv: 'Eksport CSV',
+    printAttendance: 'Cetak',
+    printModeBlank: 'Lembaran Kosong',
+    printModeFilled: 'Lembaran Terisi',
+    printAttendanceTitle: 'Lembaran Kehadiran',
+    printLegend: 'H = Hadir    TH = Tidak Hadir    L = Lewat    D = Dimaafkan',
+    printNotes: 'Nota',
+    printNo: '#',
 
     // Validation / errors
     required: 'Medan ini diperlukan',
@@ -551,6 +590,9 @@ export const translations = {
 
     // Student profile page
     backToStudents: 'Kembali ke Pelajar',
+    attendanceHeatmap: 'Carta Kehadiran',
+    last12Weeks: '12 minggu lepas',
+    noRecord: 'Tiada rekod',
     attendanceHistory: 'Sejarah Kehadiran',
     noAttendanceRecords: 'Tiada rekod kehadiran lagi',
     totalRecorded: 'Jumlah Direkod',
@@ -659,6 +701,28 @@ export const translations = {
     confirmFormatChangeBody:
       'Terdapat resit sedia ada. Ini hanya memberi kesan kepada resit masa hadapan — nombor resit sedia ada tidak berubah.',
     confirmFormatChangeBtn: 'Ya, tukar format',
+    settingsDocumentNumbering: 'Penomboran Dokumen',
+    settingsNavReceipt: 'Resit',
+    settingsAppearance: 'Penampilan',
+    settingsNavTheme: 'Tema & Bahasa',
+    settingsAppearanceDesc: 'Sesuaikan rupa dan nuansa aplikasi',
+    settingsDarkModeDesc: 'Tukar antara antara muka cerah dan gelap',
+    settingsLanguageDesc: 'Pilih bahasa paparan pilihan anda',
+    settingsSchoolInfo: 'Info Sekolah',
+    settingsNavSchoolInfo: 'Umum',
+    settingsSchoolInfoDesc: 'Dipaparkan pada resit dan dokumen cetak',
+    settingsSchoolName: 'Nama Sekolah',
+    settingsSchoolNamePlaceholder: 'cth. Tadika Cahaya Ilmu',
+    settingsAddress: 'Alamat',
+    settingsAddressPlaceholder: 'cth. No. 1, Jalan ABC, 12345 Kuala Lumpur',
+    settingsPhone: 'Telefon',
+    settingsPhonePlaceholder: 'cth. 03-1234 5678',
+    settingsEmail: 'E-mel',
+    settingsEmailPlaceholder: 'cth. info@sekolah.edu.my',
+    settingsLogo: 'Logo Sekolah',
+    settingsLogoUpload: 'Muat Naik Logo',
+    settingsLogoChange: 'Tukar Logo',
+    settingsSchoolInfoSaved: 'Info sekolah disimpan',
 
     // Fee Plans
     feePlans: 'Pelan Fi',
