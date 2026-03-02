@@ -10,7 +10,6 @@ export function StudentInfoCard({
   stats,
   presentRate,
   totalAll,
-  onEdit,
 }: {
   student: Student
   stats: Partial<Record<Status, number>>

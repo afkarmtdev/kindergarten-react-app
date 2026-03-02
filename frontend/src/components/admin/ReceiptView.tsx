@@ -4,7 +4,7 @@
 
 import { X, Printer } from 'lucide-react'
 import { useT } from '@/hooks/useT'
-import { APP_NAME } from '@/lib/version'
+import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import type { FeeRecord } from '@/types'
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
 
 export function ReceiptView({ record, thisPayment, onClose }: Props) {
   const t = useT()
+  const { schoolName, address, logoUrl } = useSchoolInfo()
 
   const formatRM = (v: number | string) => `RM ${Number(v).toFixed(2)}`
   const balance =
@@ -66,7 +67,11 @@ export function ReceiptView({ record, thisPayment, onClose }: Props) {
           <div className="receipt-print p-6">
             {/* School header */}
             <div className="text-center mb-6">
-              <h1 className="text-xl font-extrabold text-gray-900">{APP_NAME}</h1>
+              {logoUrl && <img src={logoUrl} alt="" className="h-10 mx-auto mb-2 object-contain" />}
+              <h1 className="text-xl font-extrabold text-gray-900">{schoolName}</h1>
+              {address && (
+                <p className="text-xs text-gray-500 mt-0.5 whitespace-pre-line">{address}</p>
+              )}
               <p className="text-xs text-gray-500 mt-0.5">Official Receipt</p>
               <div className="border-b-2 border-gray-900 mt-4 mb-1" />
               <div className="border-b border-gray-400" />
@@ -163,7 +168,7 @@ export function ReceiptView({ record, thisPayment, onClose }: Props) {
             {/* Footer */}
             <div className="border-t border-dashed border-gray-300 pt-4 text-center">
               <p className="text-sm font-semibold text-gray-700">{t('receiptThankYou')}</p>
-              <p className="text-xs text-gray-400 mt-1">{APP_NAME} — Official Receipt</p>
+              <p className="text-xs text-gray-400 mt-1">{schoolName} — Official Receipt</p>
             </div>
           </div>
         </div>
