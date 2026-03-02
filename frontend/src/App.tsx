@@ -9,21 +9,23 @@ import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { CuteLoader } from '@/components/ui/Skeletons'
 // Public pages stay eager — they are the first routes users hit
-import { LandingPage } from '@/pages/LandingPage'
+import { LandingPage } from '@/pages/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 
 // Admin pages are lazy-loaded so they don't bloat the initial bundle
 const DashboardPage = lazy(() =>
-  import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))
+  import('@/pages/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage }))
 )
 const StudentsPage = lazy(() =>
-  import('@/pages/StudentsPage').then((m) => ({ default: m.StudentsPage }))
+  import('@/pages/students/StudentsPage').then((m) => ({ default: m.StudentsPage }))
 )
 const StudentProfilePage = lazy(() =>
-  import('@/pages/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage }))
+  import('@/pages/student-profile/StudentProfilePage').then((m) => ({
+    default: m.StudentProfilePage,
+  }))
 )
 const AttendancePage = lazy(() =>
-  import('@/pages/AttendancePage').then((m) => ({ default: m.AttendancePage }))
+  import('@/pages/attendance/AttendancePage').then((m) => ({ default: m.AttendancePage }))
 )
 const ClassesPage = lazy(() =>
   import('@/pages/ClassesPage').then((m) => ({ default: m.ClassesPage }))
@@ -32,12 +34,14 @@ const GalleryPage = lazy(() =>
   import('@/pages/GalleryPage').then((m) => ({ default: m.GalleryPage }))
 )
 const AnnouncementsPage = lazy(() =>
-  import('@/pages/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage }))
+  import('@/pages/announcements/AnnouncementsPage').then((m) => ({
+    default: m.AnnouncementsPage,
+  }))
 )
 const SettingsPage = lazy(() =>
-  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+  import('@/pages/settings/SettingsPage').then((m) => ({ default: m.SettingsPage }))
 )
-const FeesPage = lazy(() => import('@/pages/FeesPage').then((m) => ({ default: m.FeesPage })))
+const FeesPage = lazy(() => import('@/pages/fees/FeesPage').then((m) => ({ default: m.FeesPage })))
 const FeePlansPage = lazy(() =>
   import('@/pages/FeePlansPage').then((m) => ({ default: m.FeePlansPage }))
 )

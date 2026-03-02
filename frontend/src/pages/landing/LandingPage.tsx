@@ -1,15 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Star,
   Heart,
-  BookOpen,
   Sun,
-  Music,
-  Palette,
-  Shield,
-  Users,
   Moon,
   ArrowUp,
   Camera,
@@ -28,207 +23,17 @@ import { galleryApi, announcementsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
-import type { Announcement } from '@/types'
+import { Wave } from './components/Wave'
+import { StatCounter } from './components/StatCounter'
+import {
+  KEYFRAMES,
+  FEATURES,
+  TESTIMONIALS,
+  NOTICE_CATEGORY_COLORS,
+  NOTICE_CATEGORY_GRADIENTS,
+  GALLERY_PLACEHOLDERS,
+} from './constants'
 
-// ─── CSS keyframe animations ─────────────────────────────────────────────────
-const KEYFRAMES = `
-  @keyframes lp-float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50%       { transform: translateY(-18px) rotate(6deg); }
-  }
-  @keyframes lp-float-alt {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    33%      { transform: translateY(-12px) rotate(-8deg); }
-    66%      { transform: translateY(-6px)  rotate(4deg); }
-  }
-  @keyframes lp-float-slow {
-    0%, 100% { transform: translateY(0px) scale(1); }
-    50%      { transform: translateY(-26px) scale(1.06); }
-  }
-  @keyframes lp-spin-slow {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-  @keyframes lp-entrance {
-    from { opacity: 0; transform: translateY(36px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes lp-slide-in {
-    from { opacity: 0; transform: translateX(28px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes lp-card-exit {
-    from { opacity: 1; transform: translateX(0px) scale(1); }
-    to   { opacity: 0; transform: translateX(-40px) scale(0.96); }
-  }
-  @keyframes lp-card-enter {
-    from { opacity: 0; transform: translateX(40px) scale(0.96); }
-    to   { opacity: 1; transform: translateX(0px) scale(1); }
-  }
-  .lp-float        { animation: lp-float      4s   ease-in-out infinite; }
-  .lp-float-alt    { animation: lp-float-alt  5.5s ease-in-out infinite; }
-  .lp-float-slow   { animation: lp-float-slow 7s   ease-in-out infinite; }
-  .lp-spin-slow    { animation: lp-spin-slow  12s  linear     infinite; }
-  .lp-enter-0      { animation: lp-entrance   0.8s ease         both; }
-  .lp-slide-in     { animation: lp-slide-in   0.35s ease        both; }
-  .lp-enter-1      { animation: lp-entrance   0.8s ease 0.18s   both; }
-  .lp-enter-2      { animation: lp-entrance   0.8s ease 0.36s   both; }
-  .lp-card-exit    { animation: lp-card-exit  0.15s ease        forwards; }
-  .lp-card-enter   { animation: lp-card-enter 0.18s ease        both; }
-  @keyframes lp-progress {
-    from { width: 0%; }
-    to   { width: 100%; }
-  }
-`
-
-// ─── Wavy SVG divider ────────────────────────────────────────────────────────
-function Wave({ fill }: { fill: string }) {
-  return (
-    <div style={{ lineHeight: 0, display: 'block' }}>
-      <svg
-        viewBox="0 0 1440 88"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="none"
-        style={{ display: 'block', width: '100%', height: '88px' }}
-      >
-        <path
-          d="M0,44 C180,88 360,0 540,44 C720,88 900,0 1080,44 C1260,88 1380,22 1440,44 L1440,88 L0,88 Z"
-          fill={fill}
-        />
-      </svg>
-    </div>
-  )
-}
-
-// ─── Animated stat counter (IntersectionObserver + rAF) ──────────────────────
-function StatCounter({ target, suffix, label }: { target: number; suffix: string; label: string }) {
-  const [count, setCount] = useState(0)
-  const ref = useRef<HTMLDivElement>(null)
-  const started = useRef(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true
-          const duration = 2000
-          const start = Date.now()
-          const tick = () => {
-            const progress = Math.min((Date.now() - start) / duration, 1)
-            const eased = 1 - Math.pow(1 - progress, 3)
-            setCount(Math.floor(eased * target))
-            if (progress < 1) requestAnimationFrame(tick)
-            else setCount(target)
-          }
-          requestAnimationFrame(tick)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.5 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [target])
-
-  return (
-    <div ref={ref} className="text-center px-2">
-      <p className="text-5xl lg:text-6xl font-extrabold text-white leading-none mb-2">
-        {count}
-        {suffix}
-      </p>
-      <p className="text-white/70 font-bold text-xs uppercase tracking-widest">{label}</p>
-    </div>
-  )
-}
-
-// ─── Features data ────────────────────────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: BookOpen,
-    color: 'bg-kinder-blue',
-    titleKey: 'featureLearnTitle',
-    descKey: 'featureLearnDesc',
-  },
-  {
-    icon: Shield,
-    color: 'bg-kinder-pink',
-    titleKey: 'featureSafeTitle',
-    descKey: 'featureSafeDesc',
-  },
-  {
-    icon: Music,
-    color: 'bg-kinder-purple',
-    titleKey: 'featureArtsTitle',
-    descKey: 'featureArtsDesc',
-  },
-  {
-    icon: Palette,
-    color: 'bg-kinder-green',
-    titleKey: 'featurePlayTitle',
-    descKey: 'featurePlayDesc',
-  },
-  {
-    icon: Sun,
-    color: 'bg-kinder-yellow',
-    titleKey: 'featureOutdoorTitle',
-    descKey: 'featureOutdoorDesc',
-  },
-  {
-    icon: Users,
-    color: 'bg-kinder-orange',
-    titleKey: 'featureClassTitle',
-    descKey: 'featureClassDesc',
-  },
-] as const
-
-// ─── Testimonials data ────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  {
-    quote: `${APP_NAME} has been a wonderful experience for our daughter. She comes home every day excited to share what she learned!`,
-    name: 'Puan Siti Rahimah',
-    role: 'Parent of Aisyah, Sunflower Class',
-  },
-  {
-    quote: `The teachers are incredibly dedicated. Our son's confidence has grown so much since joining ${APP_NAME}.`,
-    name: 'Encik Ahmad Fauzi',
-    role: 'Parent of Haziq, Rainbow Class',
-  },
-  {
-    quote:
-      "A safe, nurturing environment with a fantastic curriculum. We couldn't be happier with our choice!",
-    name: 'Mrs. Priya Krishnan',
-    role: 'Parent of Arjun, Butterfly Class',
-  },
-]
-
-// ─── Announcement category colours (landing page) ────────────────────────────
-const NOTICE_CATEGORY_COLORS: Record<Announcement['category'], string> = {
-  general: 'bg-kinder-blue/10 text-kinder-blue',
-  holiday: 'bg-kinder-green/10 text-kinder-green',
-  event: 'bg-kinder-purple/10 text-kinder-purple',
-  reminder: 'bg-kinder-yellow/10 text-yellow-600',
-}
-
-const NOTICE_CATEGORY_GRADIENTS: Record<Announcement['category'], string> = {
-  general: 'from-kinder-blue/20 to-kinder-blue/10',
-  holiday: 'from-kinder-green/20 to-kinder-green/10',
-  event: 'from-kinder-purple/20 to-kinder-purple/10',
-  reminder: 'from-kinder-yellow/20 to-kinder-yellow/10',
-}
-
-// ─── Gallery placeholder data ─────────────────────────────────────────────────
-const GALLERY_PLACEHOLDERS = [
-  { id: 'p1', gradient: 'from-kinder-yellow/40 to-kinder-orange/30', label: 'Classroom Moments' },
-  { id: 'p2', gradient: 'from-kinder-blue/30 to-kinder-purple/20', label: 'Art & Craft' },
-  { id: 'p3', gradient: 'from-kinder-green/30 to-kinder-blue/20', label: 'Outdoor Play' },
-  { id: 'p4', gradient: 'from-kinder-pink/30 to-kinder-purple/30', label: 'Story Time' },
-  { id: 'p5', gradient: 'from-kinder-orange/30 to-kinder-yellow/20', label: 'Music & Dance' },
-  { id: 'p6', gradient: 'from-kinder-purple/30 to-kinder-pink/20', label: 'Science Explore' },
-]
-
-// ─── Main component ───────────────────────────────────────────────────────────
 export function LandingPage() {
   usePageTitle()
   const t = useT()
@@ -380,7 +185,6 @@ export function LandingPage() {
         className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"
       >
         {/* ── Floating decorative shapes ── */}
-        {/* Triangle top-left */}
         <div
           className="lp-float absolute top-16 left-6 opacity-60 pointer-events-none"
           aria-hidden="true"
@@ -390,7 +194,6 @@ export function LandingPage() {
           </svg>
         </div>
 
-        {/* Circle top-right */}
         <div
           className="lp-float-alt absolute top-20 right-10 opacity-50 pointer-events-none"
           style={{ animationDelay: '1s' }}
@@ -401,7 +204,6 @@ export function LandingPage() {
           </svg>
         </div>
 
-        {/* Heart left-center */}
         <div
           className="lp-float absolute top-1/3 left-10 opacity-55 pointer-events-none"
           style={{ animationDelay: '0.5s' }}
@@ -410,7 +212,6 @@ export function LandingPage() {
           <Heart size={44} fill="#FF85A2" stroke="#FF85A2" />
         </div>
 
-        {/* Spinning star near heading */}
         <div
           className="lp-spin-slow absolute top-24 left-1/3 opacity-45 pointer-events-none"
           aria-hidden="true"
@@ -418,7 +219,6 @@ export function LandingPage() {
           <Star size={30} fill="#FF6B35" stroke="#FF6B35" />
         </div>
 
-        {/* Rounded square bottom-right */}
         <div
           className="lp-float-slow absolute bottom-36 right-14 opacity-40 pointer-events-none"
           aria-hidden="true"
@@ -428,7 +228,6 @@ export function LandingPage() {
           </svg>
         </div>
 
-        {/* Small circle left */}
         <div
           className="lp-float-alt absolute top-1/2 left-16 opacity-40 pointer-events-none"
           style={{ animationDelay: '2s' }}
@@ -439,7 +238,6 @@ export function LandingPage() {
           </svg>
         </div>
 
-        {/* Triangle right-center */}
         <div
           className="lp-float absolute top-1/3 right-20 opacity-35 pointer-events-none"
           style={{ animationDelay: '1.5s' }}
@@ -450,7 +248,6 @@ export function LandingPage() {
           </svg>
         </div>
 
-        {/* Star bottom-center */}
         <div
           className="lp-float-alt absolute bottom-40 right-1/3 opacity-60 pointer-events-none"
           style={{ animationDelay: '0.8s' }}
@@ -459,7 +256,6 @@ export function LandingPage() {
           <Star size={24} fill="#FFD93D" stroke="#FFD93D" />
         </div>
 
-        {/* Heart right side */}
         <div
           className="lp-float-slow absolute top-1/2 right-6 opacity-45 pointer-events-none"
           style={{ animationDelay: '1.2s' }}
@@ -468,7 +264,6 @@ export function LandingPage() {
           <Heart size={32} fill="#FF85A2" stroke="#FF85A2" />
         </div>
 
-        {/* Large blurred circle bg accent */}
         <div
           className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 dark:opacity-10 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #FF6B35, transparent 70%)' }}
@@ -491,13 +286,11 @@ export function LandingPage() {
 
         {/* ── Hero content ── */}
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6 text-center">
-          {/* Enrollment badge */}
           <div className="lp-enter-0 inline-flex items-center gap-2 bg-kinder-orange/10 dark:bg-kinder-orange/20 border border-kinder-orange/30 text-kinder-orange px-5 py-2 rounded-full text-sm font-bold mb-8">
             <Star size={13} fill="#FF6B35" stroke="#FF6B35" />
             {t('heroTagline')}
           </div>
 
-          {/* Big bubbly heading */}
           <h1 className="lp-enter-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
             <span className="block">{t('heroPart1')}</span>
             <span className="relative inline-block text-kinder-orange mx-1">
@@ -521,12 +314,10 @@ export function LandingPage() {
             <span className="block md:inline"> {t('heroPart2')}</span>
           </h1>
 
-          {/* Subtitle */}
           <p className="lp-enter-2 text-gray-500 dark:text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
             {t('heroSubtitle')}
           </p>
 
-          {/* CTA buttons */}
           <div className="lp-enter-2 flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <a
               href="#contact"
@@ -543,7 +334,6 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Wave bottom of hero → Stats (orange) */}
         <Wave fill="#FF6B35" />
       </section>
 
@@ -560,7 +350,6 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Wave: Stats → Features (light / dark) */}
         <div className="block dark:hidden">
           <Wave fill="#ffffff" />
         </div>
@@ -574,7 +363,6 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section id="programs" className="bg-white dark:bg-gray-950 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Section heading */}
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
               {t('featuresTitle')}
@@ -584,7 +372,6 @@ export function LandingPage() {
             </p>
           </div>
 
-          {/* Cards grid */}
           <div className="grid md:grid-cols-3 gap-6">
             {FEATURES.map(({ icon: Icon, color, titleKey, descKey }) => (
               <div
@@ -622,7 +409,6 @@ export function LandingPage() {
           </p>
         </div>
 
-        {/* Scroll strip */}
         <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory pl-4 sm:pl-6">
           <div className="flex gap-4 w-max pr-4 sm:pr-6 pb-2">
             {galleryItems.length > 0
@@ -655,7 +441,7 @@ export function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          NOTICES — always visible; cork board empty state when none
+          NOTICES
       ════════════════════════════════════════════════════════ */}
       <section
         id="notices"
@@ -682,7 +468,6 @@ export function LandingPage() {
                       : 'border-gray-100 dark:border-gray-700'
                   }`}
                 >
-                  {/* Banner or gradient */}
                   {notice.image_url ? (
                     <div className="h-36 overflow-hidden">
                       <img
@@ -703,7 +488,6 @@ export function LandingPage() {
                   )}
 
                   <div className="p-5 flex flex-col flex-1">
-                    {/* Category + pinned badges */}
                     <div className="flex gap-1.5 flex-wrap mb-3">
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-semibold ${NOTICE_CATEGORY_COLORS[notice.category]}`}
@@ -756,7 +540,6 @@ export function LandingPage() {
           </div>
         )}
 
-        {/* Wave: Notices → Testimonials (purple) */}
         <div className="mt-16">
           <Wave fill="#C77DFF" />
         </div>
@@ -767,7 +550,6 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section className="bg-kinder-purple py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Heading */}
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
               {t('testimonialsTitle')}
@@ -775,14 +557,12 @@ export function LandingPage() {
             <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
           </div>
 
-          {/* Carousel */}
           <div
             className="max-w-2xl mx-auto"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
             <div className="relative">
-              {/* Ghost cards — count matches remaining testimonials (max 2) */}
               {TESTIMONIALS.length >= 3 && (
                 <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/5 border border-white/[0.08] rounded-3xl" />
               )}
@@ -790,7 +570,6 @@ export function LandingPage() {
                 <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/10 border border-white/[0.12] rounded-3xl" />
               )}
 
-              {/* Active card — crossfade on content swap */}
               <div
                 className={`relative z-10 bg-white/20 backdrop-blur-sm border border-white/25 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
               >
@@ -809,7 +588,6 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Dot navigation — active pill doubles as progress bar; hidden when only 1 */}
             {TESTIMONIALS.length > 1 && (
               <div className="flex justify-center gap-2 mt-6">
                 {TESTIMONIALS.map((_, i) =>
@@ -846,7 +624,6 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Wave: Testimonials → CTA (green) */}
         <div className="mt-8">
           <Wave fill="#6BCB77" />
         </div>
@@ -856,7 +633,6 @@ export function LandingPage() {
           CTA — kinder-green bg, pill buttons
       ════════════════════════════════════════════════════════ */}
       <section id="contact" className="bg-kinder-green py-24">
-        {/* Floating accents */}
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center overflow-hidden">
           <div
             className="lp-float absolute -top-8 -left-8 opacity-30 pointer-events-none"
@@ -888,14 +664,13 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Wave: CTA → Footer */}
         <div className="mt-16">
           <Wave fill="#111827" />
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          FOOTER — dark, wavy top edge baked in via wave above
+          FOOTER
       ════════════════════════════════════════════════════════ */}
       <footer className="bg-gray-900 py-10 text-center font-display">
         <div className="flex items-center justify-center gap-2.5 mb-3">
@@ -928,7 +703,6 @@ export function LandingPage() {
           onClick={() => setLightboxIndex(null)}
         >
           <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            {/* Close */}
             <button
               onClick={() => setLightboxIndex(null)}
               className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors"
@@ -936,7 +710,6 @@ export function LandingPage() {
               <X size={28} />
             </button>
 
-            {/* Image — key forces remount so lp-enter-0 replays on navigation */}
             <img
               key={lightboxIndex}
               src={galleryItems[lightboxIndex].photo_url}
@@ -954,7 +727,6 @@ export function LandingPage() {
               {lightboxIndex + 1} / {galleryItems.length}
             </p>
 
-            {/* Prev */}
             {galleryItems.length > 1 && (
               <button
                 onClick={() =>
@@ -966,7 +738,6 @@ export function LandingPage() {
               </button>
             )}
 
-            {/* Next */}
             {galleryItems.length > 1 && (
               <button
                 onClick={() =>
