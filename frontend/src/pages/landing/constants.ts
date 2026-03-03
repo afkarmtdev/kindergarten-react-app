@@ -91,25 +91,6 @@ export const FEATURES = [
   },
 ] as const
 
-export const TESTIMONIALS = [
-  {
-    quote: `${APP_NAME} has been a wonderful experience for our daughter. She comes home every day excited to share what she learned!`,
-    name: 'Puan Siti Rahimah',
-    role: 'Parent of Aisyah, Sunflower Class',
-  },
-  {
-    quote: `The teachers are incredibly dedicated. Our son's confidence has grown so much since joining ${APP_NAME}.`,
-    name: 'Encik Ahmad Fauzi',
-    role: 'Parent of Haziq, Rainbow Class',
-  },
-  {
-    quote:
-      "A safe, nurturing environment with a fantastic curriculum. We couldn't be happier with our choice!",
-    name: 'Mrs. Priya Krishnan',
-    role: 'Parent of Arjun, Butterfly Class',
-  },
-]
-
 export const NOTICE_CATEGORY_COLORS: Record<Announcement['category'], string> = {
   general: 'bg-kinder-blue/10 text-kinder-blue',
   holiday: 'bg-kinder-green/10 text-kinder-green',

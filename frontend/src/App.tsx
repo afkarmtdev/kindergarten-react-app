@@ -48,6 +48,9 @@ const FeePlansPage = lazy(() =>
 const FeeStatementPage = lazy(() =>
   import('@/pages/FeeStatementPage').then((m) => ({ default: m.FeeStatementPage }))
 )
+const TestimonialsPage = lazy(() =>
+  import('@/pages/testimonials/TestimonialsPage').then((m) => ({ default: m.TestimonialsPage }))
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -176,6 +179,16 @@ export default function App() {
                   <ErrorBoundary>
                     <Suspense fallback={<CuteLoader />}>
                       <FeePlansPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="testimonials"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <TestimonialsPage />
                     </Suspense>
                   </ErrorBoundary>
                 }

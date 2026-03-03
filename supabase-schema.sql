@@ -185,3 +185,21 @@ alter table school_info enable row level security;
 create policy "Auth users can read school info"   on school_info for select to authenticated using (true);
 create policy "Auth users can insert school info" on school_info for insert to authenticated with check (true);
 create policy "Auth users can update school info" on school_info for update to authenticated using (true);
+
+-- Testimonials
+create table testimonials (
+  id            uuid primary key default uuid_generate_v4(),
+  parent_name   text not null,
+  parent_role   text,
+  quote         text not null,
+  avatar_url    text,
+  display_order int not null default 0,
+  is_visible    boolean not null default true,
+  created_at    timestamptz default now()
+);
+
+create index idx_testimonials_display_order on testimonials(display_order);
+
+alter table testimonials enable row level security;
+create policy "Auth users manage testimonials"        on testimonials for all    to authenticated using (true) with check (true);
+create policy "Anyone reads visible testimonials"     on testimonials for select to anon          using (is_visible = true);

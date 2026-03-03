@@ -178,6 +178,20 @@ export const schoolInfoApi = {
   update: (data: unknown) => api.put('/school-info', data).then((r) => r.data),
 }
 
+export const testimonialsApi = {
+  getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
+    api
+      .get('/testimonials', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Testimonial>),
+  create: (data: unknown) => api.post('/testimonials', data).then((r) => r.data),
+  update: (id: string, data: unknown) => api.put(`/testimonials/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/testimonials/${id}`).then((r) => r.data),
+  getPublic: () =>
+    publicApi
+      .get('/public/testimonials')
+      .then((r) => r.data as { data: import('@/types').Testimonial[] }),
+}
+
 export const announcementsApi = {
   getAll: (filters: { page?: number; limit?: number; search?: string; category?: string } = {}) =>
     api
