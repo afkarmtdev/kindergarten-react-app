@@ -19,7 +19,7 @@ import {
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSettingsStore } from '@/store/settingsStore'
-import { galleryApi, announcementsApi } from '@/lib/api'
+import { galleryApi, announcementsApi, testimonialsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
@@ -28,7 +28,6 @@ import { StatCounter } from './components/StatCounter'
 import {
   KEYFRAMES,
   FEATURES,
-  TESTIMONIALS,
   NOTICE_CATEGORY_COLORS,
   NOTICE_CATEGORY_GRADIENTS,
   GALLERY_PLACEHOLDERS,
@@ -59,6 +58,13 @@ export function LandingPage() {
   })
   const notices = announcementsData?.data ?? []
 
+  const { data: testimonialsData } = useQuery({
+    queryKey: ['testimonials-public'],
+    queryFn: () => testimonialsApi.getPublic(),
+    staleTime: 5 * 60 * 1000,
+  })
+  const testimonials = testimonialsData?.data ?? []
+
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 320)
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -79,12 +85,12 @@ export function LandingPage() {
   }, [lightboxIndex, galleryItems.length])
 
   useEffect(() => {
-    if (isPaused) return
+    if (isPaused || testimonials.length === 0) return
     const timer = setInterval(() => {
-      setActiveTestimonial((i) => (i + 1) % TESTIMONIALS.length)
+      setActiveTestimonial((i) => (i + 1) % testimonials.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [isPaused, activeTestimonial])
+  }, [isPaused, activeTestimonial, testimonials.length])
 
   // Slide out → swap content → slide in
   useEffect(() => {
@@ -546,88 +552,94 @@ export function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          TESTIMONIALS — kinder-purple bg, star ratings
+          testimonials — kinder-purple bg, star ratings
       ════════════════════════════════════════════════════════ */}
-      <section className="bg-kinder-purple py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
-              {t('testimonialsTitle')}
-            </h2>
-            <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
-          </div>
-
-          <div
-            className="max-w-2xl mx-auto"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
-            <div className="relative">
-              {TESTIMONIALS.length >= 3 && (
-                <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/5 border border-white/[0.08] rounded-3xl" />
-              )}
-              {TESTIMONIALS.length >= 2 && (
-                <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/10 border border-white/[0.12] rounded-3xl" />
-              )}
-
-              <div
-                className={`relative z-10 bg-white/20 backdrop-blur-sm border border-white/25 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
-              >
-                <div className="flex gap-1 mb-5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={16} fill="#FFD93D" stroke="#FFD93D" />
-                  ))}
-                </div>
-                <p className="text-white/90 leading-relaxed mb-6 italic text-lg">
-                  &ldquo;{TESTIMONIALS[displayIndex].quote}&rdquo;
-                </p>
-                <div className="border-t border-white/20 pt-4">
-                  <p className="font-extrabold text-white">{TESTIMONIALS[displayIndex].name}</p>
-                  <p className="text-white/60 text-sm mt-0.5">{TESTIMONIALS[displayIndex].role}</p>
-                </div>
-              </div>
+      {testimonials.length > 0 && (
+        <section className="bg-kinder-purple py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+                {t('testimonialsTitle')}
+              </h2>
+              <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
             </div>
 
-            {TESTIMONIALS.length > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                {TESTIMONIALS.map((_, i) =>
-                  i === activeTestimonial ? (
-                    <button
-                      key={i}
-                      onClick={() => setActiveTestimonial(i)}
-                      className="relative w-10 h-2.5 bg-white/20 rounded-full overflow-hidden"
-                    >
-                      <div
-                        key={displayIndex}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          bottom: 0,
-                          backgroundColor: 'rgba(255,255,255,0.75)',
-                          borderRadius: '9999px',
-                          animation: 'lp-progress 4s linear both',
-                          animationPlayState: isPaused ? 'paused' : 'running',
-                        }}
-                      />
-                    </button>
-                  ) : (
-                    <button
-                      key={i}
-                      onClick={() => setActiveTestimonial(i)}
-                      className="w-2.5 h-2.5 bg-white/30 hover:bg-white/60 rounded-full transition-colors duration-300"
-                    />
-                  )
+            <div
+              className="max-w-2xl mx-auto"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              <div className="relative">
+                {testimonials.length >= 3 && (
+                  <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/5 border border-white/[0.08] rounded-3xl" />
                 )}
-              </div>
-            )}
-          </div>
-        </div>
+                {testimonials.length >= 2 && (
+                  <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/10 border border-white/[0.12] rounded-3xl" />
+                )}
 
-        <div className="mt-8">
-          <Wave fill="#6BCB77" />
-        </div>
-      </section>
+                <div
+                  className={`relative z-10 bg-white/20 backdrop-blur-sm border border-white/25 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
+                >
+                  <div className="flex gap-1 mb-5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={16} fill="#FFD93D" stroke="#FFD93D" />
+                    ))}
+                  </div>
+                  <p className="text-white/90 leading-relaxed mb-6 italic text-lg">
+                    &ldquo;{(testimonials[displayIndex] ?? testimonials[0]).quote}&rdquo;
+                  </p>
+                  <div className="border-t border-white/20 pt-4">
+                    <p className="font-extrabold text-white">
+                      {(testimonials[displayIndex] ?? testimonials[0]).parent_name}
+                    </p>
+                    <p className="text-white/60 text-sm mt-0.5">
+                      {(testimonials[displayIndex] ?? testimonials[0]).parent_role}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {testimonials.length > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                  {testimonials.map((_, i) =>
+                    i === activeTestimonial ? (
+                      <button
+                        key={i}
+                        onClick={() => setActiveTestimonial(i)}
+                        className="relative w-10 h-2.5 bg-white/20 rounded-full overflow-hidden"
+                      >
+                        <div
+                          key={displayIndex}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(255,255,255,0.75)',
+                            borderRadius: '9999px',
+                            animation: 'lp-progress 4s linear both',
+                            animationPlayState: isPaused ? 'paused' : 'running',
+                          }}
+                        />
+                      </button>
+                    ) : (
+                      <button
+                        key={i}
+                        onClick={() => setActiveTestimonial(i)}
+                        className="w-2.5 h-2.5 bg-white/30 hover:bg-white/60 rounded-full transition-colors duration-300"
+                      />
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <Wave fill="#6BCB77" />
+          </div>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════════════════════
           CTA — kinder-green bg, pill buttons

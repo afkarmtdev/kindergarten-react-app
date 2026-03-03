@@ -30,8 +30,8 @@ const BEAR_LOGO_KEYFRAMES = `
   .admin-bear-waking { animation: admin-bear-wake   0.4s ease-out both;     transform-origin: 50% 100%; }
 `
 
-const SLEEPY_THRESHOLD = 90_000
-const ASLEEP_THRESHOLD = 180_000
+const SLEEPY_THRESHOLD = 120_000
+const ASLEEP_THRESHOLD = 100_000
 const WAKE_ANIM_DURATION = 400
 const WAKE_MSG_DURATION = 2_000
 const ACTIVITY_DEBOUNCE = 200
