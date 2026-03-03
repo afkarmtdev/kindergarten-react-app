@@ -347,7 +347,7 @@ Front-office fee collection — records payments, generates receipts, tracks bal
 
 - [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
 - [ ] Role-based access (superadmin vs teacher — schema has AdminUser.role already)
-- [ ] Real-time attendance updates (Supabase Realtime subscriptions)
+- [x] Real-time attendance updates — implemented in `hooks/useAttendanceRealtime.ts`
 - [ ] Parent portal (public-facing, read-only view for parents to check their child's attendance)
 - [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
 
@@ -355,10 +355,10 @@ Front-office fee collection — records payments, generates receipts, tracks bal
 
 ### Low Priority / Nice to Have
 
-- [ ] Attendance heatmap on student profile — GitHub contribution-grid style; each cell = 1 school day, coloured by status (green=present, red=absent, yellow=late, blue=excused, gray=no record); last 12 weeks visible; pure frontend, no new backend endpoint (data already exists in attendance history)
+- [x] Attendance heatmap on student profile — implemented in `pages/student-profile/components/AttendanceHeatmap.tsx`
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
-- [ ] Print-friendly attendance sheet
-- [ ] PWA / installable app for teachers marking attendance on phones
+- [x] Print-friendly attendance sheet — implemented in `pages/attendance/components/AttendancePrintView.tsx`
+- [x] PWA / installable app for teachers marking attendance on phones — implemented with offline shell caching
 - [ ] Global search (Cmd+K) — command palette to jump to any student by name
 
 ## Admin Bear (Sidebar Easter Egg)
