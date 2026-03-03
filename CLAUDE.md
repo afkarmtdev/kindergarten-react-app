@@ -129,6 +129,10 @@ kindergarten-app/
 │       │   │       ├── DocumentNumberingSection.tsx  # Segment builder + preview + save
 │       │   │       ├── SchoolInfoSection.tsx         # Logo upload, school name, address, phone, email
 │       │   │       └── AppearanceSection.tsx         # Dark mode toggle + EN/BM language picker
+│       │   ├── testimonials/
+│       │   │   ├── TestimonialsPage.tsx # Grid, 9/page, search, add/edit modal wired
+│       │   │   └── components/
+│       │   │       └── TestimonialCard.tsx # Quote, avatar (photo or initials), visible badge, edit/delete
 │       │   ├── LoginPage.tsx        # Admin login form (dark mode aware)
 │       │   ├── ClassesPage.tsx      # Grid, 9/page, capacity bar, add/edit modal wired
 │       │   ├── GalleryPage.tsx      # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
@@ -142,6 +146,7 @@ kindergarten-app/
 │       │   ├── announcementsStore.ts # page, search, categoryFilter
 │       │   ├── feesStore.ts          # page, search, statusFilter, monthFilter, classFilter
 │       │   ├── feePlansStore.ts      # page, search
+│       │   ├── testimonialsStore.ts  # page, search
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
@@ -271,10 +276,11 @@ This project runs on the **free tier**. Key limits:
 
 - 500 MB database storage, 1 GB file storage, 50 MB max upload size
 - No automatic backups / point-in-time recovery
-- Three Storage buckets required (all must be created as **public** in the Supabase dashboard):
+- Four Storage buckets required (all must be created as **public** in the Supabase dashboard):
   - `student-photos` — student profile photo uploads (StudentModal)
   - `gallery-photos` — landing page gallery photo uploads (GalleryModal)
   - `announcement-banners` — announcement banner image uploads (AnnouncementModal)
+  - `testimonial-avatars` — optional parent avatar uploads (TestimonialModal); 2 MB limit
 
 ## Environment Variables
 
@@ -341,13 +347,23 @@ Front-office fee collection — records payments, generates receipts, tracks bal
 - Dashboard: Fee summary card on DashboardPage via `GET /api/fees/summary?month=YYYY-MM` (total owed/paid/outstanding, overdue count)
 - DB: `fee_plans` + `fee_records` (see Database Schema); status derived in backend: waived→paid→partial→unpaid
 
+### Testimonials
+
+Admin-managed parent testimonials shown on the landing page carousel.
+
+- Backend: `backend/src/routes/testimonials.ts` — CRUD + `GET /public` (no auth, visible only, ordered by display_order)
+- Public endpoint: registered as `GET /api/public/testimonials` in `index.ts` before `authMiddleware`
+- Frontend: `pages/testimonials/TestimonialsPage.tsx` (grid, 9/page, search) + `TestimonialModal` (add/edit, optional avatar upload to `testimonial-avatars` bucket)
+- Landing page: `LandingPage.tsx` fetches `['testimonials-public']` via `testimonialsApi.getPublic()`; section hidden entirely when DB returns 0 visible testimonials
+- DB: `testimonials` table — `parent_name`, `parent_role?`, `quote`, `avatar_url?`, `display_order`, `is_visible`; anon RLS on `is_visible = true`
+
 ## Remaining Backlog (prioritised)
 
 ### Medium Priority
 
 - [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
 - [ ] Role-based access (superadmin vs teacher — schema has AdminUser.role already)
-- [ ] Real-time attendance updates (Supabase Realtime subscriptions)
+- [x] Real-time attendance updates — implemented in `hooks/useAttendanceRealtime.ts`
 - [ ] Parent portal (public-facing, read-only view for parents to check their child's attendance)
 - [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
 
@@ -355,10 +371,10 @@ Front-office fee collection — records payments, generates receipts, tracks bal
 
 ### Low Priority / Nice to Have
 
-- [ ] Attendance heatmap on student profile — GitHub contribution-grid style; each cell = 1 school day, coloured by status (green=present, red=absent, yellow=late, blue=excused, gray=no record); last 12 weeks visible; pure frontend, no new backend endpoint (data already exists in attendance history)
+- [x] Attendance heatmap on student profile — implemented in `pages/student-profile/components/AttendanceHeatmap.tsx`
 - [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
-- [ ] Print-friendly attendance sheet
-- [ ] PWA / installable app for teachers marking attendance on phones
+- [x] Print-friendly attendance sheet — implemented in `pages/attendance/components/AttendancePrintView.tsx`
+- [x] PWA / installable app for teachers marking attendance on phones — implemented with offline shell caching
 - [ ] Global search (Cmd+K) — command palette to jump to any student by name
 
 ## Admin Bear (Sidebar Easter Egg)

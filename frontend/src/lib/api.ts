@@ -45,7 +45,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && localStorage.getItem('access_token')) {
       localStorage.removeItem('access_token')
       window.location.href = '/admin/login'
     }
@@ -176,6 +176,20 @@ export const schoolInfoApi = {
   get: () =>
     api.get('/school-info').then((r) => r.data as { data: import('@/types').SchoolInfo | null }),
   update: (data: unknown) => api.put('/school-info', data).then((r) => r.data),
+}
+
+export const testimonialsApi = {
+  getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
+    api
+      .get('/testimonials', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Testimonial>),
+  create: (data: unknown) => api.post('/testimonials', data).then((r) => r.data),
+  update: (id: string, data: unknown) => api.put(`/testimonials/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/testimonials/${id}`).then((r) => r.data),
+  getPublic: () =>
+    publicApi
+      .get('/public/testimonials')
+      .then((r) => r.data as { data: import('@/types').Testimonial[] }),
 }
 
 export const announcementsApi = {

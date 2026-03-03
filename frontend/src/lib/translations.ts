@@ -410,6 +410,20 @@ export const translations = {
     totalCollected: 'Total Collected',
     outstanding: 'Outstanding',
     overdueCount: 'Overdue',
+
+    // Testimonials
+    testimonials: 'Testimonials',
+    addTestimonial: 'Add Testimonial',
+    editTestimonial: 'Edit Testimonial',
+    testimonialName: 'Parent Name',
+    testimonialRole: 'Role / Class',
+    testimonialQuote: 'Quote',
+    testimonialVisible: 'Visible on website',
+    testimonialOrder: 'Display Order',
+    testimonialAvatar: 'Avatar Photo',
+    noTestimonialsFound: 'No testimonials yet',
+    addFirstTestimonial: 'Add your first parent testimonial to show on the landing page!',
+    removeTestimonialConfirm: 'Remove testimonial from {name}?',
   },
 
   ms: {
@@ -822,6 +836,20 @@ export const translations = {
     totalCollected: 'Jumlah Dikutip',
     outstanding: 'Tertunggak',
     overdueCount: 'Tertunggak',
+
+    // Testimonials
+    testimonials: 'Testimoni',
+    addTestimonial: 'Tambah Testimoni',
+    editTestimonial: 'Edit Testimoni',
+    testimonialName: 'Nama Ibu Bapa',
+    testimonialRole: 'Peranan / Kelas',
+    testimonialQuote: 'Petikan',
+    testimonialVisible: 'Papar di laman web',
+    testimonialOrder: 'Susunan Paparan',
+    testimonialAvatar: 'Foto Avatar',
+    noTestimonialsFound: 'Tiada testimoni lagi',
+    addFirstTestimonial: 'Tambah testimoni ibu bapa pertama untuk dipaparkan di laman utama!',
+    removeTestimonialConfirm: 'Buang testimoni daripada {name}?',
   },
 } as const
 

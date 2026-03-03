@@ -15,6 +15,7 @@ import {
   Megaphone,
   Wallet,
   Settings,
+  Quote,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -38,6 +39,7 @@ export function AdminLayout() {
     { to: '/admin/classes', icon: School, label: t('classes') },
     { to: '/admin/gallery', icon: Images, label: t('gallery') },
     { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
+    { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
     { to: '/admin/fees', icon: Wallet, label: t('fees') },
     { to: '/admin/settings', icon: Settings, label: t('settingsPage') },
   ]

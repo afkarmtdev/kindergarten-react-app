@@ -136,6 +136,18 @@ export interface FeesSummary {
   overdue_count: number
 }
 
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+export interface Testimonial {
+  id: string
+  parent_name: string
+  parent_role?: string
+  quote: string
+  avatar_url?: string
+  display_order: number
+  is_visible: boolean
+  created_at: string
+}
+
 // ─── School Info ──────────────────────────────────────────────────────────────
 export interface SchoolInfo {
   id: string
