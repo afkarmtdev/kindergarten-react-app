@@ -37,6 +37,7 @@ import announcements from './routes/announcements'
 import documentNumbering from './routes/documentNumbering'
 import fees, { feePlans } from './routes/fees'
 import schoolInfo from './routes/schoolInfo'
+import testimonials from './routes/testimonials'
 import { authMiddleware } from './middleware/auth'
 import { supabase } from './db/supabase'
 import { logger } from './lib/logger'
@@ -83,6 +84,18 @@ app.get('/api/public/gallery', async (c) => {
   return c.json({ data: data ?? [] })
 })
 
+// Public testimonials read — visible only (LandingPage visitors)
+app.get('/api/public/testimonials', async (c) => {
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .eq('is_visible', true)
+    .order('display_order', { ascending: true })
+    .order('created_at', { ascending: false })
+  if (error) return c.json({ error: error.message }, 500)
+  return c.json({ data: data ?? [] })
+})
+
 // Public announcements read — non-expired only (LandingPage visitors)
 app.get('/api/public/announcements', async (c) => {
   const today = new Date().toISOString().split('T')[0]
@@ -108,6 +121,7 @@ app.route('/api/document-numbering', documentNumbering)
 app.route('/api/fee-plans', feePlans)
 app.route('/api/fees', fees)
 app.route('/api/school-info', schoolInfo)
+app.route('/api/testimonials', testimonials)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))
