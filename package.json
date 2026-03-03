@@ -10,6 +10,9 @@
     "lint": "eslint frontend/src backend/src packages",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "cd backend && bun test src && cd ../frontend && bunx vitest run",
+    "test:backend": "cd backend && bun test src",
+    "test:frontend": "cd frontend && bunx vitest run",
     "prepare": "git rev-parse --git-dir 2>/dev/null && lefthook install || true"
   },
   "devDependencies": {

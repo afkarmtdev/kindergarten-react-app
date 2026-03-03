@@ -320,12 +320,25 @@ cd frontend && bun dev  # → http://localhost:5173
 bun run lint          # ESLint v9 across frontend/src, backend/src, packages
 bun run format        # Prettier 3 — rewrite all files in place
 bun run format:check  # Prettier — dry-run (CI-safe)
+bun run test          # All tests (backend bun test + frontend vitest)
+bun run test:backend  # Backend only
+bun run test:frontend # Frontend only
 ```
 
 - Config files: `eslint.config.mjs` (root, flat config), `.prettierrc` (root), `.prettierignore`
-- Pre-commit hook: `lefthook` → `lint-staged` — only staged files are linted + formatted on `git commit`
+- Pre-commit hook: `lefthook` → `lint-staged` + `bun run test` — staged files are linted/formatted AND all tests run on `git commit`
 - `lint-staged` config lives in root `package.json` under the `"lint-staged"` key
 - `useAuth.tsx` has `// eslint-disable-next-line react-refresh/only-export-components` — context + hook co-location is intentional, suppress is correct
+
+## Testing
+
+- **Backend**: `bun test` (built-in runner, zero deps) — test files live next to source as `*.test.ts`
+- **Frontend**: Vitest — config at `frontend/vitest.config.ts`, test files co-located with source
+- **Testability pattern**: when a route has pure business logic (status derivation, formatting, date calculations), extract it into `backend/src/lib/<resource>.ts` and test in `backend/src/lib/<resource>.test.ts`. The route file imports from the lib; tests import from the lib without touching Supabase.
+- **Integration tests**: route handlers tested via `app.request()` (Hono's built-in test client) + mocked Supabase (`backend/src/test-utils/mockSupabase.ts`). `backend/bunfig.toml` preloads dummy env vars via `backend/src/test-utils/setup.ts`.
+- **Backend test imports**: always `import { describe, test, expect } from 'bun:test'`
+- **Frontend test imports**: always `import { describe, test, expect } from 'vitest'` (plus `vi` for fake timers)
+- **New backend routes must include tests** — Step 6 in the `/new-route` skill covers this
 
 ## Built Modules
 
