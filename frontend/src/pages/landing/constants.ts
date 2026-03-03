@@ -1,5 +1,4 @@
 import { BookOpen, Shield, Music, Palette, Sun, Users } from 'lucide-react'
-import { APP_NAME } from '@/lib/version'
 import type { Announcement } from '@/types'
 
 export const KEYFRAMES = `
