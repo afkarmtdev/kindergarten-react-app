@@ -423,7 +423,7 @@ Full implementation details — eye states, idle machine timing, critical timer 
 
 ## Known Conventions
 
-- **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled) and `frontend/public/version.json` (served live, never cached). Users running an old bundle detect the mismatch via `useVersionCheck` and see the `UpdateBanner` prompting a hard reload. Never bump one without the other.
+- **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled into JS) AND `frontend/public/version.json` (served live, never cached). Vite forbids importing from `public/` as a JS module, so they cannot share a source — bump both manually. `useVersionCheck` fetches `/version.json` (`cache: 'no-store'`) and compares against the bundled `APP_VERSION` — mismatch shows the `UpdateBanner` prompting a hard reload.
 
 - **One component, one purpose, one file** — every React component goes in its own `.tsx` file with a single exported component. Never define multiple exported components in one file.
 - **Page folder structure** — any page that has sub-components uses a folder named after the page. The orchestrator sits at the folder root; sub-components live in a `components/` subfolder inside it:
