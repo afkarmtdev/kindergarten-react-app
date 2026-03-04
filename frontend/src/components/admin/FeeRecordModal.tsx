@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { feesApi, studentsApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import type { FeeRecord } from '@/types'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 
 const FEE_TYPES = ['tuition', 'activity', 'uniform', 'registration', 'other'] as const
 
@@ -16,6 +18,8 @@ interface Props {
 export function FeeRecordModal({ record, onClose }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
+  const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
   const isEdit = record !== null
 
   const [studentId, setStudentId] = useState('')
@@ -42,6 +46,7 @@ export function FeeRecordModal({ record, onClose }: Props) {
       setDiscountAmount(String(record.discount_amount))
       setDiscountReason(record.discount_reason ?? '')
       setDueDate(record.due_date ?? '')
+      resetDirty()
     }
   }, [record])
 
@@ -108,7 +113,7 @@ export function FeeRecordModal({ record, onClose }: Props) {
             {isEdit ? t('editFeeRecord') : t('addFeeRecord')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={18} />
@@ -122,7 +127,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
               <label className={labelCls}>{t('feeStudent')} *</label>
               <select
                 value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
+                onChange={(e) => {
+                  setStudentId(e.target.value)
+                  markDirty()
+                }}
                 className={inputCls(errors.studentId)}
               >
                 <option value="">Select student...</option>
@@ -153,7 +161,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
             <label className={labelCls}>{t('feeType')}</label>
             <select
               value={type}
-              onChange={(e) => setType(e.target.value as typeof type)}
+              onChange={(e) => {
+                setType(e.target.value as typeof type)
+                markDirty()
+              }}
               className={inputCls()}
             >
               {FEE_TYPES.map((tp) => (
@@ -170,7 +181,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
             <input
               type="text"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value)
+                markDirty()
+              }}
               placeholder="e.g. January 2026 Tuition"
               className={inputCls(errors.description)}
             />
@@ -187,7 +201,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
               min="0.01"
               step="0.01"
               value={amountOwed}
-              onChange={(e) => setAmountOwed(e.target.value)}
+              onChange={(e) => {
+                setAmountOwed(e.target.value)
+                markDirty()
+              }}
               placeholder="0.00"
               className={inputCls(errors.amountOwed)}
             />
@@ -202,7 +219,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
               min="0"
               step="0.01"
               value={discountAmount}
-              onChange={(e) => setDiscountAmount(e.target.value)}
+              onChange={(e) => {
+                setDiscountAmount(e.target.value)
+                markDirty()
+              }}
               placeholder="0.00"
               className={inputCls()}
             />
@@ -215,7 +235,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
               <input
                 type="text"
                 value={discountReason}
-                onChange={(e) => setDiscountReason(e.target.value)}
+                onChange={(e) => {
+                  setDiscountReason(e.target.value)
+                  markDirty()
+                }}
                 placeholder="e.g. Sibling discount"
                 className={inputCls()}
               />
@@ -228,7 +251,10 @@ export function FeeRecordModal({ record, onClose }: Props) {
             <input
               type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={(e) => {
+                setDueDate(e.target.value)
+                markDirty()
+              }}
               className={inputCls()}
             />
           </div>
@@ -237,7 +263,7 @@ export function FeeRecordModal({ record, onClose }: Props) {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               {t('cancel')}
@@ -252,6 +278,7 @@ export function FeeRecordModal({ record, onClose }: Props) {
           </div>
         </form>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

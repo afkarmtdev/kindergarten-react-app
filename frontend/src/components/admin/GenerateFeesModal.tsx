@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { feesApi, feePlansApi, classesApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import type { FeePlan } from '@/types'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 
 const FEE_TYPES = ['tuition', 'activity', 'uniform', 'registration', 'other'] as const
 
@@ -16,6 +18,8 @@ interface Props {
 export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
+  const { markDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [useExistingPlan, setUseExistingPlan] = useState(!!prefillPlan)
@@ -115,7 +119,7 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
             <p className="text-xs text-gray-400 mt-0.5">Step {step} of 3</p>
           </div>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={18} />
@@ -129,13 +133,19 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
               {/* Toggle */}
               <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 text-sm font-semibold">
                 <button
-                  onClick={() => setUseExistingPlan(true)}
+                  onClick={() => {
+                    setUseExistingPlan(true)
+                    markDirty()
+                  }}
                   className={`flex-1 py-2.5 transition-colors ${useExistingPlan ? 'bg-kinder-orange text-white' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                 >
                   {t('useFeePlan')}
                 </button>
                 <button
-                  onClick={() => setUseExistingPlan(false)}
+                  onClick={() => {
+                    setUseExistingPlan(false)
+                    markDirty()
+                  }}
                   className={`flex-1 py-2.5 transition-colors border-l border-gray-200 dark:border-gray-700 ${!useExistingPlan ? 'bg-kinder-orange text-white' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                 >
                   {t('customFee')}
@@ -147,7 +157,10 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                   <label className={labelCls}>{t('selectPlan')}</label>
                   <select
                     value={selectedPlanId}
-                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedPlanId(e.target.value)
+                      markDirty()
+                    }}
                     className={inputCls}
                   >
                     <option value="">{t('selectPlan')}</option>
@@ -164,7 +177,10 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                     <label className={labelCls}>{t('feeType')}</label>
                     <select
                       value={customType}
-                      onChange={(e) => setCustomType(e.target.value as typeof customType)}
+                      onChange={(e) => {
+                        setCustomType(e.target.value as typeof customType)
+                        markDirty()
+                      }}
                       className={inputCls}
                     >
                       {FEE_TYPES.map((tp) => (
@@ -181,7 +197,10 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                       min="0.01"
                       step="0.01"
                       value={customAmount}
-                      onChange={(e) => setCustomAmount(e.target.value)}
+                      onChange={(e) => {
+                        setCustomAmount(e.target.value)
+                        markDirty()
+                      }}
                       placeholder="0.00"
                       className={inputCls}
                     />
@@ -191,7 +210,10 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                     <input
                       type="text"
                       value={customDescription}
-                      onChange={(e) => setCustomDescription(e.target.value)}
+                      onChange={(e) => {
+                        setCustomDescription(e.target.value)
+                        markDirty()
+                      }}
                       placeholder="e.g. January 2026 Tuition"
                       className={inputCls}
                     />
@@ -208,7 +230,10 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                 <label className={labelCls}>{t('targetClass')}</label>
                 <select
                   value={targetClass}
-                  onChange={(e) => setTargetClass(e.target.value)}
+                  onChange={(e) => {
+                    setTargetClass(e.target.value)
+                    markDirty()
+                  }}
                   className={inputCls}
                 >
                   <option value="all">{t('allStudents')}</option>
@@ -224,7 +249,10 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                 <input
                   type="date"
                   value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  onChange={(e) => {
+                    setDueDate(e.target.value)
+                    markDirty()
+                  }}
                   className={inputCls}
                 />
               </div>
@@ -321,6 +349,7 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
           </div>
         </div>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

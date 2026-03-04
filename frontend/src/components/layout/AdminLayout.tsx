@@ -24,6 +24,8 @@ import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useT } from '@/hooks/useT'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
+import { useVersionCheck } from '@/hooks/useVersionCheck'
+import { UpdateBanner } from '@/components/ui/UpdateBanner'
 
 export function AdminLayout() {
   const { user, logout } = useAuth()
@@ -31,6 +33,7 @@ export function AdminLayout() {
   const t = useT()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { updateAvailable } = useVersionCheck()
 
   const navItems = [
     { to: '/admin/dashboard', icon: LayoutDashboard, label: t('dashboard') },
@@ -184,6 +187,7 @@ export function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 font-display transition-colors duration-200">
+      <UpdateBanner visible={updateAvailable} />
       {/* Desktop sidebar — hidden on mobile */}
       <aside className="hidden lg:flex w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex-col shadow-sm transition-colors duration-200">
         <SidebarInner />

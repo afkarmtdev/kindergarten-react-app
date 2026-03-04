@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { feesApi, documentNumberingApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import type { FeeRecord } from '@/types'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 
 interface Props {
   record: FeeRecord
@@ -15,6 +17,8 @@ interface Props {
 export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
+  const { markDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
 
   const { data: numberingData, isLoading: numberingLoading } = useQuery({
     queryKey: ['document-numbering', 'receipt'],
@@ -76,7 +80,7 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
             </h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={18} />
@@ -144,7 +148,10 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
                 max={balance}
                 step="0.01"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  setAmount(e.target.value)
+                  markDirty()
+                }}
                 className={inputCls}
               />
               {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -153,7 +160,7 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={requestClose}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 {t('cancel')}
@@ -169,6 +176,7 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
           </form>
         </div>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }
