@@ -6,6 +6,8 @@ import { testimonialsApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { Testimonial } from '@/types'
 
 interface TestimonialModalProps {
@@ -31,6 +33,8 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
 
   useEffect(() => {
     if (testimonial) {
@@ -47,10 +51,13 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
     }
     setErrors({})
     setUploadError('')
+    resetDirty()
   }, [testimonial, open])
 
-  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [k]: v }))
+    markDirty()
+  }
 
   const validate = () => {
     const e: Partial<Record<'parent_name' | 'quote', string>> = {}
@@ -129,7 +136,7 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={requestClose} />
 
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -144,7 +151,7 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
             </h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={20} />
@@ -291,7 +298,7 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
             >
               {t('cancel')}
@@ -306,6 +313,7 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
           </div>
         </form>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { feePlansApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import type { FeePlan } from '@/types'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 
 const FEE_TYPES = ['tuition', 'activity', 'uniform', 'registration', 'other'] as const
 
@@ -16,6 +18,8 @@ interface Props {
 export function FeePlanModal({ plan, onClose }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
+  const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
   const isEdit = plan !== null
 
   const [name, setName] = useState('')
@@ -30,6 +34,7 @@ export function FeePlanModal({ plan, onClose }: Props) {
       setType(plan.type)
       setAmount(plan.amount.toString())
       setDescription(plan.description ?? '')
+      resetDirty()
     }
   }, [plan])
 
@@ -87,7 +92,7 @@ export function FeePlanModal({ plan, onClose }: Props) {
             {isEdit ? t('editFeePlan') : t('addFeePlan')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={18} />
@@ -101,7 +106,10 @@ export function FeePlanModal({ plan, onClose }: Props) {
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+                markDirty()
+              }}
               placeholder="e.g. Monthly Tuition Jan 2026"
               className={inputCls(errors.name)}
             />
@@ -113,7 +121,10 @@ export function FeePlanModal({ plan, onClose }: Props) {
             <label className={labelCls}>{t('feeType')}</label>
             <select
               value={type}
-              onChange={(e) => setType(e.target.value as FeePlan['type'])}
+              onChange={(e) => {
+                setType(e.target.value as FeePlan['type'])
+                markDirty()
+              }}
               className={inputCls()}
             >
               {FEE_TYPES.map((tp) => (
@@ -132,7 +143,10 @@ export function FeePlanModal({ plan, onClose }: Props) {
               min="0.01"
               step="0.01"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value)
+                markDirty()
+              }}
               placeholder="0.00"
               className={inputCls(errors.amount)}
             />
@@ -145,7 +159,10 @@ export function FeePlanModal({ plan, onClose }: Props) {
             <input
               type="text"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value)
+                markDirty()
+              }}
               placeholder="Optional notes"
               className={inputCls()}
             />
@@ -155,7 +172,7 @@ export function FeePlanModal({ plan, onClose }: Props) {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               {t('cancel')}
@@ -170,6 +187,7 @@ export function FeePlanModal({ plan, onClose }: Props) {
           </div>
         </form>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

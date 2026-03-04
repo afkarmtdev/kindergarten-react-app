@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Pencil, Trash2, Pin, Calendar } from 'lucide-react'
 import { useT } from '@/hooks/useT'
+import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { CATEGORY_COLORS, CATEGORY_GRADIENTS, isExpired, formatDate } from '../constants'
 import type { Announcement } from '@/types'
 
@@ -13,6 +15,7 @@ export function AnnouncementCard({
   onDelete: (id: string) => void
 }) {
   const t = useT()
+  const [showDelete, setShowDelete] = useState(false)
   const expired = isExpired(a.expires_at)
 
   return (
@@ -94,11 +97,7 @@ export function AnnouncementCard({
               <Pencil size={14} />
             </button>
             <button
-              onClick={() => {
-                if (confirm(t('removeAnnouncementConfirm').replace('{title}', a.title))) {
-                  onDelete(a.id)
-                }
-              }}
+              onClick={() => setShowDelete(true)}
               className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
               title="Delete"
             >
@@ -107,6 +106,15 @@ export function AnnouncementCard({
           </div>
         </div>
       </div>
+      <DeleteDialog
+        show={showDelete}
+        itemName={a.title}
+        onConfirm={() => {
+          onDelete(a.id)
+          setShowDelete(false)
+        }}
+        onCancel={() => setShowDelete(false)}
+      />
     </div>
   )
 }

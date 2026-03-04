@@ -6,6 +6,8 @@ import { studentsApi, classesApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { Student } from '@/types'
 
 interface StudentModalProps {
@@ -41,6 +43,8 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
 
   useEffect(() => {
     if (student) {
@@ -59,6 +63,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
     }
     setErrors({})
     setUploadError('')
+    resetDirty()
   }, [student, open])
 
   const mutation = useMutation({
@@ -74,7 +79,10 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
     },
   })
 
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof typeof form, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }))
+    markDirty()
+  }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -134,7 +142,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={requestClose} />
 
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -149,7 +157,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
             </h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={20} />
@@ -354,7 +362,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
             >
               {t('cancel')}
@@ -369,6 +377,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
           </div>
         </form>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

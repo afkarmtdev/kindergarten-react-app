@@ -248,128 +248,209 @@ function SegmentRow({
   ]
 
   const inputCls =
-    'w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 focus:border-kinder-orange'
+    'w-full px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 ring-1 ring-gray-200 dark:ring-gray-700 focus:ring-kinder-orange'
 
-  return (
-    <div className="flex items-start gap-2 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/40">
-      <div className="mt-2 text-gray-300 dark:text-gray-600 cursor-grab">
-        <GripVertical size={16} />
-      </div>
+  const labelCls = 'text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1'
 
-      <span className="mt-2 text-xs font-bold text-gray-400 dark:text-gray-500 w-4 flex-shrink-0">
-        {index + 1}
-      </span>
+  const typeSelect = (
+    <select
+      value={seg.type}
+      onChange={(e) =>
+        onUpdate({
+          type: e.target.value as SegmentType,
+          value: '',
+          total_chars: 4,
+          reset_by: 'no_reset',
+          start_from: 1,
+        })
+      }
+      className={inputCls}
+    >
+      {typeOptions.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  )
 
-      <div className="flex-shrink-0 w-36">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
-          {t('segmentType')}
-        </p>
-        <select
-          value={seg.type}
-          onChange={(e) =>
-            onUpdate({
-              type: e.target.value as SegmentType,
-              value: '',
-              total_chars: 4,
-              reset_by: 'no_reset',
-              start_from: 1,
-            })
-          }
-          className={inputCls}
-        >
-          {typeOptions.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
+  const fields = (
+    <>
+      {seg.type === 'constant' && (
+        <div className="flex-1 min-w-24">
+          <p className={labelCls}>{t('segmentValue')}</p>
+          <input
+            type="text"
+            value={seg.value ?? ''}
+            onChange={(e) => onUpdate({ value: e.target.value })}
+            placeholder='e.g. "RCP-"'
+            className={inputCls}
+          />
+        </div>
+      )}
 
-      <div className="flex gap-2 flex-1 flex-wrap">
-        {seg.type === 'constant' && (
-          <div className="flex-1 min-w-24">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
-              {t('segmentValue')}
-            </p>
+      {(seg.type === 'year' || seg.type === 'month') && (
+        <div className="flex-1">
+          <p className={labelCls}>&nbsp;</p>
+          <div className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
+            {t('autoIndicator')} (
+            {seg.type === 'year'
+              ? new Date().getFullYear()
+              : (new Date().getMonth() + 1).toString().padStart(2, '0')}
+            )
+          </div>
+        </div>
+      )}
+
+      {seg.type === 'serial' && (
+        <>
+          <div className="w-20">
+            <p className={labelCls}>{t('segmentTotalChars')}</p>
             <input
-              type="text"
-              value={seg.value ?? ''}
-              onChange={(e) => onUpdate({ value: e.target.value })}
-              placeholder='e.g. "RCP-"'
+              type="number"
+              min={1}
+              max={20}
+              value={seg.total_chars ?? 4}
+              onChange={(e) => onUpdate({ total_chars: Number(e.target.value) })}
               className={inputCls}
             />
           </div>
-        )}
+          <div className="w-36">
+            <p className={labelCls}>{t('segmentResetBy')}</p>
+            <select
+              value={seg.reset_by ?? 'no_reset'}
+              onChange={(e) => onUpdate({ reset_by: e.target.value as LocalSegment['reset_by'] })}
+              className={inputCls}
+            >
+              {resetOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="w-20">
+            <p className={labelCls}>{t('segmentStartFrom')}</p>
+            <input
+              type="number"
+              min={1}
+              value={seg.start_from ?? 1}
+              onChange={(e) => onUpdate({ start_from: Number(e.target.value) })}
+              className={inputCls}
+            />
+          </div>
+        </>
+      )}
+    </>
+  )
 
-        {(seg.type === 'year' || seg.type === 'month') && (
-          <div className="flex-1">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
-              &nbsp;
-            </p>
-            <div className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
+  const deleteBtn = (disabled: boolean) => (
+    <button
+      onClick={onRemove}
+      disabled={disabled}
+      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+    >
+      <Trash2 size={15} />
+    </button>
+  )
+
+  const gripIndex = (
+    <>
+      <span className="text-gray-300 dark:text-gray-600 cursor-grab flex-shrink-0">
+        <GripVertical size={16} />
+      </span>
+      <span className="text-xs font-bold text-gray-400 dark:text-gray-500 w-4 flex-shrink-0 text-center">
+        {index + 1}
+      </span>
+    </>
+  )
+
+  return (
+    <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
+      {/* ── Mobile layout (< sm): type + delete on one line, fields below ── */}
+      <div className="sm:hidden">
+        <div className="flex items-center gap-2">
+          {gripIndex}
+          <div className="flex-1">{typeSelect}</div>
+          <div className="mt-0 flex-shrink-0">{deleteBtn(total <= 1)}</div>
+        </div>
+        {/* Fields stacked below, indented */}
+        <div className="mt-2 ml-10">
+          {seg.type === 'constant' && (
+            <div>
+              <p className={labelCls}>{t('segmentValue')}</p>
+              <input
+                type="text"
+                value={seg.value ?? ''}
+                onChange={(e) => onUpdate({ value: e.target.value })}
+                placeholder='e.g. "RCP-"'
+                className={inputCls}
+              />
+            </div>
+          )}
+          {(seg.type === 'year' || seg.type === 'month') && (
+            <span className="inline-block px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium">
               {t('autoIndicator')} (
               {seg.type === 'year'
                 ? new Date().getFullYear()
                 : (new Date().getMonth() + 1).toString().padStart(2, '0')}
               )
+            </span>
+          )}
+          {seg.type === 'serial' && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className={labelCls}>{t('segmentTotalChars')}</p>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={seg.total_chars ?? 4}
+                  onChange={(e) => onUpdate({ total_chars: Number(e.target.value) })}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <p className={labelCls}>{t('segmentStartFrom')}</p>
+                <input
+                  type="number"
+                  min={1}
+                  value={seg.start_from ?? 1}
+                  onChange={(e) => onUpdate({ start_from: Number(e.target.value) })}
+                  className={inputCls}
+                />
+              </div>
+              <div className="col-span-2">
+                <p className={labelCls}>{t('segmentResetBy')}</p>
+                <select
+                  value={seg.reset_by ?? 'no_reset'}
+                  onChange={(e) =>
+                    onUpdate({ reset_by: e.target.value as LocalSegment['reset_by'] })
+                  }
+                  className={inputCls}
+                >
+                  {resetOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
-        )}
-
-        {seg.type === 'serial' && (
-          <>
-            <div className="w-20">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
-                {t('segmentTotalChars')}
-              </p>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={seg.total_chars ?? 4}
-                onChange={(e) => onUpdate({ total_chars: Number(e.target.value) })}
-                className={inputCls}
-              />
-            </div>
-            <div className="w-36">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
-                {t('segmentResetBy')}
-              </p>
-              <select
-                value={seg.reset_by ?? 'no_reset'}
-                onChange={(e) => onUpdate({ reset_by: e.target.value as LocalSegment['reset_by'] })}
-                className={inputCls}
-              >
-                {resetOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-20">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
-                {t('segmentStartFrom')}
-              </p>
-              <input
-                type="number"
-                min={1}
-                value={seg.start_from ?? 1}
-                onChange={(e) => onUpdate({ start_from: Number(e.target.value) })}
-                className={inputCls}
-              />
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
-      <button
-        onClick={onRemove}
-        disabled={total <= 1}
-        className="mt-2 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-      >
-        <Trash2 size={15} />
-      </button>
+      {/* ── Desktop layout (sm+): original single-row layout ── */}
+      <div className="hidden sm:flex sm:items-start sm:gap-2">
+        <div className="mt-2 flex items-center gap-2">{gripIndex}</div>
+        <div className="flex-shrink-0 w-36">
+          <p className={labelCls}>{t('segmentType')}</p>
+          {typeSelect}
+        </div>
+        <div className="flex gap-2 flex-1 flex-wrap">{fields}</div>
+        <div className="mt-6">{deleteBtn(total <= 1)}</div>
+      </div>
     </div>
   )
 }

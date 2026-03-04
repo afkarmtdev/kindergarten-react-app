@@ -8,6 +8,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { GalleryModal } from '@/components/admin/GalleryModal'
+import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import type { GalleryItem } from '@/types'
@@ -22,6 +23,7 @@ export function GalleryPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null)
+  const [deletingItem, setDeletingItem] = useState<GalleryItem | null>(null)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['gallery', { page, search }],
@@ -32,12 +34,35 @@ export function GalleryPage() {
 
   const deleteMutation = useMutation({
     mutationFn: galleryApi.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gallery'] })
-      toast.success('Photo removed')
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['gallery'] })
+      const snapshot = queryClient.getQueriesData<{
+        data: { id: string }[]
+        meta: { total: number }
+      }>({ queryKey: ['gallery'] })
+      queryClient.setQueriesData<{ data: { id: string }[]; meta: { total: number } }>(
+        { queryKey: ['gallery'] },
+        (old) =>
+          old?.data
+            ? {
+                ...old,
+                data: old.data.filter((item) => item.id !== id),
+                meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) },
+              }
+            : old
+      )
+      return { snapshot }
     },
-    onError: () => {
+    onSuccess: () => {
+      toast.success('Photo removed')
+      setDeletingItem(null)
+    },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshot?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       toast.error('Failed to remove photo. Please try again.')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['gallery'] })
     },
   })
 
@@ -81,7 +106,7 @@ export function GalleryPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
+          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-colors w-full md:w-auto"
         >
           <Plus size={18} />
           {t('addPhoto')}
@@ -158,11 +183,7 @@ export function GalleryPage() {
                         <Pencil size={14} />
                       </button>
                       <button
-                        onClick={() => {
-                          const label = item.caption || 'this photo'
-                          if (confirm(t('removePhotoConfirm', { caption: label })))
-                            deleteMutation.mutate(item.id)
-                        }}
+                        onClick={() => setDeletingItem(item)}
                         className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
                       >
                         <Trash2 size={14} />
@@ -189,6 +210,17 @@ export function GalleryPage() {
 
       {/* Modal */}
       <GalleryModal open={modalOpen} onClose={closeModal} item={editingItem} />
+      <DeleteDialog
+        show={!!deletingItem}
+        itemName={deletingItem?.caption || undefined}
+        onConfirm={() => {
+          if (deletingItem) {
+            deleteMutation.mutate(deletingItem.id)
+            setDeletingItem(null)
+          }
+        }}
+        onCancel={() => setDeletingItem(null)}
+      />
     </div>
   )
 }

@@ -52,13 +52,35 @@ export function AnnouncementsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: announcementsApi.delete,
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['announcements'] })
+      const snapshot = queryClient.getQueriesData<{
+        data: { id: string }[]
+        meta: { total: number }
+      }>({ queryKey: ['announcements'] })
+      queryClient.setQueriesData<{ data: { id: string }[]; meta: { total: number } }>(
+        { queryKey: ['announcements'] },
+        (old) =>
+          old?.data
+            ? {
+                ...old,
+                data: old.data.filter((item) => item.id !== id),
+                meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) },
+              }
+            : old
+      )
+      return { snapshot }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['announcements'] })
-      queryClient.invalidateQueries({ queryKey: ['announcements-public'] })
       toast.success('Announcement removed')
     },
-    onError: () => {
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshot?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       toast.error('Failed to remove announcement. Please try again.')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] })
+      queryClient.invalidateQueries({ queryKey: ['announcements-public'] })
     },
   })
 
@@ -98,7 +120,7 @@ export function AnnouncementsPage() {
 
         <button
           onClick={openAdd}
-          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
+          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-colors w-full md:w-auto"
         >
           <Plus size={18} />
           {t('addAnnouncement')}

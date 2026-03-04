@@ -11,6 +11,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { EmptyState } from '@/components/ui/Skeletons'
 import { FeePlanModal } from '@/components/admin/FeePlanModal'
 import { GenerateFeesModal } from '@/components/admin/GenerateFeesModal'
+import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import type { FeePlan } from '@/types'
 
 const LIMIT = 9
@@ -31,6 +32,7 @@ export function FeePlansPage() {
 
   const [modalPlan, setModalPlan] = useState<FeePlan | null | undefined>(undefined)
   const [generatePlan, setGeneratePlan] = useState<FeePlan | null | undefined>(undefined)
+  const [deletingPlan, setDeletingPlan] = useState<FeePlan | null>(null)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['fee-plans', { page, search }],
@@ -40,11 +42,36 @@ export function FeePlansPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => feePlansApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fee-plans'] })
-      toast.success('Fee plan removed')
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['fee-plans'] })
+      const snapshot = queryClient.getQueriesData<{
+        data: { id: string }[]
+        meta: { total: number }
+      }>({ queryKey: ['fee-plans'] })
+      queryClient.setQueriesData<{ data: { id: string }[]; meta: { total: number } }>(
+        { queryKey: ['fee-plans'] },
+        (old) =>
+          old?.data
+            ? {
+                ...old,
+                data: old.data.filter((item) => item.id !== id),
+                meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) },
+              }
+            : old
+      )
+      return { snapshot }
     },
-    onError: () => toast.error('Failed to remove fee plan. Please try again.'),
+    onSuccess: () => {
+      toast.success('Fee plan removed')
+      setDeletingPlan(null)
+    },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshot?.forEach(([key, data]) => queryClient.setQueryData(key, data))
+      toast.error('Failed to remove fee plan. Please try again.')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-plans'] })
+    },
   })
 
   const typeLabel = (tp: string) => {
@@ -151,11 +178,7 @@ export function FeePlansPage() {
                     <Pencil size={14} />
                   </button>
                   <button
-                    onClick={() => {
-                      if (confirm(t('removeFeePlanConfirm').replace('{name}', plan.name))) {
-                        deleteMutation.mutate(plan.id)
-                      }
-                    }}
+                    onClick={() => setDeletingPlan(plan)}
                     className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   >
                     <Trash2 size={14} />
@@ -187,6 +210,17 @@ export function FeePlansPage() {
       {generatePlan !== undefined && (
         <GenerateFeesModal prefillPlan={generatePlan} onClose={() => setGeneratePlan(undefined)} />
       )}
+      <DeleteDialog
+        show={!!deletingPlan}
+        itemName={deletingPlan?.name}
+        onConfirm={() => {
+          if (deletingPlan) {
+            deleteMutation.mutate(deletingPlan.id)
+            setDeletingPlan(null)
+          }
+        }}
+        onCancel={() => setDeletingPlan(null)}
+      />
     </div>
   )
 }

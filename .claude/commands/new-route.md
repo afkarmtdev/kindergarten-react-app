@@ -37,10 +37,7 @@ const limit = parseInt(c.req.query('limit') || '12')
 const from = (page - 1) * limit
 const to = from + limit - 1
 
-const { data, count } = await supabase
-  .from('table')
-  .select('*', { count: 'exact' })
-  .range(from, to)
+const { data, count } = await supabase.from('table').select('*', { count: 'exact' }).range(from, to)
 
 return c.json({
   data,
@@ -84,14 +81,116 @@ Register AFTER the `app.use('/api/*', authMiddleware)` line — this protects th
 
 ```ts
 app.get('/api/public/resource', handler) // before authMiddleware
-app.use('/api/*', authMiddleware)         // authMiddleware line
+app.use('/api/*', authMiddleware) // authMiddleware line
 ```
 
 Use `publicApi` (no-auth Axios instance in `frontend/src/lib/api.ts`) to call public endpoints from the frontend.
 
+## Step 6 — Unit Tests
+
+If the route has pure helper functions (status derivation, date calculations, formatting, validation logic), extract them into `backend/src/lib/<resource>.ts` and create `backend/src/lib/<resource>.test.ts`.
+
+```ts
+// backend/src/lib/<resource>.test.ts
+import { describe, test, expect } from 'bun:test'
+import { helperFunction } from './<resource>'
+
+describe('helperFunction', () => {
+  test('describes expected behaviour', () => {
+    expect(helperFunction(input)).toBe(expectedOutput)
+  })
+})
+```
+
+Rules:
+
+- Import from `bun:test` (backend uses Bun's built-in runner)
+- Test file lives next to the source file in `lib/`
+- Cover all branches: happy path, edge cases, boundary values, error cases
+- Run `bun run test:backend` to verify before committing
+
+## Step 7 — Integration Tests
+
+Create `backend/src/routes/<resource>.test.ts` to test the HTTP request/response cycle with a mocked database.
+
+```ts
+// backend/src/routes/<resource>.test.ts
+import { describe, test, expect, beforeEach, mock } from 'bun:test'
+import {
+  mockSupabase,
+  setMockResponse,
+  clearMockResponses,
+} from '../test-utils/mockSupabase'
+
+// Replace real Supabase BEFORE route is imported
+mock.module('../db/supabase', () => ({ supabase: mockSupabase }))
+
+import resource from './<resource>'
+
+beforeEach(() => clearMockResponses())
+
+describe('GET / — list', () => {
+  test('returns paginated response', async () => {
+    setMockResponse('<table>', { data: [...], error: null, count: 2 })
+    const res = await resource.request('/?page=1&limit=9')
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.meta.total).toBe(2)
+  })
+})
+```
+
+Cover at minimum:
+
+- List (paginated shape, empty data, DB error)
+- Pagination (defaults, custom page/limit in meta, totalPages rounds up, limit above max → 400, page < 1 → 400)
+- GET by ID (found, not found)
+- POST (valid body → 201, missing fields → 400, DB error → 500)
+- PUT (update, partial update)
+- DELETE (success, DB error)
+
+Pagination test template (adjust default/max per route):
+
+```ts
+describe('GET / — pagination', () => {
+  test('defaults to page 1, limit <DEFAULT>', async () => {
+    setMockResponse('<table>', { data: [], error: null, count: 0 })
+    const res = await resource.request('/')
+    const json = await res.json()
+    expect(json.meta.page).toBe(1)
+    expect(json.meta.limit).toBe(<DEFAULT>)
+  })
+
+  test('custom page and limit reflected in meta', async () => {
+    setMockResponse('<table>', { data: [], error: null, count: 50 })
+    const res = await resource.request('/?page=3&limit=10')
+    const json = await res.json()
+    expect(json.meta).toEqual({ total: 50, page: 3, limit: 10, totalPages: 5 })
+  })
+
+  test('totalPages rounds up', async () => {
+    setMockResponse('<table>', { data: [], error: null, count: 25 })
+    const res = await resource.request('/?limit=10')
+    const json = await res.json()
+    expect(json.meta.totalPages).toBe(3)
+  })
+
+  test('rejects limit above max (<MAX>)', async () => {
+    const res = await resource.request('/?limit=<MAX+1>')
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects page < 1', async () => {
+    const res = await resource.request('/?page=0')
+    expect(res.status).toBe(400)
+  })
+})
+```
+
 ## Security — Already Global
 
 These are applied to every response in `index.ts` — do NOT re-add them in route files:
+
 - Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, etc.)
 - CORS middleware
 

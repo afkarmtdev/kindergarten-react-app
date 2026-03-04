@@ -6,18 +6,9 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { resolveNextSerial, assembleNumber, type DocumentSegment } from '../lib/documentNumbering'
 
 const documentNumbering = new Hono()
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-interface DocumentSegment {
-  order: number
-  type: 'constant' | 'year' | 'month' | 'serial'
-  value?: string
-  total_chars?: number
-  reset_by?: 'no_reset' | 'monthly' | 'yearly'
-  start_from?: number
-}
 
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 const segmentSchema = z.object({
@@ -96,43 +87,14 @@ export async function generateNextNumber(documentType: string): Promise<string> 
   const serialSeg = segments.find((s) => s.type === 'serial')
 
   const now = new Date()
-  let newSerial = (config.current_serial ?? 0) + 1
+  const newSerial = resolveNextSerial(
+    config.current_serial ?? 0,
+    serialSeg,
+    config.last_reset_at,
+    now
+  )
 
-  // Auto-reset logic
-  if (serialSeg && serialSeg.reset_by && serialSeg.reset_by !== 'no_reset') {
-    if (config.last_reset_at) {
-      const lastReset = new Date(config.last_reset_at)
-      if (serialSeg.reset_by === 'monthly') {
-        if (
-          now.getFullYear() !== lastReset.getFullYear() ||
-          now.getMonth() !== lastReset.getMonth()
-        ) {
-          newSerial = serialSeg.start_from ?? 1
-        }
-      } else if (serialSeg.reset_by === 'yearly') {
-        if (now.getFullYear() !== lastReset.getFullYear()) {
-          newSerial = serialSeg.start_from ?? 1
-        }
-      }
-    } else {
-      // First-ever number — start from start_from
-      newSerial = serialSeg.start_from ?? 1
-    }
-  }
-
-  // Assemble the formatted number
-  const year = now.getFullYear().toString()
-  const month = (now.getMonth() + 1).toString().padStart(2, '0')
-
-  let result = ''
-  const sorted = [...segments].sort((a, b) => a.order - b.order)
-  for (const seg of sorted) {
-    if (seg.type === 'constant') result += seg.value ?? ''
-    else if (seg.type === 'year') result += year
-    else if (seg.type === 'month') result += month
-    else if (seg.type === 'serial')
-      result += newSerial.toString().padStart(seg.total_chars ?? 4, '0')
-  }
+  const result = assembleNumber(segments, newSerial, now)
 
   // Persist updated serial
   await supabase

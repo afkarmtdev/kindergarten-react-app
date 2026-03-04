@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { X, School } from 'lucide-react'
 import { classesApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { ClassRoom } from '@/types'
 
 interface ClassModalProps {
@@ -23,6 +25,8 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({ ...empty })
   const [errors, setErrors] = useState<Partial<typeof empty>>({})
+  const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
 
   useEffect(() => {
     if (classroom) {
@@ -35,6 +39,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
       setForm({ ...empty })
     }
     setErrors({})
+    resetDirty()
   }, [classroom, open])
 
   const mutation = useMutation({
@@ -50,7 +55,10 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
     },
   })
 
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof typeof form, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }))
+    markDirty()
+  }
 
   const validate = () => {
     const e: Partial<typeof empty> = {}
@@ -84,7 +92,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={requestClose} />
 
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md">
@@ -99,7 +107,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
             </h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={20} />
@@ -166,7 +174,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
             >
               {t('cancel')}
@@ -181,6 +189,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
           </div>
         </form>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

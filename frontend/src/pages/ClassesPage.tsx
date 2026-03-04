@@ -8,6 +8,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { ClassModal } from '@/components/admin/ClassModal'
+import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import type { ClassRoom } from '@/types'
@@ -29,6 +30,7 @@ export function ClassesPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingClass, setEditingClass] = useState<ClassRoom | null>(null)
+  const [deletingClass, setDeletingClass] = useState<ClassRoom | null>(null)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['classes', { page, search }],
@@ -39,12 +41,35 @@ export function ClassesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: classesApi.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['classes'] })
-      toast.success('Class removed')
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['classes'] })
+      const snapshot = queryClient.getQueriesData<{
+        data: { id: string }[]
+        meta: { total: number }
+      }>({ queryKey: ['classes'] })
+      queryClient.setQueriesData<{ data: { id: string }[]; meta: { total: number } }>(
+        { queryKey: ['classes'] },
+        (old) =>
+          old?.data
+            ? {
+                ...old,
+                data: old.data.filter((item) => item.id !== id),
+                meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) },
+              }
+            : old
+      )
+      return { snapshot }
     },
-    onError: () => {
+    onSuccess: () => {
+      toast.success('Class removed')
+      setDeletingClass(null)
+    },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshot?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       toast.error('Failed to remove class. Please try again.')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes'] })
     },
   })
 
@@ -88,7 +113,7 @@ export function ClassesPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 w-full md:w-auto"
+          className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-colors w-full md:w-auto"
         >
           <Plus size={18} />
           {t('addClass')}
@@ -145,10 +170,7 @@ export function ClassesPage() {
                         <Pencil size={14} />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(t('removeClassConfirm', { name: cls.name })))
-                            deleteMutation.mutate(cls.id)
-                        }}
+                        onClick={() => setDeletingClass(cls)}
                         className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
                       >
                         <Trash2 size={14} />
@@ -202,6 +224,17 @@ export function ClassesPage() {
 
       {/* Modal */}
       <ClassModal open={modalOpen} onClose={closeModal} classroom={editingClass} />
+      <DeleteDialog
+        show={!!deletingClass}
+        itemName={deletingClass?.name}
+        onConfirm={() => {
+          if (deletingClass) {
+            deleteMutation.mutate(deletingClass.id)
+            setDeletingClass(null)
+          }
+        }}
+        onCancel={() => setDeletingClass(null)}
+      />
     </div>
   )
 }

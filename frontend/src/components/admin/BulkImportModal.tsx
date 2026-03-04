@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { Upload, X, CheckCircle, AlertCircle, FileText, Download } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
+import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { DiscardDialog } from '@/components/ui/DiscardDialog'
 
 type Step = 'idle' | 'preview' | 'result'
 
@@ -79,6 +81,8 @@ export function BulkImportModal({ open, onClose }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
+  const { markDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
+    useDiscardGuard(onClose)
 
   const [step, setStep] = useState<Step>('idle')
   const [rows, setRows] = useState<ParsedRow[]>([])
@@ -107,6 +111,7 @@ export function BulkImportModal({ open, onClose }: Props) {
       const text = e.target?.result as string
       const parsed = parseCsv(text)
       setRows(parsed)
+      markDirty()
       setStep('preview')
     }
     reader.readAsText(file)
@@ -137,7 +142,7 @@ export function BulkImportModal({ open, onClose }: Props) {
             {t('bulkImport')}
           </h2>
           <button
-            onClick={handleClose}
+            onClick={requestClose}
             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-lg"
           >
             <X size={18} />
@@ -350,6 +355,7 @@ export function BulkImportModal({ open, onClose }: Props) {
           )}
         </div>
       </div>
+      <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )
 }

@@ -248,6 +248,33 @@ All list endpoints return paginated responses:
 - **GalleryModal** (`components/admin/GalleryModal.tsx`) — photo upload (Supabase Storage → `gallery-photos`), caption, display_order, is_visible toggle. Same add/edit pattern.
 - **AnnouncementModal** (`components/admin/AnnouncementModal.tsx`) — title, body, category select, banner upload (Supabase Storage → `announcement-banners`), pinned toggle (yellow), expiry date with clear button. Invalidates both `['announcements']` and `['announcements-public']` on success.
 - All modals use `useMutation` → `onSuccess`: `queryClient.invalidateQueries` + `toast.success`; `onError`: `toast.error`.
+- **Delete confirmation**: never use native `window.confirm()` for deletions. Use `DeleteDialog` (`components/ui/DeleteDialog.tsx`) instead. Props: `show`, `itemName?` (displayed in dialog so user knows what they're deleting), `onConfirm`, `onCancel`. Two placement patterns:
+  - **Card/row components** (e.g. StudentCard, TestimonialCard, FeeTableRow): add local `const [showDelete, setShowDelete] = useState(false)`, change trash button to `onClick={() => setShowDelete(true)}`, and place `<DeleteDialog>` either as last child of the wrapper `<div>`, or outside via Fragment `<>...<DeleteDialog /></>` when the wrapper is a `<Link>` or `<tr>`.
+  - **Page-level inline delete** (e.g. ClassesPage, GalleryPage, FeePlansPage): add `const [deletingX, setDeletingX] = useState<Type | null>(null)`, change button to `onClick={() => setDeletingX(item)}`, add `setDeletingX(null)` in `deleteMutation.onSuccess`, and render `<DeleteDialog show={!!deletingX} itemName={deletingX?.name} onConfirm={() => deletingX && deleteMutation.mutate(deletingX.id)} onCancel={() => setDeletingX(null)} />` alongside other modals.
+- **Optimistic deletion**: all `deleteMutation` instances use optimistic removal so the item disappears instantly. Standard pattern (applied to all 7 delete mutations):
+  ```ts
+  onMutate: async (id: string) => {
+    await queryClient.cancelQueries({ queryKey: ['resource'] })
+    const snapshot = queryClient.getQueriesData({ queryKey: ['resource'] })
+    queryClient.setQueriesData({ queryKey: ['resource'] }, (old: any) =>
+      old?.data ? { ...old, data: old.data.filter((item: any) => item.id !== id), meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) } } : old
+    )
+    return { snapshot }
+  },
+  onSuccess: () => { toast.success('X removed') },
+  onError: (_err, _id, ctx: any) => {
+    ctx?.snapshot?.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+    toast.error('Failed to remove X. Please try again.')
+  },
+  onSettled: () => { queryClient.invalidateQueries({ queryKey: ['resource'] }) },
+  ```
+  Key rules: `onMutate` cancels in-flight queries and snapshots the cache; `onError` rolls back; **invalidation moves to `onSettled`** (not `onSuccess`) so it always runs. For pages that invalidate two keys (e.g. announcements + announcements-public), both go in `onSettled`. The `DeleteDialog` `onConfirm` always closes the dialog immediately before firing the mutation to prevent double-clicks.
+- **Discard guard**: every modal that has editable form state must use `useDiscardGuard` (`hooks/useDiscardGuard.ts`) + `DiscardDialog` (`components/ui/DiscardDialog.tsx`). Pattern:
+  1. `const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } = useDiscardGuard(onClose)`
+  2. Call `markDirty()` in every field setter / onChange handler
+  3. Call `resetDirty()` at the end of the `useEffect` that resets form state on open
+  4. Replace `onClick={onClose}` with `onClick={requestClose}` on the X button, backdrop div, and Cancel button (mutation `onSuccess` keeps calling `onClose()` directly)
+  5. Render `<DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />` as the **last child inside** the outermost `<div className="fixed inset-0 ...">` wrapper — never as a sibling after `</div>`
 
 ## Toast Notifications
 
@@ -320,12 +347,25 @@ cd frontend && bun dev  # → http://localhost:5173
 bun run lint          # ESLint v9 across frontend/src, backend/src, packages
 bun run format        # Prettier 3 — rewrite all files in place
 bun run format:check  # Prettier — dry-run (CI-safe)
+bun run test          # All tests (backend bun test + frontend vitest)
+bun run test:backend  # Backend only
+bun run test:frontend # Frontend only
 ```
 
 - Config files: `eslint.config.mjs` (root, flat config), `.prettierrc` (root), `.prettierignore`
-- Pre-commit hook: `lefthook` → `lint-staged` — only staged files are linted + formatted on `git commit`
+- Pre-commit hook: `lefthook` → `lint-staged` + `bun run test` — staged files are linted/formatted AND all tests run on `git commit`
 - `lint-staged` config lives in root `package.json` under the `"lint-staged"` key
 - `useAuth.tsx` has `// eslint-disable-next-line react-refresh/only-export-components` — context + hook co-location is intentional, suppress is correct
+
+## Testing
+
+- **Backend**: `bun test` (built-in runner, zero deps) — test files live next to source as `*.test.ts`
+- **Frontend**: Vitest — config at `frontend/vitest.config.ts`, test files co-located with source
+- **Testability pattern**: when a route has pure business logic (status derivation, formatting, date calculations), extract it into `backend/src/lib/<resource>.ts` and test in `backend/src/lib/<resource>.test.ts`. The route file imports from the lib; tests import from the lib without touching Supabase.
+- **Integration tests**: route handlers tested via `app.request()` (Hono's built-in test client) + mocked Supabase (`backend/src/test-utils/mockSupabase.ts`). `backend/bunfig.toml` preloads dummy env vars via `backend/src/test-utils/setup.ts`.
+- **Backend test imports**: always `import { describe, test, expect } from 'bun:test'`
+- **Frontend test imports**: always `import { describe, test, expect } from 'vitest'` (plus `vi` for fake timers)
+- **New backend routes must include tests** — Step 6 in the `/new-route` skill covers this
 
 ## Built Modules
 
@@ -382,6 +422,8 @@ Admin-managed parent testimonials shown on the landing page carousel.
 Full implementation details — eye states, idle machine timing, critical timer pattern, bubble positioning, mobile vs desktop rules — live in the `/build-a-bear` skill (`.claude/commands/build-a-bear.md`). Use `/build-a-bear` whenever modifying the bear mascot.
 
 ## Known Conventions
+
+- **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled into JS) AND `frontend/public/version.json` (served live, never cached). Vite forbids importing from `public/` as a JS module, so they cannot share a source — bump both manually. `useVersionCheck` fetches `/version.json` (`cache: 'no-store'`) and compares against the bundled `APP_VERSION` — mismatch shows the `UpdateBanner` prompting a hard reload.
 
 - **One component, one purpose, one file** — every React component goes in its own `.tsx` file with a single exported component. Never define multiple exported components in one file.
 - **Page folder structure** — any page that has sub-components uses a folder named after the page. The orchestrator sits at the folder root; sub-components live in a `components/` subfolder inside it:
