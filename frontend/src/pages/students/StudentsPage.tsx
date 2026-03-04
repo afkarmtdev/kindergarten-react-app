@@ -148,7 +148,7 @@ export function StudentsPage() {
           </button>
           <button
             onClick={openAdd}
-            className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-all hover:shadow-lg hover:shadow-orange-100 flex-1 md:flex-none"
+            className="flex items-center justify-center gap-2 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-600 transition-colors flex-1 md:flex-none"
           >
             <Plus size={18} />
             {t('addStudent')}
