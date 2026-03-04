@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { Trash2 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 
@@ -13,9 +14,15 @@ export function DeleteDialog({ show, itemName, onConfirm, onCancel }: Props) {
 
   if (!show) return null
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xs border border-gray-100 dark:border-gray-800 p-6">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xs border border-gray-100 dark:border-gray-800 p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
             <Trash2 size={16} className="text-red-500" />
@@ -45,6 +52,7 @@ export function DeleteDialog({ show, itemName, onConfirm, onCancel }: Props) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
