@@ -420,6 +420,12 @@ export const translations = {
     discardChangesBtn: 'Discard',
     keepEditing: 'Keep Editing',
 
+    // Update banner (PWA)
+    updateAvailableLong: 'A new version is available. Reload to get the latest update.',
+    updateAvailableShort: 'New version available.',
+    updateReload: 'Reload now',
+    updateDismiss: 'Dismiss',
+
     // Testimonials
     testimonials: 'Testimonials',
     addTestimonial: 'Add Testimonial',
@@ -855,6 +861,12 @@ export const translations = {
       'Anda mempunyai perubahan yang belum disimpan. Adakah anda pasti mahu membuangnya?',
     discardChangesBtn: 'Buang',
     keepEditing: 'Teruskan Edit',
+
+    // Update banner (PWA)
+    updateAvailableLong: 'Versi baharu tersedia. Muat semula untuk mendapat kemas kini terkini.',
+    updateAvailableShort: 'Versi baharu tersedia.',
+    updateReload: 'Muat semula',
+    updateDismiss: 'Abaikan',
 
     // Testimonials
     testimonials: 'Testimoni',

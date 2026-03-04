@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { RefreshCw, X } from 'lucide-react'
+import { useT } from '../../hooks/useT'
 
 interface UpdateBannerProps {
   visible: boolean
@@ -7,6 +8,7 @@ interface UpdateBannerProps {
 
 export function UpdateBanner({ visible }: UpdateBannerProps) {
   const [dismissed, setDismissed] = useState(false)
+  const t = useT()
 
   if (!visible || dismissed) return null
 
@@ -14,10 +16,8 @@ export function UpdateBanner({ visible }: UpdateBannerProps) {
     <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between gap-2 bg-kinder-blue px-4 py-2.5 text-white shadow-lg">
       <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
         <RefreshCw className="h-4 w-4 shrink-0" />
-        <span className="hidden sm:inline">
-          A new version is available. Reload to get the latest update.
-        </span>
-        <span className="sm:hidden">New version available.</span>
+        <span className="hidden sm:inline">{t('updateAvailableLong')}</span>
+        <span className="sm:hidden">{t('updateAvailableShort')}</span>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <button
@@ -30,12 +30,12 @@ export function UpdateBanner({ visible }: UpdateBannerProps) {
           }}
           className="rounded-lg bg-white/20 px-3 py-1 text-xs font-bold transition-colors hover:bg-white/30"
         >
-          Reload now
+          {t('updateReload')}
         </button>
         <button
           onClick={() => setDismissed(true)}
           className="rounded-lg p-1 transition-colors hover:bg-white/20"
-          aria-label="Dismiss"
+          aria-label={t('updateDismiss')}
         >
           <X className="h-4 w-4" />
         </button>
