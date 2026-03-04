@@ -66,15 +66,37 @@ export function FeesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => feesApi.delete(id),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['fees'] })
+      const snapshot = queryClient.getQueriesData<{
+        data: { id: string }[]
+        meta: { total: number }
+      }>({ queryKey: ['fees'] })
+      queryClient.setQueriesData<{ data: { id: string }[]; meta: { total: number } }>(
+        { queryKey: ['fees'] },
+        (old) =>
+          old?.data
+            ? {
+                ...old,
+                data: old.data.filter((item) => item.id !== id),
+                meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) },
+              }
+            : old
+      )
+      return { snapshot }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fees'] })
       toast.success('Fee record removed')
     },
-    onError: (err: unknown) => {
+    onError: (err: unknown, _id, ctx) => {
+      ctx?.snapshot?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
         'Failed to remove. Please try again.'
       toast.error(msg)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['fees'] })
     },
   })
 

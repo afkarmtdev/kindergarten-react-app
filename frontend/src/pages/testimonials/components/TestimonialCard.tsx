@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
 import { useT } from '@/hooks/useT'
+import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import type { Testimonial } from '@/types'
 
 export function TestimonialCard({
@@ -12,6 +14,7 @@ export function TestimonialCard({
   onDelete: (id: string) => void
 }) {
   const t = useT()
+  const [showDelete, setShowDelete] = useState(false)
 
   const initials = t_.parent_name
     .split(' ')
@@ -75,11 +78,7 @@ export function TestimonialCard({
             <Pencil size={14} />
           </button>
           <button
-            onClick={() => {
-              if (confirm(t('removeTestimonialConfirm').replace('{name}', t_.parent_name))) {
-                onDelete(t_.id)
-              }
-            }}
+            onClick={() => setShowDelete(true)}
             className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
             title="Delete"
           >
@@ -87,6 +86,15 @@ export function TestimonialCard({
           </button>
         </div>
       </div>
+      <DeleteDialog
+        show={showDelete}
+        itemName={t_.parent_name}
+        onConfirm={() => {
+          onDelete(t_.id)
+          setShowDelete(false)
+        }}
+        onCancel={() => setShowDelete(false)}
+      />
     </div>
   )
 }

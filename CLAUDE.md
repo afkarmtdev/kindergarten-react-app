@@ -248,6 +248,33 @@ All list endpoints return paginated responses:
 - **GalleryModal** (`components/admin/GalleryModal.tsx`) — photo upload (Supabase Storage → `gallery-photos`), caption, display_order, is_visible toggle. Same add/edit pattern.
 - **AnnouncementModal** (`components/admin/AnnouncementModal.tsx`) — title, body, category select, banner upload (Supabase Storage → `announcement-banners`), pinned toggle (yellow), expiry date with clear button. Invalidates both `['announcements']` and `['announcements-public']` on success.
 - All modals use `useMutation` → `onSuccess`: `queryClient.invalidateQueries` + `toast.success`; `onError`: `toast.error`.
+- **Delete confirmation**: never use native `window.confirm()` for deletions. Use `DeleteDialog` (`components/ui/DeleteDialog.tsx`) instead. Props: `show`, `itemName?` (displayed in dialog so user knows what they're deleting), `onConfirm`, `onCancel`. Two placement patterns:
+  - **Card/row components** (e.g. StudentCard, TestimonialCard, FeeTableRow): add local `const [showDelete, setShowDelete] = useState(false)`, change trash button to `onClick={() => setShowDelete(true)}`, and place `<DeleteDialog>` either as last child of the wrapper `<div>`, or outside via Fragment `<>...<DeleteDialog /></>` when the wrapper is a `<Link>` or `<tr>`.
+  - **Page-level inline delete** (e.g. ClassesPage, GalleryPage, FeePlansPage): add `const [deletingX, setDeletingX] = useState<Type | null>(null)`, change button to `onClick={() => setDeletingX(item)}`, add `setDeletingX(null)` in `deleteMutation.onSuccess`, and render `<DeleteDialog show={!!deletingX} itemName={deletingX?.name} onConfirm={() => deletingX && deleteMutation.mutate(deletingX.id)} onCancel={() => setDeletingX(null)} />` alongside other modals.
+- **Optimistic deletion**: all `deleteMutation` instances use optimistic removal so the item disappears instantly. Standard pattern (applied to all 7 delete mutations):
+  ```ts
+  onMutate: async (id: string) => {
+    await queryClient.cancelQueries({ queryKey: ['resource'] })
+    const snapshot = queryClient.getQueriesData({ queryKey: ['resource'] })
+    queryClient.setQueriesData({ queryKey: ['resource'] }, (old: any) =>
+      old?.data ? { ...old, data: old.data.filter((item: any) => item.id !== id), meta: { ...old.meta, total: Math.max(0, (old.meta?.total ?? 1) - 1) } } : old
+    )
+    return { snapshot }
+  },
+  onSuccess: () => { toast.success('X removed') },
+  onError: (_err, _id, ctx: any) => {
+    ctx?.snapshot?.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+    toast.error('Failed to remove X. Please try again.')
+  },
+  onSettled: () => { queryClient.invalidateQueries({ queryKey: ['resource'] }) },
+  ```
+  Key rules: `onMutate` cancels in-flight queries and snapshots the cache; `onError` rolls back; **invalidation moves to `onSettled`** (not `onSuccess`) so it always runs. For pages that invalidate two keys (e.g. announcements + announcements-public), both go in `onSettled`. The `DeleteDialog` `onConfirm` always closes the dialog immediately before firing the mutation to prevent double-clicks.
+- **Discard guard**: every modal that has editable form state must use `useDiscardGuard` (`hooks/useDiscardGuard.ts`) + `DiscardDialog` (`components/ui/DiscardDialog.tsx`). Pattern:
+  1. `const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } = useDiscardGuard(onClose)`
+  2. Call `markDirty()` in every field setter / onChange handler
+  3. Call `resetDirty()` at the end of the `useEffect` that resets form state on open
+  4. Replace `onClick={onClose}` with `onClick={requestClose}` on the X button, backdrop div, and Cancel button (mutation `onSuccess` keeps calling `onClose()` directly)
+  5. Render `<DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />` as the **last child inside** the outermost `<div className="fixed inset-0 ...">` wrapper — never as a sibling after `</div>`
 
 ## Toast Notifications
 
@@ -395,6 +422,8 @@ Admin-managed parent testimonials shown on the landing page carousel.
 Full implementation details — eye states, idle machine timing, critical timer pattern, bubble positioning, mobile vs desktop rules — live in the `/build-a-bear` skill (`.claude/commands/build-a-bear.md`). Use `/build-a-bear` whenever modifying the bear mascot.
 
 ## Known Conventions
+
+- **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled) and `frontend/public/version.json` (served live, never cached). Users running an old bundle detect the mismatch via `useVersionCheck` and see the `UpdateBanner` prompting a hard reload. Never bump one without the other.
 
 - **One component, one purpose, one file** — every React component goes in its own `.tsx` file with a single exported component. Never define multiple exported components in one file.
 - **Page folder structure** — any page that has sub-components uses a folder named after the page. The orchestrator sits at the folder root; sub-components live in a `components/` subfolder inside it:

@@ -49,6 +49,9 @@ export const translations = {
     parent: 'Parent',
     loading: 'Loading...',
     removeConfirm: 'Remove {name}?',
+    deleteDialogTitle: 'Delete?',
+    deleteDialogBody: 'This action cannot be undone.',
+    deleteBtn: 'Delete',
 
     // Classes page
     addClass: 'Add Class',
@@ -411,6 +414,12 @@ export const translations = {
     outstanding: 'Outstanding',
     overdueCount: 'Overdue',
 
+    // Discard guard
+    discardChanges: 'Discard Changes?',
+    discardChangesBody: 'You have unsaved changes. Are you sure you want to discard them?',
+    discardChangesBtn: 'Discard',
+    keepEditing: 'Keep Editing',
+
     // Testimonials
     testimonials: 'Testimonials',
     addTestimonial: 'Add Testimonial',
@@ -474,6 +483,9 @@ export const translations = {
     parent: 'Ibu Bapa',
     loading: 'Memuatkan...',
     removeConfirm: 'Buang {name}?',
+    deleteDialogTitle: 'Padam?',
+    deleteDialogBody: 'Tindakan ini tidak boleh dibatalkan.',
+    deleteBtn: 'Padam',
 
     // Classes page
     addClass: 'Tambah Kelas',
@@ -836,6 +848,13 @@ export const translations = {
     totalCollected: 'Jumlah Dikutip',
     outstanding: 'Tertunggak',
     overdueCount: 'Tertunggak',
+
+    // Discard guard
+    discardChanges: 'Buang Perubahan?',
+    discardChangesBody:
+      'Anda mempunyai perubahan yang belum disimpan. Adakah anda pasti mahu membuangnya?',
+    discardChangesBtn: 'Buang',
+    keepEditing: 'Teruskan Edit',
 
     // Testimonials
     testimonials: 'Testimoni',
