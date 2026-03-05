@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
 import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
@@ -15,6 +15,14 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [sessionExpired, setSessionExpired] = useState(false)
+
+  useEffect(() => {
+    if (sessionStorage.getItem('auth_expired')) {
+      sessionStorage.removeItem('auth_expired')
+      setSessionExpired(true)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +53,12 @@ export function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {sessionExpired && (
+              <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-xl text-sm">
+                <AlertCircle size={16} className="shrink-0" />
+                Your session has expired. Please sign in again.
+              </div>
+            )}
             {error && (
               <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
                 <AlertCircle size={16} />
