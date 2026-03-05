@@ -159,7 +159,7 @@ export function AdminLayout() {
             <div className="flex items-center gap-0.5">
               <button
                 onClick={() => setSettingsOpen((o) => !o)}
-                className={`p-1.5 rounded-lg transition-colors ${
+                className={`hidden lg:block p-1.5 rounded-lg transition-colors ${
                   settingsOpen
                     ? 'bg-kinder-orange/10 text-kinder-orange'
                     : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
