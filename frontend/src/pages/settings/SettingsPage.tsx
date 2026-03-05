@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useT } from '@/hooks/useT'
 import type { TranslationKey } from '@/lib/translations'
@@ -38,11 +38,7 @@ export function SettingsPage() {
   usePageTitle('Settings')
   const t = useT()
   const [activeKey, setActiveKey] = useState<string>('school-info')
-  const [openMobileKey, setOpenMobileKey] = useState<string | null>('school-info')
-
-  function toggleMobile(key: string) {
-    setOpenMobileKey((prev) => (prev === key ? null : key))
-  }
+  const [mobileSection, setMobileSection] = useState<string | null>(null)
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
@@ -50,41 +46,47 @@ export function SettingsPage() {
         {t('settingsPage')}
       </h1>
 
-      {/* Mobile: accordion */}
-      <div className="lg:hidden rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-        {NAV_SECTIONS.map((section, sectionIdx) => (
-          <div
-            key={section.labelKey}
-            className={sectionIdx > 0 ? 'border-t border-gray-100 dark:border-gray-800' : ''}
-          >
-            <div className="px-4 pt-3 pb-2 bg-gray-50 dark:bg-gray-800/50">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                {t(section.labelKey)}
-              </p>
-            </div>
-            {section.items.map((item) => (
-              <div key={item.key}>
-                <button
-                  type="button"
-                  onClick={() => toggleMobile(item.key)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-t border-gray-100 dark:border-gray-800"
-                >
-                  {t(item.labelKey)}
-                  <ChevronDown
-                    className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${
-                      openMobileKey === item.key ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                {openMobileKey === item.key && (
-                  <div className="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
-                    {renderContent(item.key)}
-                  </div>
-                )}
+      {/* Mobile: drill-down hub */}
+      <div className="lg:hidden">
+        {mobileSection === null ? (
+          <div className="rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+            {NAV_SECTIONS.map((section, sectionIdx) => (
+              <div
+                key={section.labelKey}
+                className={sectionIdx > 0 ? 'border-t border-gray-100 dark:border-gray-800' : ''}
+              >
+                <div className="px-4 pt-3 pb-2 bg-gray-50 dark:bg-gray-800/50">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                    {t(section.labelKey)}
+                  </p>
+                </div>
+                {section.items.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setMobileSection(item.key)}
+                    className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-t border-gray-100 dark:border-gray-800"
+                  >
+                    {t(item.labelKey)}
+                    <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                  </button>
+                ))}
               </div>
             ))}
           </div>
-        ))}
+        ) : (
+          <div>
+            <button
+              type="button"
+              onClick={() => setMobileSection(null)}
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-kinder-orange dark:hover:text-kinder-orange transition-colors mb-4"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {t('settingsPage')}
+            </button>
+            {renderContent(mobileSection)}
+          </div>
+        )}
       </div>
 
       {/* Desktop: sidebar + panel */}
