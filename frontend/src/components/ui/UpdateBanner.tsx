@@ -21,11 +21,7 @@ export function UpdateBanner({ visible }: UpdateBannerProps) {
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <button
-          onClick={async () => {
-            if ('caches' in window) {
-              const keys = await caches.keys()
-              await Promise.all(keys.map((key) => caches.delete(key)))
-            }
+          onClick={() => {
             window.location.reload()
           }}
           className="rounded-lg bg-white/20 px-3 py-1 text-xs font-bold transition-colors hover:bg-white/30"
