@@ -424,6 +424,7 @@ export const translations = {
     updateAvailableLong: 'A new version is available. Reload to get the latest update.',
     updateAvailableShort: 'New version available.',
     updateReload: 'Reload now',
+    updateReloading: 'Reloading...',
     updateDismiss: 'Dismiss',
 
     // Testimonials
@@ -866,6 +867,7 @@ export const translations = {
     updateAvailableLong: 'Versi baharu tersedia. Muat semula untuk mendapat kemas kini terkini.',
     updateAvailableShort: 'Versi baharu tersedia.',
     updateReload: 'Muat semula',
+    updateReloading: 'Memuat semula...',
     updateDismiss: 'Abaikan',
 
     // Testimonials
