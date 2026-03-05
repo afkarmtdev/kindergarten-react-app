@@ -16,6 +16,7 @@ import {
   Wallet,
   Settings,
   Quote,
+  Inbox,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -44,6 +45,7 @@ export function AdminLayout() {
     { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
     { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
     { to: '/admin/fees', icon: Wallet, label: t('fees') },
+    { to: '/admin/inquiries', icon: Inbox, label: t('inquiries') },
     { to: '/admin/settings', icon: Settings, label: t('settingsPage') },
   ]
 

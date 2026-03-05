@@ -19,12 +19,17 @@ import {
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useSchoolInfo } from '@/hooks/useSchoolInfo'
+import { useFadeIn } from '@/hooks/useFadeIn'
 import { galleryApi, announcementsApi, testimonialsApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
-import { SecretArcade } from '@/components/landing/SecretArcade'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './components/Wave'
 import { StatCounter } from './components/StatCounter'
+import { WhatsAppButton } from './components/WhatsAppButton'
+import { InquiryForm } from './components/InquiryForm'
+import { LocationSection } from './components/LocationSection'
+import { LandingFooter } from './components/LandingFooter'
 import {
   KEYFRAMES,
   FEATURES,
@@ -37,12 +42,18 @@ export function LandingPage() {
   usePageTitle()
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
+  const { email: schoolEmail } = useSchoolInfo({ public: true })
   const [showTop, setShowTop] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
   const [isPaused, setIsPaused] = useState(false)
+
+  const featuresFadeIn = useFadeIn()
+  const galleryFadeIn = useFadeIn()
+  const noticesFadeIn = useFadeIn()
+  const testimonialsFadeIn = useFadeIn()
 
   const { data: galleryData } = useQuery({
     queryKey: ['gallery-public'],
@@ -378,11 +389,12 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {FEATURES.map(({ icon: Icon, color, titleKey, descKey }) => (
+          <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6">
+            {FEATURES.map(({ icon: Icon, color, titleKey, descKey }, idx) => (
               <div
                 key={titleKey}
-                className="group bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-8 border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-default"
+                className={`group bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-8 border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-default ${featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+                style={featuresFadeIn.isVisible ? { animationDelay: `${idx * 100}ms` } : undefined}
               >
                 <div
                   className={`w-16 h-16 ${color} rounded-3xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}
@@ -406,7 +418,10 @@ export function LandingPage() {
         id="gallery"
         className="bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
+        <div
+          ref={galleryFadeIn.ref}
+          className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+        >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
@@ -453,7 +468,10 @@ export function LandingPage() {
         id="notices"
         className="bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center">
+        <div
+          ref={noticesFadeIn.ref}
+          className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+        >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('noticesTitle')}
           </h2>
@@ -465,14 +483,15 @@ export function LandingPage() {
         {notices.length > 0 ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {notices.slice(0, 6).map((notice) => (
+              {notices.slice(0, 6).map((notice, idx) => (
                 <div
                   key={notice.id}
                   className={`flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
                     notice.is_pinned
                       ? 'border-kinder-yellow dark:border-kinder-yellow'
                       : 'border-gray-100 dark:border-gray-700'
-                  }`}
+                  } ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+                  style={noticesFadeIn.isVisible ? { animationDelay: `${idx * 80}ms` } : undefined}
                 >
                   {notice.image_url ? (
                     <div className="h-36 overflow-hidden">
@@ -546,10 +565,15 @@ export function LandingPage() {
           </div>
         )}
 
-        <div className="mt-16">
-          <Wave fill="#C77DFF" />
+        <div className="mt-16 block dark:hidden">
+          <Wave fill="#ffffff" />
+        </div>
+        <div className="mt-16 hidden dark:block">
+          <Wave fill="#030712" />
         </div>
       </section>
+
+      <InquiryForm />
 
       {/* ════════════════════════════════════════════════════════
           testimonials — kinder-purple bg, star ratings
@@ -557,7 +581,10 @@ export function LandingPage() {
       {testimonials.length > 0 && (
         <section className="bg-kinder-purple py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-14">
+            <div
+              className={`text-center mb-14 ${testimonialsFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+              ref={testimonialsFadeIn.ref}
+            >
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
                 {t('testimonialsTitle')}
               </h2>
@@ -668,7 +695,7 @@ export function LandingPage() {
 
           <div className="relative flex flex-wrap gap-4 justify-center">
             <a
-              href="mailto:hello@kindercare.edu"
+              href={schoolEmail ? `mailto:${schoolEmail}` : '#contact'}
               className="bg-white text-kinder-green px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200"
             >
               {t('scheduleVisit')}
@@ -681,19 +708,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════
-          FOOTER
-      ════════════════════════════════════════════════════════ */}
-      <footer className="bg-gray-900 py-10 text-center font-display">
-        <div className="flex items-center justify-center gap-2.5 mb-3">
-          <BearLogo size={32} />
-          <span className="font-extrabold text-white text-lg">{APP_NAME}</span>
-        </div>
-        <p className="text-gray-400 text-sm">
-          © {new Date().getFullYear()} {APP_NAME}. Made with care for little learners.
-        </p>
-        <SecretArcade />
-      </footer>
+      <LocationSection />
+
+      <LandingFooter />
 
       {/* ── Scroll-to-top button ── */}
       <button
@@ -707,6 +724,9 @@ export function LandingPage() {
       >
         <ArrowUp size={22} strokeWidth={2.5} />
       </button>
+
+      {/* ── WhatsApp floating button ── */}
+      <WhatsAppButton />
 
       {/* ── Gallery lightbox ── */}
       {lightboxIndex !== null && galleryItems.length > 0 && (

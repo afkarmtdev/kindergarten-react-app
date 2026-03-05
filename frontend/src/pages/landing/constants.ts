@@ -49,6 +49,11 @@ export const KEYFRAMES = `
     from { width: 0%; }
     to   { width: 100%; }
   }
+  @keyframes lp-fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .lp-fade-up { animation: lp-fade-up 0.6s ease both; }
 `
 
 export const FEATURES = [

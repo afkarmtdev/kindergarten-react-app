@@ -6,6 +6,27 @@ import { schoolInfoApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
+import type { DayKey, OperatingHours } from '@/types'
+
+const DAY_KEYS: DayKey[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+]
+
+const DEFAULT_HOURS: OperatingHours = {
+  monday: { open: '', close: '' },
+  tuesday: { open: '', close: '' },
+  wednesday: { open: '', close: '' },
+  thursday: { open: '', close: '' },
+  friday: { open: '', close: '' },
+  saturday: { open: '', close: '' },
+  sunday: { open: '', close: '' },
+}
 
 export function SchoolInfoSection() {
   const t = useT()
@@ -18,6 +39,11 @@ export function SchoolInfoSection() {
     phone: '',
     email: '',
     logo_url: null as string | null,
+    whatsapp_number: '',
+    operating_hours: DEFAULT_HOURS as OperatingHours,
+    google_maps_embed_url: '',
+    facebook_url: '',
+    instagram_url: '',
   })
   const [isDirty, setIsDirty] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -29,8 +55,30 @@ export function SchoolInfoSection() {
 
   useEffect(() => {
     if (data?.data) {
-      const { school_name, address, phone, email, logo_url } = data.data
-      setForm({ school_name, address, phone, email, logo_url })
+      const {
+        school_name,
+        address,
+        phone,
+        email,
+        logo_url,
+        whatsapp_number,
+        operating_hours,
+        google_maps_embed_url,
+        facebook_url,
+        instagram_url,
+      } = data.data
+      setForm({
+        school_name,
+        address,
+        phone,
+        email,
+        logo_url,
+        whatsapp_number: whatsapp_number ?? '',
+        operating_hours: operating_hours ?? DEFAULT_HOURS,
+        google_maps_embed_url: google_maps_embed_url ?? '',
+        facebook_url: facebook_url ?? '',
+        instagram_url: instagram_url ?? '',
+      })
       setIsDirty(false)
     }
   }, [data])
@@ -45,7 +93,7 @@ export function SchoolInfoSection() {
     onError: () => toast.error('Failed to save school info. Please try again.'),
   })
 
-  const set = (field: keyof typeof form, value: string | null) => {
+  const set = (field: Exclude<keyof typeof form, 'operating_hours'>, value: string | null) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     setIsDirty(true)
   }
@@ -188,6 +236,142 @@ export function SchoolInfoSection() {
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
                 placeholder={t('settingsEmailPlaceholder')}
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          {/* WhatsApp Number */}
+          <div>
+            <label className={labelCls}>{t('settingsWhatsapp')}</label>
+            <input
+              type="text"
+              value={form.whatsapp_number}
+              onChange={(e) => set('whatsapp_number', e.target.value)}
+              placeholder={t('settingsWhatsappPlaceholder')}
+              className={inputCls}
+            />
+          </div>
+
+          {/* Operating Hours — per-day grid */}
+          <div>
+            <p className={labelCls}>{t('settingsOperatingHours')}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+              {t('settingsOperatingHoursHelper')}
+            </p>
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              {/* Header row */}
+              <div className="grid grid-cols-[1fr_100px_100px] bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  {t('settingsDayColumn')}
+                </span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">
+                  {t('dayOpen')}
+                </span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">
+                  {t('dayClose')}
+                </span>
+              </div>
+              {DAY_KEYS.map((day, idx) => {
+                const { open, close } = form.operating_hours[day]
+                const isClosed = !open && !close
+                return (
+                  <div
+                    key={day}
+                    className={`grid grid-cols-[1fr_100px_100px] items-center px-3 py-2 gap-2 ${
+                      idx < DAY_KEYS.length - 1
+                        ? 'border-b border-gray-100 dark:border-gray-800'
+                        : ''
+                    } ${isClosed ? 'opacity-50' : ''}`}
+                  >
+                    <span
+                      className={`text-sm font-medium ${
+                        isClosed
+                          ? 'text-gray-400 dark:text-gray-600'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {t(
+                        `day${day.charAt(0).toUpperCase() + day.slice(1)}` as Parameters<
+                          typeof t
+                        >[0]
+                      )}
+                      {isClosed && (
+                        <span className="ml-2 text-xs text-gray-400 dark:text-gray-600">
+                          — {t('dayClosed')}
+                        </span>
+                      )}
+                    </span>
+                    <input
+                      type="time"
+                      value={open}
+                      onChange={(e) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          operating_hours: {
+                            ...prev.operating_hours,
+                            [day]: { ...prev.operating_hours[day], open: e.target.value },
+                          },
+                        }))
+                        setIsDirty(true)
+                      }}
+                      className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 focus:border-kinder-orange"
+                    />
+                    <input
+                      type="time"
+                      value={close}
+                      onChange={(e) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          operating_hours: {
+                            ...prev.operating_hours,
+                            [day]: { ...prev.operating_hours[day], close: e.target.value },
+                          },
+                        }))
+                        setIsDirty(true)
+                      }}
+                      className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 focus:border-kinder-orange"
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Google Maps Embed URL */}
+          <div>
+            <label className={labelCls}>{t('settingsGoogleMaps')}</label>
+            <input
+              type="text"
+              value={form.google_maps_embed_url}
+              onChange={(e) => set('google_maps_embed_url', e.target.value)}
+              placeholder="https://www.google.com/maps/embed?..."
+              className={inputCls}
+            />
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              {t('settingsGoogleMapsHelper')}
+            </p>
+          </div>
+
+          {/* Facebook + Instagram */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className={labelCls}>{t('settingsFacebook')}</label>
+              <input
+                type="url"
+                value={form.facebook_url}
+                onChange={(e) => set('facebook_url', e.target.value)}
+                placeholder={t('settingsFacebookPlaceholder')}
+                className={inputCls}
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelCls}>{t('settingsInstagram')}</label>
+              <input
+                type="url"
+                value={form.instagram_url}
+                onChange={(e) => set('instagram_url', e.target.value)}
+                placeholder={t('settingsInstagramPlaceholder')}
                 className={inputCls}
               />
             </div>

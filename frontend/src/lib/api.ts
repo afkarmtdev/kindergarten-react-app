@@ -181,6 +181,24 @@ export const schoolInfoApi = {
   get: () =>
     api.get('/school-info').then((r) => r.data as { data: import('@/types').SchoolInfo | null }),
   update: (data: unknown) => api.put('/school-info', data).then((r) => r.data),
+  getPublic: () =>
+    publicApi
+      .get('/public/school-info')
+      .then((r) => r.data as { data: import('@/types').SchoolInfo | null }),
+}
+
+export const inquiriesApi = {
+  submit: (data: {
+    parent_name: string
+    child_name: string
+    child_age: number
+    phone: string
+    message?: string
+  }) => publicApi.post('/public/inquiries', data).then((r) => r.data),
+  getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
+    api
+      .get('/inquiries', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Inquiry>),
 }
 
 export const testimonialsApi = {
