@@ -11,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -22,18 +22,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem('access_token') ?? sessionStorage.getItem('access_token')
+    const storage = localStorage.getItem('access_token') ? localStorage : sessionStorage
     if (token) {
       authApi
         .me()
         .then((u) => {
           setUser(u)
-          const refreshToken = localStorage.getItem('refresh_token') ?? ''
+          const refreshToken = storage.getItem('refresh_token') ?? ''
           supabase.auth.setSession({ access_token: token, refresh_token: refreshToken })
         })
         .catch(() => {
           localStorage.removeItem('access_token')
           localStorage.removeItem('refresh_token')
+          sessionStorage.removeItem('access_token')
+          sessionStorage.removeItem('refresh_token')
         })
         .finally(() => setLoading(false))
     } else {
@@ -41,10 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe = false) => {
     const { user, session } = await authApi.login(email, password)
-    localStorage.setItem('access_token', session.access_token)
-    localStorage.setItem('refresh_token', session.refresh_token ?? '')
+    const storage = rememberMe ? localStorage : sessionStorage
+    storage.setItem('access_token', session.access_token)
+    storage.setItem('refresh_token', session.refresh_token ?? '')
     await supabase.auth.setSession({
       access_token: session.access_token,
       refresh_token: session.refresh_token ?? '',
@@ -56,6 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authApi.logout()
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    sessionStorage.removeItem('access_token')
+    sessionStorage.removeItem('refresh_token')
     await supabase.auth.signOut()
     setUser(null)
   }
