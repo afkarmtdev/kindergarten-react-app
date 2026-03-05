@@ -14,13 +14,14 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await login(email, password)
+      await login(email, password, rememberMe)
       navigate('/admin/dashboard')
     } catch {
       setError('Invalid email or password')
@@ -94,10 +95,22 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-kinder-orange text-white py-3.5 rounded-xl font-bold hover:bg-orange-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-200 hover:-translate-y-0.5"
+              className="w-full bg-kinder-orange text-white py-3.5 rounded-xl font-bold hover:bg-orange-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-orange-200 dark:hover:shadow-orange-900/40 hover:-translate-y-0.5"
             >
               {loading ? 'Signing in...' : 'Sign In →'}
             </button>
+
+            <label className="flex items-center justify-center gap-2 cursor-pointer select-none">
+              <div
+                onClick={() => setRememberMe(!rememberMe)}
+                className={`relative w-8 h-4 rounded-full transition-colors duration-200 ${rememberMe ? 'bg-kinder-orange' : 'bg-gray-200 dark:bg-gray-700'}`}
+              >
+                <div
+                  className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${rememberMe ? 'translate-x-4' : 'translate-x-0.5'}`}
+                />
+              </div>
+              <span className="text-xs text-gray-400 dark:text-gray-500">Keep me signed in</span>
+            </label>
           </form>
         </div>
 
