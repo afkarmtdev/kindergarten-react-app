@@ -7,6 +7,7 @@ import { useFeesStore } from './feesStore'
 import { useFeePlansStore } from './feePlansStore'
 import { useTestimonialsStore } from './testimonialsStore'
 import { useAttendanceStore } from './attendanceStore'
+import { useInquiriesStore } from './inquiriesStore'
 
 // ═════════════════════════════════════════════════════════════════════════════
 // studentsStore — page, search, 2 filters, modal
@@ -270,6 +271,32 @@ describe('testimonialsStore', () => {
     useTestimonialsStore.getState().setSearch('Siti')
     expect(useTestimonialsStore.getState().page).toBe(1)
     expect(useTestimonialsStore.getState().search).toBe('Siti')
+  })
+})
+
+describe('inquiriesStore', () => {
+  beforeEach(() => useInquiriesStore.setState({ page: 1, search: '' }))
+
+  test('defaults: page 1, empty search', () => {
+    const s = useInquiriesStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+  })
+
+  test('setSearch resets page to 1', () => {
+    useInquiriesStore.getState().setPage(3)
+    useInquiriesStore.getState().setSearch('Ahmad')
+    const s = useInquiriesStore.getState()
+    expect(s.search).toBe('Ahmad')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves search', () => {
+    useInquiriesStore.getState().setSearch('Siti')
+    useInquiriesStore.getState().setPage(4)
+    const s = useInquiriesStore.getState()
+    expect(s.page).toBe(4)
+    expect(s.search).toBe('Siti')
   })
 })
 
