@@ -37,7 +37,7 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('access_token') ?? sessionStorage.getItem('access_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -45,8 +45,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 && localStorage.getItem('access_token')) {
+    const hasToken = localStorage.getItem('access_token') ?? sessionStorage.getItem('access_token')
+    if (err.response?.status === 401 && hasToken) {
       localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      sessionStorage.removeItem('access_token')
+      sessionStorage.removeItem('refresh_token')
+      sessionStorage.setItem('auth_expired', '1')
       window.location.href = '/admin/login'
     }
     return Promise.reject(err)
