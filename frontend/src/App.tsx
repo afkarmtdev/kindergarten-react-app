@@ -11,6 +11,7 @@ import { CuteLoader } from '@/components/ui/Skeletons'
 // Public pages stay eager — they are the first routes users hit
 import { LandingPage } from '@/pages/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 
 // Admin pages are lazy-loaded so they don't bloat the initial bundle
 const DashboardPage = lazy(() =>
@@ -232,7 +233,7 @@ export default function App() {
             </Route>
 
             {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
