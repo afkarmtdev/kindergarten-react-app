@@ -494,6 +494,24 @@ export const translations = {
     searchInquiries: 'Search by name or phone...',
     noInquiriesFound: 'No enquiries received yet',
     noInquiriesFoundSub: 'Enquiries submitted via the landing page will appear here.',
+
+    // Landing page — Feature expanded descriptions
+    featureLearnExpanded:
+      'Our curriculum follows a play-based approach where children explore, ask questions, and build knowledge through hands-on activities designed for their developmental stage.',
+    featureSafeExpanded:
+      'With CCTV monitoring, vetted staff, and child-proof facilities, we create a space where parents can be confident their children are secure and cared for.',
+    featureArtsExpanded:
+      'From painting and clay modelling to singing and movement classes, children develop fine motor skills and self-expression through guided creative sessions.',
+    featurePlayExpanded:
+      'Our open-ended play areas include dramatic play corners, building zones, and sensory stations that spark curiosity and social development.',
+    featureOutdoorExpanded:
+      'Our garden, playground, and nature exploration areas give children daily opportunities for physical activity and connection with the natural world.',
+    featureClassExpanded:
+      'With a maximum of 15 children per class and dedicated teaching assistants, every child receives the individual attention they deserve.',
+
+    // Landing page — Footer quick links
+    footerQuickLinks: 'Quick Links',
+    footerAboutSchool: 'About {name}',
   },
 
   ms: {
@@ -991,6 +1009,24 @@ export const translations = {
     searchInquiries: 'Cari nama atau telefon...',
     noInquiriesFound: 'Belum ada pertanyaan diterima',
     noInquiriesFoundSub: 'Pertanyaan yang dihantar melalui laman utama akan dipaparkan di sini.',
+
+    // Landing page — Feature expanded descriptions
+    featureLearnExpanded:
+      'Kurikulum kami mengikuti pendekatan berasaskan permainan di mana kanak-kanak meneroka, bertanya soalan, dan membina pengetahuan melalui aktiviti praktikal yang direka untuk peringkat perkembangan mereka.',
+    featureSafeExpanded:
+      'Dengan pemantauan CCTV, kakitangan yang disahkan, dan kemudahan kalis kanak-kanak, kami mewujudkan ruang di mana ibu bapa yakin anak mereka selamat dan dijaga.',
+    featureArtsExpanded:
+      'Dari melukis dan membuat tanah liat hingga menyanyi dan kelas pergerakan, kanak-kanak mengembangkan kemahiran motor halus dan ekspresi diri melalui sesi kreatif berpandu.',
+    featurePlayExpanded:
+      'Kawasan permainan terbuka kami termasuk sudut drama, zon pembinaan, dan stesen deria yang mencetuskan rasa ingin tahu dan perkembangan sosial.',
+    featureOutdoorExpanded:
+      'Taman, taman permainan, dan kawasan penerokaan alam kami memberi peluang harian untuk aktiviti fizikal dan hubungan dengan alam semula jadi.',
+    featureClassExpanded:
+      'Dengan maksimum 15 kanak-kanak setiap kelas dan pembantu pengajar yang berdedikasi, setiap kanak-kanak mendapat perhatian individu yang mereka layak.',
+
+    // Landing page — Footer quick links
+    footerQuickLinks: 'Pautan Pantas',
+    footerAboutSchool: 'Tentang {name}',
   },
 } as const
 

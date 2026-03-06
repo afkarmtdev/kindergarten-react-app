@@ -4,6 +4,7 @@ import { CheckCircle } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
+import { BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './Wave'
 
 export function InquiryForm() {
@@ -54,9 +55,14 @@ export function InquiryForm() {
         className={`max-w-3xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
         <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
-            {t('inquiryTitle')}
-          </h2>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="hidden sm:block lp-float" style={{ animationDelay: '0.5s' }}>
+              <BearLogo size={48} />
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent leading-tight">
+              {t('inquiryTitle')}
+            </h2>
+          </div>
           <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
             {t('inquirySubtitle')}
           </p>
@@ -167,7 +173,7 @@ export function InquiryForm() {
         )}
       </div>
       <div className="mt-16">
-        <Wave fill="#C77DFF" />
+        <Wave fill="#6BCB77" />
       </div>
     </section>
   )

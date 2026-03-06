@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -15,6 +15,10 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  GraduationCap,
+  Users,
+  School,
+  Award,
 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -26,10 +30,14 @@ import { APP_NAME } from '@/lib/version'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './components/Wave'
 import { StatCounter } from './components/StatCounter'
+import { TypedText } from './components/TypedText'
+import { FeatureCard } from './components/FeatureCard'
+import { MobileCTABar } from './components/MobileCTABar'
 import { WhatsAppButton } from './components/WhatsAppButton'
 import { InquiryForm } from './components/InquiryForm'
 import { LocationSection } from './components/LocationSection'
 import { LandingFooter } from './components/LandingFooter'
+import { StarField } from './components/StarField'
 import {
   KEYFRAMES,
   FEATURES,
@@ -37,6 +45,11 @@ import {
   NOTICE_CATEGORY_GRADIENTS,
   GALLERY_PLACEHOLDERS,
 } from './constants'
+import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
+import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
+import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
+import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 
 export function LandingPage() {
   usePageTitle()
@@ -49,6 +62,8 @@ export function LandingPage() {
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
   const [isPaused, setIsPaused] = useState(false)
+
+  const galleryScrollRef = useRef<HTMLDivElement>(null)
 
   const featuresFadeIn = useFadeIn()
   const galleryFadeIn = useFadeIn()
@@ -77,7 +92,10 @@ export function LandingPage() {
   const testimonials = testimonialsData?.data ?? []
 
   useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 320)
+    const onScroll = () => {
+      setShowTop(window.scrollY > 320)
+      document.documentElement.style.setProperty('--scroll-y', `${window.scrollY}`)
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -197,88 +215,206 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           HERO — gradient bg, floating shapes, big heading
       ════════════════════════════════════════════════════════ */}
-      <section
-        id="about"
-        className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"
-      >
-        {/* ── Floating decorative shapes ── */}
+      <section id="about" className="relative overflow-hidden">
+        {/* Mesh gradient background — light mode */}
         <div
-          className="lp-float absolute top-16 left-6 opacity-60 pointer-events-none"
+          className="absolute inset-0 lp-mesh-gradient block dark:hidden"
+          style={{
+            background:
+              'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 20%, #FFF1F2 40%, #FDF2F8 60%, #FFF7ED 80%, #FFFBEB 100%)',
+          }}
+          aria-hidden="true"
+        />
+        {/* Mesh gradient background — dark mode */}
+        <div
+          className="absolute inset-0 lp-mesh-gradient hidden dark:block"
+          style={{
+            background:
+              'linear-gradient(135deg, #030712 0%, #111827 25%, #1e1b4b 50%, #0f172a 75%, #030712 100%)',
+          }}
+          aria-hidden="true"
+        />
+
+        {/* ── Nebula glow blobs — dark mode only, cool-toned depth ── */}
+        <div
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full pointer-events-none hidden dark:block opacity-10"
+          style={{
+            background: 'radial-gradient(circle, #7C3AED, transparent 70%)',
+            transform: 'translate(-50%,-50%)',
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute top-1/3 right-1/4 w-80 h-80 rounded-full pointer-events-none hidden dark:block opacity-8"
+          style={{
+            background: 'radial-gradient(circle, #0D9488, transparent 70%)',
+            transform: 'translate(50%,-50%)',
+            opacity: 0.08,
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute bottom-1/4 left-1/2 w-72 h-72 rounded-full pointer-events-none hidden dark:block"
+          style={{
+            background: 'radial-gradient(circle, #BE185D, transparent 70%)',
+            transform: 'translate(-50%,50%)',
+            opacity: 0.07,
+          }}
+          aria-hidden="true"
+        />
+
+        {/* ── Static background stars — tiny dim dots for depth (dark mode only) ── */}
+        <div className="absolute inset-0 pointer-events-none hidden dark:block" aria-hidden="true">
+          {(
+            [
+              [5, 10, 1],
+              [8, 25, 2],
+              [3, 50, 1],
+              [11, 65, 1],
+              [2, 80, 2],
+              [15, 5, 1],
+              [18, 30, 1],
+              [20, 48, 2],
+              [12, 70, 1],
+              [25, 85, 1],
+              [30, 15, 2],
+              [28, 42, 1],
+              [35, 60, 1],
+              [22, 90, 1],
+              [40, 8, 1],
+              [45, 35, 2],
+              [42, 55, 1],
+              [38, 75, 1],
+              [48, 92, 1],
+              [55, 20, 1],
+              [50, 45, 2],
+              [58, 65, 1],
+              [65, 88, 1],
+              [60, 12, 1],
+              [70, 50, 1],
+            ] as [number, number, number][]
+          ).map(([top, left, size], i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-white"
+              style={{ top: `${top}%`, left: `${left}%`, width: size, height: size, opacity: 0.22 }}
+            />
+          ))}
+        </div>
+
+        {/* ── Star field — dark mode only ── */}
+        <StarField variant="a" />
+
+        {/* ── Shooting stars — dark mode only; fire every ~13s at staggered times ── */}
+        <div
+          className="absolute pointer-events-none hidden dark:block lp-shooting-star"
+          style={{
+            top: '12%',
+            right: '22%',
+            width: 110,
+            height: 2,
+            background: 'linear-gradient(90deg, white, transparent)',
+            animationDelay: '1s',
+            animationFillMode: 'backwards',
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute pointer-events-none hidden dark:block lp-shooting-star"
+          style={{
+            top: '28%',
+            right: '48%',
+            width: 80,
+            height: 1.5,
+            background: 'linear-gradient(90deg, rgba(255,255,255,0.75), transparent)',
+            animationDelay: '7.5s',
+            animationFillMode: 'backwards',
+          }}
+          aria-hidden="true"
+        />
+
+        {/* ── Floating decorative shapes (with parallax outer wrapper) ── */}
+        <div
+          className="lp-parallax-fast absolute top-16 left-6 pointer-events-none"
           aria-hidden="true"
         >
-          <svg width="60" height="60" viewBox="0 0 60 60">
-            <polygon points="30,4 56,54 4,54" fill="#FFD93D" />
-          </svg>
+          <div className="lp-float opacity-60">
+            <DoodleStar size={52} color="#FFD93D" />
+          </div>
         </div>
 
         <div
-          className="lp-float-alt absolute top-20 right-10 opacity-50 pointer-events-none"
-          style={{ animationDelay: '1s' }}
+          className="lp-parallax-medium absolute top-20 right-10 pointer-events-none"
           aria-hidden="true"
         >
-          <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="24" fill="#4D96FF" />
-          </svg>
+          <div className="lp-float-alt opacity-50" style={{ animationDelay: '1s' }}>
+            <DoodleCloud size={56} color="#4D96FF" />
+          </div>
         </div>
 
         <div
-          className="lp-float absolute top-1/3 left-10 opacity-55 pointer-events-none"
-          style={{ animationDelay: '0.5s' }}
+          className="lp-parallax-slow absolute top-1/3 left-10 pointer-events-none"
           aria-hidden="true"
         >
-          <Heart size={44} fill="#FF85A2" stroke="#FF85A2" />
+          <div className="lp-float opacity-55" style={{ animationDelay: '0.5s' }}>
+            <Heart size={44} fill="#FF85A2" stroke="#FF85A2" />
+          </div>
         </div>
 
         <div
-          className="lp-spin-slow absolute top-24 left-1/3 opacity-45 pointer-events-none"
+          className="lp-parallax-fast absolute top-24 left-1/3 pointer-events-none"
           aria-hidden="true"
         >
-          <Star size={30} fill="#FF6B35" stroke="#FF6B35" />
+          <div className="lp-spin-slow opacity-45">
+            <Star size={30} fill="#FF6B35" stroke="#FF6B35" />
+          </div>
         </div>
 
         <div
-          className="lp-float-slow absolute bottom-36 right-14 opacity-40 pointer-events-none"
+          className="lp-parallax-medium absolute bottom-36 right-14 pointer-events-none"
           aria-hidden="true"
         >
-          <svg width="68" height="68" viewBox="0 0 68 68">
-            <rect x="6" y="6" width="56" height="56" rx="18" fill="#6BCB77" />
-          </svg>
+          <div className="lp-float-slow opacity-40">
+            <DoodleFlower size={60} color="#6BCB77" />
+          </div>
         </div>
 
         <div
-          className="lp-float-alt absolute top-1/2 left-16 opacity-40 pointer-events-none"
-          style={{ animationDelay: '2s' }}
+          className="lp-parallax-slow absolute top-1/2 left-16 pointer-events-none"
           aria-hidden="true"
         >
-          <svg width="38" height="38" viewBox="0 0 38 38">
-            <circle cx="19" cy="19" r="17" fill="#C77DFF" />
-          </svg>
+          <div className="lp-float-alt opacity-40" style={{ animationDelay: '2s' }}>
+            <DoodleSpiral size={44} color="#C77DFF" />
+          </div>
         </div>
 
         <div
-          className="lp-float absolute top-1/3 right-20 opacity-35 pointer-events-none"
-          style={{ animationDelay: '1.5s' }}
+          className="lp-parallax-fast absolute top-1/3 right-20 pointer-events-none"
           aria-hidden="true"
         >
-          <svg width="48" height="48" viewBox="0 0 48 48">
-            <polygon points="24,2 46,44 2,44" fill="#FF6B35" />
-          </svg>
+          <div className="lp-float opacity-35" style={{ animationDelay: '1.5s' }}>
+            <svg width="48" height="48" viewBox="0 0 48 48">
+              <polygon points="24,2 46,44 2,44" fill="#FF6B35" />
+            </svg>
+          </div>
         </div>
 
         <div
-          className="lp-float-alt absolute bottom-40 right-1/3 opacity-60 pointer-events-none"
-          style={{ animationDelay: '0.8s' }}
+          className="lp-parallax-medium absolute bottom-40 right-1/3 pointer-events-none"
           aria-hidden="true"
         >
-          <Star size={24} fill="#FFD93D" stroke="#FFD93D" />
+          <div className="lp-float-alt opacity-60" style={{ animationDelay: '0.8s' }}>
+            <Star size={24} fill="#FFD93D" stroke="#FFD93D" />
+          </div>
         </div>
 
         <div
-          className="lp-float-slow absolute top-1/2 right-6 opacity-45 pointer-events-none"
-          style={{ animationDelay: '1.2s' }}
+          className="lp-parallax-slow absolute top-1/2 right-6 pointer-events-none"
           aria-hidden="true"
         >
-          <Heart size={32} fill="#FF85A2" stroke="#FF85A2" />
+          <div className="lp-float-slow opacity-45" style={{ animationDelay: '1.2s' }}>
+            <Heart size={32} fill="#FF85A2" stroke="#FF85A2" />
+          </div>
         </div>
 
         <div
@@ -292,66 +428,97 @@ export function LandingPage() {
           aria-hidden="true"
         />
 
-        {/* ── Bear mascot ── */}
-        <div
-          className="hidden lg:block absolute bottom-24 left-16 xl:left-28 z-20"
-          style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.13))' }}
-          aria-hidden="true"
-        >
-          <BaseBearMascot />
-        </div>
-
         {/* ── Hero content ── */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6 text-center">
-          <div className="lp-enter-0 inline-flex items-center gap-2 bg-kinder-orange/10 dark:bg-kinder-orange/20 border border-kinder-orange/30 text-kinder-orange px-5 py-2 rounded-full text-sm font-bold mb-8">
-            <Star size={13} fill="#FF6B35" stroke="#FF6B35" />
-            {t('heroTagline')}
-          </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
+            {/* Text column */}
+            <div className="text-center lg:text-left">
+              <div className="lp-enter-0 inline-flex items-center gap-2 bg-kinder-orange/10 dark:bg-kinder-orange/20 border border-kinder-orange/30 text-kinder-orange px-5 py-2 rounded-full text-sm font-bold mb-8">
+                <Star size={13} fill="#FF6B35" stroke="#FF6B35" />
+                {t('heroTagline')}
+              </div>
 
-          <h1 className="lp-enter-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
-            <span className="block">{t('heroPart1')}</span>
-            <span className="relative inline-block text-kinder-orange mx-1">
-              {t('heroHighlight')}
-              <svg
-                className="absolute -bottom-2 left-0 w-full"
-                viewBox="0 0 200 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 10 Q50 2 100 9 Q150 16 196 7"
-                  stroke="#FFD93D"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  fill="none"
+              <h1 className="lp-enter-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
+                <span className="block">{t('heroPart1')}</span>
+                <span className="relative inline-block text-kinder-orange mx-1">
+                  <TypedText text={t('heroHighlight')} delay={800} speed={80} />
+                  <svg
+                    className="absolute -bottom-2 left-0 w-full"
+                    viewBox="0 0 200 14"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 10 Q50 2 100 9 Q150 16 196 7"
+                      stroke="#FFD93D"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                  </svg>
+                </span>
+                <span className="block md:inline"> {t('heroPart2')}</span>
+              </h1>
+
+              <p className="lp-enter-2 text-gray-500 dark:text-gray-400 text-lg md:text-xl max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-10">
+                {t('heroSubtitle')}
+              </p>
+
+              <div className="lp-enter-2 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16">
+                <a
+                  href="#contact"
+                  className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-900/50 hover:bg-orange-600 transition-all duration-200 text-center"
+                >
+                  {t('bookTour')}
+                </a>
+                <a
+                  href="#programs"
+                  className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg hover:-translate-y-1.5 hover:border-kinder-orange hover:text-kinder-orange dark:hover:border-kinder-orange dark:hover:text-kinder-orange transition-all duration-200 text-center"
+                >
+                  {t('ourPrograms')}
+                </a>
+              </div>
+            </div>
+
+            {/* Right column — gallery photo (if available) or bear mascot */}
+            {galleryItems.length > 0 ? (
+              <div className="hidden lg:block lp-enter-2 relative">
+                <svg width="0" height="0" className="absolute">
+                  <defs>
+                    <clipPath id="hero-blob" clipPathUnits="objectBoundingBox">
+                      <path d="M0.5,0.02 C0.73,0.02 0.92,0.1 0.97,0.3 C1.02,0.5 0.95,0.7 0.85,0.85 C0.75,0.95 0.6,0.99 0.45,0.98 C0.3,0.97 0.12,0.9 0.05,0.73 C-0.02,0.55 0.01,0.35 0.1,0.2 C0.2,0.08 0.35,0.02 0.5,0.02" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <div
+                  className="w-full aspect-square max-w-lg mx-auto"
+                  style={{ clipPath: 'url(#hero-blob)' }}
+                >
+                  <img
+                    src={galleryItems[0].photo_url}
+                    alt="School life"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div
+                  className="absolute inset-0 max-w-lg mx-auto aspect-square rounded-full border-4 border-dashed border-kinder-yellow/30 -z-10 scale-110"
+                  aria-hidden="true"
                 />
-              </svg>
-            </span>
-            <span className="block md:inline"> {t('heroPart2')}</span>
-          </h1>
+              </div>
+            ) : null}
 
-          <p className="lp-enter-2 text-gray-500 dark:text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
-            {t('heroSubtitle')}
-          </p>
-
-          <div className="lp-enter-2 flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <a
-              href="#contact"
-              className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-900/50 hover:bg-orange-600 transition-all duration-200 text-center"
+            {/* Bear mascot — always present at bottom-right of hero */}
+            <div
+              className="hidden lg:block absolute bottom-12 right-16 z-20 lp-enter-2"
+              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.13))' }}
             >
-              {t('bookTour')}
-            </a>
-            <a
-              href="#programs"
-              className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg hover:-translate-y-1.5 hover:border-kinder-orange hover:text-kinder-orange dark:hover:border-kinder-orange dark:hover:text-kinder-orange transition-all duration-200 text-center"
-            >
-              {t('ourPrograms')}
-            </a>
+              <BaseBearMascot direction="left" tilt={-15} />
+            </div>
           </div>
         </div>
 
-        <Wave fill="#FF6B35" />
+        <Wave fill="#FF6B35" variant="peak" />
       </section>
 
       {/* ════════════════════════════════════════════════════════
@@ -360,28 +527,34 @@ export function LandingPage() {
       <section className="bg-kinder-orange">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
-            <StatCounter target={500} suffix="+" label={t('statsStudentsLabel')} />
-            <StatCounter target={50} suffix="+" label={t('statsTeachersLabel')} />
-            <StatCounter target={20} suffix="+" label={t('statsClassesLabel')} />
-            <StatCounter target={5} suffix=" ★" label={t('statsRatingLabel')} />
+            <StatCounter
+              target={500}
+              suffix="+"
+              label={t('statsStudentsLabel')}
+              icon={GraduationCap}
+            />
+            <StatCounter target={50} suffix="+" label={t('statsTeachersLabel')} icon={Users} />
+            <StatCounter target={20} suffix="+" label={t('statsClassesLabel')} icon={School} />
+            <StatCounter target={5} suffix=" ★" label={t('statsRatingLabel')} icon={Award} />
           </div>
         </div>
 
         <div className="block dark:hidden">
-          <Wave fill="#ffffff" />
+          <Wave fill="#ffffff" variant="bumpy" />
         </div>
         <div className="hidden dark:block">
-          <Wave fill="#030712" />
+          <Wave fill="#030712" variant="bumpy" />
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════
           FEATURES — white/dark bg, large icon cards
       ════════════════════════════════════════════════════════ */}
-      <section id="programs" className="bg-white dark:bg-gray-950 py-24">
+      <section id="programs" className="relative overflow-hidden bg-white dark:bg-gray-950 py-24">
+        <StarField variant="b" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
               {t('featuresTitle')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
@@ -390,22 +563,17 @@ export function LandingPage() {
           </div>
 
           <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6">
-            {FEATURES.map(({ icon: Icon, color, titleKey, descKey }, idx) => (
-              <div
+            {FEATURES.map(({ icon, color, titleKey, descKey, expandedKey }, idx) => (
+              <FeatureCard
                 key={titleKey}
-                className={`group bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-8 border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-default ${featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+                icon={icon}
+                color={color}
+                titleKey={titleKey}
+                descKey={descKey}
+                expandedKey={expandedKey}
+                className={featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}
                 style={featuresFadeIn.isVisible ? { animationDelay: `${idx * 100}ms` } : undefined}
-              >
-                <div
-                  className={`w-16 h-16 ${color} rounded-3xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                >
-                  <Icon size={28} className="text-white" strokeWidth={1.5} />
-                </div>
-                <h3 className="font-extrabold text-gray-900 dark:text-white text-xl mb-3">
-                  {t(titleKey)}
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{t(descKey)}</p>
-              </div>
+              />
             ))}
           </div>
         </div>
@@ -416,13 +584,14 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="gallery"
-        className="bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
+        className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
       >
+        <StarField variant="a" />
         <div
           ref={galleryFadeIn.ref}
           className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
@@ -430,35 +599,109 @@ export function LandingPage() {
           </p>
         </div>
 
-        <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory pl-4 sm:pl-6">
-          <div className="flex gap-4 w-max pr-4 sm:pr-6 pb-2">
-            {galleryItems.length > 0
-              ? galleryItems.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    onClick={() => setLightboxIndex(idx)}
-                    className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer"
-                  >
-                    <img
-                      src={item.photo_url}
-                      alt={item.caption ?? 'Gallery photo'}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))
-              : GALLERY_PLACEHOLDERS.map((p) => (
-                  <div
-                    key={p.id}
-                    className={`snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
-                  >
-                    <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
-                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                      {p.label}
-                    </span>
-                  </div>
-                ))}
+        {/* Mobile/tablet: horizontal scroll with arrows */}
+        <div className="lg:hidden relative group/gallery">
+          <button
+            onClick={() => galleryScrollRef.current?.scrollBy({ left: -300, behavior: 'smooth' })}
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 opacity-70 group-hover/gallery:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700"
+            aria-label="Scroll gallery left"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button
+            onClick={() => galleryScrollRef.current?.scrollBy({ left: 300, behavior: 'smooth' })}
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 opacity-70 group-hover/gallery:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700"
+            aria-label="Scroll gallery right"
+          >
+            <ChevronRight size={20} />
+          </button>
+          <div
+            ref={galleryScrollRef}
+            className="overflow-x-auto scroll-smooth snap-x snap-mandatory pl-4 sm:pl-6 scrollbar-hide"
+          >
+            <div className="flex gap-4 w-max pr-4 sm:pr-6 pb-2">
+              {galleryItems.length > 0
+                ? galleryItems.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      onClick={() => setLightboxIndex(idx)}
+                      className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer relative group/card"
+                    >
+                      <img
+                        src={item.photo_url}
+                        alt={item.caption ?? 'Gallery photo'}
+                        className="w-full h-full object-cover"
+                      />
+                      {item.caption && (
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2.5 pt-8 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
+                          <p className="text-white text-xs font-semibold line-clamp-2">
+                            {item.caption}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                : GALLERY_PLACEHOLDERS.map((p) => (
+                    <div
+                      key={p.id}
+                      className={`snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
+                    >
+                      <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
+                      <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                        {p.label}
+                      </span>
+                    </div>
+                  ))}
+            </div>
           </div>
         </div>
+
+        {/* Desktop: masonry grid */}
+        {galleryItems.length > 0 && (
+          <div className="hidden lg:block max-w-7xl mx-auto px-6">
+            <div
+              className={`${galleryItems.length < 6 ? 'columns-2' : 'columns-3'} gap-4 space-y-4`}
+            >
+              {galleryItems.map((item, idx) => (
+                <div
+                  key={item.id}
+                  onClick={() => setLightboxIndex(idx)}
+                  className="break-inside-avoid rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer relative group/card"
+                >
+                  <img
+                    src={item.photo_url}
+                    alt={item.caption ?? 'Gallery photo'}
+                    className="w-full h-auto object-cover"
+                  />
+                  {item.caption && (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2.5 pt-8 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
+                      <p className="text-white text-xs font-semibold line-clamp-2">
+                        {item.caption}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {galleryItems.length === 0 && (
+          <div className="hidden lg:block max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-3 gap-4">
+              {GALLERY_PLACEHOLDERS.map((p) => (
+                <div
+                  key={p.id}
+                  className={`rounded-2xl h-52 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800`}
+                >
+                  <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
+                  <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                    {p.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ════════════════════════════════════════════════════════
@@ -466,8 +709,9 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="notices"
-        className="bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200"
+        className="relative overflow-hidden bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200"
       >
+        <StarField variant="b" />
         <div
           ref={noticesFadeIn.ref}
           className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
@@ -565,15 +809,21 @@ export function LandingPage() {
           </div>
         )}
 
-        <div className="mt-16 block dark:hidden">
-          <Wave fill="#ffffff" />
-        </div>
-        <div className="mt-16 hidden dark:block">
-          <Wave fill="#030712" />
-        </div>
+        {testimonials.length > 0 ? (
+          <div className="mt-16">
+            <Wave fill="#C77DFF" />
+          </div>
+        ) : (
+          <>
+            <div className="mt-16 block dark:hidden">
+              <Wave fill="#ffffff" />
+            </div>
+            <div className="mt-16 hidden dark:block">
+              <Wave fill="#030712" />
+            </div>
+          </>
+        )}
       </section>
-
-      <InquiryForm />
 
       {/* ════════════════════════════════════════════════════════
           testimonials — kinder-purple bg, star ratings
@@ -607,6 +857,13 @@ export function LandingPage() {
                 <div
                   className={`relative z-10 bg-white/20 backdrop-blur-sm border border-white/25 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
                 >
+                  {/* Decorative quote mark */}
+                  <div
+                    className="absolute top-4 right-6 text-white/10 text-8xl sm:text-9xl font-serif leading-none pointer-events-none select-none"
+                    aria-hidden="true"
+                  >
+                    &ldquo;
+                  </div>
                   <div className="flex gap-1 mb-5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star key={i} size={16} fill="#FFD93D" stroke="#FFD93D" />
@@ -615,13 +872,28 @@ export function LandingPage() {
                   <p className="text-white/90 leading-relaxed mb-6 italic text-lg">
                     &ldquo;{(testimonials[displayIndex] ?? testimonials[0]).quote}&rdquo;
                   </p>
-                  <div className="border-t border-white/20 pt-4">
-                    <p className="font-extrabold text-white">
-                      {(testimonials[displayIndex] ?? testimonials[0]).parent_name}
-                    </p>
-                    <p className="text-white/60 text-sm mt-0.5">
-                      {(testimonials[displayIndex] ?? testimonials[0]).parent_role}
-                    </p>
+                  <div className="border-t border-white/20 pt-4 flex items-center gap-3">
+                    {(testimonials[displayIndex] ?? testimonials[0]).avatar_url ? (
+                      <img
+                        src={(testimonials[displayIndex] ?? testimonials[0]).avatar_url!}
+                        alt={(testimonials[displayIndex] ?? testimonials[0]).parent_name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-white/30 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {(testimonials[displayIndex] ?? testimonials[0]).parent_name
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-extrabold text-white">
+                        {(testimonials[displayIndex] ?? testimonials[0]).parent_name}
+                      </p>
+                      <p className="text-white/60 text-sm mt-0.5">
+                        {(testimonials[displayIndex] ?? testimonials[0]).parent_role}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -662,38 +934,77 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-8">
-            <Wave fill="#6BCB77" />
+          <div className="mt-8 block dark:hidden">
+            <Wave fill="#ffffff" />
+          </div>
+          <div className="mt-8 hidden dark:block">
+            <Wave fill="#030712" />
           </div>
         </section>
       )}
 
+      <InquiryForm />
+
       {/* ════════════════════════════════════════════════════════
           CTA — kinder-green bg, pill buttons
       ════════════════════════════════════════════════════════ */}
-      <section id="contact" className="bg-kinder-green py-24">
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center overflow-hidden">
-          <div
-            className="lp-float absolute -top-8 -left-8 opacity-30 pointer-events-none"
-            aria-hidden="true"
-          >
-            <svg width="64" height="64" viewBox="0 0 64 64">
-              <polygon points="32,4 60,58 4,58" fill="white" />
-            </svg>
-          </div>
-          <div
-            className="lp-float-alt absolute -bottom-4 -right-4 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
-            <Star size={48} fill="white" stroke="white" />
-          </div>
+      <section id="contact" className="relative overflow-hidden bg-kinder-green py-24">
+        {/* Floating shapes — spread across full section width */}
+        <div
+          className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
+          aria-hidden="true"
+        >
+          <Star size={52} fill="white" stroke="white" />
+        </div>
+        <div
+          className="lp-float-alt absolute bottom-20 left-12 opacity-15 pointer-events-none"
+          style={{ animationDelay: '1.2s' }}
+          aria-hidden="true"
+        >
+          <Heart size={38} fill="white" stroke="white" />
+        </div>
+        <div
+          className="lp-spin-slow absolute top-12 right-8 opacity-15 pointer-events-none"
+          aria-hidden="true"
+        >
+          <DoodleStar size={48} color="white" />
+        </div>
+        <div
+          className="lp-float absolute bottom-16 right-16 opacity-20 pointer-events-none"
+          style={{ animationDelay: '2s' }}
+          aria-hidden="true"
+        >
+          <DoodleFlower size={44} color="white" />
+        </div>
+        <div
+          className="lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
+          style={{ animationDelay: '0.8s' }}
+          aria-hidden="true"
+        >
+          <DoodleCloud size={52} color="white" />
+        </div>
+        <div
+          className="lp-float-alt absolute top-6 left-1/2 opacity-12 pointer-events-none"
+          style={{ animationDelay: '3s', opacity: 0.12 }}
+          aria-hidden="true"
+        >
+          <DoodleSpiral size={36} color="white" />
+        </div>
+        <div
+          className="lp-float absolute top-1/3 right-1/4 opacity-15 pointer-events-none"
+          style={{ animationDelay: '1.6s' }}
+          aria-hidden="true"
+        >
+          <DoodleSun size={46} color="white" />
+        </div>
 
-          <h2 className="relative text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
             {t('ctaTitle')}
           </h2>
-          <p className="relative text-white/80 text-lg sm:text-xl mb-10">{t('ctaSubtitle')}</p>
+          <p className="text-white/80 text-lg sm:text-xl mb-10">{t('ctaSubtitle')}</p>
 
-          <div className="relative flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <a
               href={schoolEmail ? `mailto:${schoolEmail}` : '#contact'}
               className="bg-white text-kinder-green px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200"
@@ -716,7 +1027,7 @@ export function LandingPage() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Scroll to top"
-        className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+        className={`fixed bottom-[4.5rem] right-4 sm:bottom-8 sm:right-8 lg:bottom-4 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
           showTop
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-4 pointer-events-none'
@@ -727,6 +1038,9 @@ export function LandingPage() {
 
       {/* ── WhatsApp floating button ── */}
       <WhatsAppButton />
+
+      {/* ── Mobile sticky CTA bar ── */}
+      <MobileCTABar />
 
       {/* ── Gallery lightbox ── */}
       {lightboxIndex !== null && galleryItems.length > 0 && (
