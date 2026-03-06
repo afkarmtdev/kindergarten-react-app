@@ -39,12 +39,7 @@ export function InquiriesPage() {
             {total} {t('inquiries').toLowerCase()}
           </p>
         </div>
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder={t('searchInquiries')}
-          className="w-full md:w-72"
-        />
+        <SearchBar value={search} onChange={setSearch} placeholder={t('searchInquiries')} />
       </div>
 
       {/* Table */}
@@ -124,7 +119,13 @@ export function InquiriesPage() {
       </div>
 
       {totalPages > 1 && (
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          limit={LIMIT}
+          onPageChange={setPage}
+        />
       )}
     </div>
   )
