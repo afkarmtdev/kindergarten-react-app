@@ -140,6 +140,21 @@ export interface FeesSummary {
   overdue_count: number
 }
 
+// ─── Dashboard Chart Types ────────────────────────────────────────────────────
+
+export interface AttendanceTrendPoint {
+  month: string // "YYYY-MM"
+  total: number
+  present: number
+  rate: number // 0–100
+}
+
+export interface FeeCollectionTrendPoint {
+  month: string // "YYYY-MM"
+  owed: number
+  collected: number
+}
+
 // ─── Testimonials ─────────────────────────────────────────────────────────────
 export interface Testimonial {
   id: string

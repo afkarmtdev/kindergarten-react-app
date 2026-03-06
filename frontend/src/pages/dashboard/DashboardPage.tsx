@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarCheck, School, TrendingUp, Gift, Wallet, Users } from 'lucide-react'
 import { studentsApi, attendanceApi, classesApi, feesApi } from '@/lib/api'
@@ -7,6 +8,8 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { isBirthdayToday } from '@/lib/utils'
 import { format } from 'date-fns'
 import { StatCard } from './components/StatCard'
+import { AttendanceTrendChart } from './components/AttendanceTrendChart'
+import { FeeCollectionChart } from './components/FeeCollectionChart'
 
 const STATUS_BADGE: Record<string, string> = {
   present: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
@@ -22,11 +25,15 @@ const BAR_COLOR: Record<string, string> = {
   absent: 'bg-red-400',
 }
 
+const SUMMARY_STATUSES = ['present', 'late', 'excused', 'absent'] as const
+
+const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
+
 export function DashboardPage() {
   usePageTitle('Dashboard')
   const t = useT()
-  const today = format(new Date(), 'yyyy-MM-dd')
-  const currentMonth = format(new Date(), 'yyyy-MM')
+  const today = useMemo(() => format(new Date(), 'yyyy-MM-dd'), [])
+  const currentMonth = useMemo(() => format(new Date(), 'yyyy-MM'), [])
 
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['students', { page: 1, limit: 1 }],
@@ -60,12 +67,25 @@ export function DashboardPage() {
 
   const { data: birthdayData } = useQuery({
     queryKey: ['students-birthday-check'],
-    queryFn: () => studentsApi.getAll({ page: 1, limit: 100 }),
-    staleTime: 60_000,
+    queryFn: () => studentsApi.getAll({ page: 1, limit: 500 }),
+    staleTime: 5 * 60_000,
   })
 
-  const birthdayStudents = (birthdayData?.data ?? []).filter((s) =>
-    isBirthdayToday(s.date_of_birth)
+  const { data: attendanceTrend, isLoading: trendLoading } = useQuery({
+    queryKey: ['attendance-trend'],
+    queryFn: () => attendanceApi.getTrend(6),
+    staleTime: 5 * 60_000,
+  })
+
+  const { data: feesTrend, isLoading: feesTrendLoading } = useQuery({
+    queryKey: ['fees-trend'],
+    queryFn: () => feesApi.getTrend(6),
+    staleTime: 5 * 60_000,
+  })
+
+  const birthdayStudents = useMemo(
+    () => (birthdayData?.data ?? []).filter((s) => isBirthdayToday(s.date_of_birth)),
+    [birthdayData]
   )
 
   const totalStudents = studentsData?.meta?.total ?? 0
@@ -81,7 +101,6 @@ export function DashboardPage() {
   const attendanceRate = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0
 
   const statsLoading = studentsLoading || classesLoading || todayLoading
-  const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
 
   return (
     <div className="p-4 md:p-8">
@@ -190,6 +209,12 @@ export function DashboardPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <AttendanceTrendChart data={attendanceTrend ?? []} loading={trendLoading} />
+        <FeeCollectionChart data={feesTrend ?? []} loading={feesTrendLoading} />
       </div>
 
       {/* Bottom panels */}
@@ -315,24 +340,25 @@ export function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {Object.entries(summary).map(([status, count]) => (
-                <div key={status}>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="capitalize font-semibold text-gray-700 dark:text-gray-300">
-                      {t(status as 'present' | 'absent' | 'late' | 'excused')}
-                    </span>
-                    <span className="text-gray-400 dark:text-gray-500 font-medium">
-                      {count as number}
-                    </span>
+              {SUMMARY_STATUSES.map((status) => {
+                const count = (summary as Record<string, number>)[status] ?? 0
+                return (
+                  <div key={status}>
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="capitalize font-semibold text-gray-700 dark:text-gray-300">
+                        {t(status)}
+                      </span>
+                      <span className="text-gray-400 dark:text-gray-500 font-medium">{count}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all ${BAR_COLOR[status]}`}
+                        style={{ width: `${(count / totalRecords) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${BAR_COLOR[status] ?? 'bg-gray-400'}`}
-                      style={{ width: `${((count as number) / totalRecords) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

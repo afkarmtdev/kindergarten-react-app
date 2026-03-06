@@ -158,6 +158,48 @@ fees.get('/summary', async (c) => {
   return c.json({ total_owed, total_paid, total_outstanding, overdue_count })
 })
 
+// GET /api/fees/trend?months=6
+fees.get(
+  '/trend',
+  zValidator(
+    'query',
+    z.object({
+      months: z.coerce.number().int().min(1).max(12).default(6),
+    })
+  ),
+  async (c) => {
+    const { months } = c.req.valid('query')
+
+    const now = new Date()
+    const startMonth = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
+    const startDate = startMonth.toISOString().split('T')[0]
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const endDate = endOfMonth.toISOString().split('T')[0]
+
+    const { data, error } = await supabase
+      .from('fee_records')
+      .select('amount_owed, amount_paid, discount_amount, due_date')
+      .gte('due_date', startDate)
+      .lte('due_date', endDate)
+
+    if (error) return c.json({ error: error.message }, 500)
+
+    const byMonth: Record<string, { owed: number; collected: number }> = {}
+    for (const row of data ?? []) {
+      const month = (row.due_date as string).substring(0, 7)
+      if (!byMonth[month]) byMonth[month] = { owed: 0, collected: 0 }
+      byMonth[month].owed += Number(row.amount_owed)
+      byMonth[month].collected += Number(row.amount_paid)
+    }
+
+    const result = Object.entries(byMonth)
+      .map(([month, { owed, collected }]) => ({ month, owed, collected }))
+      .sort((a, b) => a.month.localeCompare(b.month))
+
+    return c.json(result)
+  }
+)
+
 // Wrap a value in double-quotes and prefix with ' if it starts with a formula trigger
 // character (=, +, -, @, tab, CR) to prevent CSV formula injection in Excel/LibreOffice.
 function csvStr(v: string | null | undefined): string {

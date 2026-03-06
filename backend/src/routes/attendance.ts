@@ -144,4 +144,52 @@ attendance.get('/stats/summary', async (c) => {
   return c.json(summary)
 })
 
+// GET attendance trend for charts (non-paginated)
+attendance.get(
+  '/stats/trend',
+  zValidator(
+    'query',
+    z.object({
+      months: z.coerce.number().int().min(1).max(12).default(6),
+    })
+  ),
+  async (c) => {
+    const { months } = c.req.valid('query')
+
+    const now = new Date()
+    const startMonth = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
+    const startDate = startMonth.toISOString().split('T')[0]
+    const endDate = now.toISOString().split('T')[0]
+
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('date, status')
+      .gte('date', startDate)
+      .lte('date', endDate)
+
+    if (error) return c.json({ error: error.message }, 500)
+
+    const byMonth: Record<string, { total: number; present: number }> = {}
+    for (const row of data ?? []) {
+      const month = row.date.substring(0, 7)
+      if (!byMonth[month]) byMonth[month] = { total: 0, present: 0 }
+      byMonth[month].total++
+      if (row.status === 'present' || row.status === 'late') {
+        byMonth[month].present++
+      }
+    }
+
+    const result = Object.entries(byMonth)
+      .map(([month, { total, present }]) => ({
+        month,
+        total,
+        present,
+        rate: total > 0 ? Math.round((present / total) * 100) : 0,
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month))
+
+    return c.json(result)
+  }
+)
+
 export default attendance

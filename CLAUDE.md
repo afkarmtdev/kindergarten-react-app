@@ -409,6 +409,8 @@ Admin-managed parent testimonials shown on the landing page carousel.
 
 - [ ] Newsletter/Posts module — full-page TipTap WYSIWYG editor (StarterKit), draft/published states, auto-slug from title, cover image + photo gallery strip, public `/posts` listing + `/posts/:slug` reader pages, DOMPurify or `sanitize-html` for HTML sanitization on save; separate from Announcements (short notices stay as-is)
 
+- [ ] Simple Mode (home childcare profile) — a `business_type` field in `school_info` (`'kindergarten' | 'home_childcare'`); `useBusinessType()` hook reads it; toggleable in Settings. Changes: hides Classrooms module (sidebar + route), hides `class_name` on student form (defaults to single auto-created group), removes class filter on Attendance, landing page swaps content via per-mode translation key maps (hero copy, stats labels, feature cards, CTA text), sidebar nav filtered by `item.modes`. Backend unchanged — classrooms just go unused. Fees, gallery, announcements, testimonials, bear mascot all stay as-is.
+
 ### Low Priority / Nice to Have
 
 - [x] Attendance heatmap on student profile — implemented in `pages/student-profile/components/AttendanceHeatmap.tsx`

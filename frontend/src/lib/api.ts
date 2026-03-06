@@ -87,6 +87,10 @@ export const attendanceApi = {
   bulkMark: (records: unknown[]) => api.post('/attendance/bulk', records).then((r) => r.data),
   getSummary: (month?: number, year?: number) =>
     api.get('/attendance/stats/summary', { params: { month, year } }).then((r) => r.data),
+  getTrend: (months?: number) =>
+    api
+      .get('/attendance/stats/trend', { params: { months } })
+      .then((r) => r.data as import('@/types').AttendanceTrendPoint[]),
 }
 
 export const classesApi = {
@@ -178,6 +182,10 @@ export const feesApi = {
     api
       .get('/fees/annual-report', { params: { year } })
       .then((r) => r.data as import('@/types').AnnualReportResponse),
+  getTrend: (months?: number) =>
+    api
+      .get('/fees/trend', { params: { months } })
+      .then((r) => r.data as import('@/types').FeeCollectionTrendPoint[]),
 }
 
 export const documentNumberingApi = {

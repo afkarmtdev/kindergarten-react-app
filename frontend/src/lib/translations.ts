@@ -30,6 +30,9 @@ export const translations = {
     noAttendanceYet: 'No attendance recorded yet today',
     noDataYet: 'No data for this month yet',
     noDataYetSub: 'Shows a status breakdown once attendance is marked this month',
+    attendanceTrend: 'Attendance Trend',
+    feeCollectionTrend: 'Fee Collection',
+    noTrendData: 'Not enough data to show trends',
     ofStudents: 'of {n} students',
 
     // Students page
@@ -630,6 +633,9 @@ export const translations = {
     noAttendanceYet: 'Tiada kehadiran direkodkan hari ini',
     noDataYet: 'Tiada data untuk bulan ini',
     noDataYetSub: 'Menunjukkan pecahan status apabila kehadiran direkodkan bulan ini',
+    attendanceTrend: 'Trend Kehadiran',
+    feeCollectionTrend: 'Kutipan Yuran',
+    noTrendData: 'Data tidak mencukupi untuk menunjukkan trend',
     ofStudents: 'daripada {n} pelajar',
 
     // Students page

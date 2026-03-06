@@ -340,6 +340,57 @@ describe('Fee Records — GET /summary', () => {
   })
 })
 
+// ═════════════════════════════════════════════════════════════════════════════
+// Fee Collection Trend
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — GET /trend', () => {
+  test('returns monthly owed/collected data with correct sums', async () => {
+    setMockResponse('fee_records', {
+      data: [
+        { amount_owed: 350, amount_paid: 350, discount_amount: 0, due_date: '2025-01-15' },
+        { amount_owed: 200, amount_paid: 100, discount_amount: 0, due_date: '2025-01-20' },
+        { amount_owed: 400, amount_paid: 400, discount_amount: 0, due_date: '2025-02-10' },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/trend?months=6')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json).toHaveLength(2)
+
+    const jan = json.find((p: { month: string }) => p.month === '2025-01')
+    expect(jan.owed).toBe(550)
+    expect(jan.collected).toBe(450)
+
+    const feb = json.find((p: { month: string }) => p.month === '2025-02')
+    expect(feb.owed).toBe(400)
+    expect(feb.collected).toBe(400)
+  })
+
+  test('returns empty array when no data', async () => {
+    setMockResponse('fee_records', { data: [], error: null })
+
+    const res = await fees.request('/trend?months=3')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json).toEqual([])
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('fee_records', {
+      data: null,
+      error: { message: 'query failed' },
+    })
+
+    const res = await fees.request('/trend?months=6')
+    expect(res.status).toBe(500)
+  })
+})
+
 describe('Fee Records — GET /export', () => {
   test('returns CSV content', async () => {
     setMockResponse('fee_records', {
