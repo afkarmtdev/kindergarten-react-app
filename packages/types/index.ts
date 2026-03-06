@@ -149,6 +149,22 @@ export interface Testimonial {
 }
 
 // ─── School Info ──────────────────────────────────────────────────────────────
+export type DayKey =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday'
+
+export interface DayHours {
+  open: string // "07:30" or "" (blank = closed)
+  close: string // "18:00" or "" (blank = closed)
+}
+
+export type OperatingHours = Record<DayKey, DayHours>
+
 export interface SchoolInfo {
   id: string
   school_name: string
@@ -157,4 +173,20 @@ export interface SchoolInfo {
   email: string
   logo_url: string | null
   updated_at: string
+  whatsapp_number: string
+  operating_hours: OperatingHours | null
+  google_maps_embed_url: string
+  facebook_url: string
+  instagram_url: string
+}
+
+// ─── Inquiries ─────────────────────────────────────────────────────────────────
+export interface Inquiry {
+  id: string
+  parent_name: string
+  child_name: string
+  child_age: number
+  phone: string
+  message?: string
+  created_at: string
 }

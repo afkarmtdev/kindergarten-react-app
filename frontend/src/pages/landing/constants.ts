@@ -49,6 +49,75 @@ export const KEYFRAMES = `
     from { width: 0%; }
     to   { width: 100%; }
   }
+  @keyframes lp-fade-up {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .lp-fade-up { animation: lp-fade-up 0.6s ease both; }
+
+  @keyframes lp-mesh-gradient {
+    0%   { background-position: 0% 50%; }
+    25%  { background-position: 50% 0%; }
+    50%  { background-position: 100% 50%; }
+    75%  { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
+  }
+  .lp-mesh-gradient {
+    background-size: 400% 400%;
+    animation: lp-mesh-gradient 15s ease infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-mesh-gradient {
+      animation: none;
+      background-size: 100% 100%;
+    }
+  }
+
+  .lp-parallax-slow {
+    transform: translateY(calc(var(--scroll-y, 0) * -0.03px));
+    will-change: transform;
+  }
+  .lp-parallax-medium {
+    transform: translateY(calc(var(--scroll-y, 0) * -0.06px));
+    will-change: transform;
+  }
+  .lp-parallax-fast {
+    transform: translateY(calc(var(--scroll-y, 0) * -0.1px));
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-parallax-slow,
+    .lp-parallax-medium,
+    .lp-parallax-fast {
+      transform: none !important;
+    }
+  }
+
+  @keyframes lp-twinkle {
+    0%, 100% { opacity: 0.12; transform: scale(0.8); }
+    50%       { opacity: 0.70; transform: scale(1.2); }
+  }
+  @keyframes lp-twinkle-slow {
+    0%, 100% { opacity: 0.08; transform: scale(0.85); }
+    50%       { opacity: 0.50; transform: scale(1.15); }
+  }
+  .lp-twinkle      { animation: lp-twinkle      2.4s ease-in-out infinite; }
+  .lp-twinkle-slow { animation: lp-twinkle-slow 4.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-twinkle, .lp-twinkle-slow { animation: none; opacity: 0.30; }
+  }
+
+  @keyframes lp-shooting-star {
+    0%    { opacity: 0;    transform: rotate(35deg) translateX(0px); }
+    1.5%  { opacity: 0.90; }
+    6%    { opacity: 0;    transform: rotate(35deg) translateX(-460px); }
+    6.01% { opacity: 0;    transform: rotate(35deg) translateX(0px); }
+    100%  { opacity: 0;    transform: rotate(35deg) translateX(0px); }
+  }
+  .lp-shooting-star { animation: lp-shooting-star 13s linear infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-shooting-star { display: none; }
+  }
 `
 
 export const FEATURES = [
@@ -57,36 +126,42 @@ export const FEATURES = [
     color: 'bg-kinder-blue',
     titleKey: 'featureLearnTitle',
     descKey: 'featureLearnDesc',
+    expandedKey: 'featureLearnExpanded',
   },
   {
     icon: Shield,
     color: 'bg-kinder-pink',
     titleKey: 'featureSafeTitle',
     descKey: 'featureSafeDesc',
+    expandedKey: 'featureSafeExpanded',
   },
   {
     icon: Music,
     color: 'bg-kinder-purple',
     titleKey: 'featureArtsTitle',
     descKey: 'featureArtsDesc',
+    expandedKey: 'featureArtsExpanded',
   },
   {
     icon: Palette,
     color: 'bg-kinder-green',
     titleKey: 'featurePlayTitle',
     descKey: 'featurePlayDesc',
+    expandedKey: 'featurePlayExpanded',
   },
   {
     icon: Sun,
     color: 'bg-kinder-yellow',
     titleKey: 'featureOutdoorTitle',
     descKey: 'featureOutdoorDesc',
+    expandedKey: 'featureOutdoorExpanded',
   },
   {
     icon: Users,
     color: 'bg-kinder-orange',
     titleKey: 'featureClassTitle',
     descKey: 'featureClassDesc',
+    expandedKey: 'featureClassExpanded',
   },
 ] as const
 

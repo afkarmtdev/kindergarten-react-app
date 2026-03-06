@@ -38,6 +38,8 @@ import documentNumbering from './routes/documentNumbering'
 import fees, { feePlans } from './routes/fees'
 import schoolInfo from './routes/schoolInfo'
 import testimonials from './routes/testimonials'
+import inquiries from './routes/inquiries'
+import inquiriesAdmin from './routes/inquiriesAdmin'
 import { authMiddleware } from './middleware/auth'
 import { supabase } from './db/supabase'
 import { logger } from './lib/logger'
@@ -110,6 +112,16 @@ app.get('/api/public/announcements', async (c) => {
   return c.json({ data: data ?? [] })
 })
 
+// Public school info — no auth required (LandingPage visitors)
+app.get('/api/public/school-info', async (c) => {
+  const { data, error } = await supabase.from('school_info').select('*').limit(1).single()
+  if (error) return c.json({ data: null }, 200)
+  return c.json({ data })
+})
+
+// Public inquiries — no auth required (LandingPage enrollment form)
+app.route('/api/public/inquiries', inquiries)
+
 // ── Protected routes ──────────────────────────────────────────────────────────
 app.use('/api/*', authMiddleware)
 app.route('/api/students', students)
@@ -122,6 +134,7 @@ app.route('/api/fee-plans', feePlans)
 app.route('/api/fees', fees)
 app.route('/api/school-info', schoolInfo)
 app.route('/api/testimonials', testimonials)
+app.route('/api/inquiries', inquiriesAdmin)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))

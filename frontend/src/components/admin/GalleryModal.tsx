@@ -88,6 +88,14 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
       return
     }
 
+    // Delete the old file from storage if replacing an existing photo
+    if (form.photo_url) {
+      const oldPath = form.photo_url.split('/gallery-photos/')[1]
+      if (oldPath) {
+        await supabase.storage.from('gallery-photos').remove([oldPath])
+      }
+    }
+
     const { data: urlData } = supabase.storage.from('gallery-photos').getPublicUrl(path)
 
     set('photo_url', urlData.publicUrl)

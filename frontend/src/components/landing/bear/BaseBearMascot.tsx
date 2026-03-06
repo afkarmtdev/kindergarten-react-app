@@ -17,7 +17,7 @@ import { BearSpeechBubbleV2 as BearSpeechBubble } from './BearSpeechBubbleV2'
 
 type BearAnim = 'rest' | 'hover' | 'dance' | 'shimmy' | 'wobble' | 'groove' | 'spin' | 'bounce'
 
-const IDLE_DANCES: BearAnim[] = ['dance', 'shimmy', 'wobble', 'groove', 'spin', 'bounce']
+const IDLE_DANCES: BearAnim[] = ['dance', 'shimmy', 'wobble', 'groove', /* 'spin', */ 'bounce']
 
 const DANCE_DURATION: Record<string, number> = {
   dance: 1400,
@@ -29,7 +29,7 @@ const DANCE_DURATION: Record<string, number> = {
 }
 
 const ANIM_CLASS: Record<BearAnim, string> = {
-  rest: '',
+  rest: 'bear-floating',
   hover: 'bear-jumping',
   dance: 'bear-dancing',
   shimmy: 'bear-shimmying',
@@ -42,6 +42,15 @@ const ANIM_CLASS: Record<BearAnim, string> = {
 // All bear-specific keyframes + animation classes live here so the component
 // is fully self-contained. LandingPage.tsx no longer needs any bear CSS.
 const BEAR_KEYFRAMES = `
+  @keyframes lp-bear-float {
+    0%   { transform: translateY(0px) rotate(0deg); }
+    25%  { transform: translateY(-10px) rotate(-1.5deg); }
+    50%  { transform: translateY(-16px) rotate(0deg); }
+    75%  { transform: translateY(-10px) rotate(1.5deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+  }
+  .bear-floating { animation: lp-bear-float 4s ease-in-out infinite; }
+
   @keyframes lp-bear-wave {
     0%   { transform: rotate(0deg); }
     25%  { transform: rotate(-70deg); }
@@ -107,6 +116,7 @@ const BEAR_KEYFRAMES = `
     80%  { transform: rotate(15deg); }
     100% { transform: rotate(0deg); }
   }
+  /* bear-grooving commented out
   @keyframes lp-bear-groove {
     0%   { transform: translateX(0) rotate(0deg); }
     25%  { transform: translateX(-6px) rotate(-4deg); }
@@ -120,11 +130,12 @@ const BEAR_KEYFRAMES = `
     50%  { transform: rotate(-10deg); }
     75%  { transform: rotate(-50deg); }
     100% { transform: rotate(0deg); }
-  }
+  } */
+  /* lp-bear-spin commented out — 360° spin disabled
   @keyframes lp-bear-spin {
     0%   { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-  }
+  } */
   @keyframes lp-bear-bounce {
     0%   { transform: translateY(0); }
     25%  { transform: translateY(-14px); }
@@ -140,6 +151,7 @@ const BEAR_KEYFRAMES = `
     70%  { transform: rotate(-55deg); }
     100% { transform: rotate(0deg); }
   }
+  .bear-mascot                   { position: relative; display: inline-block; }
   .bear-jumping                  { animation: lp-bear-jump    0.55s ease-out    both; }
   .bear-jumping   .bear-arm-wave { animation: lp-bear-wave    1s    ease-in-out both; }
   .bear-dancing                  { animation: lp-bear-dance   1.4s  ease-in-out both; }
@@ -148,14 +160,25 @@ const BEAR_KEYFRAMES = `
   .bear-shimmying .bear-arm-wave { animation: lp-arm-shimmy   0.75s ease-in-out both; }
   .bear-wobbling                 { animation: lp-bear-wobble  1.2s  ease-in-out both; }
   .bear-wobbling  .bear-arm-wave { animation: lp-arm-wobble   1.2s  ease-in-out both; }
-  .bear-grooving                 { animation: lp-bear-groove  1.6s  ease-in-out both; }
-  .bear-grooving  .bear-arm-wave { animation: lp-arm-groove   1.6s  ease-in-out both; }
-  .bear-spinning                 { animation: lp-bear-spin    1.0s  ease-in-out both; }
+  /* .bear-grooving                 { animation: lp-bear-groove  1.6s  ease-in-out both; } */
+  /* .bear-grooving  .bear-arm-wave { animation: lp-arm-groove   1.6s  ease-in-out both; } */
+  /* .bear-spinning { animation: lp-bear-spin 1.0s ease-in-out both; } */
   .bear-bouncing                 { animation: lp-bear-bounce  0.7s  ease-out    both; }
   .bear-bouncing  .bear-arm-wave { animation: lp-arm-bounce   0.7s  ease-out    both; }
 `
 
-export function BaseBearMascot() {
+export type BearFaceDirection = 'left' | 'right'
+
+export function BaseBearMascot({
+  hideBubble = false,
+  direction = 'right',
+  tilt = 0,
+}: {
+  hideBubble?: boolean
+  direction?: BearFaceDirection
+  /** Clockwise rotation in degrees — e.g. tilt={15} leans the bear 15° to the right */
+  tilt?: number
+} = {}) {
   const [bearAnim, setBearAnim] = useState<BearAnim>('rest')
   const [bearMessage, setBearMessage] = useState<string | null>(null)
   const bearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -222,7 +245,7 @@ export function BaseBearMascot() {
           isHoveredRef.current = true
           if (bearTimerRef.current) clearTimeout(bearTimerRef.current)
           setBearAnim('hover')
-          setBearMessage(pickBearMessage())
+          if (!hideBubble) setBearMessage(pickBearMessage())
         }}
         onMouseLeave={() => {
           isHoveredRef.current = false
@@ -231,60 +254,71 @@ export function BaseBearMascot() {
           danceRef.current?.()
         }}
       >
-        <BearSpeechBubble message={bearMessage} />
-        <svg
-          viewBox="0 0 96 112"
-          width="120"
-          height="140"
-          aria-hidden="true"
-          shapeRendering="crispEdges"
-          overflow="visible"
-          style={{ imageRendering: 'pixelated' }}
+        {/* Speech bubble stays outside the flip so text is never mirrored */}
+        {!hideBubble && <BearSpeechBubble message={bearMessage} />}
+        {/* Flip wrapper — only scaleX + tilt, no animations; child of bear-mascot so arm selector still works */}
+        <div
+          style={(() => {
+            const parts: string[] = []
+            if (direction === 'left') parts.push('scaleX(-1)')
+            if (tilt !== 0) parts.push(`rotate(${tilt}deg)`)
+            return parts.length ? { transform: parts.join(' ') } : undefined
+          })()}
         >
-          {/* ── Backpack — peeking LEFT (overflow visible, negative x) ── */}
-          <rect x="-14" y="36" width="12" height="14" fill="#22863A" />
-          <rect x="-26" y="48" width="34" height="42" fill="#22863A" />
-          <rect x="-22" y="62" width="14" height="16" fill="#1A6B2A" />
-          <rect x="-22" y="62" width="14" height="3" fill="#C8A020" />
+          <svg
+            viewBox="0 0 96 112"
+            width="120"
+            height="140"
+            aria-hidden="true"
+            shapeRendering={tilt !== 0 ? 'auto' : 'crispEdges'}
+            overflow="visible"
+            style={{ imageRendering: tilt !== 0 ? 'auto' : 'pixelated' }}
+          >
+            {/* ── Backpack — peeking LEFT (overflow visible, negative x) ── */}
+            <rect x="-14" y="36" width="12" height="14" fill="#22863A" />
+            <rect x="-26" y="48" width="34" height="42" fill="#22863A" />
+            <rect x="-22" y="62" width="14" height="16" fill="#1A6B2A" />
+            <rect x="-22" y="62" width="14" height="3" fill="#C8A020" />
 
-          {/* ── Ears (outer) ── */}
-          <rect x="12" y="0" width="12" height="16" fill="#4A2A0E" />
-          <rect x="48" y="0" width="12" height="16" fill="#4A2A0E" />
-          {/* Inner ear — pink, above y=8 so the head block doesn't cover it */}
-          <rect x="14" y="1" width="8" height="7" fill="#FFB3C6" />
-          <rect x="50" y="1" width="8" height="7" fill="#FFB3C6" />
+            {/* ── Ears (outer) ── */}
+            <rect x="12" y="0" width="12" height="16" fill="#4A2A0E" />
+            <rect x="48" y="0" width="12" height="16" fill="#4A2A0E" />
+            {/* Inner ear — pink, above y=8 so the head block doesn't cover it */}
+            <rect x="14" y="1" width="8" height="7" fill="#FFB3C6" />
+            <rect x="50" y="1" width="8" height="7" fill="#FFB3C6" />
 
-          {/* ── Head ── */}
-          <rect x="8" y="8" width="56" height="40" fill="#7B5230" />
-          <rect x="16" y="16" width="40" height="24" fill="#C8956B" />
-          {/* Cheeks */}
-          <rect x="16" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
-          <rect x="46" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
-          {/* Eyes */}
-          <rect x="16" y="16" width="10" height="10" fill="#1A1A1A" />
-          <rect x="46" y="16" width="10" height="10" fill="#1A1A1A" />
-          {/* Nose */}
-          <rect x="27" y="30" width="18" height="8" fill="#1A1A1A" />
+            {/* ── Head ── */}
+            <rect x="8" y="8" width="56" height="40" fill="#7B5230" />
+            <rect x="16" y="16" width="40" height="24" fill="#C8956B" />
+            {/* Cheeks */}
+            <rect x="16" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
+            <rect x="46" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
+            {/* Eyes */}
+            <rect x="16" y="16" width="10" height="10" fill="#1A1A1A" />
+            <rect x="46" y="16" width="10" height="10" fill="#1A1A1A" />
+            {/* Nose */}
+            <rect x="27" y="30" width="18" height="8" fill="#1A1A1A" />
 
-          {/* ── Body ── */}
-          <rect x="8" y="48" width="56" height="40" fill="#7B5230" />
-          <rect x="16" y="56" width="40" height="24" fill="#C8956B" />
+            {/* ── Body ── */}
+            <rect x="8" y="48" width="56" height="40" fill="#7B5230" />
+            <rect x="16" y="56" width="40" height="24" fill="#C8956B" />
 
-          {/* ── Left arm — static ── */}
-          <rect x="0" y="48" width="8" height="32" fill="#4A2A0E" />
-          <rect x="6" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
+            {/* ── Left arm — static ── */}
+            <rect x="0" y="48" width="8" height="32" fill="#4A2A0E" />
+            <rect x="6" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
 
-          {/* ── Right arm — waves on hover; pivot at shoulder (68,48) ── */}
-          <g className="bear-arm-wave" style={{ transformOrigin: '68px 48px' }}>
-            <rect x="64" y="48" width="8" height="32" fill="#4A2A0E" />
-          </g>
-          {/* Strap stays static — not inside the wave group */}
-          <rect x="64" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
+            {/* ── Right arm — waves on hover; pivot at shoulder (68,48) ── */}
+            <g className="bear-arm-wave" style={{ transformOrigin: '68px 48px' }}>
+              <rect x="64" y="48" width="8" height="32" fill="#4A2A0E" />
+            </g>
+            {/* Strap stays static — not inside the wave group */}
+            <rect x="64" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
 
-          {/* ── Legs ── */}
-          <rect x="8" y="88" width="22" height="24" fill="#4A2A0E" />
-          <rect x="42" y="88" width="22" height="24" fill="#4A2A0E" />
-        </svg>
+            {/* ── Legs ── */}
+            <rect x="8" y="88" width="22" height="24" fill="#4A2A0E" />
+            <rect x="42" y="88" width="22" height="24" fill="#4A2A0E" />
+          </svg>
+        </div>
       </div>
     </>
   )
