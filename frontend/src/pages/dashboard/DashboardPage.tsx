@@ -146,7 +146,7 @@ export function DashboardPage() {
           </h2>
         </div>
         {feesLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
@@ -155,7 +155,7 @@ export function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
               <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
                 {t('totalCharged')}
@@ -193,7 +193,7 @@ export function DashboardPage() {
       </div>
 
       {/* Bottom panels */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Today's Attendance */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">

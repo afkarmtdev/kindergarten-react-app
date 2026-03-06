@@ -157,52 +157,52 @@ export function FeesPage() {
             </p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 items-center">
           <Link
             to="/admin/fee-plans"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <LayoutList size={15} />
             {t('feePlans')}
           </Link>
           <button
             onClick={() => setCollectionSheetOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <ClipboardList size={15} />
             {t('printCollectionSheet')}
           </button>
           <button
             onClick={() => setMonthlyReportOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <BarChart2 size={15} />
             {t('monthlyReport')}
           </button>
           <Link
             to="/admin/fees/annual-report"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <TrendingUp size={15} />
             {t('annualReport')}
           </Link>
           <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <Download size={15} />
             {t('exportCsv')}
           </button>
           <button
             onClick={() => setGenerateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             <Zap size={15} />
             {t('generateFees')}
           </button>
           <button
             onClick={() => setAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-orange text-white text-sm font-semibold hover:bg-orange-600 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-orange text-white text-sm font-semibold hover:bg-orange-600 transition-colors col-span-2 md:col-span-1"
           >
             <Plus size={15} />
             {t('addFeeRecord')}
@@ -262,7 +262,7 @@ export function FeesPage() {
                 <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide hidden md:table-cell">
                   {t('feeDesc')}
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide hidden lg:table-cell">
+                <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide hidden md:table-cell">
                   {t('feeDueDate')}
                 </th>
                 <th className="text-right px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">

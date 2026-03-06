@@ -78,7 +78,7 @@ export function FeeTableRow({
           {record.description}
         </td>
         {/* Due date */}
-        <td className="px-4 py-3 text-gray-600 dark:text-gray-400 hidden lg:table-cell">
+        <td className="px-4 py-3 text-gray-600 dark:text-gray-400 hidden md:table-cell">
           {record.due_date ?? '—'}
         </td>
         {/* Owed */}

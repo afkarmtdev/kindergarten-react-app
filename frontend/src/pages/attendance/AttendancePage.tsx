@@ -178,7 +178,7 @@ export function AttendancePage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
         {(['', 'present', 'absent', 'late', 'excused'] as const).map((s) => {
           const isAll = s === ''
           const cfg = !isAll ? STATUS_CONFIG[s] : null
