@@ -109,6 +109,14 @@ export function AnnouncementModal({ open, onClose, announcement }: AnnouncementM
       return
     }
 
+    // Delete the old file from storage if replacing an existing banner
+    if (form.image_url) {
+      const oldPath = form.image_url.split('/announcement-banners/')[1]
+      if (oldPath) {
+        await supabase.storage.from('announcement-banners').remove([oldPath])
+      }
+    }
+
     const { data: urlData } = supabase.storage.from('announcement-banners').getPublicUrl(path)
 
     set('image_url', urlData.publicUrl)

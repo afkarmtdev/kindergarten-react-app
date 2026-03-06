@@ -109,6 +109,14 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
       return
     }
 
+    // Delete the old file from storage if replacing an existing avatar
+    if (form.avatar_url) {
+      const oldPath = form.avatar_url.split('/testimonial-avatars/')[1]
+      if (oldPath) {
+        await supabase.storage.from('testimonial-avatars').remove([oldPath])
+      }
+    }
+
     const { data: urlData } = supabase.storage.from('testimonial-avatars').getPublicUrl(path)
 
     set('avatar_url', urlData.publicUrl)

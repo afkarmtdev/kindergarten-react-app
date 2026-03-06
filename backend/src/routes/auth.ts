@@ -26,9 +26,20 @@ function checkRateLimit(ip: string): boolean {
   return true
 }
 
+// Purge expired entries every 5 minutes to prevent unbounded Map growth
+setInterval(() => {
+  const now = Date.now()
+  for (const [ip, record] of loginAttempts) {
+    if (now > record.resetAt) loginAttempts.delete(ip)
+  }
+}, 5 * 60_000).unref()
+
 // POST login
 auth.post('/login', zValidator('json', loginSchema), async (c) => {
-  const ip = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown'
+  const ip =
+    (c.req.header('x-forwarded-for') ?? '').split(',')[0].trim() ||
+    c.req.header('x-real-ip') ||
+    'unknown'
   if (!checkRateLimit(ip)) {
     return c.json({ error: 'Too many login attempts. Please wait a minute and try again.' }, 429)
   }

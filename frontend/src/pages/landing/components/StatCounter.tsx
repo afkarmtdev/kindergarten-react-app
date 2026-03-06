@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
+import type { LucideIcon } from 'lucide-react'
 
 export function StatCounter({
   target,
   suffix,
   label,
+  icon: Icon,
 }: {
   target: number
   suffix: string
   label: string
+  icon?: LucideIcon
 }) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
@@ -41,11 +44,18 @@ export function StatCounter({
 
   return (
     <div ref={ref} className="text-center px-2">
-      <p className="text-5xl lg:text-6xl font-extrabold text-white leading-none mb-2">
-        {count}
-        {suffix}
-      </p>
-      <p className="text-white/70 font-bold text-xs uppercase tracking-widest">{label}</p>
+      <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/15">
+        {Icon && (
+          <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-3">
+            <Icon size={24} className="text-white" strokeWidth={1.5} />
+          </div>
+        )}
+        <p className="text-5xl lg:text-6xl font-extrabold text-white leading-none mb-2">
+          {count}
+          {suffix}
+        </p>
+        <p className="text-white/70 font-bold text-xs uppercase tracking-widest">{label}</p>
+      </div>
     </div>
   )
 }

@@ -172,19 +172,81 @@ create policy "Auth users can delete fee records" on fee_records for delete to a
 
 -- School Info (single-row config)
 create table school_info (
-  id          uuid primary key default gen_random_uuid(),
-  school_name text not null default '',
-  address     text not null default '',
-  phone       text not null default '',
-  email       text not null default '',
-  logo_url    text,
-  updated_at  timestamptz default now()
+  id                   uuid primary key default gen_random_uuid(),
+  school_name          text not null default '',
+  address              text not null default '',
+  phone                text not null default '',
+  email                text not null default '',
+  logo_url             text,
+  whatsapp_number      text not null default '',
+  operating_hours      jsonb,
+  google_maps_embed_url text not null default '',
+  facebook_url         text not null default '',
+  instagram_url        text not null default '',
+  updated_at           timestamptz default now()
 );
+
+-- Migration (run if table already exists):
+-- alter table school_info
+--   add column if not exists whatsapp_number text not null default '',
+--   add column if not exists operating_hours jsonb,
+--   add column if not exists google_maps_embed_url text not null default '',
+--   add column if not exists facebook_url text not null default '',
+--   add column if not exists instagram_url text not null default '';
 
 alter table school_info enable row level security;
 create policy "Auth users can read school info"   on school_info for select to authenticated using (true);
 create policy "Auth users can insert school info" on school_info for insert to authenticated with check (true);
 create policy "Auth users can update school info" on school_info for update to authenticated using (true);
+create policy "Anyone can read school info"       on school_info for select to anon using (true);
+
+-- Storage Bucket Policies
+-- Run these after creating the four buckets in the Supabase Storage dashboard
+-- (all buckets must be created as public): student-photos, gallery-photos,
+-- announcement-banners, testimonial-avatars
+
+-- gallery-photos
+drop policy if exists "Auth users can upload gallery photos" on storage.objects;
+drop policy if exists "Auth users can update gallery photos" on storage.objects;
+drop policy if exists "Auth users can delete gallery photos" on storage.objects;
+drop policy if exists "Anyone can read gallery photos"       on storage.objects;
+drop policy if exists "Allow authenticated uploads"          on storage.objects;
+drop policy if exists "Allow authenticated updates"          on storage.objects;
+drop policy if exists "Allow authenticated deletes"          on storage.objects;
+create policy "Auth users can upload gallery photos"  on storage.objects for insert to authenticated with check (bucket_id = 'gallery-photos');
+create policy "Auth users can update gallery photos"  on storage.objects for update to authenticated using  (bucket_id = 'gallery-photos');
+create policy "Auth users can delete gallery photos"  on storage.objects for delete to authenticated using  (bucket_id = 'gallery-photos');
+create policy "Anyone can read gallery photos"        on storage.objects for select to anon, authenticated using (bucket_id = 'gallery-photos');
+
+-- student-photos
+drop policy if exists "Auth users can upload student photos" on storage.objects;
+drop policy if exists "Auth users can update student photos" on storage.objects;
+drop policy if exists "Auth users can delete student photos" on storage.objects;
+drop policy if exists "Anyone can read student photos"       on storage.objects;
+create policy "Auth users can upload student photos"  on storage.objects for insert to authenticated with check (bucket_id = 'student-photos');
+create policy "Auth users can update student photos"  on storage.objects for update to authenticated using  (bucket_id = 'student-photos');
+create policy "Auth users can delete student photos"  on storage.objects for delete to authenticated using  (bucket_id = 'student-photos');
+create policy "Anyone can read student photos"        on storage.objects for select to anon, authenticated using (bucket_id = 'student-photos');
+
+-- announcement-banners
+drop policy if exists "Auth users can upload announcement banners" on storage.objects;
+drop policy if exists "Auth users can update announcement banners" on storage.objects;
+drop policy if exists "Auth users can delete announcement banners" on storage.objects;
+drop policy if exists "Anyone can read announcement banners"       on storage.objects;
+create policy "Auth users can upload announcement banners"  on storage.objects for insert to authenticated with check (bucket_id = 'announcement-banners');
+create policy "Auth users can update announcement banners"  on storage.objects for update to authenticated using  (bucket_id = 'announcement-banners');
+create policy "Auth users can delete announcement banners"  on storage.objects for delete to authenticated using  (bucket_id = 'announcement-banners');
+create policy "Anyone can read announcement banners"        on storage.objects for select to anon, authenticated using (bucket_id = 'announcement-banners');
+
+-- testimonial-avatars
+drop policy if exists "Auth users can upload testimonial avatars" on storage.objects;
+drop policy if exists "Auth users can update testimonial avatars" on storage.objects;
+drop policy if exists "Auth users can delete testimonial avatars" on storage.objects;
+drop policy if exists "Anyone can read testimonial avatars"       on storage.objects;
+create policy "Auth users can upload testimonial avatars"  on storage.objects for insert to authenticated with check (bucket_id = 'testimonial-avatars');
+create policy "Auth users can update testimonial avatars"  on storage.objects for update to authenticated using  (bucket_id = 'testimonial-avatars');
+create policy "Auth users can delete testimonial avatars"  on storage.objects for delete to authenticated using  (bucket_id = 'testimonial-avatars');
+create policy "Anyone can read testimonial avatars"        on storage.objects for select to anon, authenticated using (bucket_id = 'testimonial-avatars');
 
 -- Testimonials
 create table testimonials (
