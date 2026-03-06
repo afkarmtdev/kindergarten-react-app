@@ -4,8 +4,44 @@ import { CheckCircle } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
-import { BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './Wave'
+import { StarField } from './StarField'
+
+const CONFETTI_COLORS = ['#FF6B35', '#4D96FF', '#6BCB77', '#FFD93D', '#C77DFF', '#FF85A2']
+
+const CONFETTI_PARTICLES: {
+  left: string
+  delay: string
+  dur: string
+  color: string
+  size: number
+  rot: number
+}[] = [
+  { left: '5%', delay: '0s', dur: '2.2s', color: CONFETTI_COLORS[0], size: 8, rot: 30 },
+  { left: '12%', delay: '0.1s', dur: '2.5s', color: CONFETTI_COLORS[3], size: 6, rot: 60 },
+  { left: '20%', delay: '0.3s', dur: '2.0s', color: CONFETTI_COLORS[1], size: 10, rot: 15 },
+  { left: '28%', delay: '0s', dur: '2.8s', color: CONFETTI_COLORS[4], size: 7, rot: 90 },
+  { left: '36%', delay: '0.2s', dur: '2.1s', color: CONFETTI_COLORS[2], size: 8, rot: 45 },
+  { left: '44%', delay: '0.4s', dur: '2.6s', color: CONFETTI_COLORS[5], size: 6, rot: 120 },
+  { left: '52%', delay: '0.1s', dur: '2.3s', color: CONFETTI_COLORS[0], size: 9, rot: 20 },
+  { left: '60%', delay: '0.3s', dur: '2.0s', color: CONFETTI_COLORS[3], size: 7, rot: 75 },
+  { left: '68%', delay: '0s', dur: '2.7s', color: CONFETTI_COLORS[1], size: 8, rot: 50 },
+  { left: '76%', delay: '0.2s', dur: '2.4s', color: CONFETTI_COLORS[4], size: 6, rot: 100 },
+  { left: '84%', delay: '0.1s', dur: '2.2s', color: CONFETTI_COLORS[2], size: 10, rot: 35 },
+  { left: '92%', delay: '0.3s', dur: '2.5s', color: CONFETTI_COLORS[5], size: 7, rot: 65 },
+  { left: '8%', delay: '0.5s', dur: '2.9s', color: CONFETTI_COLORS[3], size: 6, rot: 80 },
+  { left: '33%', delay: '0.6s', dur: '2.1s', color: CONFETTI_COLORS[0], size: 8, rot: 110 },
+  { left: '57%', delay: '0.5s', dur: '2.8s', color: CONFETTI_COLORS[2], size: 7, rot: 25 },
+  { left: '80%', delay: '0.4s', dur: '2.3s', color: CONFETTI_COLORS[5], size: 9, rot: 55 },
+]
+
+const CONFETTI_CSS = `
+  @keyframes lp-confetti-fall {
+    0%   { transform: translateY(-10px) rotate(0deg);   opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(220px) rotate(720deg); opacity: 0; }
+  }
+`
 
 export function InquiryForm() {
   const t = useT()
@@ -49,27 +85,43 @@ export function InquiryForm() {
   const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5'
 
   return (
-    <section className="bg-white dark:bg-gray-950 py-24 transition-colors duration-200">
+    <section className="relative overflow-hidden bg-white dark:bg-[#150f2a] py-24 transition-colors duration-200">
+      <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
+      <StarField variant="a" className="hidden dark:block" />
       <div
         ref={ref}
-        className={`max-w-3xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+        className={`relative max-w-3xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="hidden sm:block lp-float" style={{ animationDelay: '0.5s' }}>
-              <BearLogo size={48} />
-            </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent leading-tight">
-              {t('inquiryTitle')}
-            </h2>
-          </div>
-          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent leading-tight">
+            {t('inquiryTitle')}
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg mt-2">
             {t('inquirySubtitle')}
           </p>
         </div>
 
         {view === 'thankYou' ? (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-3xl p-10 text-center">
+          <div className="relative overflow-hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-3xl p-10 text-center">
+            {/* Confetti burst */}
+            {CONFETTI_PARTICLES.map((p, i) => (
+              <div
+                key={i}
+                className="absolute pointer-events-none"
+                style={{
+                  left: p.left,
+                  top: 0,
+                  width: p.size,
+                  height: p.size,
+                  background: p.color,
+                  borderRadius: 2,
+                  transform: `rotate(${p.rot}deg)`,
+                  animation: `lp-confetti-fall ${p.dur} ${p.delay} ease-in forwards`,
+                }}
+                aria-hidden="true"
+              />
+            ))}
+
             <div className="w-16 h-16 bg-green-100 dark:bg-green-800/40 rounded-full flex items-center justify-center mx-auto mb-5">
               <CheckCircle size={32} className="text-green-500 dark:text-green-400" />
             </div>
