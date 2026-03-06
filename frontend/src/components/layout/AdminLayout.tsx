@@ -17,9 +17,11 @@ import {
   Settings,
   Quote,
   Inbox,
+  Search,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { CommandPalette } from '@/components/ui/CommandPalette'
 import { AdminBearLogo } from '@/components/admin/AdminBearLogo'
 import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -34,7 +36,21 @@ export function AdminLayout() {
   const t = useT()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const { updateAvailable } = useVersionCheck()
+
+  const closePalette = useCallback(() => setPaletteOpen(false), [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setPaletteOpen((o) => !o)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const navItems = [
     { to: '/admin/dashboard', icon: LayoutDashboard, label: t('dashboard') },
@@ -72,6 +88,20 @@ export function AdminLayout() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Search shortcut */}
+      <div className="px-4 pt-4 pb-1">
+        <button
+          onClick={() => setPaletteOpen(true)}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+        >
+          <Search size={14} />
+          <span className="flex-1 text-left text-xs">{t('searchPlaceholder')}</span>
+          <kbd className="hidden lg:inline text-[10px] font-bold px-1.5 py-0.5 rounded bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+            Ctrl K
+          </kbd>
+        </button>
       </div>
 
       {/* Nav */}
@@ -225,12 +255,19 @@ export function AdminLayout() {
           >
             <Menu size={20} />
           </button>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-1">
             <div className="w-9 h-9 bg-kinder-orange rounded-xl flex items-center justify-center">
               <AdminBearIcon size={22} />
             </div>
             <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</span>
           </div>
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Search"
+          >
+            <Search size={20} />
+          </button>
         </header>
 
         {/* Main content */}
@@ -238,6 +275,8 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <CommandPalette open={paletteOpen} onClose={closePalette} />
     </div>
   )
 }

@@ -11,6 +11,13 @@ export const translations = {
     administrator: 'Administrator',
     logout: 'Logout',
 
+    // Command palette
+    searchPlaceholder: 'Search pages, students, classes...',
+    pages: 'Pages',
+    navigate: 'navigate',
+    select: 'select',
+    noResultsFound: 'No results found',
+
     // Settings panel
     settings: 'Settings',
     darkMode: 'Dark Mode',
@@ -613,6 +620,13 @@ export const translations = {
     adminPortal: 'Portal Pentadbir',
     administrator: 'Pentadbir',
     logout: 'Log Keluar',
+
+    // Command palette
+    searchPlaceholder: 'Cari halaman, pelajar, kelas...',
+    pages: 'Halaman',
+    navigate: 'navigasi',
+    select: 'pilih',
+    noResultsFound: 'Tiada hasil ditemui',
 
     // Settings panel
     settings: 'Tetapan',
