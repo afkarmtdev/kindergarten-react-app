@@ -49,10 +49,35 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   if (class_name) query = query.eq('class_name', class_name)
   if (gender) query = query.eq('gender', gender)
   if (birthday_today) {
+    // Supabase JS can't do date part extraction, so fetch all and filter server-side
+    let bdayQuery = supabase.from('students').select('*').order('full_name')
+
+    if (search) {
+      bdayQuery = bdayQuery.or(
+        `full_name.ilike.%${search}%,parent_name.ilike.%${search}%,parent_email.ilike.%${search}%`
+      )
+    }
+    if (class_name) bdayQuery = bdayQuery.eq('class_name', class_name)
+    if (gender) bdayQuery = bdayQuery.eq('gender', gender)
+
+    const { data: allData, error: allError } = await bdayQuery
+
+    if (allError) return c.json({ error: allError.message }, 500)
+
     const now = new Date()
     const mm = String(now.getMonth() + 1).padStart(2, '0')
     const dd = String(now.getDate()).padStart(2, '0')
-    query = query.filter('date_of_birth', 'like', `%-${mm}-${dd}`)
+    const suffix = `-${mm}-${dd}`
+    const filtered = (allData ?? []).filter(
+      (s) => typeof s.date_of_birth === 'string' && s.date_of_birth.endsWith(suffix)
+    )
+
+    const total = filtered.length
+    const paged = filtered.slice(from, from + limit)
+    return c.json({
+      data: paged,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    })
   }
 
   const { data, error, count } = await query
