@@ -265,3 +265,20 @@ create index idx_testimonials_display_order on testimonials(display_order);
 alter table testimonials enable row level security;
 create policy "Auth users manage testimonials"        on testimonials for all    to authenticated using (true) with check (true);
 create policy "Anyone reads visible testimonials"     on testimonials for select to anon          using (is_visible = true);
+
+-- Inquiries
+create table inquiries (
+  id          uuid primary key default uuid_generate_v4(),
+  parent_name text not null,
+  child_name  text not null,
+  child_age   int  not null check (child_age between 2 and 7),
+  phone       text not null,
+  message     text not null default '',
+  created_at  timestamptz default now()
+);
+
+create index idx_inquiries_created_at on inquiries(created_at desc);
+
+alter table inquiries enable row level security;
+create policy "Auth users manage inquiries"    on inquiries for all    to authenticated using (true) with check (true);
+create policy "Anyone can submit an inquiry"   on inquiries for insert to anon          with check (true);
