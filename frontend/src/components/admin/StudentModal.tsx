@@ -104,6 +104,14 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
       return
     }
 
+    // Delete the old file from storage if replacing an existing photo
+    if (form.photo_url) {
+      const oldPath = form.photo_url.split('/student-photos/')[1]
+      if (oldPath) {
+        await supabase.storage.from('student-photos').remove([oldPath])
+      }
+    }
+
     const { data: urlData } = supabase.storage.from('student-photos').getPublicUrl(path)
 
     set('photo_url', urlData.publicUrl)
