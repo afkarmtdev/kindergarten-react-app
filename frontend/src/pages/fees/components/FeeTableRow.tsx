@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Receipt, FileText, Pencil, Trash2 } from 'lucide-react'
+import { Receipt, FileText, Pencil, Trash2, AlertCircle, BookOpen } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { STATUS_STYLES, TYPE_STYLES, formatRM } from '../constants'
@@ -12,15 +12,27 @@ export function FeeTableRow({
   onPrintReceipt,
   onEdit,
   onDelete,
+  onPrintInvoice,
+  onPrintOverdue,
+  onPrintEnrollment,
 }: {
   record: FeeRecord
   onPay: (record: FeeRecord) => void
   onPrintReceipt: (record: FeeRecord) => void
   onEdit: (record: FeeRecord) => void
   onDelete: (id: string) => void
+  onPrintInvoice?: (record: FeeRecord) => void
+  onPrintOverdue?: (record: FeeRecord) => void
+  onPrintEnrollment?: (record: FeeRecord) => void
 }) {
   const t = useT()
   const [showDelete, setShowDelete] = useState(false)
+
+  const today = new Date().toISOString().split('T')[0]
+
+  const isUnpaidOrPartial = record.status === 'unpaid' || record.status === 'partial'
+  const isOverdue = isUnpaidOrPartial && !!record.due_date && record.due_date < today
+  const isEnrollmentPaid = record.type === 'registration' && record.status === 'paid'
 
   const statusLabel = (s: string) => {
     const map: Record<string, string> = {
@@ -88,7 +100,7 @@ export function FeeTableRow({
         {/* Actions */}
         <td className="px-4 py-3">
           <div className="flex items-center gap-1 justify-end">
-            {(record.status === 'unpaid' || record.status === 'partial') && (
+            {isUnpaidOrPartial && (
               <button
                 onClick={() => onPay(record)}
                 title={t('recordPayment')}
@@ -104,6 +116,33 @@ export function FeeTableRow({
                 className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-blue hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
               >
                 <FileText size={14} />
+              </button>
+            )}
+            {isUnpaidOrPartial && onPrintInvoice && (
+              <button
+                onClick={() => onPrintInvoice(record)}
+                title={t('feeInvoiceTitle')}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-blue hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+              >
+                <FileText size={14} />
+              </button>
+            )}
+            {isOverdue && onPrintOverdue && (
+              <button
+                onClick={() => onPrintOverdue(record)}
+                title={t('overdueNoticeTitle')}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+              >
+                <AlertCircle size={14} />
+              </button>
+            )}
+            {isEnrollmentPaid && onPrintEnrollment && (
+              <button
+                onClick={() => onPrintEnrollment(record)}
+                title={t('enrollmentLetterTitle')}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-kinder-green hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
+              >
+                <BookOpen size={14} />
               </button>
             )}
             <Link

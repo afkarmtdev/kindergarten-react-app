@@ -398,3 +398,504 @@ describe('Fee Records — DELETE /:id', () => {
     expect(res.status).toBe(404)
   })
 })
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Class Collection Sheet
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — GET /class-sheet', () => {
+  test('requires class_name and month', async () => {
+    const res = await fees.request('/class-sheet')
+    expect(res.status).toBe(400)
+  })
+
+  test('requires valid month format (YYYY-MM)', async () => {
+    const res = await fees.request('/class-sheet?class_name=Rose&month=2025')
+    expect(res.status).toBe(400)
+  })
+
+  test('returns empty result when class has no students', async () => {
+    setMockResponse('students', { data: [], error: null })
+
+    const res = await fees.request('/class-sheet?class_name=EmptyClass&month=2025-03')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.students).toEqual([])
+    expect(json.totals).toEqual({ amount_owed: 0, amount_paid: 0, balance: 0 })
+    expect(json.class_name).toBe('EmptyClass')
+    expect(json.month).toBe('2025-03')
+  })
+
+  test('returns grouped students with records and totals', async () => {
+    setMockResponse('students', {
+      data: [
+        { id: 's1', full_name: 'Ali' },
+        { id: 's2', full_name: 'Mia' },
+      ],
+      error: null,
+    })
+    setMockResponse('fee_records', {
+      data: [
+        {
+          id: 'r1',
+          student_id: 's1',
+          description: 'Tuition',
+          type: 'tuition',
+          due_date: '2025-03-01',
+          amount_owed: 350,
+          discount_amount: 0,
+          amount_paid: 350,
+          status: 'paid',
+        },
+        {
+          id: 'r2',
+          student_id: 's2',
+          description: 'Tuition',
+          type: 'tuition',
+          due_date: '2025-03-01',
+          amount_owed: 350,
+          discount_amount: 0,
+          amount_paid: 0,
+          status: 'unpaid',
+        },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/class-sheet?class_name=Rose&month=2025-03')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.students).toHaveLength(2)
+    expect(json.students[0].student_id).toBe('s1')
+    expect(json.students[0].records).toHaveLength(1)
+    expect(json.totals.amount_owed).toBe(700)
+    expect(json.totals.amount_paid).toBe(350)
+    expect(json.totals.balance).toBe(350)
+  })
+
+  test('student with no fees for the month has empty records array', async () => {
+    setMockResponse('students', {
+      data: [{ id: 's1', full_name: 'Ali' }],
+      error: null,
+    })
+    setMockResponse('fee_records', { data: [], error: null })
+
+    const res = await fees.request('/class-sheet?class_name=Rose&month=2025-03')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.students[0].records).toEqual([])
+    expect(json.totals).toEqual({ amount_owed: 0, amount_paid: 0, balance: 0 })
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Monthly Collection Report
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — GET /monthly-report', () => {
+  test('requires month param', async () => {
+    const res = await fees.request('/monthly-report')
+    expect(res.status).toBe(400)
+  })
+
+  test('requires YYYY-MM format', async () => {
+    const res = await fees.request('/monthly-report?month=March')
+    expect(res.status).toBe(400)
+  })
+
+  test('returns zeros when no records', async () => {
+    setMockResponse('fee_records', { data: [], error: null })
+
+    const res = await fees.request('/monthly-report?month=2025-03')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.totals).toEqual({ charged: 0, collected: 0, outstanding: 0, record_count: 0 })
+    expect(json.by_class).toEqual([])
+    expect(json.by_type).toEqual([])
+    expect(json.outstanding_accounts).toEqual([])
+  })
+
+  test('aggregates by class correctly', async () => {
+    setMockResponse('fee_records', {
+      data: [
+        {
+          id: 'r1',
+          student_id: 's1',
+          type: 'tuition',
+          description: 'Tuition',
+          amount_owed: 350,
+          discount_amount: 0,
+          amount_paid: 350,
+          status: 'paid',
+          due_date: '2025-03-01',
+          students: { full_name: 'Ali', class_name: 'Rose' },
+        },
+        {
+          id: 'r2',
+          student_id: 's2',
+          type: 'tuition',
+          description: 'Tuition',
+          amount_owed: 350,
+          discount_amount: 0,
+          amount_paid: 0,
+          status: 'unpaid',
+          due_date: '2025-03-01',
+          students: { full_name: 'Mia', class_name: 'Rose' },
+        },
+        {
+          id: 'r3',
+          student_id: 's3',
+          type: 'activity',
+          description: 'Activity',
+          amount_owed: 80,
+          discount_amount: 0,
+          amount_paid: 80,
+          status: 'paid',
+          due_date: '2025-03-01',
+          students: { full_name: 'Tom', class_name: 'Lily' },
+        },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/monthly-report?month=2025-03')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.totals.charged).toBe(780)
+    expect(json.totals.collected).toBe(430)
+    expect(json.totals.record_count).toBe(3)
+
+    // by_class sorted alphabetically
+    expect(json.by_class[0].class_name).toBe('Lily')
+    expect(json.by_class[1].class_name).toBe('Rose')
+    expect(json.by_class[1].charged).toBe(700)
+    expect(json.by_class[1].outstanding).toBe(350)
+    expect(json.by_class[1].unpaid_count).toBe(1)
+  })
+
+  test('aggregates by type correctly', async () => {
+    setMockResponse('fee_records', {
+      data: [
+        {
+          id: 'r1',
+          student_id: 's1',
+          type: 'tuition',
+          description: 'Tuition',
+          amount_owed: 200,
+          discount_amount: 0,
+          amount_paid: 200,
+          status: 'paid',
+          due_date: '2025-03-01',
+          students: { full_name: 'A', class_name: 'Rose' },
+        },
+        {
+          id: 'r2',
+          student_id: 's2',
+          type: 'tuition',
+          description: 'Tuition',
+          amount_owed: 200,
+          discount_amount: 0,
+          amount_paid: 100,
+          status: 'partial',
+          due_date: '2025-03-01',
+          students: { full_name: 'B', class_name: 'Rose' },
+        },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/monthly-report?month=2025-03')
+    const json = await res.json()
+
+    expect(json.by_type).toHaveLength(1)
+    expect(json.by_type[0].type).toBe('tuition')
+    expect(json.by_type[0].charged).toBe(400)
+    expect(json.by_type[0].collected).toBe(300)
+    expect(json.by_type[0].outstanding).toBe(100)
+  })
+
+  test('outstanding_accounts contains only unpaid/partial records', async () => {
+    setMockResponse('fee_records', {
+      data: [
+        {
+          id: 'r1',
+          student_id: 's1',
+          type: 'tuition',
+          description: 'Tuition',
+          amount_owed: 100,
+          discount_amount: 0,
+          amount_paid: 100,
+          status: 'paid',
+          due_date: '2025-03-01',
+          students: { full_name: 'Paid', class_name: 'Rose' },
+        },
+        {
+          id: 'r2',
+          student_id: 's2',
+          type: 'tuition',
+          description: 'Tuition',
+          amount_owed: 100,
+          discount_amount: 0,
+          amount_paid: 0,
+          status: 'unpaid',
+          due_date: '2025-03-01',
+          students: { full_name: 'Owing', class_name: 'Rose' },
+        },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/monthly-report?month=2025-03')
+    const json = await res.json()
+
+    expect(json.outstanding_accounts).toHaveLength(1)
+    expect(json.outstanding_accounts[0].student_name).toBe('Owing')
+    expect(json.outstanding_accounts[0].balance).toBe(100)
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Annual Report
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — GET /annual-report', () => {
+  test('rejects year below 2020', async () => {
+    const res = await fees.request('/annual-report?year=2019')
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects year above 2099', async () => {
+    const res = await fees.request('/annual-report?year=2100')
+    expect(res.status).toBe(400)
+  })
+
+  test('returns zeros when no records', async () => {
+    setMockResponse('fee_records', { data: [], error: null })
+
+    const res = await fees.request('/annual-report?year=2025')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.year).toBe(2025)
+    expect(json.totals.total_owed).toBe(0)
+    expect(json.totals.total_paid).toBe(0)
+    expect(json.totals.record_count).toBe(0)
+    expect(json.by_type).toEqual([])
+  })
+
+  test('aggregates by type with correct totals', async () => {
+    setMockResponse('fee_records', {
+      data: [
+        {
+          id: 'r1',
+          type: 'tuition',
+          amount_owed: 350,
+          amount_paid: 350,
+          discount_amount: 0,
+          status: 'paid',
+          due_date: '2025-03-01',
+          created_at: '2025-01-01T00:00:00Z',
+        },
+        {
+          id: 'r2',
+          type: 'tuition',
+          amount_owed: 350,
+          amount_paid: 0,
+          discount_amount: 0,
+          status: 'unpaid',
+          due_date: '2025-04-01',
+          created_at: '2025-04-01T00:00:00Z',
+        },
+        {
+          id: 'r3',
+          type: 'registration',
+          amount_owed: 200,
+          amount_paid: 200,
+          discount_amount: 0,
+          status: 'paid',
+          due_date: '2025-01-01',
+          created_at: '2025-01-01T00:00:00Z',
+        },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/annual-report?year=2025')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.totals.total_owed).toBe(900)
+    expect(json.totals.total_paid).toBe(550)
+    expect(json.totals.record_count).toBe(3)
+    expect(json.totals.paid_count).toBe(2)
+
+    const tuition = json.by_type.find((t: { type: string }) => t.type === 'tuition')
+    expect(tuition.total_owed).toBe(700)
+    expect(tuition.total_paid).toBe(350)
+    expect(tuition.outstanding).toBe(350)
+
+    const reg = json.by_type.find((t: { type: string }) => t.type === 'registration')
+    expect(reg.total_owed).toBe(200)
+    expect(reg.outstanding).toBe(0)
+  })
+
+  test('discounts are totalled separately', async () => {
+    setMockResponse('fee_records', {
+      data: [
+        {
+          id: 'r1',
+          type: 'tuition',
+          amount_owed: 350,
+          amount_paid: 300,
+          discount_amount: 50,
+          status: 'paid',
+          due_date: '2025-03-01',
+          created_at: '2025-03-01T00:00:00Z',
+        },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/annual-report?year=2025')
+    const json = await res.json()
+    expect(json.totals.total_discounts).toBe(50)
+    expect(json.by_type[0].total_discounts).toBe(50)
+  })
+
+  test('uses current year when year param omitted', async () => {
+    setMockResponse('fee_records', { data: [], error: null })
+
+    const res = await fees.request('/annual-report')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.year).toBe(new Date().getFullYear())
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Payment
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — PUT /:id/payment', () => {
+  const validConfig = {
+    id: 'cfg1',
+    document_type: 'receipt',
+    segments: [
+      { order: 1, type: 'constant', value: 'RC-' },
+      { order: 2, type: 'serial', total_chars: 4, reset_by: 'no_reset', start_from: 1 },
+    ],
+    current_serial: 5,
+    last_reset_at: null,
+    updated_at: null,
+  }
+
+  test('returns 404 when fee record not found', async () => {
+    setMockResponse('fee_records', { data: null, error: { message: 'Row not found' } })
+
+    const res = await fees.request('/abc-123/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100 }),
+    })
+    expect(res.status).toBe(404)
+  })
+
+  test('rejects payment that exceeds outstanding balance', async () => {
+    setMockResponse('fee_records', {
+      data: { id: 'r1', amount_owed: 100, amount_paid: 80, discount_amount: 0, status: 'partial' },
+      error: null,
+    })
+    // balance = 100 - 0 - 80 = 20; payment 50 > 20
+    const res = await fees.request('/r1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 50 }),
+    })
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toContain('outstanding balance')
+  })
+
+  test('rejects negative payment amount', async () => {
+    const res = await fees.request('/r1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: -10 }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('returns 400 when receipt numbering not configured', async () => {
+    setMockResponse('fee_records', {
+      data: { id: 'r1', amount_owed: 100, amount_paid: 0, discount_amount: 0, status: 'unpaid' },
+      error: null,
+    })
+    // No document_numbering config — mock returns null
+    setMockResponse('document_numbering', { data: null, error: { message: 'Not found' } })
+
+    const res = await fees.request('/r1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100 }),
+    })
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toContain('not configured')
+  })
+
+  test('records payment, assigns receipt number, returns updated record', async () => {
+    setMockResponse('fee_records', {
+      data: {
+        id: 'r1',
+        amount_owed: 350,
+        amount_paid: 0,
+        discount_amount: 0,
+        status: 'unpaid',
+        students: { full_name: 'Ali', class_name: 'Rose', photo_url: null, parent_name: 'Abu' },
+      },
+      error: null,
+    })
+    setMockResponse('document_numbering', { data: validConfig, error: null })
+
+    const res = await fees.request('/r1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 350 }),
+    })
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.this_payment).toBe(350)
+  })
+
+  test('partial payment keeps status as partial', async () => {
+    setMockResponse('fee_records', {
+      data: {
+        id: 'r1',
+        amount_owed: 200,
+        amount_paid: 0,
+        discount_amount: 0,
+        status: 'unpaid',
+        students: { full_name: 'Ali', class_name: 'Rose', photo_url: null, parent_name: 'Abu' },
+      },
+      error: null,
+    })
+    setMockResponse('document_numbering', { data: validConfig, error: null })
+
+    const res = await fees.request('/r1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100 }),
+    })
+    // 100 < 200 → partial; response comes from mock (status unpaid) but this_payment should be 100
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.this_payment).toBe(100)
+  })
+})

@@ -154,7 +154,7 @@ export const feesApi = {
   recordPayment: (id: string, data: { amount: number }) =>
     api
       .put(`/fees/${id}/payment`, data)
-      .then((r) => r.data as import('@/types').FeeRecord & { this_payment: number }),
+      .then((r) => r.data as import('@/types').FeePaymentResponse),
   delete: (id: string) => api.delete(`/fees/${id}`).then((r) => r.data),
   getStatement: (studentId: string, year: number) =>
     api.get(`/fees/statement/${studentId}`, { params: { year } }).then((r) => r.data),
@@ -166,6 +166,18 @@ export const feesApi = {
     api
       .get('/fees/summary', { params: { month } })
       .then((r) => r.data as import('@/types').FeesSummary),
+  classSheet: (params: { class_name: string; month: string }) =>
+    api
+      .get('/fees/class-sheet', { params })
+      .then((r) => r.data as import('@/types').ClassSheetResponse),
+  monthlyReport: (params: { month: string }) =>
+    api
+      .get('/fees/monthly-report', { params })
+      .then((r) => r.data as import('@/types').MonthlyReportResponse),
+  annualReport: (year: number) =>
+    api
+      .get('/fees/annual-report', { params: { year } })
+      .then((r) => r.data as import('@/types').AnnualReportResponse),
 }
 
 export const documentNumberingApi = {

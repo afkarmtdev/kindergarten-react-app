@@ -118,16 +118,20 @@ export interface FeeRecord {
   discount_reason?: string
   receipt_number?: string
   status: FeeStatus
-  due_date?: string
-  paid_at?: string
+  due_date?: string | null
+  paid_at?: string | null
   created_at: string
   // Joined from students table (Supabase FK join)
   students?: {
     full_name: string
     class_name: string
     photo_url?: string
+    parent_name?: string
   } | null
 }
+
+// Returned by PUT /api/fees/:id/payment — includes the payment amount recorded this call
+export type FeePaymentResponse = FeeRecord & { this_payment: number }
 
 export interface FeesSummary {
   total_owed: number
@@ -178,6 +182,99 @@ export interface SchoolInfo {
   google_maps_embed_url: string
   facebook_url: string
   instagram_url: string
+  principal_name: string
+  registration_number: string
+}
+
+// ─── Finance Document Report Types ────────────────────────────────────────────
+export interface ClassSheetStudentRow {
+  student_id: string
+  student_name: string
+  records: {
+    id: string
+    description: string
+    type: FeeType
+    due_date: string | null
+    amount_owed: number
+    discount_amount: number
+    amount_paid: number
+    status: FeeStatus
+  }[]
+}
+
+export interface ClassSheetResponse {
+  class_name: string
+  month: string
+  students: ClassSheetStudentRow[]
+  totals: {
+    amount_owed: number
+    amount_paid: number
+    balance: number
+  }
+}
+
+export interface MonthlyReportByClass {
+  class_name: string
+  student_count: number
+  charged: number
+  collected: number
+  discount: number
+  outstanding: number
+  unpaid_count: number
+  partial_count: number
+}
+
+export interface MonthlyReportByType {
+  type: FeeType
+  charged: number
+  collected: number
+  outstanding: number
+}
+
+export interface MonthlyReportOutstandingItem {
+  student_name: string
+  class_name: string
+  description: string
+  due_date: string | null
+  amount_owed: number
+  amount_paid: number
+  balance: number
+}
+
+export interface MonthlyReportResponse {
+  month: string
+  totals: {
+    charged: number
+    collected: number
+    outstanding: number
+    record_count: number
+  }
+  by_class: MonthlyReportByClass[]
+  by_type: MonthlyReportByType[]
+  outstanding_accounts: MonthlyReportOutstandingItem[]
+}
+
+// ─── Annual Report ────────────────────────────────────────────────────────────
+export interface AnnualReportByType {
+  type: FeeType
+  total_owed: number
+  total_paid: number
+  total_discounts: number
+  outstanding: number
+}
+
+export interface AnnualReportResponse {
+  year: number
+  by_type: AnnualReportByType[]
+  totals: {
+    total_owed: number
+    total_paid: number
+    total_discounts: number
+    outstanding: number
+    record_count: number
+    paid_count: number
+    overdue_count: number
+  }
 }
 
 // ─── Inquiries ─────────────────────────────────────────────────────────────────

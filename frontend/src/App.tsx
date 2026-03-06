@@ -48,6 +48,9 @@ const FeePlansPage = lazy(() =>
 const FeeStatementPage = lazy(() =>
   import('@/pages/FeeStatementPage').then((m) => ({ default: m.FeeStatementPage }))
 )
+const AnnualReportPage = lazy(() =>
+  import('@/pages/AnnualReportPage').then((m) => ({ default: m.AnnualReportPage }))
+)
 const TestimonialsPage = lazy(() =>
   import('@/pages/testimonials/TestimonialsPage').then((m) => ({ default: m.TestimonialsPage }))
 )
@@ -172,6 +175,16 @@ export default function App() {
                   <ErrorBoundary>
                     <Suspense fallback={<CuteLoader />}>
                       <FeeStatementPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="fees/annual-report"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <AnnualReportPage />
                     </Suspense>
                   </ErrorBoundary>
                 }
