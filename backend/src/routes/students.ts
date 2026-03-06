@@ -23,11 +23,15 @@ const paginationSchema = z.object({
   search: z.string().optional(),
   class_name: z.string().optional(),
   gender: z.enum(['male', 'female', '']).optional(),
+  birthday_today: z
+    .enum(['true', 'false', ''])
+    .optional()
+    .transform((v) => v === 'true'),
 })
 
 // GET all students (paginated + filtered)
 students.get('/', zValidator('query', paginationSchema), async (c) => {
-  const { page, limit, search, class_name, gender } = c.req.valid('query')
+  const { page, limit, search, class_name, gender, birthday_today } = c.req.valid('query')
   const from = (page - 1) * limit
   const to = from + limit - 1
 
@@ -44,6 +48,12 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   }
   if (class_name) query = query.eq('class_name', class_name)
   if (gender) query = query.eq('gender', gender)
+  if (birthday_today) {
+    const now = new Date()
+    const mm = String(now.getMonth() + 1).padStart(2, '0')
+    const dd = String(now.getDate()).padStart(2, '0')
+    query = query.filter('date_of_birth', 'like', `%-${mm}-${dd}`)
+  }
 
   const { data, error, count } = await query
 

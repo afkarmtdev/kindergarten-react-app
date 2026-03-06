@@ -16,6 +16,7 @@ export interface StudentFilters {
   search?: string
   class_name?: string
   gender?: string
+  birthday_today?: boolean
 }
 
 export interface ClassFilters {

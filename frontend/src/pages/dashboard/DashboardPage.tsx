@@ -5,7 +5,6 @@ import { studentsApi, attendanceApi, classesApi, feesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { isBirthdayToday } from '@/lib/utils'
 import { format } from 'date-fns'
 import { StatCard } from './components/StatCard'
 import { AttendanceTrendChart } from './components/AttendanceTrendChart'
@@ -67,7 +66,7 @@ export function DashboardPage() {
 
   const { data: birthdayData } = useQuery({
     queryKey: ['students-birthday-check'],
-    queryFn: () => studentsApi.getAll({ page: 1, limit: 500 }),
+    queryFn: () => studentsApi.getAll({ page: 1, limit: 100, birthday_today: true }),
     staleTime: 5 * 60_000,
   })
 
@@ -83,10 +82,7 @@ export function DashboardPage() {
     staleTime: 5 * 60_000,
   })
 
-  const birthdayStudents = useMemo(
-    () => (birthdayData?.data ?? []).filter((s) => isBirthdayToday(s.date_of_birth)),
-    [birthdayData]
-  )
+  const birthdayStudents = birthdayData?.data ?? []
 
   const totalStudents = studentsData?.meta?.total ?? 0
   const totalClasses = classesData?.meta?.total ?? 0
