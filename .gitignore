@@ -40,3 +40,4 @@ bun-error.pid
 
 # TypeScript
 *.tsbuildinfo
+seed-*.sql
