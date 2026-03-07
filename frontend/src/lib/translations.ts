@@ -11,6 +11,13 @@ export const translations = {
     administrator: 'Administrator',
     logout: 'Logout',
 
+    // Command palette
+    searchPlaceholder: 'Search pages, students, classes...',
+    pages: 'Pages',
+    navigate: 'navigate',
+    select: 'select',
+    noResultsFound: 'No results found',
+
     // Settings panel
     settings: 'Settings',
     darkMode: 'Dark Mode',
@@ -30,6 +37,9 @@ export const translations = {
     noAttendanceYet: 'No attendance recorded yet today',
     noDataYet: 'No data for this month yet',
     noDataYetSub: 'Shows a status breakdown once attendance is marked this month',
+    attendanceTrend: 'Attendance Trend',
+    feeCollectionTrend: 'Fee Collection',
+    noTrendData: 'Not enough data to show trends',
     ofStudents: 'of {n} students',
 
     // Students page
@@ -512,6 +522,93 @@ export const translations = {
     // Landing page — Footer quick links
     footerQuickLinks: 'Quick Links',
     footerAboutSchool: 'About {name}',
+
+    // Settings — principal & registration
+    settingsPrincipalName: 'Principal Name',
+    settingsPrincipalNamePlaceholder: 'e.g. Pn. Siti Aminah',
+    settingsRegistrationNumber: 'Registration Number',
+    settingsRegistrationNumberPlaceholder: 'e.g. JPN/SK/2023/001',
+
+    // Fee Invoice / Overdue Notice
+    feeInvoiceTitle: 'Fee Invoice',
+    overdueNoticeTitle: 'Overdue Balance Notice',
+    invoiceNo: 'Invoice No.',
+    daysOverdue: '{n} days overdue',
+    paymentInstructions: 'Please make payment to',
+    computerGeneratedDoc: 'This is a computer-generated document.',
+    signaturePrincipal: 'Principal',
+    netPayable: 'Net Payable',
+    amountPaidLabel: 'Amount Paid',
+    outstandingBalance: 'Outstanding Balance',
+
+    // Enrollment Letter
+    enrollmentLetterTitle: 'Enrollment Confirmation Letter',
+    enrollmentRef: 'Ref',
+    enrollmentDear: 'Dear {name},',
+    enrollmentBody:
+      'We are pleased to confirm that {student} has been successfully enrolled at {school} for the {year} academic year.',
+    enrollmentClassAssigned: 'Class Assigned',
+    enrollmentRegFee: 'Registration Fee',
+    enrollmentReceiptNo: 'Receipt No.',
+    enrollmentLhdn:
+      'Please retain this letter for your tax records. Registration fees paid to a private educational institution may qualify for LHDN child education relief.',
+    enrollmentSincerely: 'Yours sincerely,',
+    enrollmentDateLine: 'Date: _______________',
+    enrollmentOfficialDoc: 'This is an official document issued by {school}.',
+
+    // Class Collection Sheet
+    classCollectionSheetTitle: 'Class Collection Sheet',
+    selectClassPrompt: 'Select a class to view',
+    collectionSheetNo: 'No.',
+    collectionSheetStudent: 'Student Name',
+    collectionSheetFeeDesc: 'Fee Description',
+    collectionSheetType: 'Type',
+    collectionSheetDueDate: 'Due Date',
+    collectionSheetAmountDue: 'Amount Due',
+    collectionSheetDiscount: 'Discount',
+    collectionSheetBalance: 'Balance',
+    collectionSheetCollected: 'Collected',
+    collectionSheetRemarks: 'Remarks',
+    collectionSheetTotal: 'Total',
+    collectionSheetPreparedBy: 'Prepared by',
+    collectionSheetVerifiedBy: 'Verified by',
+    collectionSheetSignatureLine: '________________________',
+    collectionSheetDateLine: 'Date: ___________',
+    collectionSheetNoRecords: 'No records found for this class and month.',
+    printCollectionSheet: 'Print Collection Sheet',
+
+    // Monthly Collection Report
+    monthlyReportTitle: 'Monthly Collection Report',
+    monthlyReportGenerated: 'Generated on',
+    monthlyReportByClass: 'By Class',
+    monthlyReportByType: 'By Fee Type',
+    monthlyReportOutstanding: 'Outstanding Accounts',
+    monthlyReportStudents: 'Students',
+    monthlyReportCharged: 'Charged',
+    monthlyReportCollected: 'Collected',
+    monthlyReportDiscount: 'Discount',
+    monthlyReportUnpaid: 'Unpaid',
+    monthlyReportPartial: 'Partial',
+    monthlyReportRecords: 'Records',
+    monthlyReport: 'Monthly Report',
+
+    // Annual Report
+    annualReport: 'Annual Report',
+    annualReportTitle: 'Annual Financial Report',
+    collectionRate: 'Collection Rate',
+    feeRecordSummary: '{count} fee records | {paid} paid | {overdue} overdue',
+    annualReportFootnote:
+      'This report is generated for financial year {year}. For LHDN or audit purposes, retain this document.',
+    printAnnualReport: 'Print Report',
+
+    // Ledger View (Fee Statement)
+    ledgerView: 'Ledger View',
+    ledgerTitle: 'Payment Ledger',
+    ledgerCharge: 'Charge',
+    ledgerPayment: 'Payment',
+    ledgerBalance: 'Balance',
+    ledgerOpeningBalance: 'Opening Balance',
+    ledgerClosingBalance: 'Closing Balance',
   },
 
   ms: {
@@ -523,6 +620,13 @@ export const translations = {
     adminPortal: 'Portal Pentadbir',
     administrator: 'Pentadbir',
     logout: 'Log Keluar',
+
+    // Command palette
+    searchPlaceholder: 'Cari halaman, pelajar, kelas...',
+    pages: 'Halaman',
+    navigate: 'navigasi',
+    select: 'pilih',
+    noResultsFound: 'Tiada hasil ditemui',
 
     // Settings panel
     settings: 'Tetapan',
@@ -543,6 +647,9 @@ export const translations = {
     noAttendanceYet: 'Tiada kehadiran direkodkan hari ini',
     noDataYet: 'Tiada data untuk bulan ini',
     noDataYetSub: 'Menunjukkan pecahan status apabila kehadiran direkodkan bulan ini',
+    attendanceTrend: 'Trend Kehadiran',
+    feeCollectionTrend: 'Kutipan Yuran',
+    noTrendData: 'Data tidak mencukupi untuk menunjukkan trend',
     ofStudents: 'daripada {n} pelajar',
 
     // Students page
@@ -1027,6 +1134,93 @@ export const translations = {
     // Landing page — Footer quick links
     footerQuickLinks: 'Pautan Pantas',
     footerAboutSchool: 'Tentang {name}',
+
+    // Settings — principal & registration
+    settingsPrincipalName: 'Nama Pengetua',
+    settingsPrincipalNamePlaceholder: 'cth. Pn. Siti Aminah',
+    settingsRegistrationNumber: 'Nombor Pendaftaran',
+    settingsRegistrationNumberPlaceholder: 'cth. JPN/SK/2023/001',
+
+    // Fee Invoice / Overdue Notice
+    feeInvoiceTitle: 'Invois Fi',
+    overdueNoticeTitle: 'Notis Baki Tertunggak',
+    invoiceNo: 'No. Invois',
+    daysOverdue: '{n} hari tertunggak',
+    paymentInstructions: 'Sila buat pembayaran kepada',
+    computerGeneratedDoc: 'Ini adalah dokumen yang dijana oleh komputer.',
+    signaturePrincipal: 'Pengetua',
+    netPayable: 'Bersih Perlu Dibayar',
+    amountPaidLabel: 'Amaun Dibayar',
+    outstandingBalance: 'Baki Tertunggak',
+
+    // Enrollment Letter
+    enrollmentLetterTitle: 'Surat Pengesahan Pendaftaran',
+    enrollmentRef: 'Rujukan',
+    enrollmentDear: 'Kepada {name},',
+    enrollmentBody:
+      'Kami dengan sukacitanya mengesahkan bahawa {student} telah berjaya didaftarkan di {school} untuk tahun akademik {year}.',
+    enrollmentClassAssigned: 'Kelas Ditetapkan',
+    enrollmentRegFee: 'Yuran Pendaftaran',
+    enrollmentReceiptNo: 'No. Resit',
+    enrollmentLhdn:
+      'Sila simpan surat ini untuk rekod cukai anda. Yuran pendaftaran yang dibayar kepada institusi pendidikan swasta mungkin layak untuk pelepasan cukai pendidikan anak di bawah LHDN.',
+    enrollmentSincerely: 'Yang benar,',
+    enrollmentDateLine: 'Tarikh: _______________',
+    enrollmentOfficialDoc: 'Ini adalah dokumen rasmi yang dikeluarkan oleh {school}.',
+
+    // Class Collection Sheet
+    classCollectionSheetTitle: 'Lembaran Kutipan Kelas',
+    selectClassPrompt: 'Pilih kelas untuk melihat',
+    collectionSheetNo: 'Bil.',
+    collectionSheetStudent: 'Nama Pelajar',
+    collectionSheetFeeDesc: 'Penerangan Fi',
+    collectionSheetType: 'Jenis',
+    collectionSheetDueDate: 'Tarikh Akhir',
+    collectionSheetAmountDue: 'Amaun Perlu Dibayar',
+    collectionSheetDiscount: 'Diskaun',
+    collectionSheetBalance: 'Baki',
+    collectionSheetCollected: 'Dikutip',
+    collectionSheetRemarks: 'Catatan',
+    collectionSheetTotal: 'Jumlah',
+    collectionSheetPreparedBy: 'Disediakan oleh',
+    collectionSheetVerifiedBy: 'Disahkan oleh',
+    collectionSheetSignatureLine: '________________________',
+    collectionSheetDateLine: 'Tarikh: ___________',
+    collectionSheetNoRecords: 'Tiada rekod ditemui untuk kelas dan bulan ini.',
+    printCollectionSheet: 'Cetak Lembaran Kutipan',
+
+    // Monthly Collection Report
+    monthlyReportTitle: 'Laporan Kutipan Bulanan',
+    monthlyReportGenerated: 'Dijana pada',
+    monthlyReportByClass: 'Mengikut Kelas',
+    monthlyReportByType: 'Mengikut Jenis Fi',
+    monthlyReportOutstanding: 'Akaun Tertunggak',
+    monthlyReportStudents: 'Pelajar',
+    monthlyReportCharged: 'Dicaj',
+    monthlyReportCollected: 'Dikutip',
+    monthlyReportDiscount: 'Diskaun',
+    monthlyReportUnpaid: 'Belum Bayar',
+    monthlyReportPartial: 'Separa',
+    monthlyReportRecords: 'Rekod',
+    monthlyReport: 'Laporan Bulanan',
+
+    // Annual Report
+    annualReport: 'Laporan Tahunan',
+    annualReportTitle: 'Laporan Kewangan Tahunan',
+    collectionRate: 'Kadar Kutipan',
+    feeRecordSummary: '{count} rekod yuran | {paid} dibayar | {overdue} tertunggak',
+    annualReportFootnote:
+      'Laporan ini dijana untuk tahun kewangan {year}. Simpan dokumen ini untuk tujuan LHDN atau audit.',
+    printAnnualReport: 'Cetak Laporan',
+
+    // Ledger View (Fee Statement)
+    ledgerView: 'Paparan Lejar',
+    ledgerTitle: 'Lejar Pembayaran',
+    ledgerCharge: 'Cas',
+    ledgerPayment: 'Bayaran',
+    ledgerBalance: 'Baki',
+    ledgerOpeningBalance: 'Baki Pembuka',
+    ledgerClosingBalance: 'Baki Penutup',
   },
 } as const
 

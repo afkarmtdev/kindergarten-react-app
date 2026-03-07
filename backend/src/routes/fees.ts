@@ -158,6 +158,55 @@ fees.get('/summary', async (c) => {
   return c.json({ total_owed, total_paid, total_outstanding, overdue_count })
 })
 
+// GET /api/fees/trend?months=6
+fees.get(
+  '/trend',
+  zValidator(
+    'query',
+    z.object({
+      months: z.coerce.number().int().min(1).max(12).default(6),
+    })
+  ),
+  async (c) => {
+    const { months } = c.req.valid('query')
+
+    const now = new Date()
+    const startMonth = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
+    const startDate = startMonth.toISOString().split('T')[0]
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const endDate = endOfMonth.toISOString().split('T')[0]
+
+    const { data, error } = await supabase
+      .from('fee_records')
+      .select('amount_owed, amount_paid, discount_amount, due_date')
+      .gte('due_date', startDate)
+      .lte('due_date', endDate)
+
+    if (error) return c.json({ error: error.message }, 500)
+
+    const byMonth: Record<string, { owed: number; collected: number }> = {}
+    for (const row of data ?? []) {
+      const month = (row.due_date as string).substring(0, 7)
+      if (!byMonth[month]) byMonth[month] = { owed: 0, collected: 0 }
+      byMonth[month].owed += Number(row.amount_owed)
+      byMonth[month].collected += Number(row.amount_paid)
+    }
+
+    const result = Object.entries(byMonth)
+      .map(([month, { owed, collected }]) => ({ month, owed, collected }))
+      .sort((a, b) => a.month.localeCompare(b.month))
+
+    return c.json(result)
+  }
+)
+
+// Wrap a value in double-quotes and prefix with ' if it starts with a formula trigger
+// character (=, +, -, @, tab, CR) to prevent CSV formula injection in Excel/LibreOffice.
+function csvStr(v: string | null | undefined): string {
+  const s = String(v ?? '').replace(/"/g, '""')
+  return `"${/^[=+\-@\t\r]/.test(s) ? `'${s}` : s}"`
+}
+
 // GET /api/fees/export?month=YYYY-MM
 fees.get('/export', async (c) => {
   const month = c.req.query('month')
@@ -180,16 +229,16 @@ fees.get('/export', async (c) => {
   const rows = (data ?? []).map((r) => {
     const s = r.students as { full_name?: string; class_name?: string } | null
     return [
-      `"${s?.full_name ?? ''}"`,
-      `"${s?.class_name ?? ''}"`,
-      r.type,
-      `"${r.description}"`,
-      r.due_date ?? '',
+      csvStr(s?.full_name),
+      csvStr(s?.class_name),
+      csvStr(r.type),
+      csvStr(r.description),
+      csvStr(r.due_date),
       Number(r.amount_owed).toFixed(2),
       Number(r.discount_amount).toFixed(2),
       Number(r.amount_paid).toFixed(2),
-      r.status,
-      r.receipt_number ?? '',
+      csvStr(r.status),
+      csvStr(r.receipt_number),
     ].join(',')
   })
 
@@ -201,6 +250,7 @@ fees.get('/export', async (c) => {
 })
 
 // GET /api/fees/statement/:studentId?year=YYYY
+// TODO: Add per-student ownership check before introducing parent-scoped JWTs (IDOR risk).
 fees.get('/statement/:studentId', async (c) => {
   const { studentId } = c.req.param()
   const year = c.req.query('year') ?? new Date().getFullYear().toString()
@@ -299,7 +349,7 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
 
   let query = supabase
     .from('fee_records')
-    .select('*, students(full_name, class_name, photo_url)', { count: 'exact' })
+    .select('*, students(full_name, class_name, photo_url, parent_name)', { count: 'exact' })
     .order('due_date', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -327,18 +377,312 @@ fees.post('/', zValidator('json', recordSchema), async (c) => {
   const { data, error } = await supabase
     .from('fee_records')
     .insert({ ...body, amount_paid: 0, status })
-    .select('*, students(full_name, class_name, photo_url)')
+    .select('*, students(full_name, class_name, photo_url, parent_name)')
     .single()
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
 })
+
+// GET /api/fees/class-sheet?class_name=...&month=YYYY-MM
+fees.get(
+  '/class-sheet',
+  zValidator(
+    'query',
+    z.object({
+      class_name: z.string().min(1),
+      month: z.string().regex(/^\d{4}-\d{2}$/),
+    })
+  ),
+  async (c) => {
+    const { class_name, month } = c.req.valid('query')
+    const { start, end } = monthRange(month)
+
+    // Fetch all students in this class
+    const { data: students, error: studentsError } = await supabase
+      .from('students')
+      .select('id, full_name')
+      .eq('class_name', class_name)
+      .order('full_name', { ascending: true })
+
+    if (studentsError) return c.json({ error: studentsError.message }, 500)
+    if (!students || students.length === 0) {
+      return c.json({
+        class_name,
+        month,
+        students: [],
+        totals: { amount_owed: 0, amount_paid: 0, balance: 0 },
+      })
+    }
+
+    const studentIds = students.map((s) => s.id)
+
+    const { data: records, error: recordsError } = await supabase
+      .from('fee_records')
+      .select(
+        'id, student_id, description, type, due_date, amount_owed, discount_amount, amount_paid, status'
+      )
+      .in('student_id', studentIds)
+      .gte('due_date', start)
+      .lte('due_date', end)
+      .order('due_date', { ascending: true })
+
+    if (recordsError) return c.json({ error: recordsError.message }, 500)
+
+    const recordsByStudent: Record<string, typeof records> = {}
+    for (const r of records ?? []) {
+      if (!recordsByStudent[r.student_id]) recordsByStudent[r.student_id] = []
+      recordsByStudent[r.student_id].push(r)
+    }
+
+    const studentRows = students.map((s) => ({
+      student_id: s.id,
+      student_name: s.full_name,
+      records: (recordsByStudent[s.id] ?? []).map((r) => ({
+        id: r.id,
+        description: r.description,
+        type: r.type,
+        due_date: r.due_date,
+        amount_owed: Number(r.amount_owed),
+        discount_amount: Number(r.discount_amount),
+        amount_paid: Number(r.amount_paid),
+        status: r.status,
+      })),
+    }))
+
+    const allRecords = records ?? []
+    const totals = {
+      amount_owed: allRecords.reduce((s, r) => s + Number(r.amount_owed), 0),
+      amount_paid: allRecords.reduce((s, r) => s + Number(r.amount_paid), 0),
+      balance: allRecords.reduce(
+        (s, r) => s + (Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)),
+        0
+      ),
+    }
+
+    return c.json({ class_name, month, students: studentRows, totals })
+  }
+)
+
+// GET /api/fees/monthly-report?month=YYYY-MM
+fees.get(
+  '/monthly-report',
+  zValidator(
+    'query',
+    z.object({
+      month: z.string().regex(/^\d{4}-\d{2}$/),
+    })
+  ),
+  async (c) => {
+    const { month } = c.req.valid('query')
+    const { start, end } = monthRange(month)
+
+    const { data: records, error } = await supabase
+      .from('fee_records')
+      .select(
+        'id, student_id, type, description, amount_owed, discount_amount, amount_paid, status, due_date, students(full_name, class_name)'
+      )
+      .gte('due_date', start)
+      .lte('due_date', end)
+
+    if (error) return c.json({ error: error.message }, 500)
+
+    const all = records ?? []
+
+    // Overall totals
+    const totalCharged = all.reduce((s, r) => s + Number(r.amount_owed), 0)
+    const totalCollected = all.reduce((s, r) => s + Number(r.amount_paid), 0)
+    const totalOutstanding = all
+      .filter((r) => r.status !== 'paid' && r.status !== 'waived')
+      .reduce(
+        (s, r) => s + (Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)),
+        0
+      )
+
+    // By class
+    const byClassMap: Record<
+      string,
+      {
+        student_ids: Set<string>
+        charged: number
+        collected: number
+        discount: number
+        outstanding: number
+        unpaid_count: number
+        partial_count: number
+      }
+    > = {}
+
+    for (const r of all) {
+      const cls = (r.students as { class_name?: string } | null)?.class_name ?? 'Unknown'
+      if (!byClassMap[cls]) {
+        byClassMap[cls] = {
+          student_ids: new Set(),
+          charged: 0,
+          collected: 0,
+          discount: 0,
+          outstanding: 0,
+          unpaid_count: 0,
+          partial_count: 0,
+        }
+      }
+      byClassMap[cls].student_ids.add(r.student_id)
+      byClassMap[cls].charged += Number(r.amount_owed)
+      byClassMap[cls].collected += Number(r.amount_paid)
+      byClassMap[cls].discount += Number(r.discount_amount)
+      if (r.status !== 'paid' && r.status !== 'waived') {
+        byClassMap[cls].outstanding +=
+          Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)
+      }
+      if (r.status === 'unpaid') byClassMap[cls].unpaid_count++
+      if (r.status === 'partial') byClassMap[cls].partial_count++
+    }
+
+    const by_class = Object.entries(byClassMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([class_name, v]) => ({
+        class_name,
+        student_count: v.student_ids.size,
+        charged: v.charged,
+        collected: v.collected,
+        discount: v.discount,
+        outstanding: v.outstanding,
+        unpaid_count: v.unpaid_count,
+        partial_count: v.partial_count,
+      }))
+
+    // By type
+    const byTypeMap: Record<string, { charged: number; collected: number; outstanding: number }> =
+      {}
+    for (const r of all) {
+      if (!byTypeMap[r.type]) byTypeMap[r.type] = { charged: 0, collected: 0, outstanding: 0 }
+      byTypeMap[r.type].charged += Number(r.amount_owed)
+      byTypeMap[r.type].collected += Number(r.amount_paid)
+      if (r.status !== 'paid' && r.status !== 'waived') {
+        byTypeMap[r.type].outstanding +=
+          Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)
+      }
+    }
+
+    const by_type = Object.entries(byTypeMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([type, v]) => ({ type, ...v }))
+
+    // Outstanding accounts
+    const outstanding_accounts = all
+      .filter((r) => r.status === 'unpaid' || r.status === 'partial')
+      .map((r) => {
+        const s = r.students as { full_name?: string; class_name?: string } | null
+        return {
+          student_name: s?.full_name ?? '—',
+          class_name: s?.class_name ?? '—',
+          description: r.description,
+          due_date: r.due_date,
+          amount_owed: Number(r.amount_owed),
+          amount_paid: Number(r.amount_paid),
+          balance: Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid),
+        }
+      })
+      .sort(
+        (a, b) =>
+          a.class_name.localeCompare(b.class_name) || a.student_name.localeCompare(b.student_name)
+      )
+
+    return c.json({
+      month,
+      totals: {
+        charged: totalCharged,
+        collected: totalCollected,
+        outstanding: totalOutstanding,
+        record_count: all.length,
+      },
+      by_class,
+      by_type,
+      outstanding_accounts,
+    })
+  }
+)
+
+// GET /api/fees/annual-report?year=YYYY
+fees.get(
+  '/annual-report',
+  zValidator(
+    'query',
+    z.object({
+      year: z.coerce.number().int().min(2020).max(2099).default(new Date().getFullYear()),
+    })
+  ),
+  async (c) => {
+    const { year } = c.req.valid('query')
+
+    const { data, error } = await supabase
+      .from('fee_records')
+      .select('id, type, amount_owed, amount_paid, discount_amount, status, due_date, created_at')
+      .gte('due_date', `${year}-01-01`)
+      .lte('due_date', `${year}-12-31`)
+
+    if (error) return c.json({ error: error.message }, 500)
+
+    const records = data ?? []
+    const today = new Date().toISOString().split('T')[0]
+
+    // Group by type
+    const byTypeMap: Record<
+      string,
+      { total_owed: number; total_paid: number; total_discounts: number; outstanding: number }
+    > = {}
+
+    for (const r of records) {
+      if (!byTypeMap[r.type]) {
+        byTypeMap[r.type] = { total_owed: 0, total_paid: 0, total_discounts: 0, outstanding: 0 }
+      }
+      byTypeMap[r.type].total_owed += Number(r.amount_owed)
+      byTypeMap[r.type].total_paid += Number(r.amount_paid)
+      byTypeMap[r.type].total_discounts += Number(r.discount_amount)
+      if (r.status !== 'paid' && r.status !== 'waived') {
+        byTypeMap[r.type].outstanding +=
+          Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)
+      }
+    }
+
+    const by_type = Object.entries(byTypeMap).map(([type, v]) => ({ type, ...v }))
+
+    const total_owed = records.reduce((s, r) => s + Number(r.amount_owed), 0)
+    const total_paid = records.reduce((s, r) => s + Number(r.amount_paid), 0)
+    const total_discounts = records.reduce((s, r) => s + Number(r.discount_amount), 0)
+    const outstanding = records
+      .filter((r) => r.status !== 'paid' && r.status !== 'waived')
+      .reduce(
+        (s, r) => s + (Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)),
+        0
+      )
+    const record_count = records.length
+    const paid_count = records.filter((r) => r.status === 'paid').length
+    const overdue_count = records.filter(
+      (r) => (r.status === 'unpaid' || r.status === 'partial') && r.due_date && r.due_date < today
+    ).length
+
+    return c.json({
+      year,
+      by_type,
+      totals: {
+        total_owed,
+        total_paid,
+        total_discounts,
+        outstanding,
+        record_count,
+        paid_count,
+        overdue_count,
+      },
+    })
+  }
+)
 
 // GET /api/fees/:id
 fees.get('/:id', async (c) => {
   const { id } = c.req.param()
   const { data, error } = await supabase
     .from('fee_records')
-    .select('*, students(full_name, class_name, photo_url)')
+    .select('*, students(full_name, class_name, photo_url, parent_name)')
     .eq('id', id)
     .single()
   if (error) return c.json({ error: error.message }, 404)
@@ -359,7 +703,7 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
 
   const balance =
     Number(record.amount_owed) - Number(record.discount_amount) - Number(record.amount_paid)
-  if (amount > balance + 0.01) {
+  if (amount > balance + 0.001) {
     return c.json(
       { error: `Payment amount exceeds outstanding balance of RM ${balance.toFixed(2)}` },
       400
@@ -390,7 +734,7 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
       paid_at: newStatus === 'paid' ? new Date().toISOString() : record.paid_at,
     })
     .eq('id', id)
-    .select('*, students(full_name, class_name, photo_url)')
+    .select('*, students(full_name, class_name, photo_url, parent_name)')
     .single()
 
   if (error) return c.json({ error: error.message }, 500)
@@ -426,7 +770,7 @@ fees.put(
       .from('fee_records')
       .update({ ...body, status })
       .eq('id', id)
-      .select('*, students(full_name, class_name, photo_url)')
+      .select('*, students(full_name, class_name, photo_url, parent_name)')
       .single()
 
     if (error) return c.json({ error: error.message }, 500)

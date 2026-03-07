@@ -44,6 +44,8 @@ export function SchoolInfoSection() {
     google_maps_embed_url: '',
     facebook_url: '',
     instagram_url: '',
+    principal_name: '',
+    registration_number: '',
   })
   const [isDirty, setIsDirty] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -66,6 +68,8 @@ export function SchoolInfoSection() {
         google_maps_embed_url,
         facebook_url,
         instagram_url,
+        principal_name,
+        registration_number,
       } = data.data
       setForm({
         school_name,
@@ -78,6 +82,8 @@ export function SchoolInfoSection() {
         google_maps_embed_url: google_maps_embed_url ?? '',
         facebook_url: facebook_url ?? '',
         instagram_url: instagram_url ?? '',
+        principal_name: principal_name ?? '',
+        registration_number: registration_number ?? '',
       })
       setIsDirty(false)
     }
@@ -236,6 +242,30 @@ export function SchoolInfoSection() {
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
                 placeholder={t('settingsEmailPlaceholder')}
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          {/* Principal Name + Registration Number */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className={labelCls}>{t('settingsPrincipalName')}</label>
+              <input
+                type="text"
+                value={form.principal_name}
+                onChange={(e) => set('principal_name', e.target.value)}
+                placeholder={t('settingsPrincipalNamePlaceholder')}
+                className={inputCls}
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelCls}>{t('settingsRegistrationNumber')}</label>
+              <input
+                type="text"
+                value={form.registration_number}
+                onChange={(e) => set('registration_number', e.target.value)}
+                placeholder={t('settingsRegistrationNumberPlaceholder')}
                 className={inputCls}
               />
             </div>

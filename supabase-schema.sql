@@ -183,6 +183,8 @@ create table school_info (
   google_maps_embed_url text not null default '',
   facebook_url         text not null default '',
   instagram_url        text not null default '',
+  principal_name       text not null default '',
+  registration_number  text not null default '',
   updated_at           timestamptz default now()
 );
 
@@ -192,7 +194,9 @@ create table school_info (
 --   add column if not exists operating_hours jsonb,
 --   add column if not exists google_maps_embed_url text not null default '',
 --   add column if not exists facebook_url text not null default '',
---   add column if not exists instagram_url text not null default '';
+--   add column if not exists instagram_url text not null default '',
+--   add column if not exists principal_name text not null default '',
+--   add column if not exists registration_number text not null default '';
 
 alter table school_info enable row level security;
 create policy "Auth users can read school info"   on school_info for select to authenticated using (true);

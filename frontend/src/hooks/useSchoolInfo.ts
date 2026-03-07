@@ -41,5 +41,7 @@ export function useSchoolInfo(options?: { public?: boolean }) {
     googleMapsEmbedUrl: info?.google_maps_embed_url ?? '',
     facebookUrl: info?.facebook_url ?? '',
     instagramUrl: info?.instagram_url ?? '',
+    principalName: info?.principal_name ?? '',
+    registrationNumber: info?.registration_number ?? '',
   }
 }

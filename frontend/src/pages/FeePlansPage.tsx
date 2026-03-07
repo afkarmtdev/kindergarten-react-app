@@ -103,7 +103,7 @@ export function FeePlansPage() {
             </p>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col md:flex-row gap-3">
           <SearchBar value={search} onChange={setSearch} placeholder={t('searchFeePlans')} />
           <button
             onClick={() => setModalPlan(null)}
@@ -117,7 +117,7 @@ export function FeePlansPage() {
 
       {/* Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
@@ -132,7 +132,7 @@ export function FeePlansPage() {
         />
       ) : (
         <div
-          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isFetching ? 'opacity-60' : ''}`}
         >
           {plans.map((plan) => (
             <div

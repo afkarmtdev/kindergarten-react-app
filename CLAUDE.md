@@ -409,6 +409,14 @@ Admin-managed parent testimonials shown on the landing page carousel.
 
 - [ ] Newsletter/Posts module — full-page TipTap WYSIWYG editor (StarterKit), draft/published states, auto-slug from title, cover image + photo gallery strip, public `/posts` listing + `/posts/:slug` reader pages, DOMPurify or `sanitize-html` for HTML sanitization on save; separate from Announcements (short notices stay as-is)
 
+- [ ] Simple Mode (home childcare profile) — a `business_type` field in `school_info` (`'kindergarten' | 'home_childcare'`); `useBusinessType()` hook reads it; toggleable in Settings. Changes: hides Classrooms module (sidebar + route), hides `class_name` on student form (defaults to single auto-created group), removes class filter on Attendance, landing page swaps content via per-mode translation key maps (hero copy, stats labels, feature cards, CTA text), sidebar nav filtered by `item.modes`. Backend unchanged — classrooms just go unused. Fees, gallery, announcements, testimonials, bear mascot all stay as-is.
+
+### Big / Future
+
+- [ ] Multi-tenant (SaaS) — add `schools` table + `school_id` FK on every resource table (row-level isolation); tenant resolved from subdomain or path (`schoolA.kindercare.app`); auth scoped per school; storage paths `bucket/{school_id}/...`; RLS rewritten to scope all queries by `school_id`. See Option A (data-driven) approach.
+- [ ] Per-school landing page — current LandingPage is already data-driven; add `hero_title`, `hero_subtitle`, `cta_text`, `primary_color` to `school_info`/`school_branding`; scope public API calls by school slug. Phase 2: curated theme variants (`LandingTheme = 'default' | 'minimal' | 'modern'`) — each a different section layout using the same data.
+- [ ] Plan-based feature gating — `plan` (`'free'|'basic'|'pro'`) + `plan_expires_at` columns on `schools` table. Backend: `PLAN_LIMITS` config (free: 20 students / 1 class / no exports; basic: unlimited / all core; pro: + custom landing + custom domain). Enforce at creation routes (count + reject), export routes (403), auth middleware (expiry check). Frontend: disabled buttons with upgrade tooltip, usage counter on dashboard ("18/20 students"), expiry banner at 7 days. Payment collection manual at first (bank transfer / ToyyibPay link, admin updates `plan_expires_at`); automate with ToyyibPay/Billplz webhooks at ~30+ schools.
+
 ### Low Priority / Nice to Have
 
 - [x] Attendance heatmap on student profile — implemented in `pages/student-profile/components/AttendanceHeatmap.tsx`

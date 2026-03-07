@@ -5,9 +5,10 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, Printer } from 'lucide-react'
+import { ChevronLeft, Printer, List } from 'lucide-react'
 import { feesApi } from '@/lib/api'
 import type { FeeRecord } from '@/types'
+import { computeLedgerRows } from '@/lib/ledger'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
@@ -18,6 +19,7 @@ export function FeeStatementPage() {
   const { schoolName, address, logoUrl } = useSchoolInfo()
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
+  const [ledgerView, setLedgerView] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: ['fee-statement', studentId, year],
@@ -89,6 +91,17 @@ export function FeeStatementPage() {
               ))}
             </select>
             <button
+              onClick={() => setLedgerView((v) => !v)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-semibold transition-colors ${
+                ledgerView
+                  ? 'border-kinder-blue bg-kinder-blue/10 text-kinder-blue dark:text-kinder-blue'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
+            >
+              <List size={15} />
+              {t('ledgerView')}
+            </button>
+            <button
               onClick={() => window.print()}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-kinder-orange text-white text-sm font-semibold hover:bg-orange-600 transition-colors"
             >
@@ -146,11 +159,103 @@ export function FeeStatementPage() {
               </div>
             )}
 
-            {/* Records table */}
+            {/* Records table / Ledger table */}
             {records.length === 0 ? (
               <div className="py-12 text-center text-gray-400 dark:text-gray-600">
                 No fee records for {year}
               </div>
+            ) : ledgerView ? (
+              (() => {
+                const ledgerRows = computeLedgerRows(records as FeeRecord[])
+                const closingBalance = ledgerRows.at(-1)?.running_balance ?? 0
+                return (
+                  <div>
+                    {/* Section title */}
+                    <div className="px-4 pt-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        {t('ledgerTitle')} — Running Balance Statement
+                      </p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60">
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              Date
+                            </th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              {t('feeDesc')}
+                            </th>
+                            <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              {t('feeType')}
+                            </th>
+                            <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              {t('ledgerCharge')}
+                            </th>
+                            <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              {t('ledgerPayment')}
+                            </th>
+                            <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                              {t('ledgerBalance')}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                          {ledgerRows.map((r) => (
+                            <tr
+                              key={r.id}
+                              className="hover:bg-gray-50/60 dark:hover:bg-gray-800/40"
+                            >
+                              <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                {r.due_date ?? r.created_at?.slice(0, 10) ?? '—'}
+                              </td>
+                              <td className="px-4 py-3 text-gray-800 dark:text-gray-200">
+                                {r.description}
+                              </td>
+                              <td className="px-4 py-3 text-gray-500 dark:text-gray-400 capitalize">
+                                {r.type}
+                              </td>
+                              <td className="px-4 py-3 text-right tabular-nums text-gray-700 dark:text-gray-300">
+                                {formatRM(r.charge)}
+                              </td>
+                              <td className="px-4 py-3 text-right tabular-nums text-green-600 dark:text-green-400">
+                                {r.payment > 0 ? formatRM(r.payment) : '—'}
+                              </td>
+                              <td
+                                className={`px-4 py-3 text-right tabular-nums font-semibold ${
+                                  r.running_balance > 0.001
+                                    ? 'text-red-600 dark:text-red-400'
+                                    : 'text-green-600 dark:text-green-400'
+                                }`}
+                              >
+                                {formatRM(r.running_balance)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 text-xs text-gray-500 dark:text-gray-400">
+                            <td colSpan={5} className="px-4 py-3 font-semibold">
+                              {t('ledgerOpeningBalance')}: RM 0.00
+                              <span className="mx-3">|</span>
+                              {t('ledgerClosingBalance')}:
+                            </td>
+                            <td
+                              className={`px-4 py-3 text-right tabular-nums font-extrabold text-sm ${
+                                closingBalance > 0.001
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : 'text-green-600 dark:text-green-400'
+                              }`}
+                            >
+                              {formatRM(closingBalance)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                )
+              })()
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

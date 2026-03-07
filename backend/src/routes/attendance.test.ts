@@ -213,6 +213,62 @@ describe('POST /bulk — bulk attendance', () => {
   })
 })
 
+// ── GET /stats/trend — Attendance trend ──────────────────────────────────────
+
+describe('GET /stats/trend — attendance trend', () => {
+  test('returns monthly trend data with correct grouping and rate calculation', async () => {
+    setMockResponse('attendance', {
+      data: [
+        { date: '2025-01-10', status: 'present' },
+        { date: '2025-01-11', status: 'late' },
+        { date: '2025-01-12', status: 'absent' },
+        { date: '2025-01-13', status: 'excused' },
+        { date: '2025-02-05', status: 'present' },
+        { date: '2025-02-06', status: 'present' },
+      ],
+      error: null,
+    })
+
+    const res = await attendance.request('/stats/trend?months=6')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json).toHaveLength(2)
+
+    // Jan: 4 total, 2 present (present + late), rate = 50
+    const jan = json.find((p: { month: string }) => p.month === '2025-01')
+    expect(jan.total).toBe(4)
+    expect(jan.present).toBe(2)
+    expect(jan.rate).toBe(50)
+
+    // Feb: 2 total, 2 present, rate = 100
+    const feb = json.find((p: { month: string }) => p.month === '2025-02')
+    expect(feb.total).toBe(2)
+    expect(feb.present).toBe(2)
+    expect(feb.rate).toBe(100)
+  })
+
+  test('returns empty array when no data', async () => {
+    setMockResponse('attendance', { data: [], error: null })
+
+    const res = await attendance.request('/stats/trend?months=3')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json).toEqual([])
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('attendance', {
+      data: null,
+      error: { message: 'query failed' },
+    })
+
+    const res = await attendance.request('/stats/trend?months=6')
+    expect(res.status).toBe(500)
+  })
+})
+
 // ── GET /stats/summary — Monthly summary ─────────────────────────────────────
 
 describe('GET /stats/summary — monthly summary', () => {

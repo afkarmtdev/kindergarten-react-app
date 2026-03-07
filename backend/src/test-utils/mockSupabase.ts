@@ -100,8 +100,12 @@ function createMockChain(response: MockResponse) {
     'limit',
     'gte',
     'lte',
+    'lt',
+    'gt',
     'is',
     'match',
+    'not',
+    'filter',
   ]
   for (const method of chainable) {
     chain[method] = () => chain
