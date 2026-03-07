@@ -420,10 +420,10 @@ Admin-managed parent testimonials shown on the landing page carousel.
 ### Low Priority / Nice to Have
 
 - [x] Attendance heatmap on student profile — implemented in `pages/student-profile/components/AttendanceHeatmap.tsx`
-- [ ] Dashboard charts (recharts — monthly trend line, class breakdown pie)
+- [x] Dashboard charts (recharts) — implemented in `pages/dashboard/components/AttendanceTrendChart.tsx` + `FeeCollectionChart.tsx`
 - [x] Print-friendly attendance sheet — implemented in `pages/attendance/components/AttendancePrintView.tsx`
 - [x] PWA / installable app for teachers marking attendance on phones — implemented with offline shell caching
-- [ ] Global search (Cmd+K) — command palette to jump to any student by name
+- [x] Global search (Cmd+K) — implemented in `components/ui/CommandPalette.tsx`, wired into AdminLayout
 
 ## Admin Bear (Sidebar Easter Egg)
 

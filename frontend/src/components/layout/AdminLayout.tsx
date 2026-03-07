@@ -18,6 +18,7 @@ import {
   Quote,
   Inbox,
   Search,
+  Palette,
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -58,6 +59,7 @@ export function AdminLayout() {
     { to: '/admin/attendance', icon: CalendarCheck, label: t('attendance') },
     { to: '/admin/classes', icon: School, label: t('classes') },
     { to: '/admin/gallery', icon: Images, label: t('gallery') },
+    { to: '/admin/art-wall', icon: Palette, label: t('artWall') },
     { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
     { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
     { to: '/admin/fees', icon: Wallet, label: t('fees') },

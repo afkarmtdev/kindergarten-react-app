@@ -3,7 +3,11 @@
     "allow": [
       "Bash(bun add sonner)",
       "Bash(bun add pino pino-pretty)",
-      "Bash(bun run tsc --noEmit)"
+      "Bash(bun run tsc --noEmit)",
+      "Bash(bun run lint)",
+      "Bash(bun run test:backend)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(bunx --bun tsc --noEmit)"
     ]
   }
 }

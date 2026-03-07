@@ -292,6 +292,20 @@ export interface AnnualReportResponse {
   }
 }
 
+// ─── Art Wall ─────────────────────────────────────────────────────────────────
+export interface ArtWallItem {
+  id: string
+  photo_url: string
+  caption?: string
+  student_id?: string | null
+  student_name?: string | null
+  artwork_date?: string | null
+  display_order: number
+  is_visible: boolean
+  tilt_angle: number | null // null = auto (getRotation hash); range: -15 to 15
+  created_at: string
+}
+
 // ─── Inquiries ─────────────────────────────────────────────────────────────────
 export interface Inquiry {
   id: string

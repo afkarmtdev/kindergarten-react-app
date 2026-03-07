@@ -40,6 +40,7 @@ import schoolInfo from './routes/schoolInfo'
 import testimonials from './routes/testimonials'
 import inquiries from './routes/inquiries'
 import inquiriesAdmin from './routes/inquiriesAdmin'
+import artWall from './routes/artWall'
 import { authMiddleware } from './middleware/auth'
 import { supabase } from './db/supabase'
 import { logger } from './lib/logger'
@@ -119,6 +120,26 @@ app.get('/api/public/school-info', async (c) => {
   return c.json({ data })
 })
 
+// Public art wall — visible items only, paginated (LandingPage visitors)
+app.get('/api/public/art-wall', async (c) => {
+  const page = Math.max(1, Number(c.req.query('page') ?? 1))
+  const limit = Math.min(24, Math.max(1, Number(c.req.query('limit') ?? 8)))
+  const offset = (page - 1) * limit
+  const { data, error, count } = await supabase
+    .from('art_wall')
+    .select('*', { count: 'exact' })
+    .eq('is_visible', true)
+    .order('display_order', { ascending: true })
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+  if (error) return c.json({ error: error.message }, 500)
+  const total = count ?? 0
+  return c.json({
+    data: data ?? [],
+    meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+  })
+})
+
 // Public inquiries — no auth required (LandingPage enrollment form)
 app.route('/api/public/inquiries', inquiries)
 
@@ -135,6 +156,7 @@ app.route('/api/fees', fees)
 app.route('/api/school-info', schoolInfo)
 app.route('/api/testimonials', testimonials)
 app.route('/api/inquiries', inquiriesAdmin)
+app.route('/api/art-wall', artWall)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))

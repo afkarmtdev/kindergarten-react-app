@@ -118,7 +118,7 @@ export const translations = {
     capacityLabel: 'Capacity',
 
     // Photo upload
-    photo: 'Photo (optional)',
+    photo: 'Photo',
     uploadPhoto: 'Upload photo',
     changePhoto: 'Change photo',
     removePhoto: 'Remove photo',
@@ -223,6 +223,22 @@ export const translations = {
     noGalleryPhotos: 'No photos yet',
     addFirstPhoto: 'Add your first gallery photo to get started!',
     removePhotoConfirm: 'Remove photo "{caption}"?',
+
+    // Admin — Art Wall
+    artWall: 'Art Wall',
+    artWallSubtitle: 'Pin board of student artwork',
+    addArtwork: 'Add Artwork',
+    editArtwork: 'Edit Artwork',
+    noArtwork: 'No artwork yet',
+    addFirstArtwork: 'Pin the first masterpiece!',
+    artworkDate: 'Artwork Date',
+    selectStudent: 'Select Student',
+    artistName: 'Artist',
+    ourLittleArtists: 'Our Little Artists',
+    artWallLandingSubtitle: 'Masterpieces from our creative stars',
+    studentArtwork: 'Student Artwork',
+    showMore: 'Show more',
+    showLess: 'Show less',
 
     // Admin — Announcements
     announcements: 'Announcements',
@@ -728,7 +744,7 @@ export const translations = {
     capacityLabel: 'Kapasiti',
 
     // Photo upload
-    photo: 'Foto (pilihan)',
+    photo: 'Foto',
     uploadPhoto: 'Muat naik foto',
     changePhoto: 'Tukar foto',
     removePhoto: 'Buang foto',
@@ -834,6 +850,22 @@ export const translations = {
     noGalleryPhotos: 'Tiada foto lagi',
     addFirstPhoto: 'Tambah foto galeri pertama anda untuk bermula!',
     removePhotoConfirm: 'Buang foto "{caption}"?',
+
+    // Admin — Art Wall
+    artWall: 'Galeri Seni',
+    artWallSubtitle: 'Papan pin karya seni pelajar',
+    addArtwork: 'Tambah Karya Seni',
+    editArtwork: 'Sunting Karya Seni',
+    noArtwork: 'Belum ada karya seni',
+    addFirstArtwork: 'Sematkan karya pertama!',
+    artworkDate: 'Tarikh Karya',
+    selectStudent: 'Pilih Pelajar',
+    artistName: 'Pelukis',
+    ourLittleArtists: 'Artis Cilik Kami',
+    artWallLandingSubtitle: 'Karya agung dari bintang kreatif kami',
+    studentArtwork: 'Karya Seni Pelajar',
+    showMore: 'Tunjuk lagi',
+    showLess: 'Tunjuk kurang',
 
     // Admin — Announcements
     announcements: 'Pengumuman',

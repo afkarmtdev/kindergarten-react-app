@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Star,
@@ -19,16 +19,20 @@ import {
   Users,
   School,
   Award,
+  Palette,
+  ChevronDown,
 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useFadeIn } from '@/hooks/useFadeIn'
-import { galleryApi, announcementsApi, testimonialsApi } from '@/lib/api'
+import { galleryApi, announcementsApi, testimonialsApi, artWallApi } from '@/lib/api'
+import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { APP_NAME } from '@/lib/version'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './components/Wave'
+import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { StatCounter } from './components/StatCounter'
 import { TypedText } from './components/TypedText'
 import { FeatureCard } from './components/FeatureCard'
@@ -64,9 +68,11 @@ export function LandingPage() {
   const [isPaused, setIsPaused] = useState(false)
 
   const galleryScrollRef = useRef<HTMLDivElement>(null)
+  const artWallHeadingRef = useRef<HTMLElement>(null)
 
   const featuresFadeIn = useFadeIn()
   const galleryFadeIn = useFadeIn()
+  const artWallFadeIn = useFadeIn()
   const noticesFadeIn = useFadeIn()
   const testimonialsFadeIn = useFadeIn()
 
@@ -90,6 +96,48 @@ export function LandingPage() {
     staleTime: 5 * 60 * 1000,
   })
   const testimonials = testimonialsData?.data ?? []
+
+  const {
+    data: artWallInfiniteData,
+    fetchNextPage: fetchMoreArtwork,
+    hasNextPage: hasMoreArtwork,
+    isFetchingNextPage: isLoadingMoreArtwork,
+  } = useInfiniteQuery({
+    queryKey: ['art-wall-public'],
+    queryFn: ({ pageParam }) => artWallApi.getPublic({ page: pageParam as number, limit: 8 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: {
+      data: import('@/types').ArtWallItem[]
+      meta: { page: number; totalPages: number }
+    }) => (lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined),
+    staleTime: 60_000,
+  })
+  const allArtWallItems = (artWallInfiniteData?.pages.flatMap(
+    (p: { data: import('@/types').ArtWallItem[] }) => p.data
+  ) ?? []) as import('@/types').ArtWallItem[]
+  const [displayedCount, setDisplayedCount] = useState(8)
+  // Track which index onwards should animate in — reset after animation completes
+  const animatedFromIdx = useRef(-1)
+  const artWallItems = allArtWallItems.slice(0, displayedCount)
+  const hasMoreToShow = displayedCount < allArtWallItems.length || !!hasMoreArtwork
+
+  function handleShowMore() {
+    const newCount = displayedCount + 4
+    animatedFromIdx.current = artWallItems.length
+    if (newCount > allArtWallItems.length && hasMoreArtwork) {
+      fetchMoreArtwork().then(() => setDisplayedCount(newCount))
+    } else {
+      setDisplayedCount(newCount)
+    }
+    setTimeout(() => {
+      animatedFromIdx.current = -1
+    }, 600)
+  }
+
+  function handleShowLess() {
+    setDisplayedCount(8)
+    artWallHeadingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   useEffect(() => {
     const onScroll = () => {
@@ -703,6 +751,100 @@ export function LandingPage() {
           </div>
         )}
       </section>
+
+      {/* ════════════════════════════════════════════════════════
+          OUR LITTLE ARTISTS — art wall pin board
+      ════════════════════════════════════════════════════════ */}
+      {artWallItems.length > 0 && (
+        <section
+          ref={artWallHeadingRef}
+          className="relative overflow-hidden bg-amber-50 dark:bg-gray-950 py-16 md:py-24 transition-colors duration-200"
+        >
+          {/* Glimmering stars — dark mode only, outside the cork border */}
+          <StarField variant="a" />
+          <div
+            ref={artWallFadeIn.ref}
+            className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center ${artWallFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+          >
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-kinder-yellow/20 dark:bg-kinder-yellow/10 mb-4">
+              <Palette size={28} className="text-kinder-yellow" />
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-yellow to-kinder-green bg-clip-text text-transparent mb-4 leading-tight">
+              {t('ourLittleArtists')}
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
+              {t('artWallLandingSubtitle')}
+            </p>
+          </div>
+
+          {/* Artwork board — framed cork board with border, matching admin page */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+              className="bg-amber-100/80 dark:bg-amber-950/40 rounded-3xl p-6 md:p-8 border border-amber-300/60 dark:border-amber-800/30"
+              style={darkMode ? CORK_STYLE_DARK : CORK_STYLE}
+            >
+              {/* Fix 2: pt-8 gives 32px above first row so -top-3 pins are never clipped */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 pt-8 pb-2">
+                {artWallItems.map((item, idx) => {
+                  const nudgeX = ((idx * 7 + (idx % 4) * 3) % 5) - 2
+                  const isNew = animatedFromIdx.current >= 0 && idx >= animatedFromIdx.current
+                  return (
+                    <div
+                      key={item.id}
+                      className={`hover:z-10 ${isNew ? 'lp-pin-in' : ''}`}
+                      style={{
+                        transform: `translateX(${nudgeX}px)`,
+                        animationDelay: isNew ? `${(idx - animatedFromIdx.current) * 40}ms` : '0ms',
+                      }}
+                    >
+                      <ArtworkCard item={item} design="polaroid" size="md" />
+                    </div>
+                  )
+                })}
+                {/* Skeleton cards while next page loads */}
+                {isLoadingMoreArtwork &&
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={`skel-${i}`}
+                      className="break-inside-avoid mb-6 animate-pulse relative"
+                    >
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-5 h-5 rounded-full bg-amber-300 dark:bg-gray-600" />
+                      <div className="bg-amber-50/60 dark:bg-gray-900/60 rounded-2xl shadow-sm border border-amber-200/40 dark:border-gray-800/40 overflow-hidden pt-2">
+                        <div className="rounded-xl bg-amber-200/60 dark:bg-gray-700 mx-2 aspect-square" />
+                        <div className="m-2.5 h-3 bg-amber-200/60 dark:bg-gray-700 rounded w-3/4" />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Show More / Show Less */}
+              {(hasMoreToShow || displayedCount > 8) && (
+                <div className="flex justify-center gap-3 mt-8">
+                  {hasMoreToShow && (
+                    <button
+                      onClick={handleShowMore}
+                      disabled={isLoadingMoreArtwork}
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border border-amber-300/40 dark:border-gray-700 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:shadow-md transition-all duration-200 disabled:opacity-50"
+                    >
+                      {t('showMore')}
+                      <ChevronDown size={16} />
+                    </button>
+                  )}
+                  {displayedCount > 8 && (
+                    <button
+                      onClick={handleShowLess}
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border border-amber-300/40 dark:border-gray-700 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:shadow-md transition-all duration-200"
+                    >
+                      {t('showLess')}
+                      <ChevronDown size={16} className="rotate-180" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════════════════════
           NOTICES
