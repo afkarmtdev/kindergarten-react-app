@@ -6,9 +6,10 @@ import { artWallApi } from '@/lib/api'
 import { useArtWallStore } from '@/store/artWallStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
-import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
+import { EmptyState } from '@/components/ui/Skeletons'
 import { ArtWallModal } from '@/components/admin/ArtWallModal'
 import { ArtworkCard } from './components/ArtworkCard'
+import { ArtworkCardSkeleton } from './components/ArtworkCardSkeleton'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { CORK_STYLE, CORK_STYLE_DARK } from './constants'
@@ -128,9 +129,9 @@ export function ArtWallPage() {
           className={`transition-opacity duration-200 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}
         >
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-6 pt-8">
               {Array.from({ length: LIMIT }).map((_, i) => (
-                <ClassCardSkeleton key={i} />
+                <ArtworkCardSkeleton key={i} design="polaroid" size="lg" index={i} />
               ))}
             </div>
           ) : items.length === 0 ? (

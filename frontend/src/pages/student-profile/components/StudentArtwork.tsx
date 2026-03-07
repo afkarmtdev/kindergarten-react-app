@@ -6,6 +6,7 @@ import { Pagination } from '@/components/ui/Pagination'
 import { useT } from '@/hooks/useT'
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
+import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
 import { useSettingsStore } from '@/store/settingsStore'
 const LIMIT = 6
 
@@ -37,16 +38,9 @@ export function StudentArtwork({ studentId }: { studentId: string }) {
             className="bg-amber-100/80 dark:bg-amber-950/40 rounded-2xl p-4 border border-amber-300/60 dark:border-amber-800/30"
             style={darkMode ? CORK_STYLE_DARK : CORK_STYLE}
           >
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
-                    <div className="aspect-[4/3] bg-gray-200 dark:bg-gray-700" />
-                    <div className="p-2">
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                    </div>
-                  </div>
-                </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 pt-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <ArtworkCardSkeleton key={i} design="polaroid" size="sm" index={i} />
               ))}
             </div>
           </div>

@@ -4,7 +4,7 @@ import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { getRotation, getPushpinColor } from '../constants'
 import type { ArtWallItem } from '@/types'
 
-type Size = 'sm' | 'md' | 'lg'
+export type Size = 'sm' | 'md' | 'lg'
 
 interface Props {
   item: ArtWallItem
@@ -14,7 +14,10 @@ interface Props {
   onDelete?: (item: ArtWallItem) => void
 }
 
-const PIN: Record<Size, { head: string; highlight: string; needle: string; offset: string }> = {
+export const PIN: Record<
+  Size,
+  { head: string; highlight: string; needle: string; offset: string }
+> = {
   sm: {
     head: 'w-4 h-4',
     highlight: 'top-0.5 left-1 w-1 h-0.5',
@@ -35,7 +38,7 @@ const PIN: Record<Size, { head: string; highlight: string; needle: string; offse
   },
 }
 
-const POLAROID: Record<
+export const POLAROID: Record<
   Size,
   {
     frame: string

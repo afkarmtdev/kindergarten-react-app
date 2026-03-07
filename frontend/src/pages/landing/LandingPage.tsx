@@ -33,6 +33,7 @@ import { APP_NAME } from '@/lib/version'
 import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
+import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
 import { StatCounter } from './components/StatCounter'
 import { TypedText } from './components/TypedText'
 import { FeatureCard } from './components/FeatureCard'
@@ -804,22 +805,27 @@ export function LandingPage() {
                 {/* Skeleton cards while next page loads */}
                 {isLoadingMoreArtwork &&
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div
+                    <ArtworkCardSkeleton
                       key={`skel-${i}`}
-                      className="break-inside-avoid mb-6 animate-pulse relative"
-                    >
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-5 h-5 rounded-full bg-amber-300 dark:bg-gray-600" />
-                      <div className="bg-amber-50/60 dark:bg-gray-900/60 rounded-2xl shadow-sm border border-amber-200/40 dark:border-gray-800/40 overflow-hidden pt-2">
-                        <div className="rounded-xl bg-amber-200/60 dark:bg-gray-700 mx-2 aspect-square" />
-                        <div className="m-2.5 h-3 bg-amber-200/60 dark:bg-gray-700 rounded w-3/4" />
-                      </div>
-                    </div>
+                      design="polaroid"
+                      size="md"
+                      index={artWallItems.length + i}
+                    />
                   ))}
               </div>
 
               {/* Show More / Show Less */}
               {(hasMoreToShow || displayedCount > 8) && (
                 <div className="flex justify-center gap-3 mt-8">
+                  {displayedCount > 8 && (
+                    <button
+                      onClick={handleShowLess}
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border border-amber-300/40 dark:border-gray-700 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:shadow-md transition-all duration-200"
+                    >
+                      <ChevronDown size={16} className="rotate-180" />
+                      {t('showLess')}
+                    </button>
+                  )}
                   {hasMoreToShow && (
                     <button
                       onClick={handleShowMore}
@@ -828,15 +834,6 @@ export function LandingPage() {
                     >
                       {t('showMore')}
                       <ChevronDown size={16} />
-                    </button>
-                  )}
-                  {displayedCount > 8 && (
-                    <button
-                      onClick={handleShowLess}
-                      className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border border-amber-300/40 dark:border-gray-700 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:shadow-md transition-all duration-200"
-                    >
-                      {t('showLess')}
-                      <ChevronDown size={16} className="rotate-180" />
                     </button>
                   )}
                 </div>
