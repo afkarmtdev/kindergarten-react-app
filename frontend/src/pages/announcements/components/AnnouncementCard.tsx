@@ -23,7 +23,7 @@ export function AnnouncementCard({
       className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 ${
         a.is_pinned
           ? 'border-kinder-yellow dark:border-kinder-yellow'
-          : 'border-gray-100 dark:border-gray-800'
+          : 'border-gray-200 dark:border-gray-800'
       }`}
     >
       {/* Banner */}

@@ -18,6 +18,7 @@ import {
   Quote,
   Inbox,
   Search,
+  Palette,
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -58,6 +59,7 @@ export function AdminLayout() {
     { to: '/admin/attendance', icon: CalendarCheck, label: t('attendance') },
     { to: '/admin/classes', icon: School, label: t('classes') },
     { to: '/admin/gallery', icon: Images, label: t('gallery') },
+    { to: '/admin/art-wall', icon: Palette, label: t('artWall') },
     { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
     { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
     { to: '/admin/fees', icon: Wallet, label: t('fees') },
@@ -75,14 +77,14 @@ export function AdminLayout() {
   const SidebarInner = ({ onNavClick }: { onNavClick?: () => void }) => (
     <>
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3">
           <AdminBearLogo />
           <div>
             <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</h1>
             <div className="flex items-center gap-1.5">
               <p className="text-xs text-gray-500 dark:text-gray-400">{t('adminPortal')}</p>
-              <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600">
                 v{APP_VERSION}
               </span>
             </div>
@@ -115,10 +117,10 @@ export function AdminLayout() {
       </nav>
 
       {/* Bottom section */}
-      <div className="border-t border-gray-100 dark:border-gray-800">
+      <div className="border-t border-gray-200 dark:border-gray-800">
         {/* Settings panel */}
         {settingsOpen && (
-          <div className="px-4 pt-4 pb-3 space-y-3.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/60">
+          <div className="px-4 pt-4 pb-3 space-y-3.5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/60">
             <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1">
               {t('settings')}
             </p>
@@ -221,7 +223,7 @@ export function AdminLayout() {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 font-display transition-colors duration-200">
       <UpdateBanner visible={updateAvailable} />
       {/* Desktop sidebar — hidden on mobile */}
-      <aside className="hidden lg:flex w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex-col shadow-sm transition-colors duration-200">
+      <aside className="hidden lg:flex w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col shadow-sm transition-colors duration-200">
         <SidebarInner />
       </aside>
 

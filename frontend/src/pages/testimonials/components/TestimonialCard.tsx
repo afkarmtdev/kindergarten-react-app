@@ -24,7 +24,7 @@ export function TestimonialCard({
     .toUpperCase()
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 flex flex-col gap-4">
       {/* Quote */}
       <p className="text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed line-clamp-3">
         &ldquo;{t_.quote}&rdquo;
@@ -36,7 +36,7 @@ export function TestimonialCard({
           <img
             src={t_.avatar_url}
             alt={t_.parent_name}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-gray-100 dark:border-gray-700"
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-gray-200 dark:border-gray-700"
             onError={(e) => {
               ;(e.target as HTMLImageElement).style.display = 'none'
             }}
@@ -57,7 +57,7 @@ export function TestimonialCard({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
         <span
           className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
             t_.is_visible

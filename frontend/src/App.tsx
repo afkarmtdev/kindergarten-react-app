@@ -55,6 +55,9 @@ const AnnualReportPage = lazy(() =>
 const TestimonialsPage = lazy(() =>
   import('@/pages/testimonials/TestimonialsPage').then((m) => ({ default: m.TestimonialsPage }))
 )
+const ArtWallPage = lazy(() =>
+  import('@/pages/art-wall/ArtWallPage').then((m) => ({ default: m.ArtWallPage }))
+)
 const InquiriesPage = lazy(() =>
   import('@/pages/InquiriesPage').then((m) => ({ default: m.InquiriesPage }))
 )
@@ -146,6 +149,16 @@ export default function App() {
                   <ErrorBoundary>
                     <Suspense fallback={<CuteLoader />}>
                       <GalleryPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="art-wall"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <ArtWallPage />
                     </Suspense>
                   </ErrorBoundary>
                 }

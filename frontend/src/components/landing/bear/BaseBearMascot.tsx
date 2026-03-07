@@ -11,13 +11,19 @@
 //   Right arm strap is a SEPARATE static rect outside the wave <g>
 //   bear-mascot class + z-20 must be on the WRAPPER DIV in LandingPage, not here
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+
+export interface BearMascotHandle {
+  setFlip: (flipped: boolean) => void
+}
 import { pickBearMessage } from './BearSpeechBubble'
 import { BearSpeechBubbleV2 as BearSpeechBubble } from './BearSpeechBubbleV2'
 
 type BearAnim = 'rest' | 'hover' | 'dance' | 'shimmy' | 'wobble' | 'groove' | 'spin' | 'bounce'
 
-const IDLE_DANCES: BearAnim[] = ['dance', 'shimmy', 'wobble', 'groove', /* 'spin', */ 'bounce']
+const IDLE_DANCES: BearAnim[] = [
+  /* 'dance', 'shimmy', 'wobble', 'groove', 'spin', 'bounce' */
+]
 
 const DANCE_DURATION: Record<string, number> = {
   dance: 1400,
@@ -169,23 +175,20 @@ const BEAR_KEYFRAMES = `
 
 export type BearFaceDirection = 'left' | 'right'
 
-export function BaseBearMascot({
-  hideBubble = false,
-  direction = 'right',
-  tilt = 0,
-}: {
-  hideBubble?: boolean
-  direction?: BearFaceDirection
-  /** Clockwise rotation in degrees — e.g. tilt={15} leans the bear 15° to the right */
-  tilt?: number
-} = {}) {
+export const BaseBearMascot = forwardRef<
+  BearMascotHandle,
+  { hideBubble?: boolean; direction?: BearFaceDirection; tilt?: number }
+>(function BaseBearMascot({ hideBubble = false, direction = 'right', tilt = 0 }, ref) {
   const [bearAnim, setBearAnim] = useState<BearAnim>('rest')
   const [bearMessage, setBearMessage] = useState<string | null>(null)
   const bearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isHoveredRef = useRef(false)
   const isVisibleRef = useRef(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const flipDivRef = useRef<HTMLDivElement>(null)
   const danceRef = useRef<(() => void) | null>(null)
+  const bubbleCooldownRef = useRef(false)
+  const clearMsgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Periodic idle dance — every 5–8 s, random move each time, skipped while hovered or off-screen
   useEffect(() => {
@@ -194,13 +197,15 @@ export function BaseBearMascot({
       bearTimerRef.current = setTimeout(
         () => {
           if (!isVisibleRef.current) return // off-screen — observer will restart when back in view
-          if (!isHoveredRef.current) {
+          if (!isHoveredRef.current && IDLE_DANCES.length > 0) {
             const pick = IDLE_DANCES[Math.floor(Math.random() * IDLE_DANCES.length)]
             setBearAnim(pick)
             bearTimerRef.current = setTimeout(() => {
               setBearAnim('rest')
               dance()
             }, DANCE_DURATION[pick])
+          } else if (!isHoveredRef.current) {
+            dance() // no dances configured — reschedule quietly
           } else {
             dance() // hovered — skip this round, try again later
           }
@@ -212,6 +217,7 @@ export function BaseBearMascot({
     dance()
     return () => {
       if (bearTimerRef.current) clearTimeout(bearTimerRef.current)
+      if (clearMsgTimerRef.current) clearTimeout(clearMsgTimerRef.current)
     }
   }, [])
 
@@ -235,6 +241,21 @@ export function BaseBearMascot({
     return () => observer.disconnect()
   }, [])
 
+  // Sync direction prop → flip div imperatively (for static usage without the handle)
+  useEffect(() => {
+    if (flipDivRef.current) {
+      flipDivRef.current.style.transform = direction === 'left' ? 'scaleX(-1)' : ''
+    }
+  }, [direction])
+
+  useImperativeHandle(ref, () => ({
+    setFlip: (flipped: boolean) => {
+      if (flipDivRef.current) {
+        flipDivRef.current.style.transform = flipped ? 'scaleX(-1)' : ''
+      }
+    },
+  }))
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: BEAR_KEYFRAMES }} />
@@ -243,86 +264,98 @@ export function BaseBearMascot({
         className={`bear-mascot cursor-pointer ${ANIM_CLASS[bearAnim]}`}
         onMouseEnter={() => {
           isHoveredRef.current = true
+          // Cancel any pending message-clear from a brief leave (e.g. cursor drifting to bubble)
+          if (clearMsgTimerRef.current) {
+            clearTimeout(clearMsgTimerRef.current)
+            clearMsgTimerRef.current = null
+          }
           if (bearTimerRef.current) clearTimeout(bearTimerRef.current)
           setBearAnim('hover')
-          if (!hideBubble) setBearMessage(pickBearMessage())
+          if (!hideBubble && !bubbleCooldownRef.current) {
+            setBearMessage(pickBearMessage())
+            bubbleCooldownRef.current = true
+            setTimeout(() => {
+              bubbleCooldownRef.current = false
+            }, 2000)
+          }
         }}
         onMouseLeave={() => {
           isHoveredRef.current = false
           setBearAnim('rest')
-          setBearMessage(null)
           danceRef.current?.()
+          // Grace period — bubble stays visible briefly so moving the cursor up
+          // to read it doesn't cause an instant dismiss.
+          clearMsgTimerRef.current = setTimeout(() => {
+            setBearMessage(null)
+            clearMsgTimerRef.current = null
+          }, 400)
         }}
       >
         {/* Speech bubble stays outside the flip so text is never mirrored */}
         {!hideBubble && <BearSpeechBubble message={bearMessage} />}
-        {/* Flip wrapper — only scaleX + tilt, no animations; child of bear-mascot so arm selector still works */}
-        <div
-          style={(() => {
-            const parts: string[] = []
-            if (direction === 'left') parts.push('scaleX(-1)')
-            if (tilt !== 0) parts.push(`rotate(${tilt}deg)`)
-            return parts.length ? { transform: parts.join(' ') } : undefined
-          })()}
-        >
-          <svg
-            viewBox="0 0 96 112"
-            width="120"
-            height="140"
-            aria-hidden="true"
-            shapeRendering={tilt !== 0 ? 'auto' : 'crispEdges'}
-            overflow="visible"
-            style={{ imageRendering: tilt !== 0 ? 'auto' : 'pixelated' }}
-          >
-            {/* ── Backpack — peeking LEFT (overflow visible, negative x) ── */}
-            <rect x="-14" y="36" width="12" height="14" fill="#22863A" />
-            <rect x="-26" y="48" width="34" height="42" fill="#22863A" />
-            <rect x="-22" y="62" width="14" height="16" fill="#1A6B2A" />
-            <rect x="-22" y="62" width="14" height="3" fill="#C8A020" />
+        {/* flipDivRef — no JSX style; scaleX set imperatively via useEffect/setFlip so React never resets it */}
+        <div ref={flipDivRef}>
+          {/* Tilt wrapper — JSX-controlled, separate from flip */}
+          <div style={tilt !== 0 ? { transform: `rotate(${tilt}deg)` } : undefined}>
+            <svg
+              viewBox="0 0 96 112"
+              width="120"
+              height="140"
+              aria-hidden="true"
+              shapeRendering={tilt !== 0 ? 'auto' : 'crispEdges'}
+              overflow="visible"
+              style={{ imageRendering: tilt !== 0 ? 'auto' : 'pixelated' }}
+            >
+              {/* ── Backpack — peeking LEFT (overflow visible, negative x) ── */}
+              <rect x="-14" y="36" width="12" height="14" fill="#22863A" />
+              <rect x="-26" y="48" width="34" height="42" fill="#22863A" />
+              <rect x="-22" y="62" width="14" height="16" fill="#1A6B2A" />
+              <rect x="-22" y="62" width="14" height="3" fill="#C8A020" />
 
-            {/* ── Ears (outer) ── */}
-            <rect x="12" y="0" width="12" height="16" fill="#4A2A0E" />
-            <rect x="48" y="0" width="12" height="16" fill="#4A2A0E" />
-            {/* Inner ear — pink, above y=8 so the head block doesn't cover it */}
-            <rect x="14" y="1" width="8" height="7" fill="#FFB3C6" />
-            <rect x="50" y="1" width="8" height="7" fill="#FFB3C6" />
+              {/* ── Ears (outer) ── */}
+              <rect x="12" y="0" width="12" height="16" fill="#4A2A0E" />
+              <rect x="48" y="0" width="12" height="16" fill="#4A2A0E" />
+              {/* Inner ear — pink, above y=8 so the head block doesn't cover it */}
+              <rect x="14" y="1" width="8" height="7" fill="#FFB3C6" />
+              <rect x="50" y="1" width="8" height="7" fill="#FFB3C6" />
 
-            {/* ── Head ── */}
-            <rect x="8" y="8" width="56" height="40" fill="#7B5230" />
-            <rect x="16" y="16" width="40" height="24" fill="#C8956B" />
-            {/* Cheeks */}
-            <rect x="16" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
-            <rect x="46" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
-            {/* Eyes */}
-            <rect x="16" y="16" width="10" height="10" fill="#1A1A1A" />
-            <rect x="46" y="16" width="10" height="10" fill="#1A1A1A" />
-            {/* Nose */}
-            <rect x="27" y="30" width="18" height="8" fill="#1A1A1A" />
+              {/* ── Head ── */}
+              <rect x="8" y="8" width="56" height="40" fill="#7B5230" />
+              <rect x="16" y="16" width="40" height="24" fill="#C8956B" />
+              {/* Cheeks */}
+              <rect x="16" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
+              <rect x="46" y="28" width="10" height="6" fill="#FFB3C6" opacity="0.6" />
+              {/* Eyes */}
+              <rect x="16" y="16" width="10" height="10" fill="#1A1A1A" />
+              <rect x="46" y="16" width="10" height="10" fill="#1A1A1A" />
+              {/* Nose */}
+              <rect x="27" y="30" width="18" height="8" fill="#1A1A1A" />
 
-            {/* ── Body ── */}
-            <rect x="8" y="48" width="56" height="40" fill="#7B5230" />
-            <rect x="16" y="56" width="40" height="24" fill="#C8956B" />
+              {/* ── Body ── */}
+              <rect x="8" y="48" width="56" height="40" fill="#7B5230" />
+              <rect x="16" y="56" width="40" height="24" fill="#C8956B" />
 
-            {/* ── Left arm — static ── */}
-            <rect x="0" y="48" width="8" height="32" fill="#4A2A0E" />
-            <rect x="6" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
+              {/* ── Left arm — static ── */}
+              <rect x="0" y="48" width="8" height="32" fill="#4A2A0E" />
+              <rect x="6" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
 
-            {/* ── Right arm — waves on hover; pivot at shoulder (68,48) ── */}
-            <g className="bear-arm-wave" style={{ transformOrigin: '68px 48px' }}>
-              <rect x="64" y="48" width="8" height="32" fill="#4A2A0E" />
-            </g>
-            {/* Strap stays static — not inside the wave group */}
-            <rect x="64" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
+              {/* ── Right arm — waves on hover; pivot at shoulder (68,48) ── */}
+              <g className="bear-arm-wave" style={{ transformOrigin: '68px 48px' }}>
+                <rect x="64" y="48" width="8" height="32" fill="#4A2A0E" />
+              </g>
+              {/* Strap stays static — not inside the wave group */}
+              <rect x="64" y="48" width="2" height="32" fill="#22863A" opacity="0.8" />
 
-            {/* ── Legs ── */}
-            <rect x="8" y="88" width="22" height="24" fill="#4A2A0E" />
-            <rect x="42" y="88" width="22" height="24" fill="#4A2A0E" />
-          </svg>
+              {/* ── Legs ── */}
+              <rect x="8" y="88" width="22" height="24" fill="#4A2A0E" />
+              <rect x="42" y="88" width="22" height="24" fill="#4A2A0E" />
+            </svg>
+          </div>
         </div>
       </div>
     </>
   )
-}
+})
 
 // ─── Bear Logo — pixel-art face, used in navbar + footer ─────────────────────
 export function BearLogo({ size = 40 }: { size?: number }) {

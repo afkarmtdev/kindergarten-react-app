@@ -236,6 +236,20 @@ export const testimonialsApi = {
       .then((r) => r.data as { data: import('@/types').Testimonial[] }),
 }
 
+export const artWallApi = {
+  getAll: (params: Record<string, unknown> = {}) =>
+    api.get('/art-wall', { params }).then((r) => r.data),
+  getByStudent: (studentId: string, params: Record<string, unknown> = {}) =>
+    api.get(`/art-wall/by-student/${studentId}`, { params }).then((r) => r.data),
+  get: (id: string) => api.get(`/art-wall/${id}`).then((r) => r.data),
+  create: (data: Record<string, unknown>) => api.post('/art-wall', data).then((r) => r.data),
+  update: (id: string, data: Record<string, unknown>) =>
+    api.put(`/art-wall/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/art-wall/${id}`).then((r) => r.data),
+  getPublic: (params: { page?: number; limit?: number } = {}) =>
+    publicApi.get('/public/art-wall', { params }).then((r) => r.data),
+}
+
 export const announcementsApi = {
   getAll: (filters: { page?: number; limit?: number; search?: string; category?: string } = {}) =>
     api

@@ -148,7 +148,7 @@ export function DashboardPage() {
       </div>
 
       {/* Fee Collection Summary */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mb-8">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-8 h-8 bg-kinder-orange rounded-xl flex items-center justify-center flex-shrink-0">
             <Wallet size={16} className="text-white" />
@@ -216,7 +216,7 @@ export function DashboardPage() {
       {/* Bottom panels */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Today's Attendance */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-kinder-green rounded-xl flex items-center justify-center flex-shrink-0">
               <CalendarCheck size={16} className="text-white" />
@@ -228,7 +228,7 @@ export function DashboardPage() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800"
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800"
                 >
                   <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-1/2 animate-shimmer bg-[length:200%_100%]" />
                   <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-16 animate-shimmer bg-[length:200%_100%]" />
@@ -245,7 +245,7 @@ export function DashboardPage() {
               {todayRecords.map((record) => (
                 <div
                   key={record.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
                   <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                     {record.students?.full_name}
@@ -262,7 +262,7 @@ export function DashboardPage() {
         </div>
 
         {/* Birthdays */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-kinder-yellow rounded-xl flex items-center justify-center flex-shrink-0">
               <Gift size={16} className="text-white" />
@@ -273,14 +273,14 @@ export function DashboardPage() {
             <div className="text-center py-10 text-gray-400">
               <Gift size={32} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm font-medium">{t('noBirthdaysToday')}</p>
-              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">{t('noBirthdaysSub')}</p>
+              <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{t('noBirthdaysSub')}</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {birthdayStudents.map((student) => (
                 <div
                   key={student.id}
-                  className="flex items-center gap-3 py-2 border-b border-gray-50 dark:border-gray-800 last:border-0"
+                  className="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
                   {student.photo_url ? (
                     <img
@@ -309,7 +309,7 @@ export function DashboardPage() {
         </div>
 
         {/* Monthly Summary */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center flex-shrink-0">
               <TrendingUp size={16} className="text-white" />
@@ -332,7 +332,7 @@ export function DashboardPage() {
             <div className="text-center py-10 text-gray-400">
               <TrendingUp size={32} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm font-medium">{t('noDataYet')}</p>
-              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">{t('noDataYetSub')}</p>
+              <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{t('noDataYetSub')}</p>
             </div>
           ) : (
             <div className="space-y-4">

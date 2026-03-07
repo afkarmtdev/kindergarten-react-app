@@ -205,9 +205,9 @@ create policy "Auth users can update school info" on school_info for update to a
 create policy "Anyone can read school info"       on school_info for select to anon using (true);
 
 -- Storage Bucket Policies
--- Run these after creating the four buckets in the Supabase Storage dashboard
+-- Run these after creating the five buckets in the Supabase Storage dashboard
 -- (all buckets must be created as public): student-photos, gallery-photos,
--- announcement-banners, testimonial-avatars
+-- announcement-banners, testimonial-avatars, artwork-photos
 
 -- gallery-photos
 drop policy if exists "Auth users can upload gallery photos" on storage.objects;
@@ -252,6 +252,16 @@ create policy "Auth users can update testimonial avatars"  on storage.objects fo
 create policy "Auth users can delete testimonial avatars"  on storage.objects for delete to authenticated using  (bucket_id = 'testimonial-avatars');
 create policy "Anyone can read testimonial avatars"        on storage.objects for select to anon, authenticated using (bucket_id = 'testimonial-avatars');
 
+-- artwork-photos bucket
+drop policy if exists "Auth users can upload artwork photos" on storage.objects;
+drop policy if exists "Auth users can update artwork photos" on storage.objects;
+drop policy if exists "Auth users can delete artwork photos" on storage.objects;
+drop policy if exists "Anyone can read artwork photos"       on storage.objects;
+create policy "Auth users can upload artwork photos"  on storage.objects for insert to authenticated with check (bucket_id = 'artwork-photos');
+create policy "Auth users can update artwork photos"  on storage.objects for update to authenticated using  (bucket_id = 'artwork-photos');
+create policy "Auth users can delete artwork photos"  on storage.objects for delete to authenticated using  (bucket_id = 'artwork-photos');
+create policy "Anyone can read artwork photos"        on storage.objects for select to anon, authenticated using (bucket_id = 'artwork-photos');
+
 -- Testimonials
 create table testimonials (
   id            uuid primary key default uuid_generate_v4(),
@@ -286,3 +296,30 @@ create index idx_inquiries_created_at on inquiries(created_at desc);
 alter table inquiries enable row level security;
 create policy "Auth users manage inquiries"    on inquiries for all    to authenticated using (true) with check (true);
 create policy "Anyone can submit an inquiry"   on inquiries for insert to anon          with check (true);
+
+-- Art Wall
+create table art_wall (
+  id             uuid primary key default uuid_generate_v4(),
+  photo_url      text not null,
+  caption        text,
+  student_id     uuid references students(id) on delete set null,
+  student_name   text,
+  artwork_date   date,
+  display_order  int not null default 0,
+  is_visible     boolean not null default true,
+  tilt_angle     int check (tilt_angle between -15 and 15),  -- null = auto (hash-based); admin-editable
+  created_at     timestamptz default now()
+);
+-- Run this if the table already exists:
+-- alter table art_wall add column if not exists tilt_angle int check (tilt_angle between -15 and 15);
+
+create index idx_art_wall_display_order on art_wall(display_order);
+create index idx_art_wall_student_id on art_wall(student_id);
+
+alter table art_wall enable row level security;
+
+create policy "Auth users can read art_wall"   on art_wall for select to authenticated using (true);
+create policy "Auth users can insert art_wall" on art_wall for insert to authenticated with check (true);
+create policy "Auth users can update art_wall" on art_wall for update to authenticated using (true);
+create policy "Auth users can delete art_wall" on art_wall for delete to authenticated using (true);
+create policy "Anyone can read visible art_wall" on art_wall for select to anon using (is_visible = true);

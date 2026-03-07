@@ -19,7 +19,7 @@ export function AttendanceRow({
 
   return (
     <tr
-      className={`border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors ${
+      className={`border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors ${
         isPending
           ? 'bg-amber-50/40 dark:bg-amber-900/10'
           : index % 2 === 0

@@ -40,9 +40,9 @@ export function ReceiptView({ record, thisPayment, onClose }: Props) {
       `}</style>
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm receipt-no-print-overlay">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-800">
           {/* Toolbar */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 receipt-no-print">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 receipt-no-print">
             <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
               {t('receiptTitle')}
             </h2>

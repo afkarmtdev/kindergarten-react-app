@@ -131,7 +131,7 @@ export function SchoolInfoSection() {
   const labelCls = 'block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-5">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
       <div>
         <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
           {t('settingsSchoolInfo')}
@@ -310,7 +310,7 @@ export function SchoolInfoSection() {
                     key={day}
                     className={`grid grid-cols-[1fr_100px_100px] items-center px-3 py-2 gap-2 ${
                       idx < DAY_KEYS.length - 1
-                        ? 'border-b border-gray-100 dark:border-gray-800'
+                        ? 'border-b border-gray-200 dark:border-gray-800'
                         : ''
                     } ${isClosed ? 'opacity-50' : ''}`}
                   >
@@ -410,7 +410,7 @@ export function SchoolInfoSection() {
       )}
 
       {/* Save */}
-      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+      <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           onClick={() => mutation.mutate()}
           disabled={!isDirty || mutation.isPending || uploading}

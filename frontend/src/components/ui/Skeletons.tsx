@@ -13,7 +13,7 @@ function Bone({ className = '' }: { className?: string }) {
 
 export function StudentCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
       <div className="flex items-start gap-4">
         <Bone className="w-14 h-14 rounded-2xl flex-shrink-0" />
         <div className="flex-1 space-y-2">
@@ -21,7 +21,7 @@ export function StudentCardSkeleton() {
           <Bone className="h-3 w-1/3" />
         </div>
       </div>
-      <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 space-y-2.5">
+      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2.5">
         <Bone className="h-3 w-full" />
         <Bone className="h-3 w-4/5" />
         <Bone className="h-3 w-2/3" />
@@ -32,7 +32,7 @@ export function StudentCardSkeleton() {
 
 export function ClassCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
       <div className="flex items-start justify-between mb-5">
         <Bone className="w-12 h-12 rounded-2xl" />
         <Bone className="w-6 h-6 rounded-lg" />
@@ -47,7 +47,7 @@ export function ClassCardSkeleton() {
 
 export function TableRowSkeleton({ cols = 3 }: { cols?: number }) {
   return (
-    <tr className="border-b border-gray-50 dark:border-gray-800">
+    <tr className="border-b border-gray-100 dark:border-gray-800">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-6 py-4">
           <Bone className={`h-4 ${i === 0 ? 'w-3/4' : 'w-1/2'}`} />
@@ -59,7 +59,7 @@ export function TableRowSkeleton({ cols = 3 }: { cols?: number }) {
 
 export function StatCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <Bone className="h-3 w-24" />
@@ -110,7 +110,7 @@ export function CuteLoader() {
 
 export function AnnouncementCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
       <Bone className="w-full h-36 rounded-none" />
       <div className="p-5 space-y-3">
         <div className="flex gap-2">

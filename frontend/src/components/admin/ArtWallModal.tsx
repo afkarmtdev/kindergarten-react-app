@@ -1,29 +1,33 @@
 import { useState, useEffect, useRef } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { X, Camera, Upload, Loader, Eye, EyeOff } from 'lucide-react'
-import { galleryApi } from '@/lib/api'
+import { X, Palette, Upload, Loader, Eye, EyeOff, RotateCw } from 'lucide-react'
+import { artWallApi, studentsApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
-import type { GalleryItem } from '@/types'
+import type { ArtWallItem } from '@/types'
 
-interface GalleryModalProps {
-  open: boolean
+interface ArtWallModalProps {
+  show: boolean
   onClose: () => void
-  item?: GalleryItem | null
+  editingItem: ArtWallItem | null
 }
 
 const empty = {
   photo_url: '',
   caption: '',
+  student_id: '' as string,
+  student_name: '' as string,
+  artwork_date: '',
   display_order: 0,
   is_visible: true,
+  tilt_angle: null as number | null,
 }
 
-export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
+export function ArtWallModal({ show, onClose, editingItem }: ArtWallModalProps) {
   const t = useT()
   const queryClient = useQueryClient()
   const [form, setForm] = useState({ ...empty })
@@ -34,13 +38,23 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
   const { markDirty, resetDirty, requestClose, showConfirm, confirmDiscard, cancelDiscard } =
     useDiscardGuard(onClose)
 
+  const { data: studentsData } = useQuery({
+    queryKey: ['students-picker'],
+    queryFn: () => studentsApi.getAll({ limit: 100 }),
+    enabled: show,
+  })
+
   useEffect(() => {
-    if (item) {
+    if (editingItem) {
       setForm({
-        photo_url: item.photo_url,
-        caption: item.caption ?? '',
-        display_order: item.display_order,
-        is_visible: item.is_visible,
+        photo_url: editingItem.photo_url,
+        caption: editingItem.caption ?? '',
+        student_id: editingItem.student_id ?? '',
+        student_name: editingItem.student_name ?? '',
+        artwork_date: editingItem.artwork_date ?? '',
+        display_order: editingItem.display_order,
+        is_visible: editingItem.is_visible,
+        tilt_angle: editingItem.tilt_angle,
       })
     } else {
       setForm({ ...empty })
@@ -48,18 +62,25 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
     setPhotoError('')
     setUploadError('')
     resetDirty()
-  }, [item, open])
+  }, [editingItem, show])
 
   const mutation = useMutation({
-    mutationFn: (data: typeof form) =>
-      item ? galleryApi.update(item.id, data) : galleryApi.create(data),
+    mutationFn: (data: typeof form) => {
+      const payload = {
+        ...data,
+        student_id: data.student_id || null,
+        student_name: data.student_name || null,
+        artwork_date: data.artwork_date || null,
+      }
+      return editingItem ? artWallApi.update(editingItem.id, payload) : artWallApi.create(payload)
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gallery'] })
-      toast.success(item ? 'Photo updated' : 'Photo added')
+      queryClient.invalidateQueries({ queryKey: ['art-wall'] })
+      toast.success(editingItem ? 'Artwork updated' : 'Artwork added')
       onClose()
     },
     onError: () => {
-      toast.error('Failed to save photo. Please try again.')
+      toast.error('Failed to save artwork. Please try again.')
     },
   })
 
@@ -79,7 +100,7 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
     const { error } = await supabase.storage
-      .from('gallery-photos')
+      .from('artwork-photos')
       .upload(path, compressed, { upsert: false })
 
     if (error) {
@@ -90,16 +111,32 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
 
     // Delete the old file from storage if replacing an existing photo
     if (form.photo_url) {
-      const oldPath = form.photo_url.split('/gallery-photos/')[1]
+      const oldPath = form.photo_url.split('/artwork-photos/')[1]
       if (oldPath) {
-        await supabase.storage.from('gallery-photos').remove([oldPath])
+        await supabase.storage.from('artwork-photos').remove([oldPath])
       }
     }
 
-    const { data: urlData } = supabase.storage.from('gallery-photos').getPublicUrl(path)
+    const { data: urlData } = supabase.storage.from('artwork-photos').getPublicUrl(path)
 
     set('photo_url', urlData.publicUrl)
     setUploading(false)
+  }
+
+  const handleStudentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const studentId = e.target.value
+    if (!studentId) {
+      setForm((f) => ({ ...f, student_id: '', student_name: '' }))
+      markDirty()
+      return
+    }
+    const student = studentsData?.data?.find((s) => s.id === studentId)
+    setForm((f) => ({
+      ...f,
+      student_id: studentId,
+      student_name: student?.full_name ?? '',
+    }))
+    markDirty()
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -112,7 +149,7 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
     mutation.mutate(form)
   }
 
-  if (!open) return null
+  if (!show) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -120,15 +157,18 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={requestClose} />
 
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div
+        className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-kinder-purple rounded-2xl flex items-center justify-center">
-              <Camera size={16} className="text-white" />
+            <div className="w-9 h-9 bg-kinder-pink/10 rounded-2xl flex items-center justify-center">
+              <Palette size={16} className="text-kinder-pink" />
             </div>
             <h2 className="font-bold text-gray-900 dark:text-gray-100">
-              {item ? t('editPhoto') : t('addPhoto')}
+              {editingItem ? t('editArtwork') : t('addArtwork')}
             </h2>
           </div>
           <button
@@ -172,7 +212,7 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-kinder-purple hover:text-kinder-purple dark:hover:border-kinder-purple dark:hover:text-kinder-purple transition-all disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-500 dark:text-gray-400 hover:border-kinder-pink hover:text-kinder-pink dark:hover:border-kinder-pink dark:hover:text-kinder-pink transition-all disabled:opacity-60"
             >
               {uploading ? (
                 <>
@@ -204,13 +244,84 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
             <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
               {t('caption')}
             </label>
-            <input
-              type="text"
+            <textarea
               value={form.caption}
               onChange={(e) => set('caption', e.target.value)}
-              placeholder="Classroom moments..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kinder-purple/50 focus:border-kinder-purple transition-all"
+              maxLength={500}
+              rows={3}
+              placeholder="Describe the artwork..."
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kinder-pink/50 focus:border-kinder-pink transition-all resize-none"
             />
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-right mt-0.5">
+              {form.caption.length}/500
+            </p>
+          </div>
+
+          {/* Student Picker */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+              {t('student')}
+            </label>
+            <select
+              value={form.student_id}
+              onChange={handleStudentChange}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kinder-pink/50 focus:border-kinder-pink transition-all"
+            >
+              <option value="">{t('selectStudent')}</option>
+              {studentsData?.data?.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.full_name} — {s.class_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Artwork Date */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+              {t('artworkDate')}
+            </label>
+            <input
+              type="date"
+              value={form.artwork_date}
+              onChange={(e) => set('artwork_date', e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kinder-pink/50 focus:border-kinder-pink transition-all"
+            />
+          </div>
+
+          {/* Tilt angle */}
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+              <RotateCw size={12} />
+              Tilt angle
+              <span className="ml-auto text-kinder-pink font-bold tabular-nums">
+                {form.tilt_angle === null
+                  ? 'Auto'
+                  : `${form.tilt_angle > 0 ? '+' : ''}${form.tilt_angle}°`}
+              </span>
+            </label>
+            <input
+              type="range"
+              min={-15}
+              max={15}
+              step={1}
+              value={form.tilt_angle ?? 0}
+              onChange={(e) => {
+                set('tilt_angle', Number(e.target.value))
+              }}
+              className="w-full accent-kinder-pink"
+            />
+            <div className="flex justify-between mt-1">
+              <span className="text-[10px] text-gray-400">-15°</span>
+              <button
+                type="button"
+                onClick={() => set('tilt_angle', null)}
+                className="text-[10px] text-kinder-pink hover:underline"
+              >
+                Reset to auto
+              </button>
+              <span className="text-[10px] text-gray-400">+15°</span>
+            </div>
           </div>
 
           {/* Display Order + Visible in a row */}
@@ -224,7 +335,7 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
                 min={0}
                 value={form.display_order}
                 onChange={(e) => set('display_order', Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kinder-purple/50 focus:border-kinder-purple transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kinder-pink/50 focus:border-kinder-pink transition-all"
               />
             </div>
 
@@ -266,7 +377,7 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
             <button
               type="submit"
               disabled={mutation.isPending || uploading}
-              className="flex-1 py-2.5 rounded-xl bg-kinder-purple text-white font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-60 shadow-sm"
+              className="flex-1 py-2.5 rounded-xl bg-kinder-pink text-white font-semibold text-sm hover:opacity-90 transition-all disabled:opacity-60 shadow-sm"
             >
               {mutation.isPending ? t('saving2') : t('save')}
             </button>
