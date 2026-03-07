@@ -203,10 +203,10 @@ export function AttendancePage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60">
+            <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60">
               <th className="text-left px-3 md:px-6 py-2 md:py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('student')}
               </th>

@@ -14,7 +14,7 @@ export function DiscardDialog({ show, onConfirm, onCancel }: Props) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xs border border-gray-100 dark:border-gray-800 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xs border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
             <AlertTriangle size={16} className="text-red-500" />

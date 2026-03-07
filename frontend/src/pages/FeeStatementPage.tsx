@@ -118,9 +118,9 @@ export function FeeStatementPage() {
             ))}
           </div>
         ) : (
-          <div className="statement-print bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <div className="statement-print bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
             {/* Statement header */}
-            <div className="p-6 border-b border-gray-100 dark:border-gray-800 text-center">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-800 text-center">
               {logoUrl && <img src={logoUrl} alt="" className="h-12 mx-auto mb-2 object-contain" />}
               <h1 className="text-xl font-extrabold text-gray-900 dark:text-gray-100">
                 {schoolName}
@@ -140,7 +140,7 @@ export function FeeStatementPage() {
 
             {/* Student info */}
             {student && (
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 grid grid-cols-2 gap-4 text-sm">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-0.5">
                     Student

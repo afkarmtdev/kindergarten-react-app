@@ -142,7 +142,7 @@ export function InquiryForm() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-10 border border-gray-100 dark:border-gray-800 shadow-sm"
+            className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-10 border border-gray-200 dark:border-gray-800 shadow-sm"
           >
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               <div>

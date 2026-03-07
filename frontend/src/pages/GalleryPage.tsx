@@ -138,7 +138,7 @@ export function GalleryPage() {
             {items.map((item: GalleryItem) => (
               <div
                 key={item.id}
-                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
+                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
               >
                 {/* Photo thumbnail */}
                 <div className="relative w-full h-36 sm:h-44 bg-gray-100 dark:bg-gray-800">
@@ -178,13 +178,13 @@ export function GalleryPage() {
                     <div className="flex gap-1 flex-shrink-0">
                       <button
                         onClick={() => openEdit(item)}
-                        className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors rounded-lg"
+                        className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors rounded-lg"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
                         onClick={() => setDeletingItem(item)}
-                        className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
+                        className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
                       >
                         <Trash2 size={14} />
                       </button>

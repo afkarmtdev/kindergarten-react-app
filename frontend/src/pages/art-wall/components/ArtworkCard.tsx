@@ -131,7 +131,7 @@ export function ArtworkCard({ item, design = 'default', size = 'md', onEdit, onD
                 />
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                  <ImageIcon size={24} className="text-gray-300" />
+                  <ImageIcon size={24} className="text-gray-400" />
                 </div>
               )}
             </div>
@@ -161,14 +161,14 @@ export function ArtworkCard({ item, design = 'default', size = 'md', onEdit, onD
                 </p>
               )}
               {item.artwork_date && (
-                <p className={`${pol.dateFont} text-gray-300 mt-0.5`}>
+                <p className={`${pol.dateFont} text-gray-400 mt-0.5`}>
                   {new Date(item.artwork_date).toLocaleDateString()}
                 </p>
               )}
             </div>
 
             {hasActions && (
-              <div className="flex justify-end gap-1 px-1.5 pb-1.5 border-t border-gray-100 pt-1">
+              <div className="flex justify-end gap-1 px-1.5 pb-1.5 border-t border-gray-200 pt-1">
                 {onEdit && (
                   <button
                     onClick={() => onEdit(item)}

@@ -116,7 +116,7 @@ export function DocumentNumberingSection({ documentType }: { documentType: strin
   const lastIsSerial = segments.length > 0 && segments[segments.length - 1].type === 'serial'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-6">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-6">
       <div>
         <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
           {t('documentNumbering')}
@@ -174,7 +174,7 @@ export function DocumentNumberingSection({ documentType }: { documentType: strin
       </div>
 
       {/* Save */}
-      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+      <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           onClick={handleSave}
           disabled={!isDirty || mutation.isPending}
@@ -187,7 +187,7 @@ export function DocumentNumberingSection({ documentType }: { documentType: strin
       {/* Confirm format change dialog */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm border border-gray-100 dark:border-gray-800 p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm border border-gray-200 dark:border-gray-800 p-6">
             <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
               {t('confirmFormatChange')}
             </h3>
@@ -356,7 +356,7 @@ function SegmentRow({
 
   const gripIndex = (
     <>
-      <span className="text-gray-300 dark:text-gray-600 cursor-grab flex-shrink-0">
+      <span className="text-gray-400 dark:text-gray-600 cursor-grab flex-shrink-0">
         <GripVertical size={16} />
       </span>
       <span className="text-xs font-bold text-gray-400 dark:text-gray-500 w-4 flex-shrink-0 text-center">

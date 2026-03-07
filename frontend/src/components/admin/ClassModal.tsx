@@ -97,7 +97,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-kinder-purple rounded-2xl flex items-center justify-center">
               <School size={16} className="text-white" />

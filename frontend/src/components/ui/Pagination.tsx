@@ -30,7 +30,7 @@ export function Pagination({ page, totalPages, total, limit, onPageChange }: Pag
   }
 
   return (
-    <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+    <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
       <p className="text-sm text-gray-500 dark:text-gray-400">
         {t('showing')}{' '}
         <span className="font-semibold text-gray-700 dark:text-gray-200">

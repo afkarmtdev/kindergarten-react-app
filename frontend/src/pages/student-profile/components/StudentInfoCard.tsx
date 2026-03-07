@@ -20,7 +20,7 @@ export function StudentInfoCard({
   const t = useT()
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mb-6">
       <div className="flex flex-col sm:flex-row items-start gap-5">
         {/* Avatar */}
         {s.photo_url ? (
@@ -84,7 +84,7 @@ export function StudentInfoCard({
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
         {[
           { label: t('totalRecorded'), value: totalAll, color: 'text-gray-700 dark:text-gray-200' },
           { label: t('presentRate'), value: `${presentRate}%`, color: 'text-kinder-green' },

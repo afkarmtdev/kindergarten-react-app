@@ -26,7 +26,7 @@ export function FeatureCard({
 
   return (
     <div
-      className={`group bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-8 border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer ${className}`}
+      className={`group bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-8 border border-gray-200 dark:border-gray-800 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer ${className}`}
       style={style}
       onClick={() => setExpanded((v) => !v)}
       onKeyDown={(e) => {
@@ -56,7 +56,7 @@ export function FeatureCard({
         className={`grid transition-all duration-300 ${expanded ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr]'}`}
       >
         <div className="overflow-hidden">
-          <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed border-t border-gray-100 dark:border-gray-800 pt-4">
+          <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed border-t border-gray-200 dark:border-gray-800 pt-4">
             {t(expandedKey)}
           </p>
         </div>

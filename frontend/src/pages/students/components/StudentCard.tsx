@@ -22,7 +22,7 @@ export function StudentCard({
     <>
       <Link
         to={`/admin/students/${student.id}`}
-        className="block bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
+        className="block bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
       >
         <div className="flex items-start gap-4">
           {student.photo_url ? (
@@ -65,7 +65,7 @@ export function StudentCard({
                 e.stopPropagation()
                 onEdit(student)
               }}
-              className="text-gray-300 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors"
+              className="text-gray-400 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors"
             >
               <Pencil size={14} />
             </button>
@@ -75,14 +75,14 @@ export function StudentCard({
                 e.stopPropagation()
                 setShowDelete(true)
               }}
-              className="text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors"
+              className="text-gray-400 dark:text-gray-600 hover:text-red-500 transition-colors"
             >
               <Trash2 size={14} />
             </button>
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 space-y-2">
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <User size={11} className="flex-shrink-0" />
             <span className="truncate">

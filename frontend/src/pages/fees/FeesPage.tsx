@@ -247,12 +247,12 @@ export function FeesPage() {
 
       {/* Table */}
       <div
-        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-opacity ${isFetching ? 'opacity-60' : ''}`}
       >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/60">
+              <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/60">
                 <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
                   {t('feeStudent')}
                 </th>
@@ -277,7 +277,7 @@ export function FeesPage() {
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => <TableRowSkeleton key={i} cols={8} />)
               ) : records.length === 0 ? (

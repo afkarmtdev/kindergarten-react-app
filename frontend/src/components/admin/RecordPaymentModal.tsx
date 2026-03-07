@@ -70,9 +70,9 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-800">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-800">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2">
             <Receipt size={17} className="text-kinder-orange" />
             <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
@@ -128,7 +128,7 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
                 </span>
               </div>
             )}
-            <div className="flex justify-between border-t border-gray-100 dark:border-gray-700 pt-2">
+            <div className="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2">
               <span className="font-bold text-gray-900 dark:text-gray-100">
                 {t('balanceRemaining')}
               </span>
