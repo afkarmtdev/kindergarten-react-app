@@ -7,6 +7,7 @@ import { useT } from '@/hooks/useT'
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
+import { ArtworkLightbox } from '@/pages/art-wall/components/ArtworkLightbox'
 import { useSettingsStore } from '@/store/settingsStore'
 const LIMIT = 6
 
@@ -14,6 +15,7 @@ export function StudentArtwork({ studentId }: { studentId: string }) {
   const t = useT()
   const darkMode = useSettingsStore((s) => s.darkMode)
   const [page, setPage] = useState(1)
+  const [lightboxId, setLightboxId] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['art-wall-student', studentId, page],
@@ -53,12 +55,25 @@ export function StudentArtwork({ studentId }: { studentId: string }) {
           >
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 pt-8">
               {items.map((item) => (
-                <ArtworkCard key={item.id} item={item} design="polaroid" size="sm" />
+                <ArtworkCard
+                  key={item.id}
+                  item={item}
+                  design="polaroid"
+                  size="sm"
+                  onView={(i) => setLightboxId(i.id)}
+                />
               ))}
             </div>
           </div>
         )}
       </div>
+
+      <ArtworkLightbox
+        items={items}
+        activeId={lightboxId}
+        onClose={() => setLightboxId(null)}
+        onNavigate={setLightboxId}
+      />
 
       {meta && meta.totalPages > 1 && (
         <Pagination

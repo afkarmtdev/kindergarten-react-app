@@ -12,6 +12,7 @@ interface Props {
   size?: Size
   onEdit?: (item: ArtWallItem) => void
   onDelete?: (item: ArtWallItem) => void
+  onView?: (item: ArtWallItem) => void
 }
 
 export const PIN: Record<
@@ -87,17 +88,43 @@ export const POLAROID: Record<
   },
 }
 
-export function ArtworkCard({ item, design = 'default', size = 'md', onEdit, onDelete }: Props) {
+export function ArtworkCard({
+  item,
+  design = 'default',
+  size = 'md',
+  onEdit,
+  onDelete,
+  onView,
+}: Props) {
   const [showDelete, setShowDelete] = useState(false)
   const rotation = item.tilt_angle ?? getRotation(item.id)
   const pinColor = getPushpinColor(item.id)
   const hasActions = !!(onEdit || onDelete)
   const pin = PIN[size]
   const pol = POLAROID[size]
+  const isNew = Date.now() - new Date(item.created_at).getTime() < 7 * 24 * 60 * 60 * 1000
 
   return (
     <>
       <div className="relative group" style={{ transform: `rotate(${rotation}deg)` }}>
+        {/* Washi tape — bottom-right corner, new artworks only */}
+        {isNew && (
+          <div
+            className="absolute z-20 pointer-events-none select-none"
+            style={{
+              width: '70px',
+              height: '9px',
+              bottom: '10px',
+              right: '-20px',
+              background: 'rgba(253, 224, 71, 0.68)',
+              transform: 'rotate(-45deg)',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.13)',
+              backgroundImage:
+                'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(255,255,255,0.18) 5px, rgba(255,255,255,0.18) 6px)',
+            }}
+          />
+        )}
+
         {/* Pushpin */}
         <div
           className={`absolute ${pin.offset} left-1/2 -translate-x-1/2 z-10 flex flex-col items-center`}
@@ -119,10 +146,11 @@ export function ArtworkCard({ item, design = 'default', size = 'md', onEdit, onD
         {design === 'polaroid' ? (
           /* Polaroid: white frame, square photo, cursive caption strip */
           <div
-            className={`bg-white shadow-lg ${!item.is_visible ? 'opacity-50' : ''}`}
+            className={`bg-white shadow-lg ${!item.is_visible ? 'opacity-50' : ''} ${onView ? 'cursor-pointer' : ''}`}
             style={{ padding: pol.frame }}
+            onClick={onView ? () => onView(item) : undefined}
           >
-            <div className="overflow-hidden aspect-square">
+            <div className="relative overflow-hidden aspect-square">
               {item.photo_url ? (
                 <img
                   src={item.photo_url}
@@ -171,7 +199,10 @@ export function ArtworkCard({ item, design = 'default', size = 'md', onEdit, onD
               <div className="flex justify-end gap-1 px-1.5 pb-1.5 border-t border-gray-200 pt-1">
                 {onEdit && (
                   <button
-                    onClick={() => onEdit(item)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEdit(item)
+                    }}
                     className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 hover:text-kinder-blue hover:bg-kinder-blue/10 transition-colors rounded opacity-50 group-hover:opacity-100"
                   >
                     <Pencil size={pol.actionIcon} />
@@ -180,7 +211,10 @@ export function ArtworkCard({ item, design = 'default', size = 'md', onEdit, onD
                 )}
                 {onDelete && (
                   <button
-                    onClick={() => setShowDelete(true)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowDelete(true)
+                    }}
                     className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors rounded opacity-50 group-hover:opacity-100"
                   >
                     <Trash2 size={pol.actionIcon} />

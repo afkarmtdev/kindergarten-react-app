@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/Skeletons'
 import { ArtWallModal } from '@/components/admin/ArtWallModal'
 import { ArtworkCard } from './components/ArtworkCard'
 import { ArtworkCardSkeleton } from './components/ArtworkCardSkeleton'
+import { ArtworkLightbox } from './components/ArtworkLightbox'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { CORK_STYLE, CORK_STYLE_DARK } from './constants'
@@ -27,6 +28,7 @@ export function ArtWallPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ArtWallItem | null>(null)
+  const [lightboxId, setLightboxId] = useState<string | null>(null)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['art-wall', { page, limit: LIMIT, search }],
@@ -150,6 +152,7 @@ export function ArtWallPage() {
                   size="lg"
                   onEdit={openEdit}
                   onDelete={(item) => deleteMutation.mutate(item.id)}
+                  onView={(item) => setLightboxId(item.id)}
                 />
               ))}
             </div>
@@ -170,6 +173,14 @@ export function ArtWallPage() {
 
       {/* Modal */}
       <ArtWallModal show={modalOpen} onClose={closeModal} editingItem={editingItem} />
+
+      {/* Lightbox */}
+      <ArtworkLightbox
+        items={items}
+        activeId={lightboxId}
+        onClose={() => setLightboxId(null)}
+        onNavigate={setLightboxId}
+      />
     </div>
   )
 }

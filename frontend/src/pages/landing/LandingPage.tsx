@@ -39,6 +39,7 @@ import { BearToggle } from '@/components/landing/bear/BearToggle'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
+import { ArtworkLightbox } from '@/pages/art-wall/components/ArtworkLightbox'
 import { StatCounter } from './components/StatCounter'
 import { TypedText } from './components/TypedText'
 import { FeatureCard } from './components/FeatureCard'
@@ -68,6 +69,7 @@ export function LandingPage() {
   const { email: schoolEmail } = useSchoolInfo({ public: true })
   const [showTop, setShowTop] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
@@ -136,7 +138,8 @@ export function LandingPage() {
   const allArtWallItems = (artWallInfiniteData?.pages.flatMap(
     (p: { data: import('@/types').ArtWallItem[] }) => p.data
   ) ?? []) as import('@/types').ArtWallItem[]
-  const [displayedCount, setDisplayedCount] = useState(8)
+  const initialCount = typeof window !== 'undefined' && window.innerWidth < 640 ? 4 : 8
+  const [displayedCount, setDisplayedCount] = useState(initialCount)
   // Track which index onwards should animate in — reset after animation completes
   const animatedFromIdx = useRef(-1)
   const artWallItems = allArtWallItems.slice(0, displayedCount)
@@ -156,7 +159,7 @@ export function LandingPage() {
   }
 
   function handleShowLess() {
-    setDisplayedCount(8)
+    setDisplayedCount(initialCount)
     artWallHeadingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -950,7 +953,12 @@ export function LandingPage() {
                         animationDelay: isNew ? `${(idx - animatedFromIdx.current) * 40}ms` : '0ms',
                       }}
                     >
-                      <ArtworkCard item={item} design="polaroid" size="md" />
+                      <ArtworkCard
+                        item={item}
+                        design="polaroid"
+                        size="md"
+                        onView={(item) => setLightboxArtId(item.id)}
+                      />
                     </div>
                   )
                 })}
@@ -967,9 +975,9 @@ export function LandingPage() {
               </div>
 
               {/* Show More / Show Less */}
-              {(hasMoreToShow || displayedCount > 8) && (
+              {(hasMoreToShow || displayedCount > initialCount) && (
                 <div className="flex justify-center gap-3 mt-8">
-                  {displayedCount > 8 && (
+                  {displayedCount > initialCount && (
                     <button
                       onClick={handleShowLess}
                       className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border border-amber-300/40 dark:border-gray-700 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:shadow-md transition-all duration-200"
@@ -1388,6 +1396,14 @@ export function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Art wall lightbox */}
+      <ArtworkLightbox
+        items={artWallItems}
+        activeId={lightboxArtId}
+        onClose={() => setLightboxArtId(null)}
+        onNavigate={setLightboxArtId}
+      />
     </div>
   )
 }
