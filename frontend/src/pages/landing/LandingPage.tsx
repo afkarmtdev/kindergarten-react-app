@@ -30,7 +30,12 @@ import { useFadeIn } from '@/hooks/useFadeIn'
 import { galleryApi, announcementsApi, testimonialsApi, artWallApi } from '@/lib/api'
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { APP_NAME } from '@/lib/version'
-import { BaseBearMascot, BearLogo } from '@/components/landing/bear/BaseBearMascot'
+import {
+  BaseBearMascot,
+  BearLogo,
+  type BearMascotHandle,
+} from '@/components/landing/bear/BaseBearMascot'
+import { BearToggle } from '@/components/landing/bear/BearToggle'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
@@ -67,9 +72,24 @@ export function LandingPage() {
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
   const [isPaused, setIsPaused] = useState(false)
+  const [bearVisible, setBearVisible] = useState(
+    () => localStorage.getItem('bear-visible') !== 'false'
+  )
 
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const artWallHeadingRef = useRef<HTMLElement>(null)
+
+  // Bear bounce
+  const heroRef = useRef<HTMLElement>(null)
+  const bearBounceRef = useRef<HTMLDivElement>(null)
+  const bearMascotRef = useRef<BearMascotHandle>(null)
+  const bearRotateRef = useRef<HTMLDivElement>(null)
+  const bearPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const bearVelRef = useRef<{ vx: number; vy: number }>({ vx: -90, vy: -65 })
+  const bearPausedRef = useRef(false)
+  const bearRafRef = useRef<number | null>(null)
+  const bearRotRef = useRef(0)
+  const heroDimsRef = useRef({ w: 0, h: 0 })
 
   const featuresFadeIn = useFadeIn()
   const galleryFadeIn = useFadeIn()
@@ -180,6 +200,108 @@ export function LandingPage() {
     return () => clearTimeout(swap)
   }, [activeTestimonial])
 
+  // Bear DVD bounce
+  useEffect(() => {
+    if (!bearVisible) return
+    const heroEl = heroRef.current
+    const bearEl = bearBounceRef.current
+    const rotEl = bearRotateRef.current
+    if (!heroEl || !bearEl || !rotEl) return
+
+    const heroRect = heroEl.getBoundingClientRect()
+    if (heroRect.width === 0) return
+
+    const BEAR_W = 120
+    const BEAR_H = 140
+    const PAD = 15
+    const MIN_X = PAD
+    const MIN_Y = PAD
+    const ROT_SPEED = 45
+
+    heroDimsRef.current = { w: heroRect.width, h: heroRect.height }
+
+    const mxX = () => heroDimsRef.current.w - BEAR_W - PAD
+    const mxY = () => heroDimsRef.current.h - BEAR_H - PAD
+
+    bearPosRef.current = {
+      x: Math.max(MIN_X, Math.min(heroRect.width * 0.5, mxX())),
+      y: Math.max(MIN_Y, Math.min(heroRect.height * 0.5, mxY())),
+    }
+    bearMascotRef.current?.setFlip(true)
+    bearEl.style.left = `${bearPosRef.current.x}px`
+    bearEl.style.top = `${bearPosRef.current.y}px`
+
+    let lastTime: number | null = null
+    let rafId: number
+
+    const tick = (now: number) => {
+      rafId = requestAnimationFrame(tick)
+      bearRafRef.current = rafId
+
+      const delta = lastTime !== null ? Math.min(now - lastTime, 50) : 16
+      lastTime = now
+      const dt = delta / 1000
+
+      if (bearPausedRef.current) {
+        bearRotRef.current *= 0.82
+        if (Math.abs(bearRotRef.current) < 0.3) bearRotRef.current = 0
+        rotEl.style.transform = `rotate(${bearRotRef.current}deg)`
+        lastTime = null
+        return
+      }
+
+      bearRotRef.current += ROT_SPEED * dt
+      rotEl.style.transform = `rotate(${bearRotRef.current}deg)`
+
+      let { x, y } = bearPosRef.current
+      let { vx, vy } = bearVelRef.current
+
+      x += vx * dt
+      y += vy * dt
+
+      const maxXv = mxX()
+      const maxYv = mxY()
+
+      if (x <= MIN_X) {
+        x = MIN_X
+        vx = Math.abs(vx)
+        bearMascotRef.current?.setFlip(false)
+      } else if (x >= maxXv) {
+        x = maxXv
+        vx = -Math.abs(vx)
+        bearMascotRef.current?.setFlip(true)
+      }
+      if (y <= MIN_Y) {
+        y = MIN_Y
+        vy = Math.abs(vy)
+      } else if (y >= maxYv) {
+        y = maxYv
+        vy = -Math.abs(vy)
+      }
+
+      bearPosRef.current = { x, y }
+      bearVelRef.current = { vx, vy }
+      bearEl.style.left = `${x}px`
+      bearEl.style.top = `${y}px`
+    }
+
+    rafId = requestAnimationFrame(tick)
+    bearRafRef.current = rafId
+
+    const ro = new ResizeObserver(() => {
+      const r = heroEl.getBoundingClientRect()
+      heroDimsRef.current = { w: r.width, h: r.height }
+      bearPosRef.current.x = Math.max(MIN_X, Math.min(bearPosRef.current.x, mxX()))
+      bearPosRef.current.y = Math.max(MIN_Y, Math.min(bearPosRef.current.y, mxY()))
+    })
+    ro.observe(heroEl)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      ro.disconnect()
+    }
+  }, [bearVisible])
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 font-display overflow-x-hidden transition-colors duration-200">
       {/* Inject keyframe CSS */}
@@ -264,7 +386,7 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           HERO — gradient bg, floating shapes, big heading
       ════════════════════════════════════════════════════════ */}
-      <section id="about" className="relative overflow-hidden">
+      <section id="about" ref={heroRef} className="relative overflow-hidden">
         {/* Mesh gradient background — light mode */}
         <div
           className="absolute inset-0 lp-mesh-gradient block dark:hidden"
@@ -478,7 +600,7 @@ export function LandingPage() {
         />
 
         {/* ── Hero content ── */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6">
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
             {/* Text column */}
             <div className="text-center lg:text-left">
@@ -514,7 +636,7 @@ export function LandingPage() {
                 {t('heroSubtitle')}
               </p>
 
-              <div className="lp-enter-2 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16">
+              <div className="lp-enter-2 relative z-30 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16">
                 <a
                   href="#contact"
                   className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-900/50 hover:bg-orange-600 transition-all duration-200 text-center"
@@ -556,16 +678,46 @@ export function LandingPage() {
                 />
               </div>
             ) : null}
-
-            {/* Bear mascot — always present at bottom-right of hero */}
-            <div
-              className="hidden lg:block absolute bottom-12 right-16 z-20 lp-enter-2"
-              style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.13))' }}
-            >
-              <BaseBearMascot direction="left" tilt={-15} />
-            </div>
           </div>
         </div>
+
+        {/* Bear mascot — direct child of section so position:absolute uses section as containing block */}
+        {bearVisible && (
+          <div
+            ref={bearBounceRef}
+            className="hidden lg:block absolute z-20 lp-enter-2"
+            style={{ left: 0, top: 0 }}
+            onMouseEnter={() => {
+              bearPausedRef.current = true
+              const r = bearRotRef.current
+              bearRotRef.current = (((r % 360) + 540) % 360) - 180
+            }}
+            onMouseLeave={() => {
+              bearPausedRef.current = false
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-block',
+                filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.18))',
+              }}
+            >
+              <div ref={bearRotateRef}>
+                <BaseBearMascot ref={bearMascotRef} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bear toggle — subtle pill button, bottom-right of hero, only on lg+ */}
+        <BearToggle
+          visible={bearVisible}
+          onToggle={() => {
+            const next = !bearVisible
+            setBearVisible(next)
+            localStorage.setItem('bear-visible', String(next))
+          }}
+        />
 
         <Wave fill="#FF6B35" variant="peak" />
       </section>
