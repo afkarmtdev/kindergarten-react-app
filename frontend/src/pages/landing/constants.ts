@@ -45,6 +45,11 @@ export const KEYFRAMES = `
   .lp-enter-2      { animation: lp-entrance   0.8s ease 0.36s   both; }
   .lp-card-exit    { animation: lp-card-exit  0.15s ease        forwards; }
   .lp-card-enter   { animation: lp-card-enter 0.18s ease        both; }
+  @keyframes lp-pin-in {
+    from { opacity: 0; transform: translateY(24px) scale(0.92); }
+    to   { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  .lp-pin-in { animation: lp-pin-in 0.35s ease both; }
   @keyframes lp-progress {
     from { width: 0%; }
     to   { width: 100%; }

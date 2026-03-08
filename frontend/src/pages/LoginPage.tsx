@@ -131,7 +131,7 @@ export function LoginPage() {
         <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
           {APP_NAME} Management System · Secured by Supabase Auth
         </p>
-        <p className="text-center text-xs text-gray-300 dark:text-gray-600 mt-1">v{APP_VERSION}</p>
+        <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-1">v{APP_VERSION}</p>
         <div className="text-center mt-4">
           <Link
             to="/"

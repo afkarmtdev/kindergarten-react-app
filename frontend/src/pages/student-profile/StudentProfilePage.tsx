@@ -9,6 +9,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { type Status } from './constants'
 import { StudentInfoCard } from './components/StudentInfoCard'
 import { AttendanceHeatmap } from './components/AttendanceHeatmap'
+import { StudentArtwork } from './components/StudentArtwork'
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
 import type { Student, AttendanceRecord } from '@/types'
 
@@ -87,7 +88,7 @@ export function StudentProfilePage() {
       </div>
 
       {studentLoading ? (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 animate-pulse">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 animate-pulse">
           <div className="flex items-center gap-5">
             <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-2xl flex-shrink-0" />
             <div className="flex-1 space-y-3">
@@ -107,6 +108,8 @@ export function StudentProfilePage() {
           />
 
           <AttendanceHeatmap studentId={s.id} />
+
+          <StudentArtwork studentId={s.id} />
 
           <AttendanceHistoryTable
             records={records}

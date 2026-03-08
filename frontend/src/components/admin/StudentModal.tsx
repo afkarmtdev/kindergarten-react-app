@@ -155,7 +155,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
       {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-kinder-blue rounded-2xl flex items-center justify-center">
               <User size={16} className="text-white" />
@@ -243,7 +243,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
             {errors.class_name && <p className="text-xs text-red-500 mt-1">{errors.class_name}</p>}
           </div>
 
-          <hr className="border-gray-100 dark:border-gray-700" />
+          <hr className="border-gray-200 dark:border-gray-700" />
 
           {/* Parent Name */}
           <div>
@@ -314,7 +314,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
                     }}
                   />
                 ) : (
-                  <User size={20} className="text-gray-300 dark:text-gray-600" />
+                  <User size={20} className="text-gray-400 dark:text-gray-600" />
                 )}
               </div>
 

@@ -25,13 +25,13 @@ export function AttendanceHistoryTable({
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
           <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('attendanceHistory')}</h2>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50/60 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800">
+            <tr className="bg-gray-50/60 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-800">
               <th className="text-left px-3 md:px-6 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('dateOfBirth').replace('Date of Birth', 'Date')}
               </th>
@@ -52,7 +52,7 @@ export function AttendanceHistoryTable({
                   return (
                     <tr
                       key={record.id}
-                      className={`border-b border-gray-50 dark:border-gray-800 last:border-0 ${
+                      className={`border-b border-gray-100 dark:border-gray-800 last:border-0 ${
                         i % 2 === 0
                           ? 'bg-white dark:bg-gray-900'
                           : 'bg-gray-50/30 dark:bg-gray-800/30'

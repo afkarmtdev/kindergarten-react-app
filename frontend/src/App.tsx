@@ -11,6 +11,7 @@ import { CuteLoader } from '@/components/ui/Skeletons'
 // Public pages stay eager — they are the first routes users hit
 import { LandingPage } from '@/pages/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 
 // Admin pages are lazy-loaded so they don't bloat the initial bundle
 const DashboardPage = lazy(() =>
@@ -48,8 +49,14 @@ const FeePlansPage = lazy(() =>
 const FeeStatementPage = lazy(() =>
   import('@/pages/FeeStatementPage').then((m) => ({ default: m.FeeStatementPage }))
 )
+const AnnualReportPage = lazy(() =>
+  import('@/pages/AnnualReportPage').then((m) => ({ default: m.AnnualReportPage }))
+)
 const TestimonialsPage = lazy(() =>
   import('@/pages/testimonials/TestimonialsPage').then((m) => ({ default: m.TestimonialsPage }))
+)
+const ArtWallPage = lazy(() =>
+  import('@/pages/art-wall/ArtWallPage').then((m) => ({ default: m.ArtWallPage }))
 )
 const InquiriesPage = lazy(() =>
   import('@/pages/InquiriesPage').then((m) => ({ default: m.InquiriesPage }))
@@ -147,6 +154,16 @@ export default function App() {
                 }
               />
               <Route
+                path="art-wall"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <ArtWallPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
                 path="announcements"
                 element={
                   <ErrorBoundary>
@@ -172,6 +189,16 @@ export default function App() {
                   <ErrorBoundary>
                     <Suspense fallback={<CuteLoader />}>
                       <FeeStatementPage />
+                    </Suspense>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="fees/annual-report"
+                element={
+                  <ErrorBoundary>
+                    <Suspense fallback={<CuteLoader />}>
+                      <AnnualReportPage />
                     </Suspense>
                   </ErrorBoundary>
                 }
@@ -219,7 +246,7 @@ export default function App() {
             </Route>
 
             {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

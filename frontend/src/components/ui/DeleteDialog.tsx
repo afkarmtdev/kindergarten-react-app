@@ -20,7 +20,7 @@ export function DeleteDialog({ show, itemName, onConfirm, onCancel }: Props) {
       onClick={onCancel}
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xs border border-gray-100 dark:border-gray-800 p-6"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-xs border border-gray-200 dark:border-gray-800 p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-3">

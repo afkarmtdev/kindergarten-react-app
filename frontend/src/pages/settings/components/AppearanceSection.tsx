@@ -7,7 +7,7 @@ export function AppearanceSection() {
   const { darkMode, toggleDark, lang, setLang } = useSettingsStore()
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-1">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-1">
       <div className="mb-5">
         <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
           {t('settingsNavTheme')}
@@ -18,7 +18,7 @@ export function AppearanceSection() {
       </div>
 
       {/* Dark mode row */}
-      <div className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-gray-800">
+      <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 text-gray-500 dark:text-gray-400">
             {darkMode ? <Moon size={18} /> : <Sun size={18} />}

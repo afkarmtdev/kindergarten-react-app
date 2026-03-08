@@ -154,7 +154,7 @@ export function ClassesPage() {
               return (
                 <div
                   key={cls.id}
-                  className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
+                  className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
                 >
                   <div className="flex items-start justify-between mb-5">
                     <div
@@ -165,13 +165,13 @@ export function ClassesPage() {
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => openEdit(cls)}
-                        className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors rounded-lg"
+                        className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors rounded-lg"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
                         onClick={() => setDeletingClass(cls)}
-                        className="p-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
+                        className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
                       >
                         <Trash2 size={14} />
                       </button>

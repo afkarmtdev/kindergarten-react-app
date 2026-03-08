@@ -1,12 +1,14 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarCheck, School, TrendingUp, Gift, Wallet, Users } from 'lucide-react'
 import { studentsApi, attendanceApi, classesApi, feesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { isBirthdayToday } from '@/lib/utils'
 import { format } from 'date-fns'
 import { StatCard } from './components/StatCard'
+import { AttendanceTrendChart } from './components/AttendanceTrendChart'
+import { FeeCollectionChart } from './components/FeeCollectionChart'
 
 const STATUS_BADGE: Record<string, string> = {
   present: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
@@ -22,11 +24,15 @@ const BAR_COLOR: Record<string, string> = {
   absent: 'bg-red-400',
 }
 
+const SUMMARY_STATUSES = ['present', 'late', 'excused', 'absent'] as const
+
+const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
+
 export function DashboardPage() {
   usePageTitle('Dashboard')
   const t = useT()
-  const today = format(new Date(), 'yyyy-MM-dd')
-  const currentMonth = format(new Date(), 'yyyy-MM')
+  const today = useMemo(() => format(new Date(), 'yyyy-MM-dd'), [])
+  const currentMonth = useMemo(() => format(new Date(), 'yyyy-MM'), [])
 
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ['students', { page: 1, limit: 1 }],
@@ -60,13 +66,23 @@ export function DashboardPage() {
 
   const { data: birthdayData } = useQuery({
     queryKey: ['students-birthday-check'],
-    queryFn: () => studentsApi.getAll({ page: 1, limit: 100 }),
-    staleTime: 60_000,
+    queryFn: () => studentsApi.getAll({ page: 1, limit: 100, birthday_today: true }),
+    staleTime: 5 * 60_000,
   })
 
-  const birthdayStudents = (birthdayData?.data ?? []).filter((s) =>
-    isBirthdayToday(s.date_of_birth)
-  )
+  const { data: attendanceTrend, isLoading: trendLoading } = useQuery({
+    queryKey: ['attendance-trend'],
+    queryFn: () => attendanceApi.getTrend(6),
+    staleTime: 5 * 60_000,
+  })
+
+  const { data: feesTrend, isLoading: feesTrendLoading } = useQuery({
+    queryKey: ['fees-trend'],
+    queryFn: () => feesApi.getTrend(6),
+    staleTime: 5 * 60_000,
+  })
+
+  const birthdayStudents = birthdayData?.data ?? []
 
   const totalStudents = studentsData?.meta?.total ?? 0
   const totalClasses = classesData?.meta?.total ?? 0
@@ -81,7 +97,6 @@ export function DashboardPage() {
   const attendanceRate = totalRecords > 0 ? Math.round((totalPresent / totalRecords) * 100) : 0
 
   const statsLoading = studentsLoading || classesLoading || todayLoading
-  const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
 
   return (
     <div className="p-4 md:p-8">
@@ -133,7 +148,7 @@ export function DashboardPage() {
       </div>
 
       {/* Fee Collection Summary */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mb-8">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-8 h-8 bg-kinder-orange rounded-xl flex items-center justify-center flex-shrink-0">
             <Wallet size={16} className="text-white" />
@@ -146,7 +161,7 @@ export function DashboardPage() {
           </h2>
         </div>
         {feesLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
@@ -155,7 +170,7 @@ export function DashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
               <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
                 {t('totalCharged')}
@@ -192,10 +207,16 @@ export function DashboardPage() {
         )}
       </div>
 
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <AttendanceTrendChart data={attendanceTrend ?? []} loading={trendLoading} />
+        <FeeCollectionChart data={feesTrend ?? []} loading={feesTrendLoading} />
+      </div>
+
       {/* Bottom panels */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Today's Attendance */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-kinder-green rounded-xl flex items-center justify-center flex-shrink-0">
               <CalendarCheck size={16} className="text-white" />
@@ -207,7 +228,7 @@ export function DashboardPage() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800"
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800"
                 >
                   <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-1/2 animate-shimmer bg-[length:200%_100%]" />
                   <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-16 animate-shimmer bg-[length:200%_100%]" />
@@ -224,7 +245,7 @@ export function DashboardPage() {
               {todayRecords.map((record) => (
                 <div
                   key={record.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
                   <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                     {record.students?.full_name}
@@ -241,7 +262,7 @@ export function DashboardPage() {
         </div>
 
         {/* Birthdays */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-kinder-yellow rounded-xl flex items-center justify-center flex-shrink-0">
               <Gift size={16} className="text-white" />
@@ -252,14 +273,14 @@ export function DashboardPage() {
             <div className="text-center py-10 text-gray-400">
               <Gift size={32} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm font-medium">{t('noBirthdaysToday')}</p>
-              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">{t('noBirthdaysSub')}</p>
+              <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{t('noBirthdaysSub')}</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {birthdayStudents.map((student) => (
                 <div
                   key={student.id}
-                  className="flex items-center gap-3 py-2 border-b border-gray-50 dark:border-gray-800 last:border-0"
+                  className="flex items-center gap-3 py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
                 >
                   {student.photo_url ? (
                     <img
@@ -288,7 +309,7 @@ export function DashboardPage() {
         </div>
 
         {/* Monthly Summary */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center flex-shrink-0">
               <TrendingUp size={16} className="text-white" />
@@ -311,28 +332,29 @@ export function DashboardPage() {
             <div className="text-center py-10 text-gray-400">
               <TrendingUp size={32} className="mx-auto mb-2 opacity-40" />
               <p className="text-sm font-medium">{t('noDataYet')}</p>
-              <p className="text-xs mt-1 text-gray-300 dark:text-gray-600">{t('noDataYetSub')}</p>
+              <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{t('noDataYetSub')}</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {Object.entries(summary).map(([status, count]) => (
-                <div key={status}>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="capitalize font-semibold text-gray-700 dark:text-gray-300">
-                      {t(status as 'present' | 'absent' | 'late' | 'excused')}
-                    </span>
-                    <span className="text-gray-400 dark:text-gray-500 font-medium">
-                      {count as number}
-                    </span>
+              {SUMMARY_STATUSES.map((status) => {
+                const count = (summary as Record<string, number>)[status] ?? 0
+                return (
+                  <div key={status}>
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="capitalize font-semibold text-gray-700 dark:text-gray-300">
+                        {t(status)}
+                      </span>
+                      <span className="text-gray-400 dark:text-gray-500 font-medium">{count}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all ${BAR_COLOR[status]}`}
+                        style={{ width: `${(count / totalRecords) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${BAR_COLOR[status] ?? 'bg-gray-400'}`}
-                      style={{ width: `${((count as number) / totalRecords) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

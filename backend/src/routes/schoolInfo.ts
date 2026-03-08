@@ -53,6 +53,8 @@ const schoolInfoSchema = z.object({
     ),
   facebook_url: z.string().url().or(z.literal('')).optional().default(''),
   instagram_url: z.string().url().or(z.literal('')).optional().default(''),
+  principal_name: z.string().max(200).optional().default(''),
+  registration_number: z.string().max(100).optional().default(''),
 })
 
 // ── GET /api/school-info ──────────────────────────────────────────────────────
@@ -65,8 +67,13 @@ schoolInfo.get('/', async (c) => {
 
 // ── PUT /api/school-info ──────────────────────────────────────────────────────
 schoolInfo.put('/', zValidator('json', schoolInfoSchema), async (c) => {
-  const { operating_hours, ...stringFields } = c.req.valid('json')
-  const sanitised = sanitiseStrings(stringFields)
+  const { operating_hours, principal_name, registration_number, ...stringFields } =
+    c.req.valid('json')
+  const sanitised = sanitiseStrings({
+    ...stringFields,
+    principal_name: principal_name ?? '',
+    registration_number: registration_number ?? '',
+  })
   const sanitisedHours = operating_hours
     ? (Object.fromEntries(
         Object.entries(operating_hours).map(([day, { open, close }]) => [

@@ -103,7 +103,7 @@ export function FeePlansPage() {
             </p>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col md:flex-row gap-3">
           <SearchBar value={search} onChange={setSearch} placeholder={t('searchFeePlans')} />
           <button
             onClick={() => setModalPlan(null)}
@@ -117,11 +117,11 @@ export function FeePlansPage() {
 
       {/* Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 animate-pulse h-36"
+              className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 animate-pulse h-36"
             />
           ))}
         </div>
@@ -132,12 +132,12 @@ export function FeePlansPage() {
         />
       ) : (
         <div
-          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isFetching ? 'opacity-60' : ''}`}
         >
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3"
+              className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col gap-3"
             >
               {/* Type badge + amount */}
               <div className="flex items-start justify-between gap-2">
@@ -162,7 +162,7 @@ export function FeePlansPage() {
               )}
 
               {/* Actions */}
-              <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-200 dark:border-gray-800">
                 <button
                   onClick={() => setGeneratePlan(plan)}
                   className="flex items-center gap-1.5 text-xs font-semibold text-kinder-orange hover:text-orange-600 transition-colors"

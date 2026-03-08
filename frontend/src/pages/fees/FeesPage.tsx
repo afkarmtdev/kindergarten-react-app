@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Zap, Download, LayoutList } from 'lucide-react'
+import { Plus, Zap, Download, LayoutList, ClipboardList, BarChart2, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { feesApi, classesApi } from '@/lib/api'
 import { useFeesStore } from '@/store/feesStore'
@@ -14,7 +14,11 @@ import { FeeRecordModal } from '@/components/admin/FeeRecordModal'
 import { GenerateFeesModal } from '@/components/admin/GenerateFeesModal'
 import { RecordPaymentModal } from '@/components/admin/RecordPaymentModal'
 import { ReceiptView } from '@/components/admin/ReceiptView'
+import { FeeInvoice } from '@/components/admin/FeeInvoice'
+import { EnrollmentLetterView } from '@/components/admin/EnrollmentLetterView'
+import { MonthlyCollectionReport } from '@/components/admin/MonthlyCollectionReport'
 import { FeeTableRow } from './components/FeeTableRow'
+import { ClassCollectionSheet } from './components/ClassCollectionSheet'
 import type { FeeRecord } from '@/types'
 
 const LIMIT = 20
@@ -41,6 +45,13 @@ export function FeesPage() {
   const [generateModal, setGenerateModal] = useState(false)
   const [paymentRecord, setPaymentRecord] = useState<FeeRecord | null>(null)
   const [receiptData, setReceiptData] = useState<{ record: FeeRecord; amount: number } | null>(null)
+
+  // Finance document modals
+  const [invoiceRecord, setInvoiceRecord] = useState<FeeRecord | null>(null)
+  const [overdueRecord, setOverdueRecord] = useState<FeeRecord | null>(null)
+  const [enrollmentRecord, setEnrollmentRecord] = useState<FeeRecord | null>(null)
+  const [collectionSheetOpen, setCollectionSheetOpen] = useState(false)
+  const [monthlyReportOpen, setMonthlyReportOpen] = useState(false)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: [
@@ -146,31 +157,52 @@ export function FeesPage() {
             </p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 items-center">
           <Link
             to="/admin/fee-plans"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <LayoutList size={15} />
             {t('feePlans')}
           </Link>
           <button
+            onClick={() => setCollectionSheetOpen(true)}
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <ClipboardList size={15} />
+            {t('printCollectionSheet')}
+          </button>
+          <button
+            onClick={() => setMonthlyReportOpen(true)}
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <BarChart2 size={15} />
+            {t('monthlyReport')}
+          </button>
+          <Link
+            to="/admin/fees/annual-report"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <TrendingUp size={15} />
+            {t('annualReport')}
+          </Link>
+          <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <Download size={15} />
             {t('exportCsv')}
           </button>
           <button
             onClick={() => setGenerateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-blue text-white text-sm font-semibold hover:opacity-90 transition-opacity"
           >
             <Zap size={15} />
             {t('generateFees')}
           </button>
           <button
             onClick={() => setAddModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-orange text-white text-sm font-semibold hover:bg-orange-600 transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-kinder-orange text-white text-sm font-semibold hover:bg-orange-600 transition-colors col-span-2 md:col-span-1"
           >
             <Plus size={15} />
             {t('addFeeRecord')}
@@ -215,12 +247,12 @@ export function FeesPage() {
 
       {/* Table */}
       <div
-        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-opacity ${isFetching ? 'opacity-60' : ''}`}
       >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/60">
+              <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/60">
                 <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
                   {t('feeStudent')}
                 </th>
@@ -230,7 +262,7 @@ export function FeesPage() {
                 <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide hidden md:table-cell">
                   {t('feeDesc')}
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide hidden lg:table-cell">
+                <th className="text-left px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide hidden md:table-cell">
                   {t('feeDueDate')}
                 </th>
                 <th className="text-right px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
@@ -245,7 +277,7 @@ export function FeesPage() {
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => <TableRowSkeleton key={i} cols={8} />)
               ) : records.length === 0 ? (
@@ -265,6 +297,9 @@ export function FeesPage() {
                     }
                     onEdit={setEditRecord}
                     onDelete={(id) => deleteMutation.mutate(id)}
+                    onPrintInvoice={setInvoiceRecord}
+                    onPrintOverdue={setOverdueRecord}
+                    onPrintEnrollment={setEnrollmentRecord}
                   />
                 ))
               )}
@@ -308,6 +343,29 @@ export function FeesPage() {
           thisPayment={receiptData.amount}
           onClose={() => setReceiptData(null)}
         />
+      )}
+      {invoiceRecord && (
+        <FeeInvoice record={invoiceRecord} onClose={() => setInvoiceRecord(null)} />
+      )}
+      {overdueRecord && (
+        <FeeInvoice
+          record={overdueRecord}
+          variant="overdue-notice"
+          onClose={() => setOverdueRecord(null)}
+        />
+      )}
+      {enrollmentRecord && (
+        <EnrollmentLetterView record={enrollmentRecord} onClose={() => setEnrollmentRecord(null)} />
+      )}
+      {collectionSheetOpen && (
+        <ClassCollectionSheet
+          initialClass={classFilter}
+          initialMonth={monthFilter}
+          onClose={() => setCollectionSheetOpen(false)}
+        />
+      )}
+      {monthlyReportOpen && (
+        <MonthlyCollectionReport month={monthFilter} onClose={() => setMonthlyReportOpen(false)} />
       )}
     </div>
   )

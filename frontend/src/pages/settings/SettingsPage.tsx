@@ -49,11 +49,11 @@ export function SettingsPage() {
       {/* Mobile: drill-down hub */}
       <div className="lg:hidden">
         {mobileSection === null ? (
-          <div className="rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
             {NAV_SECTIONS.map((section, sectionIdx) => (
               <div
                 key={section.labelKey}
-                className={sectionIdx > 0 ? 'border-t border-gray-100 dark:border-gray-800' : ''}
+                className={sectionIdx > 0 ? 'border-t border-gray-200 dark:border-gray-800' : ''}
               >
                 <div className="px-4 pt-3 pb-2 bg-gray-50 dark:bg-gray-800/50">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
@@ -65,7 +65,7 @@ export function SettingsPage() {
                     key={item.key}
                     type="button"
                     onClick={() => setMobileSection(item.key)}
-                    className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-t border-gray-100 dark:border-gray-800"
+                    className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-t border-gray-200 dark:border-gray-800"
                   >
                     {t(item.labelKey)}
                     <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />

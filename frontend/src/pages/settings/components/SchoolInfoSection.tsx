@@ -44,6 +44,8 @@ export function SchoolInfoSection() {
     google_maps_embed_url: '',
     facebook_url: '',
     instagram_url: '',
+    principal_name: '',
+    registration_number: '',
   })
   const [isDirty, setIsDirty] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -66,6 +68,8 @@ export function SchoolInfoSection() {
         google_maps_embed_url,
         facebook_url,
         instagram_url,
+        principal_name,
+        registration_number,
       } = data.data
       setForm({
         school_name,
@@ -78,6 +82,8 @@ export function SchoolInfoSection() {
         google_maps_embed_url: google_maps_embed_url ?? '',
         facebook_url: facebook_url ?? '',
         instagram_url: instagram_url ?? '',
+        principal_name: principal_name ?? '',
+        registration_number: registration_number ?? '',
       })
       setIsDirty(false)
     }
@@ -125,7 +131,7 @@ export function SchoolInfoSection() {
   const labelCls = 'block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 space-y-5">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
       <div>
         <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
           {t('settingsSchoolInfo')}
@@ -241,6 +247,30 @@ export function SchoolInfoSection() {
             </div>
           </div>
 
+          {/* Principal Name + Registration Number */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className={labelCls}>{t('settingsPrincipalName')}</label>
+              <input
+                type="text"
+                value={form.principal_name}
+                onChange={(e) => set('principal_name', e.target.value)}
+                placeholder={t('settingsPrincipalNamePlaceholder')}
+                className={inputCls}
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelCls}>{t('settingsRegistrationNumber')}</label>
+              <input
+                type="text"
+                value={form.registration_number}
+                onChange={(e) => set('registration_number', e.target.value)}
+                placeholder={t('settingsRegistrationNumberPlaceholder')}
+                className={inputCls}
+              />
+            </div>
+          </div>
+
           {/* WhatsApp Number */}
           <div>
             <label className={labelCls}>{t('settingsWhatsapp')}</label>
@@ -280,7 +310,7 @@ export function SchoolInfoSection() {
                     key={day}
                     className={`grid grid-cols-[1fr_100px_100px] items-center px-3 py-2 gap-2 ${
                       idx < DAY_KEYS.length - 1
-                        ? 'border-b border-gray-100 dark:border-gray-800'
+                        ? 'border-b border-gray-200 dark:border-gray-800'
                         : ''
                     } ${isClosed ? 'opacity-50' : ''}`}
                   >
@@ -380,7 +410,7 @@ export function SchoolInfoSection() {
       )}
 
       {/* Save */}
-      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+      <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           onClick={() => mutation.mutate()}
           disabled={!isDirty || mutation.isPending || uploading}
