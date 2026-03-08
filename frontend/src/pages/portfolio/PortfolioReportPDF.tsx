@@ -10,6 +10,8 @@ export interface PDFLabels {
   teacherSignature: string
   principalSignature: string
   noEntries: string
+  observationsByDomain: string
+  generatedOn: string
   domainLabels: Record<PortfolioDomain, string>
 }
 
@@ -38,23 +40,26 @@ const DOMAIN_BG: Record<PortfolioDomain, string> = {
   creative: 'rgba(255,107,53,0.06)',
 }
 
+const ZERO_BADGE_COLOR = '#D1D5DB'
+
+/** Bump this version whenever the report layout/design changes */
+const REPORT_VERSION = '1.2.0'
+
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     fontSize: 9,
     color: '#111827',
-    paddingTop: 102,
-    paddingBottom: 50,
+    paddingBottom: 40,
     paddingHorizontal: 0,
   },
 
-  // ── Header ──────────────────────────────────────────────────────────────────
+  // -- Header -----------------------------------------------------------------
   header: {
     backgroundColor: '#FF6B35',
     paddingTop: 22,
     paddingBottom: 22,
     paddingHorizontal: 36,
-    marginBottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -73,12 +78,6 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 8,
-  },
-  headerLogoPlaceholder: {
-    width: 54,
-    height: 54,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   headerLeft: {
     flex: 1,
@@ -128,20 +127,26 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'right',
   },
+  headerMeta: {
+    fontSize: 7,
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'right',
+    marginTop: 3,
+  },
 
-  // ── Thin accent bar below header ────────────────────────────────────────────
+  // -- Thin accent bar below header -------------------------------------------
   accentBar: {
-    height: 4,
+    height: 6,
     backgroundColor: '#FFBE0B',
     marginBottom: 22,
   },
 
-  // ── Body ────────────────────────────────────────────────────────────────────
+  // -- Body -------------------------------------------------------------------
   body: {
     paddingHorizontal: 36,
   },
 
-  // ── Student block ───────────────────────────────────────────────────────────
+  // -- Student block ----------------------------------------------------------
   studentBlock: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -165,15 +170,8 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontFamily: 'Helvetica',
   },
-  studentMeta: {
-    alignItems: 'flex-end',
-  },
-  studentMetaLabel: {
-    fontSize: 7.5,
-    color: '#9CA3AF',
-  },
 
-  // ── Section label (reused above domains and comments) ──────────────────────
+  // -- Section label ----------------------------------------------------------
   sectionHeading: {
     fontSize: 8,
     fontFamily: 'Helvetica-Bold',
@@ -184,7 +182,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // ── Domain section ──────────────────────────────────────────────────────────
+  // -- Domain section ---------------------------------------------------------
   domainSection: {
     marginBottom: 10,
     borderLeftWidth: 3,
@@ -212,7 +210,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 
-  // ── Observation entries ─────────────────────────────────────────────────────
+  // -- Observation entries ----------------------------------------------------
   entryRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -241,7 +239,7 @@ const styles = StyleSheet.create({
   },
   noEntries: {
     fontSize: 9,
-    color: '#9CA3AF',
+    color: '#D1D5DB',
     paddingVertical: 7,
     paddingHorizontal: 10,
   },
@@ -251,15 +249,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
 
-  // ── Comments — two columns ──────────────────────────────────────────────────
+  // -- Comments — stacked -----------------------------------------------------
   commentsRow: {
-    flexDirection: 'row',
-    gap: 12,
     marginTop: 16,
     marginBottom: 6,
-  },
-  commentCol: {
-    flex: 1,
+    gap: 10,
   },
   commentLabel: {
     fontSize: 8,
@@ -274,7 +268,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 6,
     padding: 9,
-    minHeight: 56,
+    minHeight: 64,
     backgroundColor: '#FAFAFA',
   },
   commentText: {
@@ -283,25 +277,23 @@ const styles = StyleSheet.create({
     lineHeight: 1.6,
   },
 
-  // ── Signature section ───────────────────────────────────────────────────────
-  signaturesDivider: {
-    height: 1,
-    backgroundColor: '#E5E7EB',
-    marginTop: 22,
-    marginBottom: 18,
+  // -- Signature section ------------------------------------------------------
+  signaturesWrap: {
+    marginTop: 28,
+    paddingHorizontal: 36,
   },
   signatures: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
   },
   signatureBox: {
     alignItems: 'center',
-    width: 160,
+    width: 200,
   },
   signatureLine: {
     height: 1,
     backgroundColor: '#9CA3AF',
-    width: 160,
+    width: 200,
     marginBottom: 5,
   },
   signatureLabel: {
@@ -309,11 +301,14 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────────
+  // -- Footer -----------------------------------------------------------------
   pageFooter: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 14,
+    left: 36,
     right: 36,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   pageFooterText: {
     fontSize: 7,
@@ -359,17 +354,21 @@ export function PortfolioReportPDF({
 
   const contactLine = [schoolAddress, schoolPhone, schoolEmail].filter(Boolean).join('  |  ')
 
+  const printDate = new Date().toLocaleDateString('en-MY', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* ── Header ── */}
+        {/* -- Header (repeats on every page) -- */}
         <View fixed style={styles.header}>
-          {schoolLogoUrl ? (
+          {schoolLogoUrl && (
             <View style={styles.headerLogoWrap}>
               <Image src={schoolLogoUrl} style={styles.headerLogo} />
             </View>
-          ) : (
-            <View style={[styles.headerLogoWrap, { marginRight: 14 }]} />
           )}
 
           <View style={styles.headerLeft}>
@@ -387,13 +386,16 @@ export function PortfolioReportPDF({
                 {labels.termPrefix}: {term}
               </Text>
             </View>
+            <Text style={styles.headerMeta}>
+              {studentName} | v{REPORT_VERSION}
+            </Text>
           </View>
         </View>
 
-        {/* ── Yellow accent bar ── */}
+        {/* -- Yellow accent bar -- */}
         <View fixed style={styles.accentBar} />
 
-        {/* ── Body ── */}
+        {/* -- Body -- */}
         <View style={styles.body}>
           {/* Student block */}
           <View style={styles.studentBlock}>
@@ -404,67 +406,97 @@ export function PortfolioReportPDF({
           </View>
 
           {/* Domain sections label */}
-          <Text style={styles.sectionHeading}>Observations by Domain</Text>
+          <Text style={styles.sectionHeading}>{labels.observationsByDomain}</Text>
 
           {/* Domain sections */}
           {DOMAIN_ORDER.map((domain) => {
             const domainEntries = byDomain[domain] ?? []
             const color = DOMAIN_COLORS[domain]
             const bg = DOMAIN_BG[domain]
+            const isEmpty = domainEntries.length === 0
+            const badgeColor = isEmpty ? ZERO_BADGE_COLOR : color
+
+            const firstEntry = domainEntries[0]
+            const restEntries = domainEntries.slice(1)
 
             return (
-              <View key={domain} style={[styles.domainSection, { borderLeftColor: color }]}>
-                {/* Domain header row */}
-                <View style={[styles.domainHeader, { backgroundColor: bg }]}>
-                  <Text style={styles.domainLabel}>{labels.domainLabels[domain]}</Text>
-                  <View style={[styles.domainBadge, { backgroundColor: color }]}>
-                    <Text style={styles.domainBadgeText}>{domainEntries.length}</Text>
+              <View
+                key={domain}
+                style={[styles.domainSection, { borderLeftColor: isEmpty ? '#E5E7EB' : color }]}
+              >
+                {/* Domain header + first entry grouped to prevent orphaned header */}
+                <View wrap={false}>
+                  <View
+                    style={[styles.domainHeader, { backgroundColor: isEmpty ? '#FAFAFA' : bg }]}
+                  >
+                    <Text style={[styles.domainLabel, isEmpty ? { color: '#9CA3AF' } : {}]}>
+                      {labels.domainLabels[domain]}
+                    </Text>
+                    <View style={[styles.domainBadge, { backgroundColor: badgeColor }]}>
+                      <Text style={styles.domainBadgeText}>{domainEntries.length}</Text>
+                    </View>
                   </View>
+
+                  {firstEntry ? (
+                    <View style={styles.entryRow}>
+                      <View style={[styles.entryDot, { backgroundColor: color }]} />
+                      <Text style={styles.entryText}>{firstEntry.observation}</Text>
+                      <Text style={styles.entryDate}>
+                        {new Date(firstEntry.entry_date + 'T00:00:00').toLocaleDateString('en-MY', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.noEntries}>{labels.noEntries}</Text>
+                  )}
                 </View>
 
-                {/* Entries */}
-                {domainEntries.length > 0 ? (
-                  domainEntries.map((e, idx) => (
-                    <View key={e.id}>
-                      {idx > 0 && <View style={styles.entryDivider} />}
-                      <View style={styles.entryRow}>
-                        <View style={[styles.entryDot, { backgroundColor: color }]} />
-                        <Text style={styles.entryText}>{e.observation}</Text>
-                        <Text style={styles.entryDate}>
-                          {new Date(e.entry_date + 'T00:00:00').toLocaleDateString('en-MY', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </Text>
-                      </View>
+                {/* Remaining entries */}
+                {restEntries.map((e) => (
+                  <View key={e.id} wrap={false}>
+                    <View style={styles.entryDivider} />
+                    <View style={styles.entryRow}>
+                      <View style={[styles.entryDot, { backgroundColor: color }]} />
+                      <Text style={styles.entryText}>{e.observation}</Text>
+                      <Text style={styles.entryDate}>
+                        {new Date(e.entry_date + 'T00:00:00').toLocaleDateString('en-MY', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </Text>
                     </View>
-                  ))
-                ) : (
-                  <Text style={styles.noEntries}>{labels.noEntries}</Text>
-                )}
+                  </View>
+                ))}
               </View>
             )
           })}
 
-          {/* Comments — two columns */}
+          {/* Comments — stacked */}
           <View style={styles.commentsRow}>
-            <View style={styles.commentCol}>
+            <View wrap={false}>
               <Text style={styles.commentLabel}>{labels.teacherComment}</Text>
               <View style={styles.commentBox}>
                 <Text style={styles.commentText}>{report?.teacher_comment ?? ''}</Text>
               </View>
             </View>
-            <View style={styles.commentCol}>
+            <View wrap={false}>
               <Text style={styles.commentLabel}>{labels.principalComment}</Text>
               <View style={styles.commentBox}>
                 <Text style={styles.commentText}>{report?.principal_comment ?? ''}</Text>
               </View>
             </View>
           </View>
+        </View>
 
-          {/* Signatures */}
-          <View style={styles.signaturesDivider} />
+        {/* Spacer — pushes signatures to bottom of last page */}
+        <View style={{ flexGrow: 1 }} />
+
+        {/* -- Signatures -- */}
+        <View wrap={false} style={styles.signaturesWrap}>
           <View style={styles.signatures}>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
@@ -477,8 +509,15 @@ export function PortfolioReportPDF({
           </View>
         </View>
 
-        {/* ── Footer (fixed, repeats on every page) ── */}
+        {/* -- Footer (repeats on every page) -- */}
         <View fixed style={styles.pageFooter}>
+          <Text style={styles.pageFooterText}>
+            {labels.generatedOn} {printDate}
+          </Text>
+          <Text
+            style={styles.pageFooterText}
+            render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+          />
           <Text style={styles.pageFooterText}>Generated by {APP_NAME}</Text>
         </View>
       </Page>

@@ -2,7 +2,16 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { PDFDownloadLink } from '@react-pdf/renderer'
-import { ArrowLeft, Download, Dumbbell, Brain, MessageSquare, Heart, Palette } from 'lucide-react'
+import {
+  ArrowLeft,
+  Download,
+  Dumbbell,
+  Brain,
+  MessageSquare,
+  Heart,
+  Palette,
+  ChevronDown,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { portfolioEntriesApi, portfolioReportsApi, studentsApi } from '@/lib/api'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
@@ -110,6 +119,8 @@ export function PortfolioReportPage() {
     teacherSignature: t('teacherSignature'),
     principalSignature: t('principalSignature'),
     noEntries: t('noEntries'),
+    observationsByDomain: t('observationsByDomain'),
+    generatedOn: t('generatedOn'),
     domainLabels: {
       physical: DOMAIN_CONFIG.physical.label,
       cognitive: DOMAIN_CONFIG.cognitive.label,
@@ -125,6 +136,15 @@ export function PortfolioReportPage() {
     acc[d]!.push(e)
     return acc
   }, {})
+
+  const [expandedDomains, setExpandedDomains] = useState<Set<PortfolioDomain>>(new Set())
+  const toggleDomain = (domain: PortfolioDomain) =>
+    setExpandedDomains((prev) => {
+      const next = new Set(prev)
+      if (next.has(domain)) next.delete(domain)
+      else next.add(domain)
+      return next
+    })
 
   if (isLoading) {
     return (
@@ -190,39 +210,50 @@ export function PortfolioReportPage() {
             const cfg = DOMAIN_CONFIG[domain]
             const Icon = cfg.icon
             const domainEntries = byDomain[domain] ?? []
+            const isExpanded = expandedDomains.has(domain)
 
             return (
               <div
                 key={domain}
                 className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden"
               >
-                <div className={`flex items-center gap-2 px-4 py-2.5 ${cfg.bg}`}>
+                <button
+                  type="button"
+                  onClick={() => toggleDomain(domain)}
+                  className={`w-full flex items-center gap-2 px-4 py-2.5 ${cfg.bg} cursor-pointer`}
+                >
                   <Icon className={`w-4 h-4 ${cfg.color}`} />
                   <p className={`text-sm font-bold ${cfg.color}`}>{cfg.label}</p>
                   <span className={`ml-auto text-xs ${cfg.color}`}>
                     {domainEntries.length} {domainEntries.length === 1 ? 'entry' : 'entries'}
                   </span>
-                </div>
-                {domainEntries.length > 0 ? (
-                  <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {domainEntries.map((e) => (
-                      <li key={e.id} className="px-4 py-3">
-                        <p className="text-sm text-gray-700 dark:text-gray-300">{e.observation}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                          {new Date(e.entry_date + 'T00:00:00').toLocaleDateString('en-MY', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="px-4 py-3 text-sm text-gray-400 dark:text-gray-600">
-                    No entries for this term
-                  </p>
-                )}
+                  <ChevronDown
+                    className={`w-4 h-4 ${cfg.color} transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {isExpanded &&
+                  (domainEntries.length > 0 ? (
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {domainEntries.map((e) => (
+                        <li key={e.id} className="px-4 py-3">
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {e.observation}
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                            {new Date(e.entry_date + 'T00:00:00').toLocaleDateString('en-MY', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="px-4 py-3 text-sm text-gray-400 dark:text-gray-600">
+                      No entries for this term
+                    </p>
+                  ))}
               </div>
             )
           })}

@@ -705,6 +705,8 @@ export const translations = {
     entryDate: 'Entry Date',
     portfolioReport: 'Progress Report',
     studentProgressReport: 'Student Progress Report',
+    observationsByDomain: 'Observations by Domain',
+    generatedOn: 'Generated on',
   },
 
   ms: {
@@ -1413,6 +1415,8 @@ export const translations = {
     entryDate: 'Tarikh Catatan',
     portfolioReport: 'Laporan Kemajuan',
     studentProgressReport: 'Laporan Kemajuan Pelajar',
+    observationsByDomain: 'Pemerhatian Mengikut Domain',
+    generatedOn: 'Dijana pada',
   },
 } as const
 
