@@ -67,15 +67,21 @@ kindergarten-app/
 │       ├── index.ts           # Hono app entry, CORS, middleware registration
 │       ├── routes/
 │       │   ├── auth.ts        # POST /api/auth/login (rate-limited), /logout, GET /me
-│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_name, gender); POST /bulk
+│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender); POST /bulk
 │       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
 │       │   ├── gallery.ts           # CRUD + paginated GET (?page, limit, search)
 │       │   ├── announcements.ts     # CRUD + paginated GET (?page, limit, search, category); pinned-first ordering
 │       │   ├── documentNumbering.ts # GET/PUT /api/document-numbering/:type; exports generateNextNumber()
-│       │   └── fees.ts              # CRUD for fee_plans + fee_records; /payment, /generate, /export, /summary
+│       │   ├── fees.ts              # CRUD for fee_plans + fee_records; /payment, /generate, /export, /summary
+│       │   ├── parentAuth.ts        # POST /api/portal/login (public), /logout — access code + PIN auth, issues JWT
+│       │   ├── portal.ts            # GET /api/portal/me|attendance|fees|announcements|daily-reports|portfolio — parent-auth protected
+│       │   ├── dailyReports.ts      # GET/?date&class_id, PUT/:studentId/:date (upsert), DELETE/:id
+│       │   ├── portfolioEntries.ts  # CRUD + GET /:studentId/report/:term (entries + report row)
+│       │   └── portfolioReports.ts  # PUT /:studentId/:term — upsert teacher/principal comments
 │       ├── middleware/
-│       │   └── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
+│       │   ├── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
+│       │   └── parentAuth.ts  # Validates portal Bearer token via parent_sessions table, sets parentStudentId
 │       ├── lib/
 │       │   ├── logger.ts      # pino instance (pino-pretty in dev, JSON in prod)
 │       │   └── sanitise.ts    # stripHtml(str) + sanitiseStrings(obj) — applied before all inserts
@@ -137,16 +143,31 @@ kindergarten-app/
 │       │   ├── ClassesPage.tsx      # Grid, 9/page, capacity bar, add/edit modal wired
 │       │   ├── GalleryPage.tsx      # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
 │       │   ├── FeePlansPage.tsx     # Fee plan cards, 9/page, add/edit/delete, "Use Plan" action
-│       │   └── FeeStatementPage.tsx # /admin/fees/statement/:studentId — annual printable statement
+│       │   ├── FeeStatementPage.tsx # /admin/fees/statement/:studentId — annual printable statement
+│       │   ├── daily-reports/
+│       │   │   └── DailyReportsPage.tsx # Date picker + class filter; inline mood/meals/nap/toilet/note per student; Save All
+│       │   ├── portfolio/
+│       │   │   ├── PortfolioReportPage.tsx # /admin/students/:id/portfolio/:term — editable report card; auto-saves on blur
+│       │   │   └── PortfolioReportPDF.tsx  # @react-pdf/renderer Document; downloaded via PDFDownloadLink (no print dialog)
+│       │   └── portal/              # Parent-facing pages (separate auth, no sidebar)
+│       │       ├── PortalLoginPage.tsx
+│       │       ├── PortalLayout.tsx
+│       │       ├── PortalDashboardPage.tsx
+│       │       ├── PortalAttendancePage.tsx
+│       │       ├── PortalFeesPage.tsx
+│       │       ├── PortalAnnouncementsPage.tsx
+│       │       ├── PortalDailyReportPage.tsx
+│       │       └── PortalPortfolioPage.tsx
 │       ├── store/
 │       │   ├── studentsStore.ts      # page, search, classFilter, genderFilter, modal state
 │       │   ├── classesStore.ts       # page, search, modal state
-│       │   ├── attendanceStore.ts    # selectedDate, page, statusFilter, pendingChanges
+│       │   ├── attendanceStore.ts    # selectedDate, page, statusFilter, pendingChanges (includes notes)
 │       │   ├── galleryStore.ts       # page, search
 │       │   ├── announcementsStore.ts # page, search, categoryFilter
 │       │   ├── feesStore.ts          # page, search, statusFilter, monthFilter, classFilter
 │       │   ├── feePlansStore.ts      # page, search
 │       │   ├── testimonialsStore.ts  # page, search
+│       │   ├── dailyReportsStore.ts  # selectedDate, classFilter, page, pendingChanges
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
@@ -163,31 +184,38 @@ kindergarten-app/
 │       │   │   ├── GenerateFeesModal.tsx  # 3-step: pick plan → pick target (class/all) → confirm bulk generate
 │       │   │   ├── RecordPaymentModal.tsx # Record payment — shows balance, amount input, assigns receipt number
 │       │   │   ├── ReceiptView.tsx        # Printable receipt — window.print() + @media print CSS
+│       │   │   ├── MoodPicker.tsx         # 4-button mood selector (happy/okay/tired/upset) with lucide icons
+│       │   │   ├── PortfolioEntryModal.tsx      # Add/Edit portfolio entry — domain, observation, photo, term, date
+│       │   │   ├── GeneratePortalAccessModal.tsx # Generate access code + set PIN for parent portal; copy-to-clipboard
 │       │   │   ├── AdminBearIcon.tsx      # Pixel-art SVG bear (viewBox 24×26); eyeState?: 'open'|'half'|'closed'
 │       │   │   ├── AdminBearSpeechBubble.tsx  # Admin-only bubble; variant: 'sleeping'|'waking'|'hidden'; sleeping animates z/z/Z
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
+│       │   ├── portal/
+│       │   │   └── PortalProtectedRoute.tsx  # Redirects to /portal/login if no parent token
 │       │   └── layout/
 │       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet; uses AdminBearLogo (desktop) + AdminBearIcon (mobile)
 │       │       └── ProtectedRoute.tsx  # Redirects to /admin/login if no user
 │       ├── hooks/
-│       │   ├── useAuth.tsx    # AuthContext: user, loading, login(), logout()
-│       │   └── useT.ts        # Translation hook: const t = useT(); t('key', { vars })
+│       │   ├── useAuth.tsx       # AuthContext: user, loading, login(), logout()
+│       │   ├── useParentAuth.tsx # ParentAuthContext: student, token, login(), logout(), loading — reads portal_token from localStorage
+│       │   └── useT.ts           # Translation hook: const t = useT(); t('key', { vars })
 │       ├── lib/
-│       │   ├── api.ts             # Axios instance + studentsApi, attendanceApi, classesApi, authApi, galleryApi, announcementsApi, feesApi, feePlansApi, documentNumberingApi; publicApi (no-auth)
+│       │   ├── api.ts             # Axios instance + all admin APIs; portalApi (separate instance with portal_token interceptor) + portalAuthApi + portalDataApi
 │       │   ├── supabaseClient.ts  # Supabase browser client (anon key) — used for Storage uploads only
-│       │   ├── translations.ts    # Full EN/MS translation map (~106 keys)
+│       │   ├── translations.ts    # Full EN/MS translation map (~160 keys)
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
 │       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
 │       └── types/
-│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement, FeeRecord, FeePlan, DocumentNumberingConfig, FeesSummary
+│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement, FeeRecord, FeePlan, DocumentNumberingConfig, FeesSummary, DailyReport, PortfolioEntry, PortfolioReport, PortalStudent
 │
-└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items, announcements, document_numbering, fee_plans, fee_records + RLS policies
+└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items, announcements, document_numbering, fee_plans, fee_records, parent_sessions, daily_reports, portfolio_entries, portfolio_reports + RLS policies
 ```
 
 ## Database Schema
 
 ```sql
-students       (id, full_name, date_of_birth, gender, class_name, parent_name, parent_email, parent_phone, photo_url, created_at)
+students       (id, full_name, date_of_birth, gender, class_id→classrooms, parent_name, parent_email, parent_phone, photo_url, access_code UNIQUE, portal_pin_hash, created_at)
+               NOTE: class_name is NOT stored — derive via .select('*, classrooms(name)') join, then flattenClassroom() in backend
 classrooms     (id, name, teacher_name, capacity, created_at)
 attendance     (id, student_id→students, date, status[present|absent|late|excused], notes, recorded_by, created_at)
                UNIQUE(student_id, date)
@@ -202,6 +230,14 @@ fee_plans          (id, name, type[tuition|activity|uniform|registration|other],
 fee_records        (id, student_id→students, type, description, amount_owed, amount_paid, discount_amount, discount_reason, receipt_number UNIQUE, status[unpaid|partial|paid|waived], due_date, paid_at, created_at)
                    RLS: authenticated only
                    Status derivation (backend): waived if discount>=owed; paid if paid>=(owed-discount); partial if paid>0; unpaid otherwise
+parent_sessions    (id, student_id→students, token_hash UNIQUE, expires_at, created_at)
+                   RLS: authenticated only; backend checks expires_at on every portal request
+daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at)
+                   UNIQUE(student_id, report_date); RLS: authenticated only
+portfolio_entries  (id, student_id→students, domain[physical|cognitive|language|social_emotional|creative], observation, photo_url, term, recorded_by, entry_date, created_at)
+                   RLS: authenticated only
+portfolio_reports  (id, student_id→students, term, teacher_comment, principal_comment, generated_at)
+                   UNIQUE(student_id, term); RLS: authenticated only
 ```
 
 ## API Response Format
@@ -218,7 +254,7 @@ All list endpoints return paginated responses:
 ## State Management Pattern
 
 - **Zustand** stores hold UI state only (page number, search string, filters, modal open/close, unsaved attendance changes)
-- **React Query** handles all server data with cache keys like `['students', { page, search, class_name, gender }]`
+- **React Query** handles all server data with cache keys like `['students', { page, search, class_id, gender }]`
 - `placeholderData: (prev) => prev` is used on all list queries so old data shows while new page loads (no flash)
 - Zustand `setSearch` and `setClassFilter` always reset `page` to 1
 
@@ -405,7 +441,7 @@ Admin-managed parent testimonials shown on the landing page carousel.
 - [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
 - [ ] Role-based access (superadmin vs teacher — schema has AdminUser.role already)
 - [x] Real-time attendance updates — implemented in `hooks/useAttendanceRealtime.ts`
-- [ ] Parent portal (public-facing, read-only view for parents to check their child's attendance)
+- [x] Parent portal — access code + PIN login, JWT sessions, 6 portal tabs (attendance, fees, announcements, daily reports, portfolio), admin generate/reset/revoke UI
 - [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
 
 - [ ] Newsletter/Posts module — full-page TipTap WYSIWYG editor (StarterKit), draft/published states, auto-slug from title, cover image + photo gallery strip, public `/posts` listing + `/posts/:slug` reader pages, DOMPurify or `sanitize-html` for HTML sanitization on save; separate from Announcements (short notices stay as-is)
