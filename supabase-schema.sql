@@ -16,13 +16,23 @@ create table students (
   full_name text not null,
   date_of_birth date not null,
   gender text check (gender in ('male', 'female')) not null,
-  class_name text not null,
+  class_id uuid references classrooms(id) on delete set null,  -- FK to classrooms; null = unassigned
   parent_name text not null,
   parent_email text not null,
   parent_phone text not null,
   photo_url text,
+  access_code text unique,           -- parent portal access code (e.g. KC-2024-001)
+  portal_pin_hash text,              -- bcrypt hash of 6-digit parent PIN
   created_at timestamptz default now()
 );
+
+-- Migration (run if table already exists):
+-- update students s set class_id = c.id from classrooms c where s.class_name = c.name and s.class_id is null;
+-- alter table students drop column if exists class_name;
+-- alter table students add column if not exists class_id uuid references classrooms(id) on delete set null;
+-- alter table students add column if not exists access_code text unique;
+-- alter table students add column if not exists portal_pin_hash text;
+-- create index if not exists idx_students_class_id on students(class_id);
 
 -- Attendance
 create table attendance (
@@ -39,7 +49,7 @@ create table attendance (
 -- Indexes
 create index idx_attendance_date on attendance(date);
 create index idx_attendance_student on attendance(student_id);
-create index idx_students_class on students(class_name);
+create index idx_students_class_id on students(class_id);
 
 -- RLS (Row Level Security) - enable for production
 alter table students enable row level security;
@@ -323,3 +333,88 @@ create policy "Auth users can insert art_wall" on art_wall for insert to authent
 create policy "Auth users can update art_wall" on art_wall for update to authenticated using (true);
 create policy "Auth users can delete art_wall" on art_wall for delete to authenticated using (true);
 create policy "Anyone can read visible art_wall" on art_wall for select to anon using (is_visible = true);
+
+-- ── Parent Portal ─────────────────────────────────────────────────────────────
+
+-- Parent sessions (server-side JWT revocation)
+create table if not exists parent_sessions (
+  id          uuid primary key default uuid_generate_v4(),
+  student_id  uuid not null references students(id) on delete cascade,
+  token_hash  text not null unique,
+  expires_at  timestamptz not null,
+  created_at  timestamptz default now()
+);
+
+create index if not exists idx_parent_sessions_student on parent_sessions(student_id);
+create index if not exists idx_parent_sessions_token   on parent_sessions(token_hash);
+
+alter table parent_sessions enable row level security;
+create policy "Auth users manage parent sessions" on parent_sessions for all to authenticated using (true) with check (true);
+
+-- Daily activity reports
+create table if not exists daily_reports (
+  id            uuid primary key default uuid_generate_v4(),
+  student_id    uuid not null references students(id) on delete cascade,
+  report_date   date not null,
+  meals_eaten   text check (meals_eaten in ('all','most','some','none')),
+  nap_minutes   integer,
+  toilet_count  integer,
+  mood          text check (mood in ('happy','okay','tired','upset')),
+  activity_note text,
+  photo_url     text,
+  recorded_by   text,
+  created_at    timestamptz default now(),
+  unique(student_id, report_date)
+);
+
+create index if not exists idx_daily_reports_student on daily_reports(student_id);
+create index if not exists idx_daily_reports_date    on daily_reports(report_date);
+
+alter table daily_reports enable row level security;
+create policy "Auth users manage daily reports" on daily_reports for all to authenticated using (true) with check (true);
+
+-- Portfolio entries (KSPK developmental observations)
+create table if not exists portfolio_entries (
+  id          uuid primary key default uuid_generate_v4(),
+  student_id  uuid not null references students(id) on delete cascade,
+  domain      text not null check (domain in ('physical','cognitive','language','social_emotional','creative')),
+  observation text not null,
+  photo_url   text,
+  term        text not null,
+  recorded_by text,
+  entry_date  date not null default current_date,
+  created_at  timestamptz default now()
+);
+
+create index if not exists idx_portfolio_entries_student on portfolio_entries(student_id);
+create index if not exists idx_portfolio_entries_term    on portfolio_entries(term);
+
+alter table portfolio_entries enable row level security;
+create policy "Auth users manage portfolio entries" on portfolio_entries for all to authenticated using (true) with check (true);
+
+-- Termly report cards
+create table if not exists portfolio_reports (
+  id                uuid primary key default uuid_generate_v4(),
+  student_id        uuid not null references students(id) on delete cascade,
+  term              text not null,
+  teacher_comment   text,
+  principal_comment text,
+  generated_at      timestamptz default now(),
+  unique(student_id, term)
+);
+
+create index if not exists idx_portfolio_reports_student on portfolio_reports(student_id);
+
+alter table portfolio_reports enable row level security;
+create policy "Auth users manage portfolio reports" on portfolio_reports for all to authenticated using (true) with check (true);
+
+-- portfolio-photos storage bucket
+-- Create manually in Supabase dashboard (public bucket), then run:
+drop policy if exists "Auth users can upload portfolio photos" on storage.objects;
+drop policy if exists "Auth users can update portfolio photos" on storage.objects;
+drop policy if exists "Auth users can delete portfolio photos" on storage.objects;
+drop policy if exists "Anyone can read portfolio photos"       on storage.objects;
+create policy "Auth users can upload portfolio photos"  on storage.objects for insert to authenticated with check (bucket_id = 'portfolio-photos');
+create policy "Auth users can update portfolio photos"  on storage.objects for update to authenticated using  (bucket_id = 'portfolio-photos');
+create policy "Auth users can delete portfolio photos"  on storage.objects for delete to authenticated using  (bucket_id = 'portfolio-photos');
+create policy "Anyone can read portfolio photos"        on storage.objects for select to anon, authenticated using (bucket_id = 'portfolio-photos');

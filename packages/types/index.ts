@@ -6,12 +6,16 @@ export interface Student {
   full_name: string
   date_of_birth: string
   gender: 'male' | 'female'
-  class_name: string
+  class_id?: string | null
+  class_name?: string | null // derived via join with classrooms; not stored on the row
   parent_name: string
   parent_email: string
   parent_phone: string
   photo_url?: string
   created_at: string
+  // Parent portal access fields (populated from DB columns)
+  access_code?: string | null
+  portal_pin_hash?: string | null
 }
 
 export interface AttendanceRecord {
@@ -23,7 +27,7 @@ export interface AttendanceRecord {
   recorded_by: string
   created_at: string
   // Populated by Supabase join on the frontend — not present in backend responses
-  students?: Pick<Student, 'full_name' | 'class_name' | 'photo_url'>
+  students?: Pick<Student, 'full_name' | 'photo_url'> & { class_name?: string | null }
 }
 
 export interface ClassRoom {
@@ -121,10 +125,10 @@ export interface FeeRecord {
   due_date?: string | null
   paid_at?: string | null
   created_at: string
-  // Joined from students table (Supabase FK join)
+  // Joined from students table via FK; backend flattens classrooms(name) → class_name before returning
   students?: {
     full_name: string
-    class_name: string
+    class_name?: string | null // derived via classrooms join; not a DB column on students
     photo_url?: string
     parent_name?: string
   } | null
@@ -304,6 +308,59 @@ export interface ArtWallItem {
   is_visible: boolean
   tilt_angle: number | null // null = auto (getRotation hash); range: -15 to 15
   created_at: string
+}
+
+// ─── Parent Portal ────────────────────────────────────────────────────────────
+
+export interface PortalStudent {
+  id: string
+  full_name: string
+  date_of_birth: string
+  gender: 'male' | 'female'
+  class_name?: string | null
+  photo_url?: string
+}
+
+export interface DailyReport {
+  id: string
+  student_id: string
+  report_date: string
+  meals_eaten: 'all' | 'most' | 'some' | 'none' | null
+  nap_minutes: number | null
+  toilet_count: number | null
+  mood: 'happy' | 'okay' | 'tired' | 'upset' | null
+  activity_note: string | null
+  photo_url: string | null
+  recorded_by: string | null
+  created_at: string
+}
+
+export type PortfolioDomain =
+  | 'physical'
+  | 'cognitive'
+  | 'language'
+  | 'social_emotional'
+  | 'creative'
+
+export interface PortfolioEntry {
+  id: string
+  student_id: string
+  domain: PortfolioDomain
+  observation: string
+  photo_url: string | null
+  term: string
+  recorded_by: string | null
+  entry_date: string
+  created_at: string
+}
+
+export interface PortfolioReport {
+  id?: string
+  student_id: string
+  term: string
+  teacher_comment: string | null
+  principal_comment: string | null
+  generated_at: string
 }
 
 // ─── Inquiries ─────────────────────────────────────────────────────────────────
