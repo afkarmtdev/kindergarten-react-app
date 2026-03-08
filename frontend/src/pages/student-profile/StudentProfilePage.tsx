@@ -245,11 +245,7 @@ export function StudentProfilePage() {
           <StudentArtwork studentId={s.id} />
 
           {/* Portal Access card */}
-          <PortalAccessCard
-            linkedParent={linkedParent}
-            onManage={() => setPortalModalOpen(true)}
-            t={t}
-          />
+          <PortalAccessCard linkedParent={linkedParent} onManage={() => setPortalModalOpen(true)} />
 
           <div className="mt-6">
             <AttendanceHistoryTable

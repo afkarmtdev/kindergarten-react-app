@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { ShieldCheck, ShieldOff, KeyRound, Copy, Check } from 'lucide-react'
 import type { Parent } from '@/types'
+import { useT } from '@/hooks/useT'
 
 export function PortalAccessCard({
   linkedParent,
   onManage,
-  t,
 }: {
   linkedParent: Parent | null
   onManage: () => void
-  t: (key: string) => string
 }) {
+  const t = useT()
   const [copied, setCopied] = useState(false)
   const hasCode = !!linkedParent?.access_code
   const hasPin = !!linkedParent?.portal_pin_hash
