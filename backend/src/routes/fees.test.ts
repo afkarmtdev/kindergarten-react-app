@@ -180,6 +180,27 @@ describe('Fee Records — pagination (default 20, max 100)', () => {
   })
 })
 
+describe('Fee Records — filter params', () => {
+  test('empty string class_id is treated as no filter (200, not 400)', async () => {
+    setMockResponse('fee_records', { data: [], error: null, count: 0 })
+
+    const res = await fees.request('/?class_id=')
+    expect(res.status).toBe(200)
+  })
+
+  test('valid UUID class_id is accepted', async () => {
+    setMockResponse('fee_records', { data: [], error: null, count: 0 })
+
+    const res = await fees.request('/?class_id=00000000-0000-0000-0000-000000000001')
+    expect(res.status).toBe(200)
+  })
+
+  test('invalid non-empty class_id is rejected (400)', async () => {
+    const res = await fees.request('/?class_id=not-a-uuid')
+    expect(res.status).toBe(400)
+  })
+})
+
 describe('Fee Records — GET /:id', () => {
   test('returns fee record', async () => {
     setMockResponse('fee_records', {
@@ -260,7 +281,7 @@ describe('Fee Records — POST /generate', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fee_plan_id: '550e8400-e29b-41d4-a716-446655440000',
-        target_class: 'Rose',
+        target_class_id: '00000000-0000-0000-0000-000000000001',
       }),
     })
 
@@ -281,7 +302,7 @@ describe('Fee Records — POST /generate', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fee_plan_id: '550e8400-e29b-41d4-a716-446655440000',
-        target_class: 'Nonexistent',
+        target_class_id: '00000000-0000-0000-0000-000000000099',
       }),
     })
 
@@ -404,7 +425,7 @@ describe('Fee Records — GET /export', () => {
           amount_paid: 100,
           status: 'paid',
           receipt_number: 'RC-001',
-          students: { full_name: 'Ali', class_name: 'Rose' },
+          students: { full_name: 'Ali', classrooms: { name: 'Rose' } },
         },
       ],
       error: null,
@@ -455,20 +476,25 @@ describe('Fee Records — DELETE /:id', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('Fee Records — GET /class-sheet', () => {
-  test('requires class_name and month', async () => {
+  test('requires class_id and month', async () => {
     const res = await fees.request('/class-sheet')
     expect(res.status).toBe(400)
   })
 
   test('requires valid month format (YYYY-MM)', async () => {
-    const res = await fees.request('/class-sheet?class_name=Rose&month=2025')
+    const res = await fees.request(
+      '/class-sheet?class_id=00000000-0000-0000-0000-000000000001&month=2025'
+    )
     expect(res.status).toBe(400)
   })
 
   test('returns empty result when class has no students', async () => {
+    setMockResponse('classrooms', { data: { name: 'EmptyClass' }, error: null })
     setMockResponse('students', { data: [], error: null })
 
-    const res = await fees.request('/class-sheet?class_name=EmptyClass&month=2025-03')
+    const res = await fees.request(
+      '/class-sheet?class_id=00000000-0000-0000-0000-000000000001&month=2025-03'
+    )
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -479,6 +505,7 @@ describe('Fee Records — GET /class-sheet', () => {
   })
 
   test('returns grouped students with records and totals', async () => {
+    setMockResponse('classrooms', { data: { name: 'Rose' }, error: null })
     setMockResponse('students', {
       data: [
         { id: 's1', full_name: 'Ali' },
@@ -514,7 +541,9 @@ describe('Fee Records — GET /class-sheet', () => {
       error: null,
     })
 
-    const res = await fees.request('/class-sheet?class_name=Rose&month=2025-03')
+    const res = await fees.request(
+      '/class-sheet?class_id=00000000-0000-0000-0000-000000000001&month=2025-03'
+    )
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -527,13 +556,16 @@ describe('Fee Records — GET /class-sheet', () => {
   })
 
   test('student with no fees for the month has empty records array', async () => {
+    setMockResponse('classrooms', { data: { name: 'Rose' }, error: null })
     setMockResponse('students', {
       data: [{ id: 's1', full_name: 'Ali' }],
       error: null,
     })
     setMockResponse('fee_records', { data: [], error: null })
 
-    const res = await fees.request('/class-sheet?class_name=Rose&month=2025-03')
+    const res = await fees.request(
+      '/class-sheet?class_id=00000000-0000-0000-0000-000000000001&month=2025-03'
+    )
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -583,7 +615,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 350,
           status: 'paid',
           due_date: '2025-03-01',
-          students: { full_name: 'Ali', class_name: 'Rose' },
+          students: { full_name: 'Ali', classrooms: { name: 'Rose' } },
         },
         {
           id: 'r2',
@@ -595,7 +627,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 0,
           status: 'unpaid',
           due_date: '2025-03-01',
-          students: { full_name: 'Mia', class_name: 'Rose' },
+          students: { full_name: 'Mia', classrooms: { name: 'Rose' } },
         },
         {
           id: 'r3',
@@ -607,7 +639,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 80,
           status: 'paid',
           due_date: '2025-03-01',
-          students: { full_name: 'Tom', class_name: 'Lily' },
+          students: { full_name: 'Tom', classrooms: { name: 'Lily' } },
         },
       ],
       error: null,
@@ -642,7 +674,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 200,
           status: 'paid',
           due_date: '2025-03-01',
-          students: { full_name: 'A', class_name: 'Rose' },
+          students: { full_name: 'A', classrooms: { name: 'Rose' } },
         },
         {
           id: 'r2',
@@ -654,7 +686,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 100,
           status: 'partial',
           due_date: '2025-03-01',
-          students: { full_name: 'B', class_name: 'Rose' },
+          students: { full_name: 'B', classrooms: { name: 'Rose' } },
         },
       ],
       error: null,
@@ -683,7 +715,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 100,
           status: 'paid',
           due_date: '2025-03-01',
-          students: { full_name: 'Paid', class_name: 'Rose' },
+          students: { full_name: 'Paid', classrooms: { name: 'Rose' } },
         },
         {
           id: 'r2',
@@ -695,7 +727,7 @@ describe('Fee Records — GET /monthly-report', () => {
           amount_paid: 0,
           status: 'unpaid',
           due_date: '2025-03-01',
-          students: { full_name: 'Owing', class_name: 'Rose' },
+          students: { full_name: 'Owing', classrooms: { name: 'Rose' } },
         },
       ],
       error: null,
@@ -908,7 +940,12 @@ describe('Fee Records — PUT /:id/payment', () => {
         amount_paid: 0,
         discount_amount: 0,
         status: 'unpaid',
-        students: { full_name: 'Ali', class_name: 'Rose', photo_url: null, parent_name: 'Abu' },
+        students: {
+          full_name: 'Ali',
+          classrooms: { name: 'Rose' },
+          photo_url: null,
+          parent_name: 'Abu',
+        },
       },
       error: null,
     })
@@ -933,7 +970,12 @@ describe('Fee Records — PUT /:id/payment', () => {
         amount_paid: 0,
         discount_amount: 0,
         status: 'unpaid',
-        students: { full_name: 'Ali', class_name: 'Rose', photo_url: null, parent_name: 'Abu' },
+        students: {
+          full_name: 'Ali',
+          classrooms: { name: 'Rose' },
+          photo_url: null,
+          parent_name: 'Abu',
+        },
       },
       error: null,
     })

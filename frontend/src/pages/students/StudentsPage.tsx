@@ -44,13 +44,13 @@ export function StudentsPage() {
   const classes = classesData?.data ?? []
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['students', { page, search, class_name: classFilter, gender: genderFilter }],
+    queryKey: ['students', { page, search, class_id: classFilter, gender: genderFilter }],
     queryFn: () =>
       studentsApi.getAll({
         page,
         limit: LIMIT,
         search,
-        class_name: classFilter,
+        class_id: classFilter,
         gender: genderFilter,
       }),
     placeholderData: (prev) => prev,
@@ -98,14 +98,14 @@ export function StudentsPage() {
       queryClient.prefetchQuery({
         queryKey: [
           'students',
-          { page: page + 1, search, class_name: classFilter, gender: genderFilter },
+          { page: page + 1, search, class_id: classFilter, gender: genderFilter },
         ],
         queryFn: () =>
           studentsApi.getAll({
             page: page + 1,
             limit: LIMIT,
             search,
-            class_name: classFilter,
+            class_id: classFilter,
             gender: genderFilter,
           }),
         staleTime: 30_000,
@@ -169,7 +169,7 @@ export function StudentsPage() {
         >
           <option value="">{t('allClasses')}</option>
           {classes.map((cls) => (
-            <option key={cls.id} value={cls.name}>
+            <option key={cls.id} value={cls.id}>
               {cls.name}
             </option>
           ))}

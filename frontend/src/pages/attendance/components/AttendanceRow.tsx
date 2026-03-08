@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useT } from '@/hooks/useT'
 import { STATUS_CONFIG, type Status } from '../constants'
 import type { Student } from '@/types'
@@ -5,17 +6,24 @@ import type { Student } from '@/types'
 export function AttendanceRow({
   student,
   status,
+  notes,
   isPending,
   index,
   onMark,
 }: {
   student: Student
   status: Status | null
+  notes?: string
   isPending: boolean
   index: number
-  onMark: (studentId: string, status: Status) => void
+  onMark: (studentId: string, status: Status, notes?: string) => void
 }) {
   const t = useT()
+  const [localNotes, setLocalNotes] = useState(notes ?? '')
+
+  useEffect(() => {
+    setLocalNotes(notes ?? '')
+  }, [notes])
 
   return (
     <tr
@@ -48,25 +56,37 @@ export function AttendanceRow({
         <span className="text-sm text-gray-500 dark:text-gray-400">{student.class_name}</span>
       </td>
       <td className="px-3 md:px-6 py-2 md:py-3.5">
-        <div className="flex gap-1.5 flex-wrap">
-          {(Object.keys(STATUS_CONFIG) as Status[]).map((s) => {
-            const { labelKey, icon: Icon, bg } = STATUS_CONFIG[s]
-            const isActive = status === s
-            return (
-              <button
-                key={s}
-                onClick={() => onMark(student.id, s)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                  isActive
-                    ? bg
-                    : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300'
-                }`}
-              >
-                <Icon size={11} />
-                {t(labelKey)}
-              </button>
-            )
-          })}
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-1.5 flex-wrap">
+            {(Object.keys(STATUS_CONFIG) as Status[]).map((s) => {
+              const { labelKey, icon: Icon, bg } = STATUS_CONFIG[s]
+              const isActive = status === s
+              return (
+                <button
+                  key={s}
+                  onClick={() => onMark(student.id, s, localNotes)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    isActive
+                      ? bg
+                      : 'bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <Icon size={11} />
+                  {t(labelKey)}
+                </button>
+              )
+            })}
+          </div>
+          {status && (
+            <input
+              type="text"
+              value={localNotes}
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={() => onMark(student.id, status, localNotes)}
+              placeholder={t('addNote')}
+              className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-kinder-blue/40 w-full max-w-xs"
+            />
+          )}
         </div>
       </td>
     </tr>

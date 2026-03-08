@@ -4,7 +4,7 @@
  * Displayed on the login page and in the admin sidebar so admins
  * always know which build they are running.
  */
-export const APP_VERSION = '1.4.0-alpha'
+export const APP_VERSION = '1.5.0-alpha2'
 
 /**
  * Brand name — single source of truth.

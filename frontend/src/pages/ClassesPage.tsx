@@ -143,11 +143,7 @@ export function ClassesPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {classes.map((cls: ClassRoom, i: number) => {
-              const studentCount = Array.isArray(cls.students)
-                ? typeof cls.students[0] === 'object' && 'count' in (cls.students[0] as object)
-                  ? (cls.students[0] as unknown as { count: number }).count
-                  : cls.students.length
-                : 0
+              const studentCount = cls.student_count ?? 0
               const fillPct = Math.min(Math.round((studentCount / cls.capacity) * 100), 100)
               const color = CLASS_COLORS[i % CLASS_COLORS.length]
 

@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'sonner'
 import { AuthProvider } from '@/hooks/useAuth'
+import { ParentAuthProvider } from '@/hooks/useParentAuth'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
+import PortalProtectedRoute from '@/components/portal/PortalProtectedRoute'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { CuteLoader } from '@/components/ui/Skeletons'
@@ -12,6 +14,15 @@ import { CuteLoader } from '@/components/ui/Skeletons'
 import { LandingPage } from '@/pages/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+// Portal pages — lazy loaded, completely separate from admin routes
+const PortalLoginPage = lazy(() => import('@/pages/portal/PortalLoginPage'))
+const PortalLayout = lazy(() => import('@/pages/portal/PortalLayout'))
+const PortalDashboardPage = lazy(() => import('@/pages/portal/PortalDashboardPage'))
+const PortalAttendancePage = lazy(() => import('@/pages/portal/PortalAttendancePage'))
+const PortalFeesPage = lazy(() => import('@/pages/portal/PortalFeesPage'))
+const PortalAnnouncementsPage = lazy(() => import('@/pages/portal/PortalAnnouncementsPage'))
+const PortalDailyReportPage = lazy(() => import('@/pages/portal/PortalDailyReportPage'))
+const PortalPortfolioPage = lazy(() => import('@/pages/portal/PortalPortfolioPage'))
 
 // Admin pages are lazy-loaded so they don't bloat the initial bundle
 const DashboardPage = lazy(() =>
@@ -61,6 +72,12 @@ const ArtWallPage = lazy(() =>
 const InquiriesPage = lazy(() =>
   import('@/pages/InquiriesPage').then((m) => ({ default: m.InquiriesPage }))
 )
+const DailyReportsPage = lazy(() =>
+  import('@/pages/daily-reports/DailyReportsPage').then((m) => ({ default: m.DailyReportsPage }))
+)
+const PortfolioReportPage = lazy(() =>
+  import('@/pages/portfolio/PortfolioReportPage').then((m) => ({ default: m.PortfolioReportPage }))
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,178 +94,269 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/admin/login" element={<LoginPage />} />
+        <ParentAuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/admin/login" element={<LoginPage />} />
 
-            {/* Protected admin routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute>
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              {/* Parent portal — completely separate auth branch */}
               <Route
-                path="dashboard"
+                path="/portal/login"
                 element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <DashboardPage />
-                    </Suspense>
-                  </ErrorBoundary>
+                  <Suspense fallback={<CuteLoader />}>
+                    <PortalLoginPage />
+                  </Suspense>
                 }
               />
-              <Route
-                path="students"
-                element={
-                  <ErrorBoundary>
+              <Route element={<PortalProtectedRoute />}>
+                <Route
+                  path="/portal"
+                  element={
                     <Suspense fallback={<CuteLoader />}>
-                      <StudentsPage />
+                      <PortalLayout />
                     </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="students/:id"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <StudentProfilePage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="attendance"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <AttendancePage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="classes"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <ClassesPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="gallery"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <GalleryPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="art-wall"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <ArtWallPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="announcements"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <AnnouncementsPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="fees"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <FeesPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="fees/statement/:studentId"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <FeeStatementPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="fees/annual-report"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <AnnualReportPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="fee-plans"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <FeePlansPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="testimonials"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <TestimonialsPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="inquiries"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <InquiriesPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="settings"
-                element={
-                  <ErrorBoundary>
-                    <Suspense fallback={<CuteLoader />}>
-                      <SettingsPage />
-                    </Suspense>
-                  </ErrorBoundary>
-                }
-              />
-            </Route>
+                  }
+                >
+                  <Route
+                    index
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalDashboardPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="attendance"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalAttendancePage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="fees"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalFeesPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="announcements"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalAnnouncementsPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="daily-reports"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalDailyReportPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="portfolio"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalPortfolioPage />
+                      </Suspense>
+                    }
+                  />
+                </Route>
+              </Route>
 
-            {/* Catch all */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </BrowserRouter>
+              {/* Protected admin routes */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                <Route
+                  path="dashboard"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <DashboardPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="students"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <StudentsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="students/:id"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <StudentProfilePage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="students/:id/portfolio/:term"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortfolioReportPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="attendance"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <AttendancePage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="classes"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <ClassesPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="gallery"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <GalleryPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="art-wall"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <ArtWallPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="announcements"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <AnnouncementsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="fees"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <FeesPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="fees/statement/:studentId"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <FeeStatementPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="fees/annual-report"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <AnnualReportPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="fee-plans"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <FeePlansPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="testimonials"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <TestimonialsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="inquiries"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <InquiriesPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="daily-reports"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <DailyReportsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="settings"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <SettingsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+              </Route>
+
+              {/* Catch all */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </BrowserRouter>
+        </ParentAuthProvider>
       </AuthProvider>
 
       <Toaster

@@ -6,6 +6,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
   FRONTEND_URL: z.string().url().optional().default('http://localhost:5173'),
   PORT: z.coerce.number().int().positive().optional().default(3000),
+  PORTAL_JWT_SECRET: z.string().min(32, 'PORTAL_JWT_SECRET must be at least 32 characters'),
   NODE_ENV: z.enum(['development', 'production', 'test']).optional().default('development'),
   LOG_LEVEL: z
     .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
@@ -41,7 +42,13 @@ import testimonials from './routes/testimonials'
 import inquiries from './routes/inquiries'
 import inquiriesAdmin from './routes/inquiriesAdmin'
 import artWall from './routes/artWall'
+import dailyReports from './routes/dailyReports'
+import portfolioEntries from './routes/portfolioEntries'
+import portfolioReports from './routes/portfolioReports'
+import parentAuth from './routes/parentAuth'
+import portal from './routes/portal'
 import { authMiddleware } from './middleware/auth'
+import { parentMiddleware } from './middleware/parentAuth'
 import { supabase } from './db/supabase'
 import { logger } from './lib/logger'
 
@@ -143,8 +150,19 @@ app.get('/api/public/art-wall', async (c) => {
 // Public inquiries — no auth required (LandingPage enrollment form)
 app.route('/api/public/inquiries', inquiries)
 
+// Parent portal login/logout — public (must be before authMiddleware)
+app.route('/api/portal', parentAuth)
+
+// Parent portal data routes — parentMiddleware only (NOT authMiddleware)
+app.use('/api/portal/*', parentMiddleware)
+app.route('/api/portal', portal)
+
 // ── Protected routes ──────────────────────────────────────────────────────────
-app.use('/api/*', authMiddleware)
+// Skip authMiddleware for portal paths — parentMiddleware already handles those
+app.use('/api/*', async (c, next) => {
+  if (c.req.path.startsWith('/api/portal/')) return next()
+  return authMiddleware(c, next)
+})
 app.route('/api/students', students)
 app.route('/api/attendance', attendance)
 app.route('/api/classes', classes)
@@ -157,6 +175,9 @@ app.route('/api/school-info', schoolInfo)
 app.route('/api/testimonials', testimonials)
 app.route('/api/inquiries', inquiriesAdmin)
 app.route('/api/art-wall', artWall)
+app.route('/api/daily-reports', dailyReports)
+app.route('/api/portfolio-entries', portfolioEntries)
+app.route('/api/portfolio-reports', portfolioReports)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))

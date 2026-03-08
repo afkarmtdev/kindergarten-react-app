@@ -14,7 +14,7 @@ const classSchema = z.object({
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(50).default(9),
+  limit: z.coerce.number().int().min(1).max(100).default(9),
   search: z.string().optional(),
 })
 
@@ -38,24 +38,24 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
 
   if (error) return c.json({ error: error.message }, 500)
 
-  // Count students per class using class_name text match
-  const classNames = (classData ?? []).map((cls) => cls.name)
+  // Count students per class using class_id FK
+  const classIds = (classData ?? []).map((cls) => cls.id)
   const studentCounts: Record<string, number> = {}
 
-  if (classNames.length > 0) {
+  if (classIds.length > 0) {
     const { data: studentData } = await supabase
       .from('students')
-      .select('class_name')
-      .in('class_name', classNames)
+      .select('class_id')
+      .in('class_id', classIds)
 
     for (const s of studentData ?? []) {
-      studentCounts[s.class_name] = (studentCounts[s.class_name] ?? 0) + 1
+      if (s.class_id) studentCounts[s.class_id] = (studentCounts[s.class_id] ?? 0) + 1
     }
   }
 
   const data = (classData ?? []).map((cls) => ({
     ...cls,
-    student_count: studentCounts[cls.name] ?? 0,
+    student_count: studentCounts[cls.id] ?? 0,
   }))
 
   return c.json({
@@ -76,7 +76,7 @@ classes.get('/:id', async (c) => {
 
   if (error) return c.json({ error: error.message }, 404)
 
-  const { data: students } = await supabase.from('students').select('*').eq('class_name', cls.name)
+  const { data: students } = await supabase.from('students').select('*').eq('class_id', id)
 
   return c.json({ ...cls, students: students ?? [] })
 })

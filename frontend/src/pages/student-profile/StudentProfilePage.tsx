@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil } from 'lucide-react'
-import { studentsApi, attendanceApi } from '@/lib/api'
+import { ArrowLeft, Pencil, ShieldCheck, ShieldOff, BookOpen, Plus, FileText } from 'lucide-react'
+import { studentsApi, attendanceApi, portfolioEntriesApi } from '@/lib/api'
 import { StudentModal } from '@/components/admin/StudentModal'
+import { GeneratePortalAccessModal } from '@/components/admin/GeneratePortalAccessModal'
+import { PortfolioEntryModal } from '@/components/admin/PortfolioEntryModal'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { type Status } from './constants'
@@ -11,9 +13,17 @@ import { StudentInfoCard } from './components/StudentInfoCard'
 import { AttendanceHeatmap } from './components/AttendanceHeatmap'
 import { StudentArtwork } from './components/StudentArtwork'
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
-import type { Student, AttendanceRecord } from '@/types'
+import type { Student, AttendanceRecord, PortfolioEntry } from '@/types'
 
 const LIMIT = 15
+
+const DOMAIN_LABEL: Record<string, string> = {
+  physical: 'Physical',
+  cognitive: 'Cognitive',
+  language: 'Language',
+  social_emotional: 'Social-Emotional',
+  creative: 'Creative',
+}
 
 export function StudentProfilePage() {
   const t = useT()
@@ -21,6 +31,15 @@ export function StudentProfilePage() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [editModalOpen, setEditModalOpen] = useState(false)
+  const [portalModalOpen, setPortalModalOpen] = useState(false)
+  const [portfolioModalOpen, setPortfolioModalOpen] = useState(false)
+  const [editingEntry, setEditingEntry] = useState<PortfolioEntry | null>(null)
+  const [portfolioTerm, setPortfolioTerm] = useState(() => {
+    const now = new Date()
+    const month = now.getMonth() + 1
+    const termNum = month <= 4 ? 1 : month <= 8 ? 2 : 3
+    return `${now.getFullYear()}-T${termNum}`
+  })
 
   const { data: student, isLoading: studentLoading } = useQuery({
     queryKey: ['student', id],
@@ -36,6 +55,31 @@ export function StudentProfilePage() {
     enabled: !!id,
     placeholderData: (prev) => prev,
   })
+
+  const { data: portfolioData } = useQuery({
+    queryKey: ['portfolio-entries', id, portfolioTerm],
+    queryFn: () => portfolioEntriesApi.getAll({ student_id: id!, term: portfolioTerm, limit: 50 }),
+    enabled: !!id,
+  })
+  const portfolioEntries: PortfolioEntry[] = portfolioData?.data ?? []
+
+  const { data: allTermsData } = useQuery({
+    queryKey: ['portfolio-terms', id],
+    queryFn: () => portfolioEntriesApi.getAll({ student_id: id!, limit: 100 }),
+    enabled: !!id,
+  })
+  const existingTerms = [...new Set((allTermsData?.data ?? []).map((e: PortfolioEntry) => e.term))]
+    .sort()
+    .reverse() as string[]
+  const tabTerms = existingTerms.length > 0 ? existingTerms : [portfolioTerm]
+
+  // Auto-select the most recent term with entries once data loads
+  useEffect(() => {
+    if (existingTerms.length > 0 && !existingTerms.includes(portfolioTerm)) {
+      setPortfolioTerm(existingTerms[0])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allTermsData])
 
   const records: AttendanceRecord[] = historyData?.data ?? []
   const meta = historyData?.meta
@@ -109,19 +153,157 @@ export function StudentProfilePage() {
 
           <AttendanceHeatmap studentId={s.id} />
 
+          {/* Portfolio section */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mt-6">
+            {/* Row 1 — title + primary action */}
+            <div className="flex items-center justify-between px-5 pt-4 pb-3">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-kinder-purple" />
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{t('portfolio')}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingEntry(null)
+                  setPortfolioModalOpen(true)
+                }}
+                className="flex items-center gap-1.5 bg-kinder-purple text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t('addEntry')}
+              </button>
+            </div>
+            {/* Row 2 — spreadsheet-style term tabs */}
+            <div className="flex items-end justify-between border-b border-gray-200 dark:border-gray-800 px-5">
+              <div className="flex items-end gap-1">
+                {tabTerms.map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => setPortfolioTerm(term)}
+                    className={`text-xs font-semibold px-3 py-2 rounded-t-lg border transition-colors ${
+                      term === portfolioTerm
+                        ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 border-b-white dark:border-b-gray-900 text-kinder-purple -mb-px'
+                        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 border-b-0 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+              {portfolioEntries.length > 0 && (
+                <Link
+                  to={`/admin/students/${s.id}/portfolio/${encodeURIComponent(portfolioTerm)}`}
+                  className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors pb-2"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  {t('reportCard')}
+                </Link>
+              )}
+            </div>
+            <div className="overflow-hidden rounded-b-2xl">
+              {portfolioEntries.length === 0 ? (
+                <div className="py-8 text-center text-gray-400 dark:text-gray-600 text-sm">
+                  {t('noEntries')} for {portfolioTerm}
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {portfolioEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-start gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
+                      onClick={() => {
+                        setEditingEntry(entry)
+                        setPortfolioModalOpen(true)
+                      }}
+                    >
+                      <span className="text-xs font-semibold text-kinder-purple bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded-md shrink-0">
+                        {DOMAIN_LABEL[entry.domain] ?? entry.domain}
+                      </span>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                        {entry.observation}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 ml-auto shrink-0">
+                        {new Date(entry.entry_date + 'T00:00:00').toLocaleDateString('en-MY', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           <StudentArtwork studentId={s.id} />
 
-          <AttendanceHistoryTable
-            records={records}
-            isLoading={historyLoading}
-            meta={meta}
-            page={page}
-            onPageChange={setPage}
-          />
+          {/* Portal Access card */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 mt-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                {s.access_code ? (
+                  <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
+                ) : (
+                  <ShieldOff className="w-5 h-5 text-gray-400 dark:text-gray-600 shrink-0" />
+                )}
+                <div>
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    {t('portalAccess')}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {s.access_code ? (
+                      <span className="font-mono tracking-wider">{s.access_code}</span>
+                    ) : (
+                      t('portalAccessInactive')
+                    )}
+                    {s.access_code && (
+                      <span className="ml-2">
+                        {s.portal_pin_hash ? t('pinSet') : t('pinNotSet')}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPortalModalOpen(true)}
+                className="shrink-0 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-xl text-xs font-semibold hover:border-kinder-orange hover:text-kinder-orange transition-all"
+              >
+                Manage
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <AttendanceHistoryTable
+              records={records}
+              isLoading={historyLoading}
+              meta={meta}
+              page={page}
+              onPageChange={setPage}
+            />
+          </div>
         </>
       ) : null}
 
       {s && <StudentModal open={editModalOpen} onClose={closeModal} student={s} />}
+      {s && portalModalOpen && (
+        <GeneratePortalAccessModal
+          studentId={s.id}
+          studentName={s.full_name}
+          existingCode={s.access_code ?? null}
+          onClose={() => setPortalModalOpen(false)}
+        />
+      )}
+      {s && portfolioModalOpen && (
+        <PortfolioEntryModal
+          studentId={s.id}
+          term={portfolioTerm}
+          entry={editingEntry}
+          onClose={() => {
+            setPortfolioModalOpen(false)
+            setEditingEntry(null)
+          }}
+        />
+      )}
     </div>
   )
 }
