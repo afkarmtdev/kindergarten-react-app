@@ -27,7 +27,7 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
   const [customType, setCustomType] = useState<(typeof FEE_TYPES)[number]>('tuition')
   const [customAmount, setCustomAmount] = useState(prefillPlan ? String(prefillPlan.amount) : '')
   const [customDescription, setCustomDescription] = useState('')
-  const [targetClass, setTargetClass] = useState('all')
+  const [targetClassId, setTargetClassId] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [previewCount, setPreviewCount] = useState<number | null>(null)
 
@@ -43,11 +43,11 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
 
   // Fetch student count for preview when moving to step 3
   const { data: studentsData } = useQuery({
-    queryKey: ['students-count-for-generate', targetClass],
+    queryKey: ['students-count-for-generate', targetClassId],
     queryFn: async () => {
       const { default: axios } = await import('axios')
       const token = localStorage.getItem('access_token')
-      const params = targetClass !== 'all' ? { class_name: targetClass, limit: 1 } : { limit: 1 }
+      const params = targetClassId ? { class_id: targetClassId, limit: 1 } : { limit: 1 }
       const r = await axios.get('/api/students', {
         params,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -67,7 +67,7 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
     mutationFn: () => {
       const payload: Record<string, unknown> = {
         due_date: dueDate || undefined,
-        target_class: targetClass === 'all' ? undefined : targetClass,
+        target_class_id: targetClassId || undefined,
       }
       if (useExistingPlan && selectedPlanId) {
         payload.fee_plan_id = selectedPlanId
@@ -229,16 +229,16 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
               <div>
                 <label className={labelCls}>{t('targetClass')}</label>
                 <select
-                  value={targetClass}
+                  value={targetClassId}
                   onChange={(e) => {
-                    setTargetClass(e.target.value)
+                    setTargetClassId(e.target.value)
                     markDirty()
                   }}
                   className={inputCls}
                 >
-                  <option value="all">{t('allStudents')}</option>
+                  <option value="">{t('allStudents')}</option>
                   {classes.map((cls) => (
-                    <option key={cls.id} value={cls.name}>
+                    <option key={cls.id} value={cls.id}>
                       {cls.name}
                     </option>
                   ))}
@@ -298,7 +298,9 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
                 <p className="text-gray-600 dark:text-gray-400">
                   Target:{' '}
                   <span className="font-semibold text-gray-800 dark:text-gray-200">
-                    {targetClass === 'all' ? t('allStudents') : targetClass}
+                    {targetClassId
+                      ? (classes.find((c) => c.id === targetClassId)?.name ?? targetClassId)
+                      : t('allStudents')}
                   </span>
                 </p>
                 {dueDate && (

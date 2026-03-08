@@ -24,7 +24,7 @@ export function ClassCollectionSheet({ initialClass = '', initialMonth = '', onC
   const { schoolName, address, logoUrl, registrationNumber, phone } = useSchoolInfo()
 
   const currentMonth = initialMonth || new Date().toISOString().slice(0, 7)
-  const [selectedClass, setSelectedClass] = useState(initialClass)
+  const [selectedClassId, setSelectedClassId] = useState(initialClass)
   const [selectedMonth, setSelectedMonth] = useState(currentMonth)
 
   const { data: classesData } = useQuery({
@@ -32,13 +32,14 @@ export function ClassCollectionSheet({ initialClass = '', initialMonth = '', onC
     queryFn: () => classesApi.getAll({ limit: 50 }),
   })
 
-  const { data: sheetData, isLoading } = useQuery({
-    queryKey: ['fees-class-sheet', { class_name: selectedClass, month: selectedMonth }],
-    queryFn: () => feesApi.classSheet({ class_name: selectedClass, month: selectedMonth }),
-    enabled: !!selectedClass && !!selectedMonth,
-  })
-
   const classes = classesData?.data ?? []
+  const selectedClassName = classes.find((c) => c.id === selectedClassId)?.name ?? ''
+
+  const { data: sheetData, isLoading } = useQuery({
+    queryKey: ['fees-class-sheet', { class_id: selectedClassId, month: selectedMonth }],
+    queryFn: () => feesApi.classSheet({ class_id: selectedClassId, month: selectedMonth }),
+    enabled: !!selectedClassId && !!selectedMonth,
+  })
 
   const formattedMonth = selectedMonth
     ? new Date(selectedMonth + '-01').toLocaleDateString('en-MY', {
@@ -80,13 +81,13 @@ export function ClassCollectionSheet({ initialClass = '', initialMonth = '', onC
             </h2>
 
             <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
+              value={selectedClassId}
+              onChange={(e) => setSelectedClassId(e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 focus:border-kinder-orange"
             >
               <option value="">{t('selectClassPrompt')}</option>
               {classes.map((cls) => (
-                <option key={cls.id} value={cls.name}>
+                <option key={cls.id} value={cls.id}>
                   {cls.name}
                 </option>
               ))}
@@ -102,7 +103,7 @@ export function ClassCollectionSheet({ initialClass = '', initialMonth = '', onC
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={() => window.print()}
-                disabled={!selectedClass || !sheetData}
+                disabled={!selectedClassId || !sheetData}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-kinder-orange text-white text-sm font-semibold hover:bg-orange-600 transition-colors disabled:opacity-40"
               >
                 <Printer size={15} />
@@ -143,15 +144,15 @@ export function ClassCollectionSheet({ initialClass = '', initialMonth = '', onC
                 <h2 className="text-base font-bold text-gray-900 tracking-wide">
                   {t('classCollectionSheetTitle').toUpperCase()}
                 </h2>
-                {selectedClass && (
+                {selectedClassId && (
                   <p className="text-sm text-gray-600 mt-1">
-                    {t('feeClass')}: <strong>{selectedClass}</strong>
+                    {t('feeClass')}: <strong>{selectedClassName}</strong>
                     {formattedMonth && <> &mdash; {formattedMonth}</>}
                   </p>
                 )}
               </div>
 
-              {!selectedClass ? (
+              {!selectedClassId ? (
                 <div className="py-12 text-center text-gray-400 dark:text-gray-600 collection-sheet-no-print">
                   {t('selectClassPrompt')}
                 </div>

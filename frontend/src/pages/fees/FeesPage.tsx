@@ -56,7 +56,7 @@ export function FeesPage() {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: [
       'fees',
-      { page, search, status: statusFilter, month: monthFilter, class_name: classFilter },
+      { page, search, status: statusFilter, month: monthFilter, class_id: classFilter },
     ],
     queryFn: () =>
       feesApi.getAll({
@@ -65,7 +65,7 @@ export function FeesPage() {
         search: search || undefined,
         status: statusFilter || undefined,
         month: monthFilter || undefined,
-        class_name: classFilter || undefined,
+        class_id: classFilter || undefined,
       }),
     placeholderData: (prev) => prev,
   })
@@ -238,7 +238,7 @@ export function FeesPage() {
         >
           <option value="">{t('allClasses')}</option>
           {classes.map((cls) => (
-            <option key={cls.id} value={cls.name}>
+            <option key={cls.id} value={cls.id}>
               {cls.name}
             </option>
           ))}

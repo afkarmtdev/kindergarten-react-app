@@ -20,7 +20,7 @@ const empty = {
   full_name: '',
   date_of_birth: '',
   gender: '' as 'male' | 'female' | '',
-  class_name: '',
+  class_id: '',
   parent_name: '',
   parent_email: '',
   parent_phone: '',
@@ -52,7 +52,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
         full_name: student.full_name,
         date_of_birth: student.date_of_birth,
         gender: student.gender,
-        class_name: student.class_name,
+        class_id: student.class_id ?? '',
         parent_name: student.parent_name,
         parent_email: student.parent_email,
         parent_phone: student.parent_phone,
@@ -123,7 +123,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
     if (!form.full_name.trim()) e.full_name = t('required')
     if (!form.date_of_birth) e.date_of_birth = t('required')
     if (!form.gender) e.gender = t('required')
-    if (!form.class_name) e.class_name = t('required')
+    if (!form.class_id) e.class_id = t('required')
     if (!form.parent_name.trim()) e.parent_name = t('required')
     if (!form.parent_email.trim()) e.parent_email = t('required')
     else if (!/\S+@\S+\.\S+/.test(form.parent_email)) e.parent_email = t('invalidEmail')
@@ -229,18 +229,21 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
               {t('className')} *
             </label>
             <select
-              value={form.class_name}
-              onChange={(e) => set('class_name', e.target.value)}
-              className={inputCls('class_name')}
+              value={form.class_id}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, class_id: e.target.value }))
+                markDirty()
+              }}
+              className={inputCls('class_id')}
             >
               <option value="">{t('selectClass')}</option>
               {classes.map((cls) => (
-                <option key={cls.id} value={cls.name}>
+                <option key={cls.id} value={cls.id}>
                   {cls.name}
                 </option>
               ))}
             </select>
-            {errors.class_name && <p className="text-xs text-red-500 mt-1">{errors.class_name}</p>}
+            {errors.class_id && <p className="text-xs text-red-500 mt-1">{errors.class_id}</p>}
           </div>
 
           <hr className="border-gray-200 dark:border-gray-700" />
