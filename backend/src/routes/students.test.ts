@@ -13,8 +13,8 @@ describe('GET / — list students', () => {
   test('returns paginated response with correct shape', async () => {
     setMockResponse('students', {
       data: [
-        { id: '1', full_name: 'Ali', class_name: 'Rose', gender: 'male' },
-        { id: '2', full_name: 'Maya', class_name: 'Lily', gender: 'female' },
+        { id: '1', full_name: 'Ali', classrooms: { name: 'Rose' }, gender: 'male' },
+        { id: '2', full_name: 'Maya', classrooms: { name: 'Lily' }, gender: 'female' },
       ],
       error: null,
       count: 2,
@@ -135,6 +135,36 @@ describe('GET / — pagination', () => {
   })
 })
 
+// ── GET / — Filter params ────────────────────────────────────────────────────
+
+describe('GET / — filter params', () => {
+  test('empty string class_id is treated as no filter (200, not 400)', async () => {
+    setMockResponse('students', { data: [], error: null, count: 0 })
+
+    const res = await students.request('/?class_id=')
+    expect(res.status).toBe(200)
+  })
+
+  test('valid UUID class_id is accepted', async () => {
+    setMockResponse('students', { data: [], error: null, count: 0 })
+
+    const res = await students.request('/?class_id=00000000-0000-0000-0000-000000000001')
+    expect(res.status).toBe(200)
+  })
+
+  test('invalid non-empty class_id is rejected (400)', async () => {
+    const res = await students.request('/?class_id=not-a-uuid')
+    expect(res.status).toBe(400)
+  })
+
+  test('empty string gender is treated as no filter (200, not 400)', async () => {
+    setMockResponse('students', { data: [], error: null, count: 0 })
+
+    const res = await students.request('/?gender=')
+    expect(res.status).toBe(200)
+  })
+})
+
 // ── GET /:id — Single student ────────────────────────────────────────────────
 
 describe('GET /:id — single student', () => {
@@ -143,7 +173,7 @@ describe('GET /:id — single student', () => {
       data: {
         id: '1',
         full_name: 'Ali',
-        class_name: 'Rose',
+        classrooms: { name: 'Rose' },
         attendance: [{ date: '2025-03-01', status: 'present' }],
       },
       error: null,
@@ -175,7 +205,7 @@ describe('POST / — create student', () => {
     full_name: 'Ali bin Abu',
     date_of_birth: '2019-05-10',
     gender: 'male' as const,
-    class_name: 'Rose',
+    class_id: '00000000-0000-0000-0000-000000000001',
     parent_name: 'Abu bin Ahmad',
     parent_email: 'abu@example.com',
     parent_phone: '0123456789',
@@ -233,6 +263,10 @@ describe('POST / — create student', () => {
 
 describe('POST /bulk — bulk import', () => {
   test('imports valid rows and reports failures', async () => {
+    setMockResponse('classrooms', {
+      data: [{ id: '00000000-0000-0000-0000-000000000001', name: 'Rose' }],
+      error: null,
+    })
     setMockResponse('students', { data: null, error: null })
 
     const res = await students.request('/bulk', {
@@ -283,7 +317,7 @@ describe('POST /bulk — bulk import', () => {
 describe('PUT /:id — update student', () => {
   test('updates and returns student', async () => {
     setMockResponse('students', {
-      data: { id: '1', full_name: 'Ali Updated', class_name: 'Lily' },
+      data: { id: '1', full_name: 'Ali Updated', class_id: '00000000-0000-0000-0000-000000000002' },
       error: null,
     })
 
