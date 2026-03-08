@@ -1,5 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { CalendarCheck2, CalendarX2, Clock, MinusCircle, AlertCircle, Wallet } from 'lucide-react'
+import {
+  CalendarCheck2,
+  CalendarX2,
+  Clock,
+  MinusCircle,
+  AlertCircle,
+  Wallet,
+  Megaphone,
+  ClipboardList,
+} from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { portalDataApi } from '../../lib/api'
 import { useT } from '../../hooks/useT'
@@ -29,6 +38,12 @@ export default function PortalDashboardPage() {
   const t = useT()
 
   const today = new Date().toISOString().split('T')[0]
+  const dateString = new Date().toLocaleDateString('en-MY', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
   const { data: attendanceData } = useQuery({
     queryKey: ['portal-attendance', student?.id, { page: 1, limit: 1 }],
@@ -71,26 +86,37 @@ export default function PortalDashboardPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-lg mx-auto">
-      {/* Welcome */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-          {t('portalWelcome')}, {student?.full_name?.split(' ')[0]}
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {new Date().toLocaleDateString('en-MY', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </p>
+      {/* Welcome card with gradient */}
+      <div className="bg-gradient-to-r from-kinder-orange to-orange-400 rounded-2xl p-5 text-white shadow-sm">
+        <div className="flex items-center gap-3">
+          {student?.photo_url ? (
+            <img
+              src={student.photo_url}
+              alt=""
+              className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+              {student?.full_name?.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold">
+              {t('portalWelcome')}, {student?.full_name?.split(' ')[0]}
+            </h2>
+            <p className="text-sm text-white/80">{dateString}</p>
+          </div>
+        </div>
       </div>
 
       {/* Today's attendance */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm">
-        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-          {t('attendance')} — {t('today') ?? 'Today'}
-        </p>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+        <div className="flex items-center gap-1.5 mb-2">
+          <CalendarCheck2 className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            {t('attendance')} — {t('today') ?? 'Today'}
+          </p>
+        </div>
         {todayAttendance ? (
           <div
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold ${STATUS_COLOR[todayAttendance.status]}`}
@@ -111,7 +137,7 @@ export default function PortalDashboardPage() {
 
       {/* Fee balance */}
       {totalOutstanding > 0 && (
-        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-2xl p-4 shadow-sm">
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2 mb-1">
             <Wallet className="w-4 h-4 text-kinder-orange" />
             <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 uppercase tracking-wide">
@@ -127,10 +153,13 @@ export default function PortalDashboardPage() {
 
       {/* Today's daily report */}
       {latestReport && latestReport.report_date === today && (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm">
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-            {t('todaysReport')}
-          </p>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-1.5 mb-3">
+            <ClipboardList className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {t('todaysReport')}
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {latestReport.mood && (
               <div>
@@ -176,13 +205,16 @@ export default function PortalDashboardPage() {
       {/* Pinned / latest announcements */}
       {announcements.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            {t('announcements')}
-          </p>
+          <div className="flex items-center gap-1.5">
+            <Megaphone className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {t('announcements')}
+            </p>
+          </div>
           {announcements.map((a) => (
             <div
               key={a.id}
-              className="bg-white dark:bg-gray-900 rounded-xl p-3.5 border border-gray-200 dark:border-gray-800 shadow-sm"
+              className="bg-white dark:bg-gray-900 rounded-xl p-3.5 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{a.title}</p>

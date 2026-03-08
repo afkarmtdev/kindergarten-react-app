@@ -11,6 +11,7 @@ import {
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { useT } from '../../hooks/useT'
 import { APP_NAME } from '../../lib/version'
+import { PortalBearCub } from '../../components/portal/PortalBearFamily'
 
 const navItems = [
   { to: '/portal', icon: Home, labelKey: 'dashboard' as const, end: true },
@@ -42,14 +43,18 @@ export default function PortalLayout() {
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
           {student?.photo_url ? (
-            <img
-              src={student.photo_url}
-              alt={student.full_name}
-              className="w-9 h-9 rounded-full object-cover border-2 border-kinder-orange"
-            />
+            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
+              <img
+                src={student.photo_url}
+                alt={student.full_name}
+                className="w-full h-full rounded-full object-cover border-2 border-white dark:border-gray-900"
+              />
+            </div>
           ) : (
-            <div className="w-9 h-9 rounded-full bg-kinder-orange flex items-center justify-center text-white font-bold text-sm">
-              {student?.full_name?.charAt(0).toUpperCase()}
+            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
+              <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-kinder-orange font-bold text-sm">
+                {student?.full_name?.charAt(0).toUpperCase()}
+              </div>
             </div>
           )}
           <div>
@@ -61,9 +66,10 @@ export default function PortalLayout() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
-            {APP_NAME}
-          </span>
+          <div className="hidden sm:flex items-center gap-1.5">
+            <PortalBearCub size={16} />
+            <span className="text-xs text-gray-400 dark:text-gray-500">{APP_NAME}</span>
+          </div>
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -87,15 +93,20 @@ export default function PortalLayout() {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+              `flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-all active:scale-95 ${
                 isActive
-                  ? 'text-kinder-orange'
+                  ? 'text-kinder-orange bg-orange-50 dark:bg-orange-900/20 rounded-xl mx-0.5'
                   : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
               }`
             }
           >
-            <Icon className="w-5 h-5" />
-            <span>{t(labelKey)}</span>
+            {({ isActive }) => (
+              <>
+                <Icon className="w-5 h-5" />
+                {isActive && <span className="w-1 h-1 rounded-full bg-kinder-orange" />}
+                <span>{t(labelKey)}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

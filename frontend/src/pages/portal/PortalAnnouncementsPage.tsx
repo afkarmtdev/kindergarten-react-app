@@ -28,7 +28,12 @@ export default function PortalAnnouncementsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-4">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('announcements')}</h2>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+          <Megaphone className="w-4 h-4 text-purple-600" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('announcements')}</h2>
+      </div>
 
       {isLoading ? (
         <div className="space-y-3">
@@ -37,16 +42,21 @@ export default function PortalAnnouncementsPage() {
           ))}
         </div>
       ) : announcements.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 dark:text-gray-600">
-          <Megaphone className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">No announcements</p>
+        <div className="text-center py-16 text-gray-400 dark:text-gray-600">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+            <Megaphone className="w-8 h-8 opacity-40" />
+          </div>
+          <p className="text-sm font-medium">No announcements</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            Check back later for updates
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {announcements.map((a) => (
             <div
               key={a.id}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm"
+              className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
               {a.image_url && (
                 <img

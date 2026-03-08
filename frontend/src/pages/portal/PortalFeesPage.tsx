@@ -43,7 +43,12 @@ export default function PortalFeesPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-4">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('fees')}</h2>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+          <Wallet className="w-4 h-4 text-kinder-orange" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('fees')}</h2>
+      </div>
 
       {/* Outstanding summary */}
       {outstanding > 0 && (
@@ -62,16 +67,21 @@ export default function PortalFeesPage() {
           ))}
         </div>
       ) : records.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 dark:text-gray-600">
-          <Wallet className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">No fee records</p>
+        <div className="text-center py-16 text-gray-400 dark:text-gray-600">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+            <Wallet className="w-8 h-8 opacity-40" />
+          </div>
+          <p className="text-sm font-medium">No fee records</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            Fee information will appear when available
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
           {records.map((r) => (
             <div
               key={r.id}
-              className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
+              className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>

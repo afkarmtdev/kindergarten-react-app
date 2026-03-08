@@ -72,7 +72,12 @@ export default function PortalPortfolioPage() {
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('portfolio')}</h2>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+            <BookOpen className="w-4 h-4 text-orange-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('portfolio')}</h2>
+        </div>
         {terms.length > 0 && (
           <select
             value={selectedTerm}
@@ -96,9 +101,14 @@ export default function PortalPortfolioPage() {
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 dark:text-gray-600">
-          <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">{t('noEntries')}</p>
+        <div className="text-center py-16 text-gray-400 dark:text-gray-600">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+            <BookOpen className="w-8 h-8 opacity-40" />
+          </div>
+          <p className="text-sm font-medium">{t('noEntries')}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            Portfolio entries will be added by the teacher
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -112,7 +122,7 @@ export default function PortalPortfolioPage() {
             return (
               <div
                 key={domain}
-                className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden"
+                className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
               >
                 {/* Domain header */}
                 <div className={`flex items-center gap-2 px-4 py-3 ${cfg.bg}`}>
@@ -155,7 +165,7 @@ export default function PortalPortfolioPage() {
 
           {/* Report card comments */}
           {report && (report.teacher_comment || report.principal_comment) && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-4 space-y-3">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-4 space-y-3">
               <p className="text-sm font-bold text-gray-900 dark:text-white">{t('reportCard')}</p>
               {report.teacher_comment && (
                 <div>

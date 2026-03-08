@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CalendarCheck2, CalendarX2, Clock, MinusCircle } from 'lucide-react'
+import { CalendarCheck2, CalendarX2, Clock, MinusCircle, CalendarDays } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { portalDataApi } from '../../lib/api'
 import { useT } from '../../hooks/useT'
@@ -39,7 +39,12 @@ export default function PortalAttendancePage() {
 
   return (
     <div className="p-4 md:p-6 max-w-lg mx-auto space-y-4">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('attendance')}</h2>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+          <CalendarDays className="w-4 h-4 text-blue-600" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('attendance')}</h2>
+      </div>
 
       {isLoading ? (
         <div className="space-y-2">
@@ -48,9 +53,14 @@ export default function PortalAttendancePage() {
           ))}
         </div>
       ) : records.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 dark:text-gray-600">
-          <CalendarCheck2 className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">No attendance records yet</p>
+        <div className="text-center py-16 text-gray-400 dark:text-gray-600">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+            <CalendarCheck2 className="w-8 h-8 opacity-40" />
+          </div>
+          <p className="text-sm font-medium">No attendance records yet</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            Records will appear here once marked
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -60,7 +70,7 @@ export default function PortalAttendancePage() {
             return (
               <div
                 key={r.id}
-                className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-200 dark:border-gray-800 flex items-center justify-between"
+                className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-between"
               >
                 <div>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
