@@ -19,24 +19,25 @@ const loginSchema = z.object({
 app.post('/login', zValidator('json', loginSchema), async (c) => {
   const { access_code, pin } = c.req.valid('json')
 
-  const { data: student } = await supabase
-    .from('students')
-    .select('id, full_name, classrooms(name), photo_url, portal_pin_hash')
+  // Query parents table by access_code
+  const { data: parent } = await supabase
+    .from('parents')
+    .select('id, full_name, email, phone, portal_pin_hash')
     .eq('access_code', access_code)
     .single()
 
-  if (!student || !student.portal_pin_hash) {
+  if (!parent || !parent.portal_pin_hash) {
     return c.json({ error: 'Invalid access code or PIN' }, 401)
   }
 
-  const valid = await Bun.password.verify(pin, student.portal_pin_hash)
+  const valid = await Bun.password.verify(pin, parent.portal_pin_hash)
   if (!valid) {
     return c.json({ error: 'Invalid access code or PIN' }, 401)
   }
 
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
   const payload = {
-    student_id: student.id,
+    parent_id: parent.id,
     exp: Math.floor(expiresAt.getTime() / 1000),
   }
 
@@ -44,7 +45,7 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
   const tokenHash = createHash('sha256').update(token).digest('hex')
 
   const { error: sessionError } = await supabase.from('parent_sessions').insert({
-    student_id: student.id,
+    parent_id: parent.id,
     token_hash: tokenHash,
     expires_at: expiresAt.toISOString(),
   })
@@ -53,15 +54,42 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
     return c.json({ error: 'Failed to create session' }, 500)
   }
 
-  const classrooms = student.classrooms as unknown as { name: string } | null
+  // Fetch children via parent_students join
+  const { data: links } = await supabase
+    .from('parent_students')
+    .select(
+      'relationship, students(id, full_name, date_of_birth, gender, photo_url, classrooms(name))'
+    )
+    .eq('parent_id', parent.id)
+
+  const children = (links ?? []).map((link: Record<string, unknown>) => {
+    const student = link.students as {
+      id: string
+      full_name: string
+      date_of_birth: string
+      gender: string
+      photo_url: string | null
+      classrooms: { name: string } | null
+    } | null
+    return {
+      id: student?.id ?? '',
+      full_name: student?.full_name ?? '',
+      date_of_birth: student?.date_of_birth ?? '',
+      gender: student?.gender ?? 'male',
+      class_name: student?.classrooms?.name ?? null,
+      photo_url: student?.photo_url ?? null,
+      relationship: link.relationship as string,
+    }
+  })
 
   return c.json({
     token,
-    student: {
-      id: student.id,
-      full_name: student.full_name,
-      class_name: classrooms?.name ?? null,
-      photo_url: student.photo_url,
+    parent: {
+      id: parent.id,
+      full_name: parent.full_name,
+      email: parent.email,
+      phone: parent.phone,
+      children,
     },
   })
 })

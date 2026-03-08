@@ -82,22 +82,26 @@ export function StudentCard({
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <User size={11} className="flex-shrink-0" />
-            <span className="truncate">
-              {t('parent')}: {student.parent_name}
-            </span>
+        {student.parent && (
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <User size={11} className="flex-shrink-0" />
+              <span className="truncate">
+                {t('parent')}: {student.parent.full_name}
+              </span>
+            </div>
+            {student.parent.email && (
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <Mail size={11} className="flex-shrink-0" />
+                <span className="truncate">{student.parent.email}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <Phone size={11} className="flex-shrink-0" />
+              <span>{student.parent.phone}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <Mail size={11} className="flex-shrink-0" />
-            <span className="truncate">{student.parent_email}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <Phone size={11} className="flex-shrink-0" />
-            <span>{student.parent_phone}</span>
-          </div>
-        </div>
+        )}
       </Link>
       <DeleteDialog
         show={showDelete}

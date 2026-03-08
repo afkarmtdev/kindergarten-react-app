@@ -22,14 +22,15 @@ const LIMIT = 20
 
 export default function PortalAttendancePage() {
   usePageTitle('Attendance')
-  const { student } = useParentAuth()
+  const { selectedChild } = useParentAuth()
   const t = useT()
   const [page, setPage] = useState(1)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['portal-attendance', student?.id, { page, limit: LIMIT }],
-    queryFn: () => portalDataApi.getAttendance({ page, limit: LIMIT }),
-    enabled: !!student,
+    queryKey: ['portal-attendance', selectedChild?.id, { page, limit: LIMIT }],
+    queryFn: () =>
+      portalDataApi.getAttendance({ page, limit: LIMIT, student_id: selectedChild?.id }),
+    enabled: !!selectedChild,
     placeholderData: (prev) => prev,
   })
 

@@ -22,13 +22,13 @@ const MEALS_LABEL: Record<string, string> = {
 
 export default function PortalDailyReportPage() {
   usePageTitle('Daily Reports')
-  const { student } = useParentAuth()
+  const { selectedChild } = useParentAuth()
   const t = useT()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['portal-daily-reports', student?.id, { limit: 30 }],
-    queryFn: () => portalDataApi.getDailyReports({ limit: 30 }),
-    enabled: !!student,
+    queryKey: ['portal-daily-reports', selectedChild?.id, { limit: 30 }],
+    queryFn: () => portalDataApi.getDailyReports({ limit: 30, student_id: selectedChild?.id }),
+    enabled: !!selectedChild,
   })
 
   const reports: DailyReport[] = data?.data ?? []

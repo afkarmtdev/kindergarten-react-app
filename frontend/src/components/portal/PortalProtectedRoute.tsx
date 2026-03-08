@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { useParentAuth } from '../../hooks/useParentAuth'
 
 export default function PortalProtectedRoute() {
-  const { student, loading } = useParentAuth()
+  const { parent, loading } = useParentAuth()
 
   if (loading) {
     return (
@@ -12,7 +12,7 @@ export default function PortalProtectedRoute() {
     )
   }
 
-  if (!student) {
+  if (!parent) {
     return <Navigate to="/portal/login" replace />
   }
 
