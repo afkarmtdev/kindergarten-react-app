@@ -35,7 +35,7 @@ describe('GET / — list classes', () => {
       count: 2,
     })
     setMockResponse('students', {
-      data: [{ class_name: 'Rose' }, { class_name: 'Rose' }, { class_name: 'Lily' }],
+      data: [{ class_id: '1' }, { class_id: '1' }, { class_id: '2' }],
       error: null,
     })
 
@@ -108,8 +108,8 @@ describe('GET / — pagination', () => {
     expect(json.meta.totalPages).toBe(2) // 10/9 = 1.11 → ceil = 2
   })
 
-  test('rejects limit above max (50)', async () => {
-    const res = await classes.request('/?limit=51')
+  test('rejects limit above max (100)', async () => {
+    const res = await classes.request('/?limit=101')
     expect(res.status).toBe(400)
   })
 
@@ -134,8 +134,8 @@ describe('GET /:id — single class', () => {
     })
     setMockResponse('students', {
       data: [
-        { id: 's1', full_name: 'Ali', class_name: 'Rose' },
-        { id: 's2', full_name: 'Maya', class_name: 'Rose' },
+        { id: 's1', full_name: 'Ali' },
+        { id: 's2', full_name: 'Maya' },
       ],
       error: null,
     })

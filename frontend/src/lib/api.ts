@@ -14,7 +14,7 @@ export interface StudentFilters {
   page?: number
   limit?: number
   search?: string
-  class_name?: string
+  class_id?: string
   gender?: string
   birthday_today?: boolean
 }
@@ -75,6 +75,13 @@ export const studentsApi = {
         failed: { row: number; reason: string }[]
       }>('/students/bulk', { students })
       .then((r) => r.data),
+  // Portal access management
+  generateAccessCode: (id: string) =>
+    api.post(`/students/${id}/access-code`).then((r) => r.data as { access_code: string }),
+  setPortalPin: (id: string, pin: string) =>
+    api.put(`/students/${id}/portal-pin`, { pin }).then((r) => r.data),
+  revokePortalAccess: (id: string) =>
+    api.delete(`/students/${id}/portal-access`).then((r) => r.data),
 }
 
 export const attendanceApi = {
@@ -147,7 +154,7 @@ export const feesApi = {
       search?: string
       status?: string
       month?: string
-      class_name?: string
+      class_id?: string
     } = {}
   ) =>
     api
@@ -171,7 +178,7 @@ export const feesApi = {
     api
       .get('/fees/summary', { params: { month } })
       .then((r) => r.data as import('@/types').FeesSummary),
-  classSheet: (params: { class_name: string; month: string }) =>
+  classSheet: (params: { class_id: string; month: string }) =>
     api
       .get('/fees/class-sheet', { params })
       .then((r) => r.data as import('@/types').ClassSheetResponse),
@@ -234,6 +241,115 @@ export const testimonialsApi = {
     publicApi
       .get('/public/testimonials')
       .then((r) => r.data as { data: import('@/types').Testimonial[] }),
+}
+
+export const dailyReportsApi = {
+  getByDate: (params: { date: string; class_id?: string; page?: number; limit?: number }) =>
+    api.get('/daily-reports', { params }).then((r) => r.data),
+  upsert: (studentId: string, date: string, data: Record<string, unknown>) =>
+    api
+      .put(`/daily-reports/${studentId}/${date}`, data)
+      .then((r) => r.data as import('@/types').DailyReport),
+  delete: (id: string) => api.delete(`/daily-reports/${id}`).then((r) => r.data),
+}
+
+export const portfolioEntriesApi = {
+  getAll: (params: { student_id: string; term?: string; page?: number; limit?: number }) =>
+    api.get('/portfolio-entries', { params }).then((r) => r.data),
+  getReport: (studentId: string, term: string) =>
+    api
+      .get(`/portfolio-entries/${studentId}/report/${encodeURIComponent(term)}`)
+      .then(
+        (r) =>
+          r.data as {
+            entries: import('@/types').PortfolioEntry[]
+            report: import('@/types').PortfolioReport | null
+            term: string
+          }
+      ),
+  create: (data: Record<string, unknown>) =>
+    api.post('/portfolio-entries', data).then((r) => r.data as import('@/types').PortfolioEntry),
+  update: (id: string, data: Record<string, unknown>) =>
+    api
+      .put(`/portfolio-entries/${id}`, data)
+      .then((r) => r.data as import('@/types').PortfolioEntry),
+  delete: (id: string) => api.delete(`/portfolio-entries/${id}`).then((r) => r.data),
+}
+
+export const portfolioReportsApi = {
+  upsert: (
+    studentId: string,
+    term: string,
+    data: { teacher_comment?: string | null; principal_comment?: string | null }
+  ) =>
+    api
+      .put(`/portfolio-reports/${studentId}/${encodeURIComponent(term)}`, data)
+      .then((r) => r.data as import('@/types').PortfolioReport),
+}
+
+// ── Parent Portal API ─────────────────────────────────────────────────────────
+
+// Separate axios instance for parent portal — reads portal_token from localStorage
+export const portalApi = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL ?? ''}/api/portal`,
+  headers: { 'Content-Type': 'application/json' },
+})
+
+portalApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('portal_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+portalApi.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('portal_token')
+      localStorage.removeItem('portal_student')
+      window.location.href = '/portal/login'
+    }
+    return Promise.reject(err)
+  }
+)
+
+export const portalAuthApi = {
+  login: (access_code: string, pin: string) =>
+    portalApi.post('/login', { access_code, pin }).then(
+      (r) =>
+        r.data as {
+          token: string
+          student: import('@/types').PortalStudent
+        }
+    ),
+  logout: () => portalApi.post('/logout').then((r) => r.data),
+  me: () => portalApi.get('/me').then((r) => r.data as { data: import('@/types').PortalStudent }),
+}
+
+export const portalDataApi = {
+  getAttendance: (params: { page?: number; limit?: number } = {}) =>
+    portalApi
+      .get('/attendance', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').AttendanceRecord>),
+  getFees: (params: { page?: number; limit?: number } = {}) =>
+    portalApi.get('/fees', { params }).then((r) => r.data),
+  getAnnouncements: () =>
+    portalApi
+      .get('/announcements')
+      .then((r) => r.data as { data: import('@/types').Announcement[] }),
+  getDailyReports: (params: { limit?: number } = {}) =>
+    portalApi
+      .get('/daily-reports', { params })
+      .then((r) => r.data as { data: import('@/types').DailyReport[] }),
+  getPortfolio: (term?: string) =>
+    portalApi.get('/portfolio', { params: term ? { term } : {} }).then(
+      (r) =>
+        r.data as {
+          entries: import('@/types').PortfolioEntry[]
+          report: import('@/types').PortfolioReport | null
+          terms: string[]
+        }
+    ),
 }
 
 export const artWallApi = {

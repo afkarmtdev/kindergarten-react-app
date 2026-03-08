@@ -4,16 +4,21 @@ import { format } from 'date-fns'
 
 type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
 
+interface PendingChange {
+  status: AttendanceStatus
+  notes?: string
+}
+
 interface AttendanceState {
   selectedDate: string
   page: number
   statusFilter: string
-  pendingChanges: Record<string, AttendanceStatus>
+  pendingChanges: Record<string, PendingChange>
   // Actions
   setDate: (date: string) => void
   setPage: (page: number) => void
   setStatusFilter: (status: string) => void
-  setPending: (studentId: string, status: AttendanceStatus) => void
+  setPending: (studentId: string, status: AttendanceStatus, notes?: string) => void
   clearPending: () => void
 }
 
@@ -27,9 +32,9 @@ export const useAttendanceStore = create<AttendanceState>()(
       setDate: (selectedDate) => set({ selectedDate, page: 1, pendingChanges: {} }),
       setPage: (page) => set({ page }),
       setStatusFilter: (statusFilter) => set({ statusFilter, page: 1 }),
-      setPending: (studentId, status) =>
+      setPending: (studentId, status, notes) =>
         set((state) => ({
-          pendingChanges: { ...state.pendingChanges, [studentId]: status },
+          pendingChanges: { ...state.pendingChanges, [studentId]: { status, notes } },
         })),
       clearPending: () => set({ pendingChanges: {} }),
     }),

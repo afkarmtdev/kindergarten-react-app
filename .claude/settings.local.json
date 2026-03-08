@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)"
+    ],
     "allow": [
       "Bash(bun add sonner)",
       "Bash(bun add pino pino-pretty)",

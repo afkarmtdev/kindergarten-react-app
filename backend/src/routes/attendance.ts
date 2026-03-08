@@ -29,7 +29,7 @@ attendance.get('/date/:date', zValidator('query', datePageSchema), async (c) => 
 
   let query = supabase
     .from('attendance')
-    .select('*, students(full_name, class_name, photo_url)', { count: 'exact' })
+    .select('*, students(full_name, classrooms(name), photo_url)', { count: 'exact' })
     .eq('date', date)
     .order('created_at')
     .range(from, to)
@@ -44,8 +44,17 @@ attendance.get('/date/:date', zValidator('query', datePageSchema), async (c) => 
 
   if (error) return c.json({ error: error.message }, 500)
 
+  // Flatten classrooms join on nested students object
+  const mapped = (data ?? []).map((rec) => {
+    if (!rec.students) return rec
+    const { classrooms, ...studentRest } = rec.students as {
+      classrooms?: { name?: string } | null
+    } & Record<string, unknown>
+    return { ...rec, students: { ...studentRest, class_name: classrooms?.name ?? null } }
+  })
+
   return c.json({
-    data: data ?? [],
+    data: mapped,
     meta: {
       total: count ?? 0,
       page,

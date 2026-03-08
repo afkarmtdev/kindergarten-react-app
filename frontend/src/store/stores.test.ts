@@ -337,16 +337,19 @@ describe('attendanceStore', () => {
     useAttendanceStore.getState().setPending('s3', 'late')
     const s = useAttendanceStore.getState()
     expect(s.pendingChanges).toEqual({
-      s1: 'present',
-      s2: 'absent',
-      s3: 'late',
+      s1: { status: 'present', notes: undefined },
+      s2: { status: 'absent', notes: undefined },
+      s3: { status: 'late', notes: undefined },
     })
   })
 
   test('setPending overwrites same student', () => {
     useAttendanceStore.getState().setPending('s1', 'present')
     useAttendanceStore.getState().setPending('s1', 'late')
-    expect(useAttendanceStore.getState().pendingChanges.s1).toBe('late')
+    expect(useAttendanceStore.getState().pendingChanges.s1).toEqual({
+      status: 'late',
+      notes: undefined,
+    })
   })
 
   test('clearPending removes all changes', () => {

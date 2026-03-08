@@ -73,18 +73,19 @@ export function AttendancePage() {
   const records: AttendanceRecord[] = recordsData?.data ?? []
 
   const getStatus = (studentId: string): Status | null => {
-    if (pendingChanges[studentId]) return pendingChanges[studentId] as Status
+    if (pendingChanges[studentId]) return pendingChanges[studentId].status
     const record = records.find((r) => r.student_id === studentId)
     return (record?.status as Status) ?? null
   }
 
   const handleSave = () => {
     const filtered = statusFilter
-      ? Object.entries(pendingChanges).filter(([, s]) => s === statusFilter)
+      ? Object.entries(pendingChanges).filter(([, change]) => change.status === statusFilter)
       : Object.entries(pendingChanges)
-    const toSave = filtered.map(([student_id, status]) => ({
+    const toSave = filtered.map(([student_id, { status, notes }]) => ({
       student_id,
       status,
+      notes: notes || undefined,
       date: selectedDate,
       recorded_by: 'admin',
     }))
@@ -226,6 +227,7 @@ export function AttendancePage() {
                     key={student.id}
                     student={student}
                     status={getStatus(student.id)}
+                    notes={pendingChanges[student.id]?.notes}
                     isPending={!!pendingChanges[student.id]}
                     index={i}
                     onMark={setPending}

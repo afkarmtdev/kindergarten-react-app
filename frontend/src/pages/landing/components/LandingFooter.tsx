@@ -49,6 +49,14 @@ export function LandingFooter() {
                   </a>
                 </li>
               ))}
+              <li>
+                <a
+                  href="/portal/login"
+                  className="text-gray-400 text-sm hover:text-white transition-colors"
+                >
+                  {t('portalLogin')}
+                </a>
+              </li>
             </ul>
           </div>
 

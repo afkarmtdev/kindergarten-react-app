@@ -11,6 +11,17 @@ import { sanitiseStrings } from '../lib/sanitise'
 import { deriveStatus, monthRange } from '../lib/fees'
 import { generateNextNumber } from './documentNumbering'
 
+// Flatten nested classrooms join on a student sub-object into a class_name string field
+function flattenStudentClass(
+  s: ({ classrooms?: { name?: string } | null } & Record<string, unknown>) | null | undefined
+): Record<string, unknown> | null {
+  if (!s) return null
+  const { classrooms, ...rest } = s
+  return { ...rest, class_name: classrooms?.name ?? null }
+}
+
+type StudentSubrow = Parameters<typeof flattenStudentClass>[0]
+
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 const feeTypeEnum = z.enum(['tuition', 'activity', 'uniform', 'registration', 'other'])
 
@@ -36,7 +47,7 @@ const generateSchema = z.object({
   type: feeTypeEnum.optional(),
   amount: z.number().positive().optional(),
   description: z.string().optional(),
-  target_class: z.string().optional(), // class name or 'all'
+  target_class_id: z.string().uuid().optional(), // classroom UUID; omit for all students
   due_date: z.string().optional(),
 })
 
@@ -50,7 +61,7 @@ const listSchema = z.object({
   search: z.string().optional(),
   status: z.enum(['unpaid', 'partial', 'paid', 'waived', '']).optional(),
   month: z.string().optional(), // YYYY-MM
-  class_name: z.string().optional(),
+  class_id: z.preprocess((v) => (!v ? undefined : v), z.string().uuid().optional()),
 })
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -213,7 +224,7 @@ fees.get('/export', async (c) => {
 
   let query = supabase
     .from('fee_records')
-    .select('*, students(full_name, class_name)')
+    .select('*, students(full_name, classrooms(name))')
     .order('due_date', { ascending: true })
 
   if (month) {
@@ -227,10 +238,10 @@ fees.get('/export', async (c) => {
   const header =
     'Student Name,Class,Type,Description,Due Date,Amount Owed,Discount,Amount Paid,Status,Receipt Number'
   const rows = (data ?? []).map((r) => {
-    const s = r.students as { full_name?: string; class_name?: string } | null
+    const s = r.students as { full_name?: string; classrooms?: { name?: string } | null } | null
     return [
       csvStr(s?.full_name),
-      csvStr(s?.class_name),
+      csvStr(s?.classrooms?.name),
       csvStr(r.type),
       csvStr(r.description),
       csvStr(r.due_date),
@@ -258,7 +269,7 @@ fees.get('/statement/:studentId', async (c) => {
   const [{ data: student }, { data: records, error }] = await Promise.all([
     supabase
       .from('students')
-      .select('full_name, class_name, date_of_birth, parent_name')
+      .select('full_name, classrooms(name), date_of_birth, parent_name')
       .eq('id', studentId)
       .single(),
     supabase
@@ -273,7 +284,12 @@ fees.get('/statement/:studentId', async (c) => {
   if (error) return c.json({ error: error.message }, 500)
 
   const total_paid = (records ?? []).reduce((s, r) => s + Number(r.amount_paid), 0)
-  return c.json({ student, records: records ?? [], year, total_paid })
+  return c.json({
+    student: flattenStudentClass(student as StudentSubrow),
+    records: records ?? [],
+    year,
+    total_paid,
+  })
 })
 
 // POST /api/fees/generate
@@ -301,8 +317,8 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
   }
 
   let studentQuery = supabase.from('students').select('id, full_name')
-  if (body.target_class && body.target_class !== 'all') {
-    studentQuery = studentQuery.eq('class_name', body.target_class)
+  if (body.target_class_id) {
+    studentQuery = studentQuery.eq('class_id', body.target_class_id)
   }
 
   const { data: students, error: studentsError } = await studentQuery
@@ -329,14 +345,14 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
 
 // GET /api/fees
 fees.get('/', zValidator('query', listSchema), async (c) => {
-  const { page, limit, search, status, month, class_name } = c.req.valid('query')
+  const { page, limit, search, status, month, class_id } = c.req.valid('query')
 
-  // Resolve student ID filter from search/class_name
+  // Resolve student ID filter from search/class_id
   let studentIdFilter: string[] | null = null
-  if (search || class_name) {
+  if (search || class_id) {
     let q = supabase.from('students').select('id')
     if (search) q = q.ilike('full_name', `%${search}%`)
-    if (class_name) q = q.eq('class_name', class_name)
+    if (class_id) q = q.eq('class_id', class_id)
     const { data: matched } = await q
     studentIdFilter = matched?.map((s) => s.id) ?? []
     if (studentIdFilter.length === 0) {
@@ -349,7 +365,7 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
 
   let query = supabase
     .from('fee_records')
-    .select('*, students(full_name, class_name, photo_url, parent_name)', { count: 'exact' })
+    .select('*, students(full_name, classrooms(name), photo_url, parent_name)', { count: 'exact' })
     .order('due_date', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -364,7 +380,10 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
   const { data, error, count } = await query
   if (error) return c.json({ error: error.message }, 500)
   return c.json({
-    data: data ?? [],
+    data: (data ?? []).map((r) => ({
+      ...r,
+      students: flattenStudentClass(r.students as StudentSubrow),
+    })),
     meta: { total: count ?? 0, page, limit, totalPages: Math.ceil((count ?? 0) / limit) },
   })
 })
@@ -377,10 +396,13 @@ fees.post('/', zValidator('json', recordSchema), async (c) => {
   const { data, error } = await supabase
     .from('fee_records')
     .insert({ ...body, amount_paid: 0, status })
-    .select('*, students(full_name, class_name, photo_url, parent_name)')
+    .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
     .single()
   if (error) return c.json({ error: error.message }, 500)
-  return c.json(data, 201)
+  return c.json(
+    { ...data, students: flattenStudentClass((data as { students?: StudentSubrow })?.students) },
+    201
+  )
 })
 
 // GET /api/fees/class-sheet?class_name=...&month=YYYY-MM
@@ -389,19 +411,27 @@ fees.get(
   zValidator(
     'query',
     z.object({
-      class_name: z.string().min(1),
+      class_id: z.string().uuid(),
       month: z.string().regex(/^\d{4}-\d{2}$/),
     })
   ),
   async (c) => {
-    const { class_name, month } = c.req.valid('query')
+    const { class_id, month } = c.req.valid('query')
     const { start, end } = monthRange(month)
+
+    // Look up class name for the report header
+    const { data: classroom } = await supabase
+      .from('classrooms')
+      .select('name')
+      .eq('id', class_id)
+      .single()
+    const class_name = classroom?.name ?? ''
 
     // Fetch all students in this class
     const { data: students, error: studentsError } = await supabase
       .from('students')
       .select('id, full_name')
-      .eq('class_name', class_name)
+      .eq('class_id', class_id)
       .order('full_name', { ascending: true })
 
     if (studentsError) return c.json({ error: studentsError.message }, 500)
@@ -479,7 +509,7 @@ fees.get(
     const { data: records, error } = await supabase
       .from('fee_records')
       .select(
-        'id, student_id, type, description, amount_owed, discount_amount, amount_paid, status, due_date, students(full_name, class_name)'
+        'id, student_id, type, description, amount_owed, discount_amount, amount_paid, status, due_date, students(full_name, classrooms(name))'
       )
       .gte('due_date', start)
       .lte('due_date', end)
@@ -513,7 +543,9 @@ fees.get(
     > = {}
 
     for (const r of all) {
-      const cls = (r.students as { class_name?: string } | null)?.class_name ?? 'Unknown'
+      const cls =
+        (r.students as { classrooms?: { name?: string } | null } | null)?.classrooms?.name ??
+        'Unknown'
       if (!byClassMap[cls]) {
         byClassMap[cls] = {
           student_ids: new Set(),
@@ -571,10 +603,10 @@ fees.get(
     const outstanding_accounts = all
       .filter((r) => r.status === 'unpaid' || r.status === 'partial')
       .map((r) => {
-        const s = r.students as { full_name?: string; class_name?: string } | null
+        const s = r.students as { full_name?: string; classrooms?: { name?: string } | null } | null
         return {
           student_name: s?.full_name ?? '—',
-          class_name: s?.class_name ?? '—',
+          class_name: s?.classrooms?.name ?? '—',
           description: r.description,
           due_date: r.due_date,
           amount_owed: Number(r.amount_owed),
@@ -682,11 +714,14 @@ fees.get('/:id', async (c) => {
   const { id } = c.req.param()
   const { data, error } = await supabase
     .from('fee_records')
-    .select('*, students(full_name, class_name, photo_url, parent_name)')
+    .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
     .eq('id', id)
     .single()
   if (error) return c.json({ error: error.message }, 404)
-  return c.json(data)
+  return c.json({
+    ...data,
+    students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
+  })
 })
 
 // PUT /api/fees/:id/payment
@@ -734,11 +769,15 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
       paid_at: newStatus === 'paid' ? new Date().toISOString() : record.paid_at,
     })
     .eq('id', id)
-    .select('*, students(full_name, class_name, photo_url, parent_name)')
+    .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
     .single()
 
   if (error) return c.json({ error: error.message }, 500)
-  return c.json({ ...data, this_payment: amount })
+  return c.json({
+    ...data,
+    students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
+    this_payment: amount,
+  })
 })
 
 // PUT /api/fees/:id
@@ -770,11 +809,14 @@ fees.put(
       .from('fee_records')
       .update({ ...body, status })
       .eq('id', id)
-      .select('*, students(full_name, class_name, photo_url, parent_name)')
+      .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
       .single()
 
     if (error) return c.json({ error: error.message }, 500)
-    return c.json(data)
+    return c.json({
+      ...data,
+      students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
+    })
   }
 )
 
