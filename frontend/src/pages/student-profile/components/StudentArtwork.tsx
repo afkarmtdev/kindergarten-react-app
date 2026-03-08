@@ -28,7 +28,7 @@ export function StudentArtwork({ studentId }: { studentId: string }) {
   const meta = data?.meta
 
   return (
-    <div className="mb-6">
+    <div className="mt-6 mb-6">
       <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
         <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
           <Palette size={18} className="text-kinder-purple" />
