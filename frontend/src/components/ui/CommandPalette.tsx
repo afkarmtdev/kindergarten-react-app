@@ -139,7 +139,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const students: PaletteItem[] = (studentsData?.data ?? []).map((s: Student) => ({
       id: `s-${s.id}`,
       label: s.full_name,
-      subtitle: s.class_name,
+      subtitle: s.class_name ?? undefined,
       icon: Users,
       to: `/admin/students/${s.id}`,
       section: 'students' as const,

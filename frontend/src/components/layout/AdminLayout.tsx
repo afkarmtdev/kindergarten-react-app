@@ -19,6 +19,7 @@ import {
   Inbox,
   Search,
   Palette,
+  ClipboardList,
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -57,6 +58,7 @@ export function AdminLayout() {
     { to: '/admin/dashboard', icon: LayoutDashboard, label: t('dashboard') },
     { to: '/admin/students', icon: Users, label: t('students') },
     { to: '/admin/attendance', icon: CalendarCheck, label: t('attendance') },
+    { to: '/admin/daily-reports', icon: ClipboardList, label: t('dailyReports') },
     { to: '/admin/classes', icon: School, label: t('classes') },
     { to: '/admin/gallery', icon: Images, label: t('gallery') },
     { to: '/admin/art-wall', icon: Palette, label: t('artWall') },
