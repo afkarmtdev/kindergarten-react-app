@@ -15,13 +15,13 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function PortalAnnouncementsPage() {
   usePageTitle('Announcements')
-  const { student } = useParentAuth()
+  const { parent } = useParentAuth()
   const t = useT()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['portal-announcements', student?.id],
+    queryKey: ['portal-announcements', parent?.id],
     queryFn: () => portalDataApi.getAnnouncements(),
-    enabled: !!student,
+    enabled: !!parent,
   })
 
   const announcements: Announcement[] = data?.data ?? []

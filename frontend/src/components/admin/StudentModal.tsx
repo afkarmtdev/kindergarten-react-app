@@ -53,9 +53,9 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
         date_of_birth: student.date_of_birth,
         gender: student.gender,
         class_id: student.class_id ?? '',
-        parent_name: student.parent_name,
-        parent_email: student.parent_email,
-        parent_phone: student.parent_phone,
+        parent_name: student.parent?.full_name ?? '',
+        parent_email: student.parent?.email ?? '',
+        parent_phone: student.parent?.phone ?? '',
         photo_url: student.photo_url ?? '',
       })
     } else {

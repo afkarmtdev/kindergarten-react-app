@@ -10,11 +10,23 @@ beforeEach(() => clearMockResponses())
 // ── GET / — List students ────────────────────────────────────────────────────
 
 describe('GET / — list students', () => {
-  test('returns paginated response with correct shape', async () => {
+  test('returns paginated response with flattened parent', async () => {
     setMockResponse('students', {
       data: [
-        { id: '1', full_name: 'Ali', classrooms: { name: 'Rose' }, gender: 'male' },
-        { id: '2', full_name: 'Maya', classrooms: { name: 'Lily' }, gender: 'female' },
+        {
+          id: '1',
+          full_name: 'Ali',
+          classrooms: { name: 'Rose' },
+          parent_students: [{ parents: { full_name: 'Abu', email: 'abu@test.com', phone: '012' } }],
+          gender: 'male',
+        },
+        {
+          id: '2',
+          full_name: 'Maya',
+          classrooms: { name: 'Lily' },
+          parent_students: [],
+          gender: 'female',
+        },
       ],
       error: null,
       count: 2,
@@ -25,6 +37,9 @@ describe('GET / — list students', () => {
 
     const json = await res.json()
     expect(json.data).toHaveLength(2)
+    expect(json.data[0].class_name).toBe('Rose')
+    expect(json.data[0].parent).toEqual({ full_name: 'Abu', email: 'abu@test.com', phone: '012' })
+    expect(json.data[1].parent).toBeNull()
     expect(json.meta).toEqual({ total: 2, page: 1, limit: 12, totalPages: 1 })
   })
 
@@ -168,12 +183,13 @@ describe('GET / — filter params', () => {
 // ── GET /:id — Single student ────────────────────────────────────────────────
 
 describe('GET /:id — single student', () => {
-  test('returns student with attendance', async () => {
+  test('returns student with attendance and flattened parent', async () => {
     setMockResponse('students', {
       data: {
         id: '1',
         full_name: 'Ali',
         classrooms: { name: 'Rose' },
+        parent_students: [{ parents: { full_name: 'Abu', email: 'abu@test.com', phone: '012' } }],
         attendance: [{ date: '2025-03-01', status: 'present' }],
       },
       error: null,
@@ -184,6 +200,8 @@ describe('GET /:id — single student', () => {
 
     const json = await res.json()
     expect(json.full_name).toBe('Ali')
+    expect(json.class_name).toBe('Rose')
+    expect(json.parent).toEqual({ full_name: 'Abu', email: 'abu@test.com', phone: '012' })
     expect(json.attendance).toHaveLength(1)
   })
 
@@ -216,6 +234,12 @@ describe('POST / — create student', () => {
       data: { id: 'new-1', ...validStudent },
       error: null,
     })
+    // Parent auto-link: existing parent found
+    setMockResponse('parents', {
+      data: { id: 'parent-1' },
+      error: null,
+    })
+    setMockResponse('parent_students', { data: null, error: null })
 
     const res = await students.request('/', {
       method: 'POST',
@@ -259,6 +283,54 @@ describe('POST / — create student', () => {
   })
 })
 
+// ── POST / — Parent auto-link ────────────────────────────────────────────────
+
+describe('POST / — parent auto-link', () => {
+  const validStudent = {
+    full_name: 'Ali bin Abu',
+    date_of_birth: '2019-05-10',
+    gender: 'male' as const,
+    parent_name: 'Abu bin Ahmad',
+    parent_email: 'abu@example.com',
+    parent_phone: '0123456789',
+  }
+
+  test('creates student even if parent auto-link fails', async () => {
+    setMockResponse('students', {
+      data: { id: 'new-1', ...validStudent },
+      error: null,
+    })
+    // Parent lookup fails → auto-link silently fails, student still created
+    setMockResponse('parents', { data: null, error: { message: 'DB error' } })
+
+    const res = await students.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validStudent),
+    })
+
+    expect(res.status).toBe(201)
+  })
+
+  test('links to existing parent by email', async () => {
+    setMockResponse('students', {
+      data: { id: 'new-1', ...validStudent },
+      error: null,
+    })
+    // Existing parent found by email
+    setMockResponse('parents', { data: { id: 'existing-parent' }, error: null })
+    setMockResponse('parent_students', { data: null, error: null })
+
+    const res = await students.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validStudent),
+    })
+
+    expect(res.status).toBe(201)
+  })
+})
+
 // ── POST /bulk — Bulk import ─────────────────────────────────────────────────
 
 describe('POST /bulk — bulk import', () => {
@@ -267,7 +339,12 @@ describe('POST /bulk — bulk import', () => {
       data: [{ id: '00000000-0000-0000-0000-000000000001', name: 'Rose' }],
       error: null,
     })
-    setMockResponse('students', { data: null, error: null })
+    setMockResponse('students', {
+      data: [{ id: 'new-1' }],
+      error: null,
+    })
+    setMockResponse('parents', { data: { id: 'parent-1' }, error: null })
+    setMockResponse('parent_students', { data: null, error: null })
 
     const res = await students.request('/bulk', {
       method: 'POST',
@@ -318,6 +395,52 @@ describe('PUT /:id — update student', () => {
   test('updates and returns student', async () => {
     setMockResponse('students', {
       data: { id: '1', full_name: 'Ali Updated', class_id: '00000000-0000-0000-0000-000000000002' },
+      error: null,
+    })
+
+    const res = await students.request('/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name: 'Ali Updated' }),
+    })
+
+    expect(res.status).toBe(200)
+  })
+})
+
+// ── PUT /:id — Parent auto-link on update ────────────────────────────────────
+
+describe('PUT /:id — parent auto-link on update', () => {
+  test('syncs parent when all three parent fields provided', async () => {
+    setMockResponse('students', {
+      data: {
+        id: '1',
+        full_name: 'Ali',
+        parent_name: 'Abu Updated',
+        parent_email: 'abu@test.com',
+        parent_phone: '012',
+      },
+      error: null,
+    })
+    setMockResponse('parents', { data: { id: 'parent-1' }, error: null })
+    setMockResponse('parent_students', { data: null, error: null })
+
+    const res = await students.request('/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parent_name: 'Abu Updated',
+        parent_email: 'abu@test.com',
+        parent_phone: '012',
+      }),
+    })
+
+    expect(res.status).toBe(200)
+  })
+
+  test('skips parent sync when only partial parent fields provided', async () => {
+    setMockResponse('students', {
+      data: { id: '1', full_name: 'Ali' },
       error: null,
     })
 

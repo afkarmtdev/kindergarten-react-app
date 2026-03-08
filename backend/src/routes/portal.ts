@@ -2,27 +2,73 @@ import { Hono } from 'hono'
 import { supabase } from '../db/supabase'
 
 // All routes here are protected by parentMiddleware in index.ts
-// c.get('parentStudentId') is always set — never trust a client-supplied student_id
+// c.get('parentId') and c.get('parentChildIds') are always set
 const app = new Hono()
 
-// GET /api/portal/me — student profile for the authenticated parent
-app.get('/me', async (c) => {
-  const studentId = c.get('parentStudentId')
+/**
+ * Resolve which student_id to use for the current request.
+ * If ?student_id is provided, validate it's in the parent's allowed children.
+ * If not provided, default to the first child.
+ * Returns null if no valid student can be resolved (→ 403).
+ */
+function resolveStudentId(c: {
+  req: { query: (k: string) => string | undefined }
+  get: (k: string) => unknown
+}): string | null {
+  const requested = c.req.query('student_id')
+  const allowed: string[] = c.get('parentChildIds') as string[]
+  if (!requested) return allowed[0] ?? null
+  return allowed.includes(requested) ? requested : null
+}
 
-  const { data, error } = await supabase
-    .from('students')
-    .select('id, full_name, date_of_birth, gender, classrooms(name), photo_url')
-    .eq('id', studentId)
+// GET /api/portal/me — parent profile with children
+app.get('/me', async (c) => {
+  const parentId = c.get('parentId') as string
+
+  const { data: parent, error } = await supabase
+    .from('parents')
+    .select('id, full_name, email, phone')
+    .eq('id', parentId)
     .single()
 
-  if (error || !data) return c.json({ error: 'Student not found' }, 404)
-  const { classrooms, ...rest } = data as { classrooms?: { name?: string } | null } & typeof data
-  return c.json({ data: { ...rest, class_name: classrooms?.name ?? null } })
+  if (error || !parent) return c.json({ error: 'Parent not found' }, 404)
+
+  // Fetch children via parent_students join
+  const { data: links } = await supabase
+    .from('parent_students')
+    .select(
+      'relationship, students(id, full_name, date_of_birth, gender, photo_url, classrooms(name))'
+    )
+    .eq('parent_id', parentId)
+
+  const children = (links ?? []).map((link: Record<string, unknown>) => {
+    const student = link.students as {
+      id: string
+      full_name: string
+      date_of_birth: string
+      gender: string
+      photo_url: string | null
+      classrooms: { name: string } | null
+    } | null
+    return {
+      id: student?.id ?? '',
+      full_name: student?.full_name ?? '',
+      date_of_birth: student?.date_of_birth ?? '',
+      gender: student?.gender ?? 'male',
+      class_name: student?.classrooms?.name ?? null,
+      photo_url: student?.photo_url ?? null,
+      relationship: link.relationship as string,
+    }
+  })
+
+  return c.json({ data: { ...parent, children } })
 })
 
-// GET /api/portal/attendance?page&limit — paginated attendance for this student
+// GET /api/portal/attendance?page&limit&student_id — paginated attendance for a child
 app.get('/attendance', async (c) => {
-  const studentId = c.get('parentStudentId')
+  const studentId = resolveStudentId(c)
+  if (!studentId) return c.json({ error: 'Access denied' }, 403)
+
   const page = Math.max(1, Number(c.req.query('page') ?? 1))
   const limit = Math.min(50, Math.max(1, Number(c.req.query('limit') ?? 20)))
   const from = (page - 1) * limit
@@ -44,10 +90,11 @@ app.get('/attendance', async (c) => {
   })
 })
 
-// GET /api/portal/fees?page&limit — fee records for this student
-// Intentionally omits discount_reason and internal admin fields
+// GET /api/portal/fees?page&limit&student_id — fee records for a child
 app.get('/fees', async (c) => {
-  const studentId = c.get('parentStudentId')
+  const studentId = resolveStudentId(c)
+  if (!studentId) return c.json({ error: 'Access denied' }, 403)
+
   const page = Math.max(1, Number(c.req.query('page') ?? 1))
   const limit = Math.min(50, Math.max(1, Number(c.req.query('limit') ?? 20)))
   const from = (page - 1) * limit
@@ -74,7 +121,7 @@ app.get('/fees', async (c) => {
   })
 })
 
-// GET /api/portal/announcements — non-expired announcements (same as public feed)
+// GET /api/portal/announcements — non-expired announcements (school-wide, no student scoping)
 app.get('/announcements', async (c) => {
   const today = new Date().toISOString().split('T')[0]
 
@@ -90,9 +137,11 @@ app.get('/announcements', async (c) => {
   return c.json({ data: data ?? [] })
 })
 
-// GET /api/portal/daily-reports?limit — recent daily reports for this student
+// GET /api/portal/daily-reports?limit&student_id — recent daily reports for a child
 app.get('/daily-reports', async (c) => {
-  const studentId = c.get('parentStudentId')
+  const studentId = resolveStudentId(c)
+  if (!studentId) return c.json({ error: 'Access denied' }, 403)
+
   const limit = Math.min(30, Math.max(1, Number(c.req.query('limit') ?? 14)))
 
   const { data, error } = await supabase
@@ -108,9 +157,11 @@ app.get('/daily-reports', async (c) => {
   return c.json({ data: data ?? [] })
 })
 
-// GET /api/portal/portfolio?term — portfolio entries + report card for this student
+// GET /api/portal/portfolio?term&student_id — portfolio entries + report card for a child
 app.get('/portfolio', async (c) => {
-  const studentId = c.get('parentStudentId')
+  const studentId = resolveStudentId(c)
+  if (!studentId) return c.json({ error: 'Access denied' }, 403)
+
   const term = c.req.query('term')
 
   // Fetch all entries to extract available terms, then filter if term specified

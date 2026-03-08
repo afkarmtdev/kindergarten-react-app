@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, ShieldCheck, ShieldOff, BookOpen, Plus, FileText } from 'lucide-react'
-import { studentsApi, attendanceApi, portfolioEntriesApi } from '@/lib/api'
+import { ArrowLeft, Pencil, BookOpen, Plus, FileText } from 'lucide-react'
+import { studentsApi, attendanceApi, portfolioEntriesApi, parentsApi } from '@/lib/api'
 import { StudentModal } from '@/components/admin/StudentModal'
 import { GeneratePortalAccessModal } from '@/components/admin/GeneratePortalAccessModal'
 import { PortfolioEntryModal } from '@/components/admin/PortfolioEntryModal'
@@ -13,7 +13,8 @@ import { StudentInfoCard } from './components/StudentInfoCard'
 import { AttendanceHeatmap } from './components/AttendanceHeatmap'
 import { StudentArtwork } from './components/StudentArtwork'
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
-import type { Student, AttendanceRecord, PortfolioEntry } from '@/types'
+import { PortalAccessCard } from './components/PortalAccessCard'
+import type { Student, AttendanceRecord, PortfolioEntry, Parent } from '@/types'
 
 const LIMIT = 15
 
@@ -68,6 +69,13 @@ export function StudentProfilePage() {
     queryFn: () => portfolioEntriesApi.getAll({ student_id: id!, limit: 100 }),
     enabled: !!id,
   })
+  const { data: parentData } = useQuery({
+    queryKey: ['parent-by-student', id],
+    queryFn: () => parentsApi.getByStudent(id!) as Promise<{ data: Parent | null }>,
+    enabled: !!id,
+  })
+  const linkedParent: Parent | null = parentData?.data ?? null
+
   const existingTerms = [...new Set((allTermsData?.data ?? []).map((e: PortfolioEntry) => e.term))]
     .sort()
     .reverse() as string[]
@@ -237,40 +245,7 @@ export function StudentProfilePage() {
           <StudentArtwork studentId={s.id} />
 
           {/* Portal Access card */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 mt-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                {s.access_code ? (
-                  <ShieldCheck className="w-5 h-5 text-green-500 shrink-0" />
-                ) : (
-                  <ShieldOff className="w-5 h-5 text-gray-400 dark:text-gray-600 shrink-0" />
-                )}
-                <div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">
-                    {t('portalAccess')}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {s.access_code ? (
-                      <span className="font-mono tracking-wider">{s.access_code}</span>
-                    ) : (
-                      t('portalAccessInactive')
-                    )}
-                    {s.access_code && (
-                      <span className="ml-2">
-                        {s.portal_pin_hash ? t('pinSet') : t('pinNotSet')}
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPortalModalOpen(true)}
-                className="shrink-0 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-xl text-xs font-semibold hover:border-kinder-orange hover:text-kinder-orange transition-all"
-              >
-                Manage
-              </button>
-            </div>
-          </div>
+          <PortalAccessCard linkedParent={linkedParent} onManage={() => setPortalModalOpen(true)} />
 
           <div className="mt-6">
             <AttendanceHistoryTable
@@ -285,11 +260,11 @@ export function StudentProfilePage() {
       ) : null}
 
       {s && <StudentModal open={editModalOpen} onClose={closeModal} student={s} />}
-      {s && portalModalOpen && (
+      {s && linkedParent && portalModalOpen && (
         <GeneratePortalAccessModal
-          studentId={s.id}
-          studentName={s.full_name}
-          existingCode={s.access_code ?? null}
+          parentId={linkedParent.id}
+          parentName={linkedParent.full_name}
+          existingCode={linkedParent.access_code ?? null}
           onClose={() => setPortalModalOpen(false)}
         />
       )}

@@ -3,24 +3,19 @@ import { createPortal } from 'react-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { X, Copy, Check, KeyRound, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { studentsApi } from '../../lib/api'
+import { parentsApi } from '../../lib/api'
 import { useT } from '../../hooks/useT'
 
 interface Props {
-  studentId: string
-  studentName: string
+  parentId: string
+  parentName: string
   existingCode: string | null
   onClose: () => void
 }
 
 type Step = 'main' | 'set-pin' | 'confirm-revoke'
 
-export function GeneratePortalAccessModal({
-  studentId,
-  studentName,
-  existingCode,
-  onClose,
-}: Props) {
+export function GeneratePortalAccessModal({ parentId, parentName, existingCode, onClose }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
 
@@ -31,19 +26,19 @@ export function GeneratePortalAccessModal({
   const [copied, setCopied] = useState(false)
 
   const generateMutation = useMutation({
-    mutationFn: () => studentsApi.generateAccessCode(studentId),
+    mutationFn: () => parentsApi.generateAccessCode(parentId),
     onSuccess: (data) => {
       setGeneratedCode(data.access_code)
-      queryClient.invalidateQueries({ queryKey: ['student', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['parent-by-student'] })
       toast.success('Access code generated')
     },
     onError: () => toast.error('Failed to generate access code'),
   })
 
   const pinMutation = useMutation({
-    mutationFn: (p: string) => studentsApi.setPortalPin(studentId, p),
+    mutationFn: (p: string) => parentsApi.setPortalPin(parentId, p),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['parent-by-student'] })
       toast.success('PIN set successfully')
       setStep('main')
       setPin('')
@@ -53,9 +48,9 @@ export function GeneratePortalAccessModal({
   })
 
   const revokeMutation = useMutation({
-    mutationFn: () => studentsApi.revokePortalAccess(studentId),
+    mutationFn: () => parentsApi.revokePortalAccess(parentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['parent-by-student'] })
       toast.success(t('portalAccessRevoked'))
       onClose()
     },
@@ -83,7 +78,7 @@ export function GeneratePortalAccessModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-bold text-gray-900 dark:text-white">
-            {t('portalAccess')} — {studentName}
+            {t('portalAccess')} — {parentName}
           </h2>
           <button
             onClick={onClose}
@@ -220,8 +215,8 @@ export function GeneratePortalAccessModal({
         {step === 'confirm-revoke' && (
           <div className="space-y-4">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-700 dark:text-red-400">
-              This will remove the access code, clear the PIN, and log out all active parent
-              sessions for <strong>{studentName}</strong>. This cannot be undone.
+              This will remove the access code, clear the PIN, and log out all active portal
+              sessions for <strong>{parentName}</strong>. This cannot be undone.
             </div>
             <div className="flex gap-2">
               <button

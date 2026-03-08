@@ -44,14 +44,14 @@ type Domain = keyof typeof DOMAIN_CONFIG
 
 export default function PortalPortfolioPage() {
   usePageTitle('Portfolio')
-  const { student } = useParentAuth()
+  const { selectedChild } = useParentAuth()
   const t = useT()
   const [selectedTerm, setSelectedTerm] = useState<string>('')
 
   const { data, isLoading } = useQuery({
-    queryKey: ['portal-portfolio', student?.id, selectedTerm],
-    queryFn: () => portalDataApi.getPortfolio(selectedTerm || undefined),
-    enabled: !!student,
+    queryKey: ['portal-portfolio', selectedChild?.id, selectedTerm],
+    queryFn: () => portalDataApi.getPortfolio(selectedTerm || undefined, selectedChild?.id),
+    enabled: !!selectedChild,
   })
 
   const entries: PortfolioEntry[] = data?.entries ?? []

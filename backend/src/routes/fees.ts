@@ -11,13 +11,24 @@ import { sanitiseStrings } from '../lib/sanitise'
 import { deriveStatus, monthRange } from '../lib/fees'
 import { generateNextNumber } from './documentNumbering'
 
-// Flatten nested classrooms join on a student sub-object into a class_name string field
+// Flatten nested classrooms + parent_students joins on a student sub-object
 function flattenStudentClass(
-  s: ({ classrooms?: { name?: string } | null } & Record<string, unknown>) | null | undefined
+  s:
+    | ({
+        classrooms?: { name?: string } | null
+        parent_students?: { parents?: { full_name?: string } | null }[]
+      } & Record<string, unknown>)
+    | null
+    | undefined
 ): Record<string, unknown> | null {
   if (!s) return null
-  const { classrooms, ...rest } = s
-  return { ...rest, class_name: classrooms?.name ?? null }
+  const { classrooms, parent_students, ...rest } = s
+  const parentLink = Array.isArray(parent_students) ? parent_students[0] : undefined
+  return {
+    ...rest,
+    class_name: classrooms?.name ?? null,
+    parent_name: parentLink?.parents?.full_name ?? null,
+  }
 }
 
 type StudentSubrow = Parameters<typeof flattenStudentClass>[0]
@@ -269,7 +280,7 @@ fees.get('/statement/:studentId', async (c) => {
   const [{ data: student }, { data: records, error }] = await Promise.all([
     supabase
       .from('students')
-      .select('full_name, classrooms(name), date_of_birth, parent_name')
+      .select('full_name, classrooms(name), date_of_birth, parent_students(parents(full_name))')
       .eq('id', studentId)
       .single(),
     supabase
@@ -365,7 +376,10 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
 
   let query = supabase
     .from('fee_records')
-    .select('*, students(full_name, classrooms(name), photo_url, parent_name)', { count: 'exact' })
+    .select(
+      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))',
+      { count: 'exact' }
+    )
     .order('due_date', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -396,7 +410,9 @@ fees.post('/', zValidator('json', recordSchema), async (c) => {
   const { data, error } = await supabase
     .from('fee_records')
     .insert({ ...body, amount_paid: 0, status })
-    .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
+    .select(
+      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+    )
     .single()
   if (error) return c.json({ error: error.message }, 500)
   return c.json(
@@ -714,7 +730,9 @@ fees.get('/:id', async (c) => {
   const { id } = c.req.param()
   const { data, error } = await supabase
     .from('fee_records')
-    .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
+    .select(
+      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+    )
     .eq('id', id)
     .single()
   if (error) return c.json({ error: error.message }, 404)
@@ -769,7 +787,9 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
       paid_at: newStatus === 'paid' ? new Date().toISOString() : record.paid_at,
     })
     .eq('id', id)
-    .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
+    .select(
+      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+    )
     .single()
 
   if (error) return c.json({ error: error.message }, 500)
@@ -809,7 +829,9 @@ fees.put(
       .from('fee_records')
       .update({ ...body, status })
       .eq('id', id)
-      .select('*, students(full_name, classrooms(name), photo_url, parent_name)')
+      .select(
+        '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+      )
       .single()
 
     if (error) return c.json({ error: error.message }, 500)

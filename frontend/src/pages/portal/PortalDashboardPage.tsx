@@ -34,7 +34,7 @@ function formatRM(n: number) {
 
 export default function PortalDashboardPage() {
   usePageTitle('Parent Portal')
-  const { student } = useParentAuth()
+  const { parent, selectedChild } = useParentAuth()
   const t = useT()
 
   const today = new Date().toISOString().split('T')[0]
@@ -46,27 +46,28 @@ export default function PortalDashboardPage() {
   })
 
   const { data: attendanceData } = useQuery({
-    queryKey: ['portal-attendance', student?.id, { page: 1, limit: 1 }],
-    queryFn: () => portalDataApi.getAttendance({ page: 1, limit: 5 }),
-    enabled: !!student,
+    queryKey: ['portal-attendance', selectedChild?.id, { page: 1, limit: 1 }],
+    queryFn: () =>
+      portalDataApi.getAttendance({ page: 1, limit: 5, student_id: selectedChild?.id }),
+    enabled: !!selectedChild,
   })
 
   const { data: feesData } = useQuery({
-    queryKey: ['portal-fees', student?.id],
-    queryFn: () => portalDataApi.getFees({ page: 1, limit: 5 }),
-    enabled: !!student,
+    queryKey: ['portal-fees', selectedChild?.id],
+    queryFn: () => portalDataApi.getFees({ page: 1, limit: 5, student_id: selectedChild?.id }),
+    enabled: !!selectedChild,
   })
 
   const { data: announcementsData } = useQuery({
-    queryKey: ['portal-announcements', student?.id],
+    queryKey: ['portal-announcements', parent?.id],
     queryFn: () => portalDataApi.getAnnouncements(),
-    enabled: !!student,
+    enabled: !!parent,
   })
 
   const { data: dailyReportData } = useQuery({
-    queryKey: ['portal-daily-reports', student?.id, { page: 1, limit: 1 }],
-    queryFn: () => portalDataApi.getDailyReports({ limit: 1 }),
-    enabled: !!student,
+    queryKey: ['portal-daily-reports', selectedChild?.id, { page: 1, limit: 1 }],
+    queryFn: () => portalDataApi.getDailyReports({ limit: 1, student_id: selectedChild?.id }),
+    enabled: !!selectedChild,
   })
 
   const todayAttendance = (attendanceData?.data as AttendanceRecord[] | undefined)?.find(
@@ -89,20 +90,20 @@ export default function PortalDashboardPage() {
       {/* Welcome card with gradient */}
       <div className="bg-gradient-to-r from-kinder-orange to-orange-400 rounded-2xl p-5 text-white shadow-sm">
         <div className="flex items-center gap-3">
-          {student?.photo_url ? (
+          {selectedChild?.photo_url ? (
             <img
-              src={student.photo_url}
+              src={selectedChild.photo_url}
               alt=""
               className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-              {student?.full_name?.charAt(0).toUpperCase()}
+              {selectedChild?.full_name?.charAt(0).toUpperCase()}
             </div>
           )}
           <div>
             <h2 className="text-lg font-bold">
-              {t('portalWelcome')}, {student?.full_name?.split(' ')[0]}
+              {t('portalWelcome')}, {parent?.full_name?.split(' ')[0]}
             </h2>
             <p className="text-sm text-white/80">{dateString}</p>
           </div>

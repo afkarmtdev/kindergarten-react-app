@@ -257,16 +257,14 @@ export const portfolioEntriesApi = {
   getAll: (params: { student_id: string; term?: string; page?: number; limit?: number }) =>
     api.get('/portfolio-entries', { params }).then((r) => r.data),
   getReport: (studentId: string, term: string) =>
-    api
-      .get(`/portfolio-entries/${studentId}/report/${encodeURIComponent(term)}`)
-      .then(
-        (r) =>
-          r.data as {
-            entries: import('@/types').PortfolioEntry[]
-            report: import('@/types').PortfolioReport | null
-            term: string
-          }
-      ),
+    api.get(`/portfolio-entries/${studentId}/report/${encodeURIComponent(term)}`).then(
+      (r) =>
+        r.data as {
+          entries: import('@/types').PortfolioEntry[]
+          report: import('@/types').PortfolioReport | null
+          term: string
+        }
+    ),
   create: (data: Record<string, unknown>) =>
     api.post('/portfolio-entries', data).then((r) => r.data as import('@/types').PortfolioEntry),
   update: (id: string, data: Record<string, unknown>) =>
@@ -304,9 +302,10 @@ portalApi.interceptors.request.use((config) => {
 portalApi.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && localStorage.getItem('portal_token')) {
       localStorage.removeItem('portal_token')
-      localStorage.removeItem('portal_student')
+      localStorage.removeItem('portal_parent')
+      localStorage.removeItem('portal_selected_child')
       window.location.href = '/portal/login'
     }
     return Promise.reject(err)
@@ -319,37 +318,44 @@ export const portalAuthApi = {
       (r) =>
         r.data as {
           token: string
-          student: import('@/types').PortalStudent
+          parent: import('@/types').PortalParent
         }
     ),
   logout: () => portalApi.post('/logout').then((r) => r.data),
-  me: () => portalApi.get('/me').then((r) => r.data as { data: import('@/types').PortalStudent }),
+  me: () => portalApi.get('/me').then((r) => r.data as { data: import('@/types').PortalParent }),
 }
 
 export const portalDataApi = {
-  getAttendance: (params: { page?: number; limit?: number } = {}) =>
+  getAttendance: (params: { page?: number; limit?: number; student_id?: string } = {}) =>
     portalApi
       .get('/attendance', { params })
       .then((r) => r.data as PaginatedResponse<import('@/types').AttendanceRecord>),
-  getFees: (params: { page?: number; limit?: number } = {}) =>
+  getFees: (params: { page?: number; limit?: number; student_id?: string } = {}) =>
     portalApi.get('/fees', { params }).then((r) => r.data),
   getAnnouncements: () =>
     portalApi
       .get('/announcements')
       .then((r) => r.data as { data: import('@/types').Announcement[] }),
-  getDailyReports: (params: { limit?: number } = {}) =>
+  getDailyReports: (params: { limit?: number; student_id?: string } = {}) =>
     portalApi
       .get('/daily-reports', { params })
       .then((r) => r.data as { data: import('@/types').DailyReport[] }),
-  getPortfolio: (term?: string) =>
-    portalApi.get('/portfolio', { params: term ? { term } : {} }).then(
-      (r) =>
-        r.data as {
-          entries: import('@/types').PortfolioEntry[]
-          report: import('@/types').PortfolioReport | null
-          terms: string[]
-        }
-    ),
+  getPortfolio: (term?: string, student_id?: string) =>
+    portalApi
+      .get('/portfolio', {
+        params: {
+          ...(term ? { term } : {}),
+          ...(student_id ? { student_id } : {}),
+        },
+      })
+      .then(
+        (r) =>
+          r.data as {
+            entries: import('@/types').PortfolioEntry[]
+            report: import('@/types').PortfolioReport | null
+            terms: string[]
+          }
+      ),
 }
 
 export const artWallApi = {
@@ -364,6 +370,31 @@ export const artWallApi = {
   delete: (id: string) => api.delete(`/art-wall/${id}`).then((r) => r.data),
   getPublic: (params: { page?: number; limit?: number } = {}) =>
     publicApi.get('/public/art-wall', { params }).then((r) => r.data),
+}
+
+export const parentsApi = {
+  getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
+    api
+      .get('/parents', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Parent>),
+  getById: (id: string) => api.get(`/parents/${id}`).then((r) => r.data),
+  getByStudent: (studentId: string) =>
+    api.get(`/parents/by-student/${studentId}`).then((r) => r.data),
+  create: (data: unknown) => api.post('/parents', data).then((r) => r.data),
+  update: (id: string, data: unknown) => api.put(`/parents/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/parents/${id}`).then((r) => r.data),
+  generateAccessCode: (id: string) =>
+    api.post(`/parents/${id}/access-code`).then((r) => r.data as { access_code: string }),
+  setPortalPin: (id: string, pin: string) =>
+    api.put(`/parents/${id}/portal-pin`, { pin }).then((r) => r.data),
+  revokePortalAccess: (id: string) =>
+    api.delete(`/parents/${id}/portal-access`).then((r) => r.data),
+  linkStudent: (parentId: string, studentId: string, relationship?: string) =>
+    api
+      .post(`/parents/${parentId}/link-student`, { student_id: studentId, relationship })
+      .then((r) => r.data),
+  unlinkStudent: (parentId: string, studentId: string) =>
+    api.delete(`/parents/${parentId}/unlink-student/${studentId}`).then((r) => r.data),
 }
 
 export const announcementsApi = {

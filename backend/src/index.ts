@@ -45,6 +45,7 @@ import artWall from './routes/artWall'
 import dailyReports from './routes/dailyReports'
 import portfolioEntries from './routes/portfolioEntries'
 import portfolioReports from './routes/portfolioReports'
+import parents from './routes/parents'
 import parentAuth from './routes/parentAuth'
 import portal from './routes/portal'
 import { authMiddleware } from './middleware/auth'
@@ -154,7 +155,11 @@ app.route('/api/public/inquiries', inquiries)
 app.route('/api/portal', parentAuth)
 
 // Parent portal data routes — parentMiddleware only (NOT authMiddleware)
-app.use('/api/portal/*', parentMiddleware)
+// Skip login/logout (they're public, handled by parentAuth above)
+app.use('/api/portal/*', async (c, next) => {
+  if (c.req.path === '/api/portal/login' || c.req.path === '/api/portal/logout') return next()
+  return parentMiddleware(c, next)
+})
 app.route('/api/portal', portal)
 
 // ── Protected routes ──────────────────────────────────────────────────────────
@@ -175,6 +180,7 @@ app.route('/api/school-info', schoolInfo)
 app.route('/api/testimonials', testimonials)
 app.route('/api/inquiries', inquiriesAdmin)
 app.route('/api/art-wall', artWall)
+app.route('/api/parents', parents)
 app.route('/api/daily-reports', dailyReports)
 app.route('/api/portfolio-entries', portfolioEntries)
 app.route('/api/portfolio-reports', portfolioReports)
