@@ -9,15 +9,31 @@ import parentAuth from './parentAuth'
 const app = new Hono()
 app.route('/api/portal', parentAuth)
 
+const PARENT_ID = '00000000-0000-0000-0000-000000000099'
 const STUDENT_ID = '00000000-0000-0000-0000-000000000001'
 
-// Shared student fixture — portal_pin_hash filled per-test
-const baseStudent = {
-  id: STUDENT_ID,
+// Shared parent fixture — portal_pin_hash filled per-test
+const baseParent = {
+  id: PARENT_ID,
   full_name: 'Ali Hassan',
-  classrooms: { name: 'Rose' },
-  photo_url: null,
+  email: 'ali@example.com',
+  phone: '012-345-6789',
 }
+
+// Children fixture returned by parent_students join
+const childrenLinks = [
+  {
+    relationship: 'parent',
+    students: {
+      id: STUDENT_ID,
+      full_name: 'Ahmad Hassan',
+      date_of_birth: '2020-03-15',
+      gender: 'male',
+      photo_url: null,
+      classrooms: { name: 'Rose' },
+    },
+  },
+]
 
 function post(path: string, body: unknown) {
   return app.request(path, {
@@ -31,6 +47,8 @@ beforeEach(() => {
   clearMockResponses()
   // parent_sessions insert succeeds by default
   setMockResponse('parent_sessions', { data: null, error: null })
+  // parent_students returns children by default
+  setMockResponse('parent_students', { data: childrenLinks, error: null })
 })
 
 // ─── Validation ───────────────────────────────────────────────────────────────
@@ -65,8 +83,8 @@ describe('POST /api/portal/login — validation', () => {
 // ─── Auth logic ───────────────────────────────────────────────────────────────
 
 describe('POST /api/portal/login — auth logic', () => {
-  test('returns 401 when student not found', async () => {
-    setMockResponse('students', { data: null, error: null })
+  test('returns 401 when parent not found', async () => {
+    setMockResponse('parents', { data: null, error: null })
 
     const res = await post('/api/portal/login', { access_code: 'KC-BAD', pin: '123456' })
     expect(res.status).toBe(401)
@@ -74,9 +92,9 @@ describe('POST /api/portal/login — auth logic', () => {
     expect(body.error).toBe('Invalid access code or PIN')
   })
 
-  test('returns 401 when student has no PIN set', async () => {
-    setMockResponse('students', {
-      data: { ...baseStudent, portal_pin_hash: null },
+  test('returns 401 when parent has no PIN set', async () => {
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: null },
       error: null,
     })
 
@@ -89,8 +107,8 @@ describe('POST /api/portal/login — auth logic', () => {
   test('returns 401 when PIN is wrong', async () => {
     // Hash for "654321" — the stored PIN; we'll attempt "123456"
     const pinHash = await Bun.password.hash('654321', { algorithm: 'bcrypt', cost: 4 })
-    setMockResponse('students', {
-      data: { ...baseStudent, portal_pin_hash: pinHash },
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
       error: null,
     })
 
@@ -102,8 +120,8 @@ describe('POST /api/portal/login — auth logic', () => {
 
   test('returns 500 when session insert fails', async () => {
     const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
-    setMockResponse('students', {
-      data: { ...baseStudent, portal_pin_hash: pinHash },
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
       error: null,
     })
     setMockResponse('parent_sessions', { data: null, error: { message: 'DB error' } })
@@ -112,10 +130,10 @@ describe('POST /api/portal/login — auth logic', () => {
     expect(res.status).toBe(500)
   })
 
-  test('returns token and student on successful login', async () => {
+  test('returns token and parent with children on successful login', async () => {
     const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
-    setMockResponse('students', {
-      data: { ...baseStudent, portal_pin_hash: pinHash },
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
       error: null,
     })
 
@@ -124,23 +142,41 @@ describe('POST /api/portal/login — auth logic', () => {
     const body = await res.json()
     expect(typeof body.token).toBe('string')
     expect(body.token.length).toBeGreaterThan(0)
-    expect(body.student.id).toBe(STUDENT_ID)
-    expect(body.student.full_name).toBe('Ali Hassan')
-    expect(body.student.class_name).toBe('Rose')
-    expect(body.student.photo_url).toBeNull()
+    expect(body.parent.id).toBe(PARENT_ID)
+    expect(body.parent.full_name).toBe('Ali Hassan')
+    expect(body.parent.children).toBeArray()
+    expect(body.parent.children.length).toBe(1)
+    expect(body.parent.children[0].id).toBe(STUDENT_ID)
+    expect(body.parent.children[0].class_name).toBe('Rose')
   })
 
-  test('student with no class returns class_name: null', async () => {
+  test('child with no class returns class_name: null', async () => {
     const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
-    setMockResponse('students', {
-      data: { ...baseStudent, classrooms: null, portal_pin_hash: pinHash },
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
+      error: null,
+    })
+    setMockResponse('parent_students', {
+      data: [
+        {
+          relationship: 'parent',
+          students: {
+            id: STUDENT_ID,
+            full_name: 'Ahmad Hassan',
+            date_of_birth: '2020-03-15',
+            gender: 'male',
+            photo_url: null,
+            classrooms: null,
+          },
+        },
+      ],
       error: null,
     })
 
     const res = await post('/api/portal/login', { access_code: 'KC-2024-001', pin: '123456' })
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.student.class_name).toBeNull()
+    expect(body.parent.children[0].class_name).toBeNull()
   })
 })
 

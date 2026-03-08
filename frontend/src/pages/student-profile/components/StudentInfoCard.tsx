@@ -80,20 +80,24 @@ export function StudentInfoCard({
               )}
             </div>
 
-            <div className="mt-4 space-y-1.5">
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <User size={13} className="flex-shrink-0" />
-                <span>{s.parent_name}</span>
+            {s.parent && (
+              <div className="mt-4 space-y-1.5">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <User size={13} className="flex-shrink-0" />
+                  <span>{s.parent.full_name}</span>
+                </div>
+                {s.parent.email && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <Mail size={13} className="flex-shrink-0" />
+                    <span>{s.parent.email}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Phone size={13} className="flex-shrink-0" />
+                  <span>{s.parent.phone}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <Mail size={13} className="flex-shrink-0" />
-                <span>{s.parent_email}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <Phone size={13} className="flex-shrink-0" />
-                <span>{s.parent_phone}</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

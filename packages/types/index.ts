@@ -1,6 +1,12 @@
 // Shared types between frontend and backend.
 // Both packages import from '@kindergarten/types' — do not duplicate these elsewhere.
 
+export interface StudentParent {
+  full_name: string
+  email: string | null
+  phone: string
+}
+
 export interface Student {
   id: string
   full_name: string
@@ -8,14 +14,9 @@ export interface Student {
   gender: 'male' | 'female'
   class_id?: string | null
   class_name?: string | null // derived via join with classrooms; not stored on the row
-  parent_name: string
-  parent_email: string
-  parent_phone: string
+  parent?: StudentParent | null // derived via join through parent_students → parents
   photo_url?: string
   created_at: string
-  // Parent portal access fields (populated from DB columns)
-  access_code?: string | null
-  portal_pin_hash?: string | null
 }
 
 export interface AttendanceRecord {
@@ -310,6 +311,39 @@ export interface ArtWallItem {
   created_at: string
 }
 
+// ─── Parents ──────────────────────────────────────────────────────────────────
+
+export type ParentRelationship = 'parent' | 'guardian' | 'step_parent' | 'other'
+
+export interface Parent {
+  id: string
+  full_name: string
+  email: string | null
+  phone: string
+  access_code: string | null
+  portal_pin_hash?: string | null
+  created_at: string
+  // Populated via join in list/detail responses
+  children?: ParentChild[]
+  children_count?: number
+}
+
+export interface ParentChild {
+  id: string
+  full_name: string
+  class_name: string | null
+  photo_url: string | null
+  relationship: ParentRelationship
+}
+
+export interface ParentStudent {
+  id: string
+  parent_id: string
+  student_id: string
+  relationship: ParentRelationship
+  created_at: string
+}
+
 // ─── Parent Portal ────────────────────────────────────────────────────────────
 
 export interface PortalStudent {
@@ -319,6 +353,24 @@ export interface PortalStudent {
   gender: 'male' | 'female'
   class_name?: string | null
   photo_url?: string
+}
+
+export interface PortalParent {
+  id: string
+  full_name: string
+  email: string | null
+  phone: string
+  children: PortalChild[]
+}
+
+export interface PortalChild {
+  id: string
+  full_name: string
+  date_of_birth: string
+  gender: 'male' | 'female'
+  class_name: string | null
+  photo_url: string | null
+  relationship: ParentRelationship
 }
 
 export interface DailyReport {

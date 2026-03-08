@@ -655,6 +655,19 @@ export const translations = {
     setPin: 'Set PIN',
     pinPlaceholder: '6-digit PIN',
     pinHelp: 'Share this code and PIN with the parent to give them portal access.',
+    manage: 'Manage',
+
+    // Parents
+    parents: 'Parents',
+    addParent: 'Add Parent',
+    editParent: 'Edit Parent',
+    linkStudent: 'Link Student',
+    unlinkStudent: 'Unlink Student',
+    relationship: 'Relationship',
+    guardian: 'Guardian',
+    stepParent: 'Step Parent',
+    switchChild: 'Switch Child',
+    parentAccount: 'Parent Account',
 
     // Daily Reports
     dailyReports: 'Daily Reports',
@@ -1365,6 +1378,19 @@ export const translations = {
     setPin: 'Tetapkan PIN',
     pinPlaceholder: 'PIN 6 digit',
     pinHelp: 'Kongsi kod dan PIN ini dengan ibu bapa untuk memberi akses portal kepada mereka.',
+    manage: 'Urus',
+
+    // Parents
+    parents: 'Ibu Bapa',
+    addParent: 'Tambah Ibu Bapa',
+    editParent: 'Ubah Ibu Bapa',
+    linkStudent: 'Pautkan Pelajar',
+    unlinkStudent: 'Nyahpaut Pelajar',
+    relationship: 'Hubungan',
+    guardian: 'Penjaga',
+    stepParent: 'Ibu/Bapa Tiri',
+    switchChild: 'Tukar Anak',
+    parentAccount: 'Akaun Ibu Bapa',
 
     // Daily Reports
     dailyReports: 'Laporan Harian',

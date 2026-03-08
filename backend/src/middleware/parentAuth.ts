@@ -19,7 +19,7 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
 
   const { data: session } = await supabase
     .from('parent_sessions')
-    .select('student_id, expires_at')
+    .select('parent_id, expires_at')
     .eq('token_hash', tokenHash)
     .single()
 
@@ -32,6 +32,15 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
     return c.json({ error: 'Session expired' }, 401)
   }
 
-  c.set('parentStudentId', session.student_id)
+  // Fetch child student IDs for this parent
+  const { data: links } = await supabase
+    .from('parent_students')
+    .select('student_id')
+    .eq('parent_id', session.parent_id)
+
+  const childIds = (links ?? []).map((l: { student_id: string }) => l.student_id)
+
+  c.set('parentId', session.parent_id)
+  c.set('parentChildIds', childIds)
   await next()
 })

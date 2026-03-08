@@ -31,7 +31,7 @@ const navItems = [
 ]
 
 export default function PortalLayout() {
-  const { student, logout } = useParentAuth()
+  const { children: childrenList, selectedChild, selectChild, logout } = useParentAuth()
   const navigate = useNavigate()
   const t = useT()
   const { darkMode, toggleDark } = useSettingsStore()
@@ -46,26 +46,26 @@ export default function PortalLayout() {
       {/* Top bar */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
-          {student?.photo_url ? (
+          {selectedChild?.photo_url ? (
             <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
               <img
-                src={student.photo_url}
-                alt={student.full_name}
+                src={selectedChild.photo_url}
+                alt={selectedChild.full_name}
                 className="w-full h-full rounded-full object-cover border-2 border-white dark:border-gray-900"
               />
             </div>
           ) : (
             <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
               <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-kinder-orange font-bold text-sm">
-                {student?.full_name?.charAt(0).toUpperCase()}
+                {selectedChild?.full_name?.charAt(0).toUpperCase()}
               </div>
             </div>
           )}
           <div>
             <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
-              {student?.full_name}
+              {selectedChild?.full_name}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{student?.class_name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{selectedChild?.class_name}</p>
           </div>
         </div>
 
@@ -90,6 +90,28 @@ export default function PortalLayout() {
           </button>
         </div>
       </header>
+
+      {/* Child switcher — only shown when parent has 2+ children */}
+      {childrenList.length > 1 && (
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center gap-2 overflow-x-auto">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-semibold shrink-0">
+            {t('switchChild')}:
+          </span>
+          {childrenList.map((child) => (
+            <button
+              key={child.id}
+              onClick={() => selectChild(child.id)}
+              className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                selectedChild?.id === child.id
+                  ? 'bg-kinder-orange text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {child.full_name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Page content */}
       <main className="flex-1 pb-24">

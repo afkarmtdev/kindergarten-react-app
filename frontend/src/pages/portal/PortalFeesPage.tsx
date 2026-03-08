@@ -22,14 +22,14 @@ const LIMIT = 20
 
 export default function PortalFeesPage() {
   usePageTitle('Fees')
-  const { student } = useParentAuth()
+  const { selectedChild } = useParentAuth()
   const t = useT()
   const [page, setPage] = useState(1)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['portal-fees', student?.id, { page, limit: LIMIT }],
-    queryFn: () => portalDataApi.getFees({ page, limit: LIMIT }),
-    enabled: !!student,
+    queryKey: ['portal-fees', selectedChild?.id, { page, limit: LIMIT }],
+    queryFn: () => portalDataApi.getFees({ page, limit: LIMIT, student_id: selectedChild?.id }),
+    enabled: !!selectedChild,
     placeholderData: (prev) => prev,
   })
 
