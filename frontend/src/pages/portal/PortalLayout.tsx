@@ -7,9 +7,12 @@ import {
   ClipboardList,
   BookOpen,
   LogOut,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { useT } from '../../hooks/useT'
+import { useSettingsStore } from '../../store/settingsStore'
 import { APP_NAME } from '../../lib/version'
 import { PortalBearCub } from '../../components/portal/PortalBearFamily'
 
@@ -31,6 +34,7 @@ export default function PortalLayout() {
   const { student, logout } = useParentAuth()
   const navigate = useNavigate()
   const t = useT()
+  const { darkMode, toggleDark } = useSettingsStore()
 
   async function handleLogout() {
     await logout()
@@ -65,11 +69,18 @@ export default function PortalLayout() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden sm:flex items-center gap-1.5">
             <PortalBearCub size={16} />
             <span className="text-xs text-gray-400 dark:text-gray-500">{APP_NAME}</span>
           </div>
+          <button
+            onClick={toggleDark}
+            aria-label="Toggle dark mode"
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-kinder-orange dark:hover:text-kinder-orange hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -86,14 +97,14 @@ export default function PortalLayout() {
       </main>
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex z-20">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex z-20 pb-[env(safe-area-inset-bottom)]">
         {navItems.map(({ to, icon: Icon, labelKey, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-all active:scale-95 ${
+              `flex-1 min-w-0 flex flex-col items-center gap-0.5 py-2.5 px-1 text-[10px] font-medium transition-all active:scale-95 ${
                 isActive
                   ? 'text-kinder-orange bg-orange-50 dark:bg-orange-900/20 rounded-xl mx-0.5'
                   : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
@@ -102,9 +113,9 @@ export default function PortalLayout() {
           >
             {({ isActive }) => (
               <>
-                <Icon className="w-5 h-5" />
-                {isActive && <span className="w-1 h-1 rounded-full bg-kinder-orange" />}
-                <span>{t(labelKey)}</span>
+                <Icon className="w-5 h-5 shrink-0" />
+                {isActive && <span className="w-1 h-1 rounded-full bg-kinder-orange shrink-0" />}
+                <span className="truncate max-w-full">{t(labelKey)}</span>
               </>
             )}
           </NavLink>

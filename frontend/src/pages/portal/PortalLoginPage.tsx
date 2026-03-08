@@ -1,8 +1,9 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, KeyRound, Lock } from 'lucide-react'
+import { ArrowLeft, KeyRound, Lock, Sun, Moon } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { useT } from '../../hooks/useT'
+import { useSettingsStore } from '../../store/settingsStore'
 import { APP_NAME } from '../../lib/version'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import { PortalBearFamily, PortalBearCub } from '../../components/portal/PortalBearFamily'
@@ -12,6 +13,7 @@ export default function PortalLoginPage() {
   const { login } = useParentAuth()
   const navigate = useNavigate()
   const t = useT()
+  const { darkMode, toggleDark } = useSettingsStore()
 
   const [accessCode, setAccessCode] = useState('')
   const [pin, setPin] = useState('')
@@ -38,7 +40,16 @@ export default function PortalLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 px-4 relative">
+      {/* Dark mode toggle */}
+      <button
+        onClick={toggleDark}
+        aria-label="Toggle dark mode"
+        className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur text-gray-500 dark:text-gray-400 hover:text-kinder-orange dark:hover:text-kinder-orange border border-gray-200 dark:border-gray-700 shadow-sm transition-colors"
+      >
+        {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      </button>
+
       <div className="w-full max-w-sm">
         {/* Header with bear family */}
         <div
