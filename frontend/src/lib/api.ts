@@ -293,9 +293,19 @@ export const portalApi = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+function getOrCreateDeviceId(): string {
+  let id = localStorage.getItem('portal_device_id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('portal_device_id', id)
+  }
+  return id
+}
+
 portalApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('portal_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  config.headers['X-Device-Id'] = getOrCreateDeviceId()
   return config
 })
 

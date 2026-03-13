@@ -341,9 +341,14 @@ create table if not exists parent_sessions (
   id          uuid primary key default uuid_generate_v4(),
   student_id  uuid not null references students(id) on delete cascade,
   token_hash  text not null unique,
+  device_id   text not null,
   expires_at  timestamptz not null,
   created_at  timestamptz default now()
 );
+
+-- Migration (run if table already exists):
+-- DELETE FROM parent_sessions;
+-- ALTER TABLE parent_sessions ADD COLUMN IF NOT EXISTS device_id text NOT NULL;
 
 create index if not exists idx_parent_sessions_student on parent_sessions(student_id);
 create index if not exists idx_parent_sessions_token   on parent_sessions(token_hash);

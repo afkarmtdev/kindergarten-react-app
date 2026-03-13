@@ -17,6 +17,11 @@ const loginSchema = z.object({
 
 // POST /api/portal/login — public, no auth required
 app.post('/login', zValidator('json', loginSchema), async (c) => {
+  const deviceId = c.req.header('X-Device-Id')
+  if (!deviceId) {
+    return c.json({ error: 'Device ID required' }, 400)
+  }
+
   const { access_code, pin } = c.req.valid('json')
 
   // Query parents table by access_code
@@ -43,10 +48,12 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
 
   const token = await sign(payload, process.env.PORTAL_JWT_SECRET!, 'HS256')
   const tokenHash = createHash('sha256').update(token).digest('hex')
+  const deviceIdHash = createHash('sha256').update(deviceId).digest('hex')
 
   const { error: sessionError } = await supabase.from('parent_sessions').insert({
     parent_id: parent.id,
     token_hash: tokenHash,
+    device_id: deviceIdHash,
     expires_at: expiresAt.toISOString(),
   })
 

@@ -35,10 +35,16 @@ const childrenLinks = [
   },
 ]
 
-function post(path: string, body: unknown) {
+const TEST_DEVICE_ID = 'test-device-00000000-0000-0000-0000-000000000001'
+
+function post(path: string, body: unknown, extraHeaders?: Record<string, string>) {
   return app.request(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Device-Id': TEST_DEVICE_ID,
+      ...extraHeaders,
+    },
     body: JSON.stringify(body),
   })
 }
@@ -177,6 +183,21 @@ describe('POST /api/portal/login — auth logic', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.parent.children[0].class_name).toBeNull()
+  })
+})
+
+// ─── Device binding ──────────────────────────────────────────────────────────
+
+describe('POST /api/portal/login — device binding', () => {
+  test('returns 400 when X-Device-Id header is missing', async () => {
+    const res = await app.request('/api/portal/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_code: 'KC-2024-001', pin: '123456' }),
+    })
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('Device ID required')
   })
 })
 
