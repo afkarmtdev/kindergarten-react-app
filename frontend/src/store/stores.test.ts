@@ -16,12 +16,13 @@ import { useInquiriesStore } from './inquiriesStore'
 describe('studentsStore', () => {
   beforeEach(() => useStudentsStore.getState().reset())
 
-  test('defaults: page 1, empty search/filters, modal closed', () => {
+  test('defaults: page 1, empty search/filters, statusFilter active, modal closed', () => {
     const s = useStudentsStore.getState()
     expect(s.page).toBe(1)
     expect(s.search).toBe('')
     expect(s.classFilter).toBe('')
     expect(s.genderFilter).toBe('')
+    expect(s.statusFilter).toBe('active')
     expect(s.isModalOpen).toBe(false)
     expect(s.editingId).toBeNull()
   })
@@ -48,6 +49,20 @@ describe('studentsStore', () => {
     const s = useStudentsStore.getState()
     expect(s.genderFilter).toBe('male')
     expect(s.page).toBe(1)
+  })
+
+  test('setStatusFilter resets page to 1', () => {
+    useStudentsStore.getState().setPage(3)
+    useStudentsStore.getState().setStatusFilter('graduated')
+    const s = useStudentsStore.getState()
+    expect(s.statusFilter).toBe('graduated')
+    expect(s.page).toBe(1)
+  })
+
+  test('statusFilter defaults to active', () => {
+    useStudentsStore.getState().setStatusFilter('graduated')
+    useStudentsStore.getState().reset()
+    expect(useStudentsStore.getState().statusFilter).toBe('active')
   })
 
   test('setPage preserves search and filters', () => {
@@ -104,12 +119,27 @@ describe('studentsStore', () => {
 describe('classesStore', () => {
   beforeEach(() => useClassesStore.getState().reset())
 
-  test('defaults: page 1, empty search, modal closed', () => {
+  test('defaults: page 1, empty search, statusFilter active, modal closed', () => {
     const s = useClassesStore.getState()
     expect(s.page).toBe(1)
     expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('active')
     expect(s.isModalOpen).toBe(false)
     expect(s.editingId).toBeNull()
+  })
+
+  test('setStatusFilter resets page to 1', () => {
+    useClassesStore.getState().setPage(3)
+    useClassesStore.getState().setStatusFilter('graduated')
+    const s = useClassesStore.getState()
+    expect(s.statusFilter).toBe('graduated')
+    expect(s.page).toBe(1)
+  })
+
+  test('statusFilter defaults to active on reset', () => {
+    useClassesStore.getState().setStatusFilter('graduated')
+    useClassesStore.getState().reset()
+    expect(useClassesStore.getState().statusFilter).toBe('active')
   })
 
   test('setSearch resets page to 1', () => {
@@ -275,12 +305,15 @@ describe('testimonialsStore', () => {
 })
 
 describe('inquiriesStore', () => {
-  beforeEach(() => useInquiriesStore.setState({ page: 1, search: '' }))
+  beforeEach(() => useInquiriesStore.getState().clearFilters())
 
-  test('defaults: page 1, empty search', () => {
+  test('defaults: page 1, empty search/filters', () => {
     const s = useInquiriesStore.getState()
     expect(s.page).toBe(1)
     expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('')
+    expect(s.dateFrom).toBe('')
+    expect(s.dateTo).toBe('')
   })
 
   test('setSearch resets page to 1', () => {
@@ -291,12 +324,57 @@ describe('inquiriesStore', () => {
     expect(s.page).toBe(1)
   })
 
-  test('setPage preserves search', () => {
+  test('setStatusFilter resets page to 1', () => {
+    useInquiriesStore.getState().setPage(3)
+    useInquiriesStore.getState().setStatusFilter('contacted')
+    const s = useInquiriesStore.getState()
+    expect(s.statusFilter).toBe('contacted')
+    expect(s.page).toBe(1)
+  })
+
+  test('setDateFrom resets page to 1', () => {
+    useInquiriesStore.getState().setPage(2)
+    useInquiriesStore.getState().setDateFrom('2026-01-01')
+    const s = useInquiriesStore.getState()
+    expect(s.dateFrom).toBe('2026-01-01')
+    expect(s.page).toBe(1)
+  })
+
+  test('setDateTo resets page to 1', () => {
+    useInquiriesStore.getState().setPage(2)
+    useInquiriesStore.getState().setDateTo('2026-12-31')
+    const s = useInquiriesStore.getState()
+    expect(s.dateTo).toBe('2026-12-31')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves all filters', () => {
     useInquiriesStore.getState().setSearch('Siti')
+    useInquiriesStore.getState().setStatusFilter('enrolled')
+    useInquiriesStore.getState().setDateFrom('2026-01-01')
+    useInquiriesStore.getState().setDateTo('2026-06-30')
     useInquiriesStore.getState().setPage(4)
     const s = useInquiriesStore.getState()
     expect(s.page).toBe(4)
     expect(s.search).toBe('Siti')
+    expect(s.statusFilter).toBe('enrolled')
+    expect(s.dateFrom).toBe('2026-01-01')
+    expect(s.dateTo).toBe('2026-06-30')
+  })
+
+  test('clearFilters resets everything', () => {
+    useInquiriesStore.getState().setSearch('test')
+    useInquiriesStore.getState().setStatusFilter('closed')
+    useInquiriesStore.getState().setDateFrom('2026-01-01')
+    useInquiriesStore.getState().setDateTo('2026-12-31')
+    useInquiriesStore.getState().setPage(5)
+    useInquiriesStore.getState().clearFilters()
+    const s = useInquiriesStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('')
+    expect(s.dateFrom).toBe('')
+    expect(s.dateTo).toBe('')
   })
 })
 
@@ -357,6 +435,18 @@ describe('attendanceStore', () => {
     useAttendanceStore.getState().setPending('s2', 'absent')
     useAttendanceStore.getState().clearPending()
     expect(useAttendanceStore.getState().pendingChanges).toEqual({})
+  })
+
+  test('classFilter defaults to empty string', () => {
+    expect(useAttendanceStore.getState().classFilter).toBe('')
+  })
+
+  test('setClassFilter resets page to 1', () => {
+    useAttendanceStore.getState().setPage(3)
+    useAttendanceStore.getState().setClassFilter('class-uuid-1')
+    const s = useAttendanceStore.getState()
+    expect(s.classFilter).toBe('class-uuid-1')
+    expect(s.page).toBe(1)
   })
 })
 
