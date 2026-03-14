@@ -161,10 +161,10 @@ export function AdminBearLogo() {
       <div className="relative">
         <AdminBearSpeechBubble variant={zzzVariant} />
         <AdminBearSpeechBubble variant={wakeVariant} message={wakeMessageRef.current} />
-        <div
-          className={`w-12 h-12 bg-kinder-orange rounded-2xl flex items-center justify-center ${bearClass}`}
-        >
-          <AdminBearIcon size={34} eyeState={eyeState} />
+        <div className="w-12 h-12 bg-kinder-orange rounded-2xl flex items-center justify-center">
+          <div className={bearClass}>
+            <AdminBearIcon size={34} eyeState={eyeState} />
+          </div>
         </div>
       </div>
     </>
