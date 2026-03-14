@@ -4,7 +4,7 @@ import { ArrowLeft, KeyRound, Lock, Sun, Moon } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { useT } from '../../hooks/useT'
 import { useSettingsStore } from '../../store/settingsStore'
-import { APP_NAME } from '../../lib/version'
+import { APP_NAME, APP_VERSION } from '../../lib/version'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import { PortalBearFamily, PortalBearCub } from '../../components/portal/PortalBearFamily'
 
@@ -36,10 +36,15 @@ export default function PortalLoginPage() {
       const axiosErr = err as {
         response?: { status?: number; data?: { error?: string; message?: string } }
       }
-      if (axiosErr.response?.status === 409) {
-        setError(axiosErr.response.data?.message ?? t('deviceLimitReached'))
-      } else {
+      const status = axiosErr.response?.status
+      if (status === 429) {
+        setError(t('tooManyAttempts'))
+      } else if (status === 409) {
+        setError(axiosErr.response?.data?.message ?? t('deviceLimitReached'))
+      } else if (status === 401) {
         setError(t('portalInvalidCredentials'))
+      } else {
+        setError(t('somethingWentWrong'))
       }
     } finally {
       setLoading(false)
@@ -72,7 +77,7 @@ export default function PortalLoginPage() {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-md border border-gray-200 dark:border-gray-800 border-t-4 border-t-kinder-orange space-y-4"
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700 border-t-4 border-t-kinder-orange space-y-4"
         >
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
@@ -125,7 +130,7 @@ export default function PortalLoginPage() {
           <button
             type="submit"
             disabled={loading || accessCode.length < 3 || pin.length !== 6}
-            className="w-full bg-kinder-orange text-white py-2.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-500 transition-colors"
+            className="w-full bg-kinder-orange text-white py-2.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-500 transition-all duration-200"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -153,9 +158,14 @@ export default function PortalLoginPage() {
         </div>
 
         {/* Powered by footer */}
-        <div className="flex items-center justify-center gap-1.5 mt-6 text-xs text-gray-400 dark:text-gray-500">
-          <PortalBearCub size={16} />
-          <span>Powered by {APP_NAME}</span>
+        <div className="flex flex-col items-center gap-0.5 mt-6">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+            <PortalBearCub size={16} />
+            <span>Powered by {APP_NAME}</span>
+          </div>
+          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600">
+            v{APP_VERSION}
+          </span>
         </div>
       </div>
     </div>

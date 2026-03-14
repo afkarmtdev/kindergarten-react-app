@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
 import {
   Home,
   CalendarDays,
@@ -10,12 +11,16 @@ import {
   Sun,
   Moon,
   Smartphone,
+  Settings,
+  WifiOff,
 } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { useT } from '../../hooks/useT'
 import { useSettingsStore } from '../../store/settingsStore'
-import { APP_NAME } from '../../lib/version'
+import { APP_NAME, APP_VERSION } from '../../lib/version'
 import { PortalBearCub } from '../../components/portal/PortalBearFamily'
+import { useVersionCheck } from '../../hooks/useVersionCheck'
+import { UpdateBanner } from '../../components/ui/UpdateBanner'
 
 const navItems = [
   { to: '/portal', icon: Home, labelKey: 'dashboard' as const, end: true },
@@ -35,7 +40,31 @@ export default function PortalLayout() {
   const { children: childrenList, selectedChild, selectChild, logout } = useParentAuth()
   const navigate = useNavigate()
   const t = useT()
-  const { darkMode, toggleDark } = useSettingsStore()
+  const { darkMode, toggleDark, lang, setLang } = useSettingsStore()
+  const { updateAvailable } = useVersionCheck()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [isOffline, setIsOffline] = useState(!navigator.onLine)
+
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true)
+    const goOnline = () => setIsOffline(false)
+    window.addEventListener('offline', goOffline)
+    window.addEventListener('online', goOnline)
+    return () => {
+      window.removeEventListener('offline', goOffline)
+      window.removeEventListener('online', goOnline)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
 
   async function handleLogout() {
     await logout()
@@ -44,11 +73,18 @@ export default function PortalLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+      <UpdateBanner visible={updateAvailable} />
+      {isOffline && (
+        <div className="bg-gray-700 text-white text-xs font-semibold text-center py-2 px-4 flex items-center justify-center gap-2">
+          <WifiOff className="w-3.5 h-3.5" />
+          You're offline — showing cached data
+        </div>
+      )}
       {/* Top bar */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-[0_1px_4px_rgba(0,0,0,0.06)] px-4 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
           {selectedChild?.photo_url ? (
-            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
+            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
               <img
                 src={selectedChild.photo_url}
                 alt={selectedChild.full_name}
@@ -56,8 +92,8 @@ export default function PortalLayout() {
               />
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
-              <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-kinder-orange font-bold text-sm">
+            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-kinder-orange to-kinder-pink shrink-0">
+              <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-kinder-orange font-bold text-xs">
                 {selectedChild?.full_name?.charAt(0).toUpperCase()}
               </div>
             </div>
@@ -70,66 +106,136 @@ export default function PortalLayout() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden sm:flex items-center gap-1.5">
-            <PortalBearCub size={16} />
-            <span className="text-xs text-gray-400 dark:text-gray-500">{APP_NAME}</span>
-          </div>
+        <div className="relative" ref={menuRef}>
           <button
-            onClick={() => navigate('/portal/devices')}
-            aria-label="My Devices"
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-kinder-orange dark:hover:text-kinder-orange hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => setMenuOpen((o) => !o)}
+            className={`w-8 h-8 flex items-center justify-center rounded-xl transition-colors ${
+              menuOpen
+                ? 'bg-kinder-orange/10 text-kinder-orange'
+                : 'text-gray-400 dark:text-gray-500 hover:text-kinder-orange hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+            aria-label="Settings"
           >
-            <Smartphone className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
           </button>
-          <button
-            onClick={toggleDark}
-            aria-label="Toggle dark mode"
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-kinder-orange dark:hover:text-kinder-orange hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:block">{t('portalLogout')}</span>
-          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1.5 z-30">
+              <button
+                onClick={() => {
+                  toggleDark()
+                  setMenuOpen(false)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {t('darkMode')}
+              </button>
+              <button
+                onClick={() => setLang(lang === 'en' ? 'ms' : 'en')}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span>{lang === 'en' ? 'Bahasa Melayu' : 'English'}</span>
+                <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">
+                  {lang === 'en' ? 'BM' : 'EN'}
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/portal/devices')
+                  setMenuOpen(false)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Smartphone className="w-4 h-4" />
+                {t('myDevices')}
+              </button>
+              <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+              <button
+                onClick={() => {
+                  handleLogout()
+                  setMenuOpen(false)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                {t('portalLogout')}
+              </button>
+              <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+              <div className="flex items-center gap-1.5 px-4 py-2 text-[10px] text-gray-400 dark:text-gray-500">
+                <PortalBearCub size={14} />
+                <span>
+                  {APP_NAME} v{APP_VERSION}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Child switcher — only shown when parent has 2+ children */}
       {childrenList.length > 1 && (
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center gap-2 overflow-x-auto">
-          <span className="text-xs text-gray-400 dark:text-gray-500 font-semibold shrink-0">
-            {t('switchChild')}:
-          </span>
-          {childrenList.map((child) => (
-            <button
-              key={child.id}
-              onClick={() => selectChild(child.id)}
-              className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                selectedChild?.id === child.id
-                  ? 'bg-kinder-orange text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
-            >
-              <>
-                {child.full_name.split(' ')[0]}
-                {child.status === 'graduated' && (
-                  <span className="ml-1 text-[10px] text-purple-500 dark:text-purple-400 font-normal">
-                    (Graduated)
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center gap-3 overflow-x-auto py-2 px-4">
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-semibold shrink-0">
+              {t('switchChild')}:
+            </span>
+            {childrenList.map((child) => {
+              const isSelected = selectedChild?.id === child.id
+              const firstName = child.full_name.split(' ')[0]
+              return (
+                <button
+                  key={child.id}
+                  onClick={() => selectChild(child.id)}
+                  className="shrink-0 flex flex-col items-center gap-1 transition-opacity hover:opacity-80 active:scale-95"
+                >
+                  {/* Avatar with selection ring */}
+                  <div
+                    className={`rounded-full p-[2px] transition-all ${
+                      isSelected
+                        ? 'bg-kinder-orange ring-2 ring-kinder-orange ring-offset-2 ring-offset-white dark:ring-offset-gray-900'
+                        : 'bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600'
+                    }`}
+                  >
+                    {child.photo_url ? (
+                      <img
+                        src={child.photo_url}
+                        alt={firstName}
+                        className="w-9 h-9 rounded-full object-cover border-2 border-white dark:border-gray-900"
+                      />
+                    ) : (
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 font-bold text-sm ${
+                          isSelected
+                            ? 'bg-orange-50 dark:bg-orange-900/30 text-kinder-orange'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                        }`}
+                      >
+                        {firstName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {/* First name + status badges */}
+                  <span
+                    className={`text-[11px] font-semibold leading-tight ${
+                      isSelected ? 'text-kinder-orange' : 'text-gray-500 dark:text-gray-400'
+                    }`}
+                  >
+                    {firstName}
                   </span>
-                )}
-                {child.status === 'inactive' && (
-                  <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500 font-normal">
-                    (Inactive)
-                  </span>
-                )}
-              </>
-            </button>
-          ))}
+                  {child.status === 'graduated' && (
+                    <span className="text-[9px] text-purple-500 dark:text-purple-400 font-medium leading-none -mt-0.5">
+                      Graduated
+                    </span>
+                  )}
+                  {child.status === 'inactive' && (
+                    <span className="text-[9px] text-gray-400 dark:text-gray-500 font-medium leading-none -mt-0.5">
+                      Inactive
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -139,7 +245,7 @@ export default function PortalLayout() {
       </main>
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex z-20 pb-[env(safe-area-inset-bottom)]">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-[0_-1px_3px_rgba(0,0,0,0.05)] flex z-20 pb-[env(safe-area-inset-bottom)]">
         {navItems.map(({ to, icon: Icon, labelKey, end }) => (
           <NavLink
             key={to}
@@ -155,7 +261,7 @@ export default function PortalLayout() {
           >
             {({ isActive }) => (
               <>
-                <Icon className="w-5 h-5 shrink-0" />
+                <Icon style={{ width: 22, height: 22 }} className="shrink-0" />
                 {isActive && <span className="w-1 h-1 rounded-full bg-kinder-orange shrink-0" />}
                 <span className="truncate max-w-full">{t(labelKey)}</span>
               </>
