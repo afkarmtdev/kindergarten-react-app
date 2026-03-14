@@ -2,5 +2,7 @@ pre-commit:
   commands:
     lint-staged:
       run: bunx lint-staged
+    typecheck:
+      run: bun run typecheck
     test:
       run: bun run test
