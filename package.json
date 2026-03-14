@@ -10,6 +10,7 @@
     "lint": "eslint frontend/src backend/src packages",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "typecheck": "cd frontend && bunx tsc --noEmit",
     "test": "cd backend && bun test src && cd ../frontend && bunx vitest run",
     "test:backend": "cd backend && bun test src",
     "test:frontend": "cd frontend && bunx vitest run",

@@ -356,6 +356,15 @@ export interface ParentStudent {
   created_at: string
 }
 
+// ─── Device Sessions ─────────────────────────────────────────────────────────
+export interface DeviceSession {
+  id: string
+  device_label: string
+  is_current: boolean
+  expires_at: string
+  created_at: string
+}
+
 // ─── Parent Portal ────────────────────────────────────────────────────────────
 
 export interface PortalStudent {
