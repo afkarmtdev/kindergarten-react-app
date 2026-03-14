@@ -64,27 +64,35 @@ but not universal enough for CLAUDE.md?
 kindergarten-app/
 ├── backend/
 │   └── src/
-│       ├── index.ts           # Hono app entry, CORS, middleware registration
+│       ├── index.ts           # Hono app entry, CORS, middleware registration, public endpoints
 │       ├── routes/
 │       │   ├── auth.ts        # POST /api/auth/login (rate-limited), /logout, GET /me
-│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender); POST /bulk
-│       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary
+│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender); POST /bulk; portal access management
+│       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary, trend
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
 │       │   ├── gallery.ts           # CRUD + paginated GET (?page, limit, search)
 │       │   ├── announcements.ts     # CRUD + paginated GET (?page, limit, search, category); pinned-first ordering
 │       │   ├── documentNumbering.ts # GET/PUT /api/document-numbering/:type; exports generateNextNumber()
-│       │   ├── fees.ts              # CRUD for fee_plans + fee_records; /payment, /generate, /export, /summary
+│       │   ├── fees.ts              # CRUD for fee_plans + fee_records; /payment, /generate, /export, /summary; report endpoints (class-sheet, monthly-report, annual-report)
+│       │   ├── testimonials.ts      # CRUD + GET /public (no auth, visible only)
+│       │   ├── artWall.ts           # CRUD + /by-student/:studentId; public endpoint in index.ts
+│       │   ├── parents.ts           # CRUD + link/unlink students, access code, PIN, portal access management
+│       │   ├── inquiries.ts         # Public POST (rate-limited 5/IP/10min) — enrollment enquiries
+│       │   ├── inquiriesAdmin.ts    # Authenticated GET (paginated list for admin review)
 │       │   ├── parentAuth.ts        # POST /api/portal/login (public), /logout — access code + PIN auth, issues JWT
 │       │   ├── portal.ts            # GET /api/portal/me|attendance|fees|announcements|daily-reports|portfolio — parent-auth protected
 │       │   ├── dailyReports.ts      # GET/?date&class_id, PUT/:studentId/:date (upsert), DELETE/:id
 │       │   ├── portfolioEntries.ts  # CRUD + GET /:studentId/report/:term (entries + report row)
-│       │   └── portfolioReports.ts  # PUT /:studentId/:term — upsert teacher/principal comments
+│       │   ├── portfolioReports.ts  # PUT /:studentId/:term — upsert teacher/principal comments
+│       │   └── schoolInfo.ts        # GET/PUT /api/school-info — school branding, contact, hours
 │       ├── middleware/
 │       │   ├── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
-│       │   └── parentAuth.ts  # Validates portal Bearer token via parent_sessions table, sets parentStudentId
+│       │   └── parentAuth.ts  # Validates portal Bearer token via parent_sessions table, sets c.set('parentId') + c.set('parentChildIds')
 │       ├── lib/
+│       │   ├── audit.ts       # Audit trail helpers: auditCreate, auditUpdate, auditDelete, auditUpsert, getActor
 │       │   ├── logger.ts      # pino instance (pino-pretty in dev, JSON in prod)
-│       │   └── sanitise.ts    # stripHtml(str) + sanitiseStrings(obj) — applied before all inserts
+│       │   ├── sanitise.ts    # stripHtml(str) + sanitiseStrings(obj) — applied before all inserts
+│       │   └── fees.ts        # Pure functions: deriveStatus(), monthRange() — tested independently
 │       ├── db/
 │       │   └── supabase.ts    # Supabase service-role client
 │       └── types/
@@ -95,15 +103,22 @@ kindergarten-app/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
 │       ├── pages/
 │       │   ├── landing/
-│       │   │   ├── LandingPage.tsx  # Public marketing page (hero, stats, features, gallery+lightbox, notices, testimonials, CTA)
-│       │   │   ├── constants.ts     # FEATURES, TESTIMONIALS, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
+│       │   │   ├── LandingPage.tsx  # Public marketing page (hero, stats, features, gallery+lightbox, art wall, notices, testimonials, CTA)
+│       │   │   ├── constants.ts     # FEATURES, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
 │       │   │   └── components/
-│       │   │       ├── Wave.tsx         # SVG decorative wave divider
-│       │   │       └── StatCounter.tsx  # Animated number counter with intersection observer
+│       │   │       ├── Wave.tsx            # SVG decorative wave divider
+│       │   │       ├── StatCounter.tsx     # Animated number counter with intersection observer
+│       │   │       ├── WhatsAppButton.tsx  # Fixed bottom-left WhatsApp link (when configured)
+│       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours
+│       │   │       ├── LandingFooter.tsx   # Contact grid + hours + social links + copyright
+│       │   │       ├── InquiryForm.tsx     # Public enrollment enquiry form (rate-limited)
+│       │   │       └── LandingArtCard.tsx  # Art wall grid preview card
 │       │   ├── dashboard/
-│       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays widget
+│       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays + charts
 │       │   │   └── components/
-│       │   │       └── StatCard.tsx     # Icon + label + value + optional sub-label card
+│       │   │       ├── StatCard.tsx              # Icon + label + value + optional sub-label card
+│       │   │       ├── AttendanceTrendChart.tsx  # Monthly line chart (recharts)
+│       │   │       └── FeeCollectionChart.tsx    # Monthly bar chart (recharts)
 │       │   ├── students/
 │       │   │   ├── StudentsPage.tsx     # Grid, 12/page, search+filter, add/edit modal wired
 │       │   │   └── components/
@@ -112,7 +127,8 @@ kindergarten-app/
 │       │   │   ├── AttendancePage.tsx   # Table, 20 students/page, bulk mark, status tabs, CSV export
 │       │   │   ├── constants.ts         # STATUS_CONFIG map, Status type
 │       │   │   └── components/
-│       │   │       └── AttendanceRow.tsx # Single student table row with status-mark buttons
+│       │   │       ├── AttendanceRow.tsx       # Single student table row with status-mark buttons
+│       │   │       └── AttendancePrintView.tsx # Print-friendly attendance sheet
 │       │   ├── announcements/
 │       │   │   ├── AnnouncementsPage.tsx # Grid, 9/page, search+category filter, pinned/expired badges
 │       │   │   ├── constants.ts          # CATEGORY_COLORS, CATEGORY_GRADIENTS, isExpired(), formatDate()
@@ -123,12 +139,21 @@ kindergarten-app/
 │       │   │   ├── constants.ts           # STATUS_CONFIG, Status type
 │       │   │   └── components/
 │       │   │       ├── StudentInfoCard.tsx        # Photo, name, class, parent contact, quick stats
-│       │   │       └── AttendanceHistoryTable.tsx # Paginated history with status badges
+│       │   │       ├── AttendanceHistoryTable.tsx # Paginated history with status badges
+│       │   │       ├── AttendanceHeatmap.tsx      # Calendar heatmap visualization
+│       │   │       ├── StudentArtwork.tsx         # Mini art gallery on student profile
+│       │   │       └── PortalAccessCard.tsx       # Parent access code/PIN management
+│       │   ├── art-wall/
+│       │   │   ├── ArtWallPage.tsx     # Cork board grid, search, pagination
+│       │   │   ├── constants.ts        # getRotation(), getPushpinColor(), PUSHPIN_COLORS
+│       │   │   └── components/
+│       │   │       └── ArtworkCard.tsx  # Pinned artwork card with pushpin + rotation
 │       │   ├── fees/
-│       │   │   ├── FeesPage.tsx    # Fee records table, 20/page, filters, payment/receipt modals
+│       │   │   ├── FeesPage.tsx    # Fee records table, 20/page, filters, payment/receipt/invoice modals
 │       │   │   ├── constants.ts    # STATUS_STYLES, TYPE_STYLES, typeLabel(), formatRM()
 │       │   │   └── components/
-│       │   │       └── FeeTableRow.tsx # Fee record row with pay/receipt/edit/delete actions
+│       │   │       ├── FeeTableRow.tsx         # Fee record row with pay/receipt/edit/delete actions
+│       │   │       └── ClassCollectionSheet.tsx # Printable class fee collection sheet
 │       │   ├── settings/
 │       │   │   ├── SettingsPage.tsx   # /admin/settings — mini-nav orchestrator (NAV_SECTIONS config)
 │       │   │   └── components/
@@ -139,11 +164,13 @@ kindergarten-app/
 │       │   │   ├── TestimonialsPage.tsx # Grid, 9/page, search, add/edit modal wired
 │       │   │   └── components/
 │       │   │       └── TestimonialCard.tsx # Quote, avatar (photo or initials), visible badge, edit/delete
-│       │   ├── LoginPage.tsx        # Admin login form (dark mode aware)
-│       │   ├── ClassesPage.tsx      # Grid, 9/page, capacity bar, add/edit modal wired
-│       │   ├── GalleryPage.tsx      # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
-│       │   ├── FeePlansPage.tsx     # Fee plan cards, 9/page, add/edit/delete, "Use Plan" action
-│       │   ├── FeeStatementPage.tsx # /admin/fees/statement/:studentId — annual printable statement
+│       │   ├── LoginPage.tsx          # Admin login form (dark mode aware)
+│       │   ├── ClassesPage.tsx        # Grid, 9/page, capacity bar, add/edit modal wired
+│       │   ├── GalleryPage.tsx        # Grid, 9/page, photo thumbnail, visible badge, add/edit modal wired
+│       │   ├── FeePlansPage.tsx       # Fee plan cards, 9/page, add/edit/delete, "Use Plan" action
+│       │   ├── FeeStatementPage.tsx   # /admin/fees/statement/:studentId — annual printable statement + ledger toggle
+│       │   ├── AnnualReportPage.tsx   # /admin/fees/annual-report — school-wide annual financial summary
+│       │   ├── InquiriesPage.tsx      # Table, 20/page, search — admin view of enrollment enquiries
 │       │   ├── daily-reports/
 │       │   │   └── DailyReportsPage.tsx # Date picker + class filter; inline mood/meals/nap/toilet/note per student; Save All
 │       │   ├── portfolio/
@@ -168,6 +195,8 @@ kindergarten-app/
 │       │   ├── feePlansStore.ts      # page, search
 │       │   ├── testimonialsStore.ts  # page, search
 │       │   ├── dailyReportsStore.ts  # selectedDate, classFilter, page, pendingChanges
+│       │   ├── artWallStore.ts       # page, search
+│       │   ├── inquiriesStore.ts     # page, search
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
@@ -184,6 +213,10 @@ kindergarten-app/
 │       │   │   ├── GenerateFeesModal.tsx  # 3-step: pick plan → pick target (class/all) → confirm bulk generate
 │       │   │   ├── RecordPaymentModal.tsx # Record payment — shows balance, amount input, assigns receipt number
 │       │   │   ├── ReceiptView.tsx        # Printable receipt — window.print() + @media print CSS
+│       │   │   ├── FeeInvoice.tsx         # Printable invoice + overdue notice variant
+│       │   │   ├── EnrollmentLetterView.tsx    # Printable enrollment confirmation letter
+│       │   │   ├── MonthlyCollectionReport.tsx # Printable monthly fee collection summary
+│       │   │   ├── ArtWallModal.tsx       # Add/Edit artwork — photo upload, student picker, caption, date, visibility
 │       │   │   ├── MoodPicker.tsx         # 4-button mood selector (happy/okay/tired/upset) with lucide icons
 │       │   │   ├── PortfolioEntryModal.tsx      # Add/Edit portfolio entry — domain, observation, photo, term, date
 │       │   │   ├── GeneratePortalAccessModal.tsx # Generate access code + set PIN for parent portal; copy-to-clipboard
@@ -197,8 +230,12 @@ kindergarten-app/
 │       │       └── ProtectedRoute.tsx  # Redirects to /admin/login if no user
 │       ├── hooks/
 │       │   ├── useAuth.tsx       # AuthContext: user, loading, login(), logout()
-│       │   ├── useParentAuth.tsx # ParentAuthContext: student, token, login(), logout(), loading — reads portal_token from localStorage
-│       │   └── useT.ts           # Translation hook: const t = useT(); t('key', { vars })
+│       │   ├── useParentAuth.tsx # ParentAuthContext: parent, children, selectedChild, token, login(), logout(), selectChild()
+│       │   ├── useT.ts           # Translation hook: const t = useT(); t('key', { vars })
+│       │   ├── usePageTitle.ts   # Sets document.title — usePageTitle('Dashboard') → "Dashboard — KinderCare"
+│       │   ├── useSchoolInfo.ts  # Fetches school_info; useSchoolInfo({ public: true }) for unauthenticated contexts
+│       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
+│       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
 │       │   ├── api.ts             # Axios instance + all admin APIs; portalApi (separate instance with portal_token interceptor) + portalAuthApi + portalDataApi
 │       │   ├── supabaseClient.ts  # Supabase browser client (anon key) — used for Storage uploads only
@@ -206,38 +243,59 @@ kindergarten-app/
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
 │       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
 │       └── types/
-│           └── index.ts       # Student, AttendanceRecord, ClassRoom, AttendanceSummary, GalleryItem, Announcement, FeeRecord, FeePlan, DocumentNumberingConfig, FeesSummary, DailyReport, PortfolioEntry, PortfolioReport, PortalStudent
+│           └── index.ts       # Student, AttendanceRecord, ClassRoom, GalleryItem, Announcement, FeeRecord, FeePlan, DailyReport, PortfolioEntry, PortfolioReport, ArtWallItem, Parent, Inquiry, AuditFields, SchoolInfo + finance report types
 │
-└── supabase-schema.sql        # Tables: students, classrooms, attendance, gallery_items, announcements, document_numbering, fee_plans, fee_records, parent_sessions, daily_reports, portfolio_entries, portfolio_reports + RLS policies
+├── packages/
+│   └── types/
+│       └── index.ts           # Shared types used by both backend and frontend; all resource types extend AuditFields
+│
+├── supabase-schema.sql             # Base schema: tables, RLS policies
+└── supabase-migration-audit-trail.sql  # Audit trail migration: adds created_by, modified_by, deleted_at etc. to all tables
 ```
 
 ## Database Schema
 
+All tables with business data include **audit columns** (see Audit Trail section below):
+`created_by`, `modified_at`, `modified_by`, `deleted_at`, `deleted_by`
+
 ```sql
-students       (id, full_name, date_of_birth, gender, class_id→classrooms, parent_name, parent_email, parent_phone, photo_url, access_code UNIQUE, portal_pin_hash, created_at)
+students       (id, full_name, date_of_birth, gender, class_id→classrooms, parent_name, parent_email, parent_phone, photo_url, access_code UNIQUE, portal_pin_hash, created_at, +audit)
                NOTE: class_name is NOT stored — derive via .select('*, classrooms(name)') join, then flattenClassroom() in backend
-classrooms     (id, name, teacher_name, capacity, created_at)
-attendance     (id, student_id→students, date, status[present|absent|late|excused], notes, recorded_by, created_at)
-               UNIQUE(student_id, date)
-gallery_items  (id, photo_url, caption, display_order, is_visible, created_at)
+classrooms     (id, name, teacher_name, capacity, created_at, +audit)
+attendance     (id, student_id→students, date, status[present|absent|late|excused], notes, recorded_by, created_at, +audit)
+               UNIQUE(student_id, date); has audit columns but NO soft-delete (daily records are overwritten, not deleted)
+gallery_items  (id, photo_url, caption, display_order, is_visible, created_at, +audit)
                RLS: authenticated users → full CRUD; anon users → SELECT WHERE is_visible = true
-announcements      (id, title, body, category[general|holiday|event|reminder], image_url, is_pinned, expires_at, created_at)
+announcements      (id, title, body, category[general|holiday|event|reminder], image_url, is_pinned, expires_at, created_at, +audit)
                    RLS: authenticated users → full CRUD; anon users → SELECT WHERE expires_at IS NULL OR expires_at >= today
-document_numbering (id, document_type UNIQUE, segments jsonb, current_serial int, last_reset_at timestamptz, updated_at)
+testimonials       (id, parent_name, parent_role, quote, avatar_url, display_order, is_visible, created_at, +audit)
+                   RLS: authenticated users → full CRUD; anon users → SELECT WHERE is_visible = true
+art_wall           (id, photo_url, caption, student_id→students, student_name, artwork_date, display_order, is_visible, created_at, +audit)
+                   RLS: authenticated users → full CRUD; anon users → SELECT WHERE is_visible = true
+                   student_name is denormalised — artwork persists if student is deleted
+document_numbering (id, document_type UNIQUE, segments jsonb, current_serial int, last_reset_at timestamptz, updated_at, created_by, modified_by)
+                   RLS: authenticated only; no soft-delete (config table)
+fee_plans          (id, name, type[tuition|activity|uniform|registration|other], amount, description, created_at, +audit)
                    RLS: authenticated only
-fee_plans          (id, name, type[tuition|activity|uniform|registration|other], amount, description, created_at)
-                   RLS: authenticated only
-fee_records        (id, student_id→students, type, description, amount_owed, amount_paid, discount_amount, discount_reason, receipt_number UNIQUE, status[unpaid|partial|paid|waived], due_date, paid_at, created_at)
+fee_records        (id, student_id→students, type, description, amount_owed, amount_paid, discount_amount, discount_reason, receipt_number UNIQUE, status[unpaid|partial|paid|waived], due_date, paid_at, created_at, +audit)
                    RLS: authenticated only
                    Status derivation (backend): waived if discount>=owed; paid if paid>=(owed-discount); partial if paid>0; unpaid otherwise
-parent_sessions    (id, student_id→students, token_hash UNIQUE, expires_at, created_at)
-                   RLS: authenticated only; backend checks expires_at on every portal request
-daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at)
+parents            (id, full_name, email UNIQUE, phone, access_code UNIQUE, portal_pin_hash, created_at, +audit)
+                   Parent-level portal accounts; one parent can have multiple children
+parent_students    (id, parent_id→parents, student_id→students, relationship[parent|guardian|step_parent|other], created_at, deleted_at, deleted_by)
+                   Junction table; soft-delete for unlinking audit
+parent_sessions    (id, parent_id→parents, token_hash UNIQUE, device_id, device_label, expires_at, created_at)
+                   RLS: authenticated only; NO soft-delete (sessions are ephemeral, hard delete on logout/revoke)
+inquiries          (id, parent_name, child_name, child_age, phone, message, created_at, deleted_at, deleted_by)
+                   Public INSERT (rate-limited); authenticated SELECT
+school_info        (id, school_name, address, phone, email, logo_url, principal_name, registration_number, whatsapp_number, operating_hours jsonb, google_maps_embed_url, facebook_url, instagram_url, updated_at, created_by, modified_by)
+                   Single-row config; no soft-delete
+daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at, +audit)
                    UNIQUE(student_id, report_date); RLS: authenticated only
-portfolio_entries  (id, student_id→students, domain[physical|cognitive|language|social_emotional|creative], observation, photo_url, term, recorded_by, entry_date, created_at)
+portfolio_entries  (id, student_id→students, domain[physical|cognitive|language|social_emotional|creative], observation, photo_url, term, recorded_by, entry_date, created_at, +audit)
                    RLS: authenticated only
-portfolio_reports  (id, student_id→students, term, teacher_comment, principal_comment, generated_at)
-                   UNIQUE(student_id, term); RLS: authenticated only
+portfolio_reports  (id, student_id→students, term, teacher_comment, principal_comment, generated_at, created_by, modified_at, modified_by)
+                   UNIQUE(student_id, term); RLS: authenticated only; no soft-delete (upsert-only)
 ```
 
 ## API Response Format
@@ -329,10 +387,50 @@ All list endpoints return paginated responses:
 ## Backend Security Conventions
 
 - **Input sanitisation**: all string fields in POST/PUT routes must be passed through `sanitiseStrings(body)` (from `lib/sanitise.ts`) before inserting into Supabase. For gallery caption only: use `stripHtml(caption)`.
-- **Rate limiting**: login route uses an in-memory Map (`loginAttempts`) — 10 attempts per IP per minute, returns 429. Reset is time-based (no external dep).
+- **Rate limiting**: login route uses an in-memory Map (`loginAttempts`) — 10 attempts per IP per minute, returns 429. Inquiries: 5/IP/10min. Reset is time-based (no external dep).
 - **Env validation**: zod schema at the top of `index.ts` validates all required env vars on startup; calls `process.exit(1)` with a clear message if any are missing/malformed.
 - **Security headers**: applied via `app.use('*', ...)` middleware on every response: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`.
 - **Logger**: use `logger` from `lib/logger.ts` (pino) in `index.ts`; pino-pretty in dev, JSON in prod. Route files do not use `console.log` — they return error responses instead.
+
+## Audit Trail & Soft Delete
+
+All business data tables have audit columns. Migration: `supabase-migration-audit-trail.sql`.
+
+### Audit helper (`backend/src/lib/audit.ts`)
+
+```ts
+import { auditCreate, auditUpdate, auditDelete, auditUpsert } from '../lib/audit'
+
+// INSERT: spread auditCreate(c) — sets created_by (user UUID)
+await supabase.from('table').insert({ ...body, ...auditCreate(c) })
+
+// UPDATE: spread auditUpdate(c) — sets modified_at + modified_by
+await supabase
+  .from('table')
+  .update({ ...body, ...auditUpdate(c) })
+  .eq('id', id)
+
+// UPSERT: spread auditUpsert(c) — sets created_by + modified_at + modified_by
+await supabase.from('table').upsert({ ...body, ...auditUpsert(c) }, { onConflict: '...' })
+
+// SOFT DELETE: update with auditDelete(c) instead of .delete()
+await supabase.from('table').update(auditDelete(c)).eq('id', id).is('deleted_at', null)
+```
+
+### Actor resolution
+
+`getActor(c)` returns:
+
+1. `c.get('user').id` (UUID) — admin routes via Supabase Auth
+2. `c.get('parentId')` (UUID) — portal routes via parent sessions
+3. `null` — unauthenticated contexts (e.g. public inquiry POST)
+
+### Soft delete rules
+
+- Records are never physically deleted — set `deleted_at` + `deleted_by` instead
+- **Every SELECT query** on a soft-deletable table must include `.is('deleted_at', null)`
+- DELETE route handlers become UPDATE handlers: `.update(auditDelete(c)).eq('id', id).is('deleted_at', null)`
+- **Exceptions** (no soft-delete): `parent_sessions` (ephemeral), `attendance` (daily overwrite), `document_numbering` (config), `school_info` (config), `portfolio_reports` (upsert-only)
 
 ## Supabase Plan
 
@@ -340,11 +438,13 @@ This project runs on the **free tier**. Key limits:
 
 - 500 MB database storage, 1 GB file storage, 50 MB max upload size
 - No automatic backups / point-in-time recovery
-- Four Storage buckets required (all must be created as **public** in the Supabase dashboard):
+- Six Storage buckets required (all must be created as **public** in the Supabase dashboard):
   - `student-photos` — student profile photo uploads (StudentModal)
   - `gallery-photos` — landing page gallery photo uploads (GalleryModal)
   - `announcement-banners` — announcement banner image uploads (AnnouncementModal)
   - `testimonial-avatars` — optional parent avatar uploads (TestimonialModal); 2 MB limit
+  - `artwork-photos` — art wall artwork uploads (ArtWallModal); compressed before upload
+  - `portfolio-photos` — portfolio entry photo uploads (PortfolioEntryModal)
 
 ## Environment Variables
 
@@ -355,6 +455,7 @@ SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 FRONTEND_URL=http://localhost:5173
 PORT=3000
+PORTAL_JWT_SECRET=<min 32 chars, NOT the same as Supabase JWT secret>
 ```
 
 **Frontend** (`.env`):
@@ -434,6 +535,54 @@ Admin-managed parent testimonials shown on the landing page carousel.
 - Landing page: `LandingPage.tsx` fetches `['testimonials-public']` via `testimonialsApi.getPublic()`; section hidden entirely when DB returns 0 visible testimonials
 - DB: `testimonials` table — `parent_name`, `parent_role?`, `quote`, `avatar_url?`, `display_order`, `is_visible`; anon RLS on `is_visible = true`
 
+### Art Wall
+
+Cork board-style page for pinning student artwork photos. Full implementation details in `/art-wall` skill.
+
+- Backend: `backend/src/routes/artWall.ts` — CRUD + `/by-student/:studentId`; public endpoint in `index.ts`
+- Frontend: `pages/art-wall/ArtWallPage.tsx` (cork board grid) + `ArtWallModal` (add/edit) + `ArtworkCard` (rotated card with pushpin)
+- Student profile: `StudentArtwork.tsx` — mini art gallery on `/admin/students/:id`
+- Landing page: "Our Little Artists" section with masonry layout
+- DB: `art_wall` table — `student_name` denormalised (artwork persists if student deleted)
+- Storage: `artwork-photos` bucket (public)
+
+### Parent Portal
+
+Parent-facing portal with separate auth. Parents log in with Access Code + 6-digit PIN; one parent account can link to multiple children.
+
+- Auth: `parentAuth.ts` (login/logout) + `parentAuth.ts` middleware (validates JWT, sets `parentId` + `parentChildIds`)
+- Data routes: `portal.ts` — read-only access to attendance, fees, announcements, daily reports, portfolio; filtered by parent's linked children
+- Parent management: `parents.ts` — CRUD + link/unlink students, access code generation, PIN setting
+- Frontend: `/portal/*` routes with `PortalLayout` (child switcher, tab nav), `PortalProtectedRoute`
+- Portal tabs: Dashboard, Attendance, Fees, Announcements, Daily Reports, Portfolio
+- Admin UI: `GeneratePortalAccessModal` on student profile
+
+### Inquiries
+
+Public enrollment enquiry form on the landing page.
+
+- Backend: `inquiries.ts` (public POST, rate-limited 5/IP/10min) + `inquiriesAdmin.ts` (authenticated GET)
+- Frontend: `InquiryForm.tsx` (landing page) + `InquiriesPage.tsx` (admin table, 20/page)
+
+### Daily Reports
+
+Per-student daily activity tracking (meals, nap, toilet, mood, notes).
+
+- Backend: `dailyReports.ts` — GET by date+class, PUT upsert, DELETE soft-delete
+- Frontend: `DailyReportsPage.tsx` — inline table with `MoodPicker`, date picker, class filter, "Save All"
+
+### Portfolio
+
+Student learning portfolio with KSPK domain observations and termly report cards.
+
+- Backend: `portfolioEntries.ts` (CRUD) + `portfolioReports.ts` (upsert comments)
+- Frontend: `PortfolioReportPage.tsx` (editable report card, auto-saves on blur) + `PortfolioReportPDF.tsx` (@react-pdf/renderer download)
+- Student profile: portfolio tab with domain-grouped entries + "View Report Card" button
+
+### Finance Documents
+
+Printable finance documents — invoices, overdue notices, enrollment letters, collection sheets, monthly/annual reports, payment ledger. Full implementation details in `/finance-docs` skill.
+
 ## Remaining Backlog (prioritised)
 
 ### Medium Priority
@@ -441,7 +590,13 @@ Admin-managed parent testimonials shown on the landing page carousel.
 - [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
 - [ ] Role-based access (superadmin vs teacher — schema has AdminUser.role already)
 - [x] Real-time attendance updates — implemented in `hooks/useAttendanceRealtime.ts`
-- [x] Parent portal — access code + PIN login, JWT sessions, 6 portal tabs (attendance, fees, announcements, daily reports, portfolio), admin generate/reset/revoke UI
+- [x] Parent portal — access code + PIN login, JWT sessions, 6 portal tabs, admin generate/reset/revoke UI
+- [x] Parent-level accounts — migrated from student-scoped to parent-scoped (one parent → multiple children)
+- [x] Art Wall — cork board page with pushpin artwork cards, landing page section, student profile integration
+- [x] Inquiries — public enrollment form + admin review page
+- [x] Audit trail + soft delete — all business tables have created_by/modified_by/deleted_at audit columns
+- [x] Finance documents — invoice, overdue notice, enrollment letter, collection sheet, monthly/annual reports, payment ledger
+- [ ] Admin Parents page — backend `/api/parents` CRUD exists, frontend page not yet built
 - [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
 
 - [ ] Newsletter/Posts module — full-page TipTap WYSIWYG editor (StarterKit), draft/published states, auto-slug from title, cover image + photo gallery strip, public `/posts` listing + `/posts/:slug` reader pages, DOMPurify or `sanitize-html` for HTML sanitization on save; separate from Announcements (short notices stay as-is)
@@ -484,6 +639,7 @@ Full implementation details — eye states, idle machine timing, critical timer 
   Simple pages with no sub-components stay as a flat `.tsx` file directly in `pages/` (e.g. `LoginPage.tsx`, `ClassesPage.tsx`, `GalleryPage.tsx`). Upgrade to a folder only when a `components/` subfolder is actually needed.
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.
 - **Brand name** (`APP_NAME`) and **version** (`APP_VERSION`) are exported from `frontend/src/lib/version.ts` — the single source of truth. Never hardcode the school name anywhere else; always import and reference `APP_NAME`.
+- **All new routes must use audit helpers**: `auditCreate(c)` on INSERT, `auditUpdate(c)` on UPDATE, `auditDelete(c)` for soft-delete, `auditUpsert(c)` for UPSERT. All SELECT queries on soft-deletable tables must include `.is('deleted_at', null)`.
 - All new routes must be added to `backend/src/index.ts` and protected with `authMiddleware` unless public
 - **Public API endpoints** (needed by LandingPage or other unauthenticated views) must be registered as `app.get('/api/public/...')` BEFORE the `app.use('/api/*', authMiddleware)` line in `index.ts`. Use `publicApi` (no-auth Axios instance in `api.ts`) to call them from the frontend.
 - New pages must be registered in `App.tsx` and added to the sidebar nav array in `AdminLayout.tsx`

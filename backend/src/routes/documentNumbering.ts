@@ -7,6 +7,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { resolveNextSerial, assembleNumber, type DocumentSegment } from '../lib/documentNumbering'
+import { auditCreate, auditUpdate } from '../lib/audit'
 
 const documentNumbering = new Hono()
 
@@ -52,7 +53,7 @@ documentNumbering.put('/:type', zValidator('json', configSchema), async (c) => {
   if (existing) {
     const { data, error } = await supabase
       .from('document_numbering')
-      .update({ segments, updated_at: new Date().toISOString() })
+      .update({ segments, updated_at: new Date().toISOString(), ...auditUpdate(c) })
       .eq('document_type', type)
       .select()
       .single()
@@ -62,7 +63,7 @@ documentNumbering.put('/:type', zValidator('json', configSchema), async (c) => {
 
   const { data, error } = await supabase
     .from('document_numbering')
-    .insert({ document_type: type, segments, current_serial: 0 })
+    .insert({ document_type: type, segments, current_serial: 0, ...auditCreate(c) })
     .select()
     .single()
   if (error) return c.json({ error: error.message }, 500)

@@ -60,6 +60,7 @@ resource.get('/trend', async (c) => {
   const { data, error } = await supabase
     .from('table')
     .select('date_column, value_column')
+    .is('deleted_at', null) // exclude soft-deleted rows
     .gte('date_column', startDate)
     .lte('date_column', endDate)
 

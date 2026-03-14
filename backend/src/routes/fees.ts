@@ -10,6 +10,7 @@ import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { deriveStatus, monthRange } from '../lib/fees'
 import { generateNextNumber } from './documentNumbering'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 // Flatten nested classrooms + parent_students joins on a student sub-object
 function flattenStudentClass(
@@ -98,6 +99,7 @@ feePlans.get(
     let query = supabase
       .from('fee_plans')
       .select('*', { count: 'exact' })
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(from, to)
 
@@ -114,7 +116,11 @@ feePlans.get(
 
 feePlans.post('/', zValidator('json', planSchema), async (c) => {
   const body = sanitiseStrings(c.req.valid('json'))
-  const { data, error } = await supabase.from('fee_plans').insert(body).select().single()
+  const { data, error } = await supabase
+    .from('fee_plans')
+    .insert({ ...body, ...auditCreate(c) })
+    .select()
+    .single()
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
 })
@@ -124,7 +130,7 @@ feePlans.put('/:id', zValidator('json', planSchema.partial()), async (c) => {
   const body = sanitiseStrings(c.req.valid('json'))
   const { data, error } = await supabase
     .from('fee_plans')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -134,7 +140,11 @@ feePlans.put('/:id', zValidator('json', planSchema.partial()), async (c) => {
 
 feePlans.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('fee_plans').delete().eq('id', id)
+  const { error } = await supabase
+    .from('fee_plans')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Fee plan deleted' })
 })
@@ -153,6 +163,7 @@ fees.get('/summary', async (c) => {
   let query = supabase
     .from('fee_records')
     .select('amount_owed, amount_paid, discount_amount, status, due_date')
+    .is('deleted_at', null)
 
   if (month) {
     const { start, end } = monthRange(month)
@@ -201,6 +212,7 @@ fees.get(
     const { data, error } = await supabase
       .from('fee_records')
       .select('amount_owed, amount_paid, discount_amount, due_date')
+      .is('deleted_at', null)
       .gte('due_date', startDate)
       .lte('due_date', endDate)
 
@@ -236,6 +248,7 @@ fees.get('/export', async (c) => {
   let query = supabase
     .from('fee_records')
     .select('*, students(full_name, classrooms(name))')
+    .is('deleted_at', null)
     .order('due_date', { ascending: true })
 
   if (month) {
@@ -282,11 +295,13 @@ fees.get('/statement/:studentId', async (c) => {
       .from('students')
       .select('full_name, classrooms(name), date_of_birth, parent_students(parents(full_name))')
       .eq('id', studentId)
+      .is('deleted_at', null)
       .single(),
     supabase
       .from('fee_records')
       .select('*')
       .eq('student_id', studentId)
+      .is('deleted_at', null)
       .gte('created_at', `${year}-01-01`)
       .lt('created_at', `${Number(year) + 1}-01-01`)
       .order('due_date', { ascending: true }),
@@ -316,6 +331,7 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
       .from('fee_plans')
       .select('*')
       .eq('id', body.fee_plan_id)
+      .is('deleted_at', null)
       .single()
     if (!plan) return c.json({ error: 'Fee plan not found' }, 404)
     feeType = feeType ?? plan.type
@@ -327,7 +343,7 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
     return c.json({ error: 'Type and amount are required when not using a fee plan' }, 400)
   }
 
-  let studentQuery = supabase.from('students').select('id, full_name')
+  let studentQuery = supabase.from('students').select('id, full_name').is('deleted_at', null)
   if (body.target_class_id) {
     studentQuery = studentQuery.eq('class_id', body.target_class_id)
   }
@@ -347,6 +363,7 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
     discount_amount: 0,
     status: 'unpaid',
     due_date: body.due_date ?? null,
+    ...auditCreate(c),
   }))
 
   const { data, error } = await supabase.from('fee_records').insert(records).select()
@@ -361,7 +378,7 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
   // Resolve student ID filter from search/class_id
   let studentIdFilter: string[] | null = null
   if (search || class_id) {
-    let q = supabase.from('students').select('id')
+    let q = supabase.from('students').select('id').is('deleted_at', null)
     if (search) q = q.ilike('full_name', `%${search}%`)
     if (class_id) q = q.eq('class_id', class_id)
     const { data: matched } = await q
@@ -380,6 +397,7 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
       '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))',
       { count: 'exact' }
     )
+    .is('deleted_at', null)
     .order('due_date', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -409,7 +427,7 @@ fees.post('/', zValidator('json', recordSchema), async (c) => {
   const status = deriveStatus(Number(body.amount_owed), 0, Number(body.discount_amount ?? 0))
   const { data, error } = await supabase
     .from('fee_records')
-    .insert({ ...body, amount_paid: 0, status })
+    .insert({ ...body, amount_paid: 0, status, ...auditCreate(c) })
     .select(
       '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
     )
@@ -440,6 +458,7 @@ fees.get(
       .from('classrooms')
       .select('name')
       .eq('id', class_id)
+      .is('deleted_at', null)
       .single()
     const class_name = classroom?.name ?? ''
 
@@ -448,6 +467,7 @@ fees.get(
       .from('students')
       .select('id, full_name')
       .eq('class_id', class_id)
+      .is('deleted_at', null)
       .order('full_name', { ascending: true })
 
     if (studentsError) return c.json({ error: studentsError.message }, 500)
@@ -468,6 +488,7 @@ fees.get(
         'id, student_id, description, type, due_date, amount_owed, discount_amount, amount_paid, status'
       )
       .in('student_id', studentIds)
+      .is('deleted_at', null)
       .gte('due_date', start)
       .lte('due_date', end)
       .order('due_date', { ascending: true })
@@ -527,6 +548,7 @@ fees.get(
       .select(
         'id, student_id, type, description, amount_owed, discount_amount, amount_paid, status, due_date, students(full_name, classrooms(name))'
       )
+      .is('deleted_at', null)
       .gte('due_date', start)
       .lte('due_date', end)
 
@@ -665,6 +687,7 @@ fees.get(
     const { data, error } = await supabase
       .from('fee_records')
       .select('id, type, amount_owed, amount_paid, discount_amount, status, due_date, created_at')
+      .is('deleted_at', null)
       .gte('due_date', `${year}-01-01`)
       .lte('due_date', `${year}-12-31`)
 
@@ -734,6 +757,7 @@ fees.get('/:id', async (c) => {
       '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
     )
     .eq('id', id)
+    .is('deleted_at', null)
     .single()
   if (error) return c.json({ error: error.message }, 404)
   return c.json({
@@ -751,6 +775,7 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
     .from('fee_records')
     .select('*')
     .eq('id', id)
+    .is('deleted_at', null)
     .single()
   if (fetchError || !record) return c.json({ error: 'Fee record not found' }, 404)
 
@@ -785,6 +810,7 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
       status: newStatus,
       receipt_number: receiptNumber,
       paid_at: newStatus === 'paid' ? new Date().toISOString() : record.paid_at,
+      ...auditUpdate(c),
     })
     .eq('id', id)
     .select(
@@ -814,6 +840,7 @@ fees.put(
       .from('fee_records')
       .select('amount_owed, amount_paid, discount_amount')
       .eq('id', id)
+      .is('deleted_at', null)
       .single()
     if (!existing) return c.json({ error: 'Fee record not found' }, 404)
 
@@ -827,7 +854,7 @@ fees.put(
 
     const { data, error } = await supabase
       .from('fee_records')
-      .update({ ...body, status })
+      .update({ ...body, status, ...auditUpdate(c) })
       .eq('id', id)
       .select(
         '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
@@ -845,14 +872,19 @@ fees.put(
 // DELETE /api/fees/:id — only unpaid records can be deleted
 fees.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data: record } = await supabase.from('fee_records').select('status').eq('id', id).single()
+  const { data: record } = await supabase
+    .from('fee_records')
+    .select('status')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
 
   if (!record) return c.json({ error: 'Fee record not found' }, 404)
   if (record.status !== 'unpaid') {
     return c.json({ error: 'Only unpaid records can be deleted' }, 400)
   }
 
-  const { error } = await supabase.from('fee_records').delete().eq('id', id)
+  const { error } = await supabase.from('fee_records').update(auditDelete(c)).eq('id', id)
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Fee record deleted' })
 })

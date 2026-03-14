@@ -32,8 +32,15 @@ Table: `art_wall` — see `supabase-schema.sql`
 | `display_order` | int                | Default 0, ascending sort                                         |
 | `is_visible`    | boolean            | Default true — anon RLS filters on this                           |
 | `created_at`    | timestamptz        |                                                                   |
+| `created_by`    | text               | Audit: user UUID who created                                      |
+| `modified_at`   | timestamptz        | Audit: last update timestamp                                      |
+| `modified_by`   | text               | Audit: user UUID who last updated                                 |
+| `deleted_at`    | timestamptz        | Soft delete: NULL = active, set = deleted                         |
+| `deleted_by`    | text               | Audit: user UUID who soft-deleted                                 |
 
 RLS: authenticated full CRUD, anon SELECT where `is_visible = true`.
+
+All CRUD uses audit helpers (`auditCreate`, `auditUpdate`, `auditDelete` from `lib/audit.ts`). DELETE is soft-delete (UPDATE with `auditDelete(c)`). All SELECT queries include `.is('deleted_at', null)`.
 
 ## Cork Board Design
 

@@ -47,6 +47,7 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
     .from('parent_students')
     .select('student_id')
     .eq('parent_id', session.parent_id)
+    .is('deleted_at', null)
 
   const childIds = (links ?? []).map((l: { student_id: string }) => l.student_id)
 

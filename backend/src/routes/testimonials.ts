@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const testimonials = new Hono()
 
@@ -26,6 +27,7 @@ testimonials.get('/public', async (c) => {
   const { data, error } = await supabase
     .from('testimonials')
     .select('*')
+    .is('deleted_at', null)
     .eq('is_visible', true)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false })
@@ -43,6 +45,7 @@ testimonials.get('/', zValidator('query', paginationSchema), async (c) => {
   let query = supabase
     .from('testimonials')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -69,7 +72,12 @@ testimonials.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single testimonial
 testimonials.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data, error } = await supabase.from('testimonials').select('*').eq('id', id).single()
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .is('deleted_at', null)
+    .eq('id', id)
+    .single()
 
   if (error) return c.json({ error: error.message }, 404)
   return c.json(data)
@@ -79,7 +87,11 @@ testimonials.get('/:id', async (c) => {
 testimonials.post('/', zValidator('json', testimonialSchema), async (c) => {
   const raw = c.req.valid('json')
   const body = sanitiseStrings({ ...raw })
-  const { data, error } = await supabase.from('testimonials').insert(body).select().single()
+  const { data, error } = await supabase
+    .from('testimonials')
+    .insert({ ...body, ...auditCreate(c) })
+    .select()
+    .single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -93,7 +105,7 @@ testimonials.put('/:id', zValidator('json', testimonialSchema.partial()), async 
 
   const { data, error } = await supabase
     .from('testimonials')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -105,7 +117,11 @@ testimonials.put('/:id', zValidator('json', testimonialSchema.partial()), async 
 // DELETE testimonial
 testimonials.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('testimonials').delete().eq('id', id)
+  const { error } = await supabase
+    .from('testimonials')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Testimonial deleted' })

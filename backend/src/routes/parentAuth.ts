@@ -49,6 +49,7 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
     .from('parents')
     .select('id, full_name, email, phone, portal_pin_hash')
     .eq('access_code', access_code)
+    .is('deleted_at', null)
     .single()
 
   if (!parent || !parent.portal_pin_hash) {
@@ -110,6 +111,7 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
       'relationship, students(id, full_name, date_of_birth, gender, photo_url, classrooms(name))'
     )
     .eq('parent_id', parent.id)
+    .is('deleted_at', null)
 
   const children = (links ?? []).map((link: Record<string, unknown>) => {
     const student = link.students as {

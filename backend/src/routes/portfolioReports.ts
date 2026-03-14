@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditUpsert } from '../lib/audit'
 
 const portfolioReports = new Hono()
 
@@ -24,6 +25,7 @@ portfolioReports.put('/:studentId/:term', zValidator('json', reportSchema), asyn
         term,
         ...body,
         generated_at: new Date().toISOString(),
+        ...auditUpsert(c),
       },
       { onConflict: 'student_id,term' }
     )

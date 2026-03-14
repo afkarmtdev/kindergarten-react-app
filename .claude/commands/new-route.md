@@ -16,6 +16,8 @@ Required imports:
 import { Hono } from 'hono'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+// For upsert routes, also import: auditUpsert
 ```
 
 ## Step 2 — Paginated List Response Shape
@@ -37,13 +39,45 @@ const limit = parseInt(c.req.query('limit') || '12')
 const from = (page - 1) * limit
 const to = from + limit - 1
 
-const { data, count } = await supabase.from('table').select('*', { count: 'exact' }).range(from, to)
+const { data, count } = await supabase
+  .from('table')
+  .select('*', { count: 'exact' })
+  .is('deleted_at', null) // exclude soft-deleted rows
+  .range(from, to)
 
 return c.json({
   data,
   meta: { total: count ?? 0, page, limit, totalPages: Math.ceil((count ?? 0) / limit) },
 })
 ```
+
+## Step 2.5 — Audit Trail & Soft Delete (Required)
+
+All CRUD operations must use audit helpers from `backend/src/lib/audit.ts`:
+
+```ts
+// CREATE — spread auditCreate(c) to set created_by (user UUID)
+await supabase.from('table').insert({ ...clean, ...auditCreate(c) })
+
+// UPDATE — spread auditUpdate(c) to set modified_at + modified_by
+await supabase
+  .from('table')
+  .update({ ...clean, ...auditUpdate(c) })
+  .eq('id', id)
+
+// UPSERT — spread auditUpsert(c) to set both create + update fields
+await supabase.from('table').upsert({ ...clean, ...auditUpsert(c) }, { onConflict: '...' })
+
+// SOFT DELETE — never use .delete(); update with auditDelete(c) instead
+await supabase.from('table').update(auditDelete(c)).eq('id', id).is('deleted_at', null)
+```
+
+Rules:
+
+- **Every SELECT query** on a soft-deletable table must include `.is('deleted_at', null)`
+- DELETE handlers return `{ message: 'Resource deleted' }` (same 200 response, just no physical removal)
+- Guard soft-delete with `.is('deleted_at', null)` to prevent re-deleting already-deleted records
+- Exceptions (no soft-delete): `parent_sessions`, `attendance`, config tables (`document_numbering`, `school_info`)
 
 ## Step 3 — Input Sanitisation (Required on Every POST/PUT)
 
@@ -147,7 +181,16 @@ Cover at minimum:
 - GET by ID (found, not found)
 - POST (valid body → 201, missing fields → 400, DB error → 500)
 - PUT (update, partial update)
-- DELETE (success, DB error)
+- DELETE / soft-delete (success message, DB error)
+
+**Test setup**: mock user must include `id` for audit trail:
+
+```ts
+app.use('*', async (c, next) => {
+  c.set('user' as never, { id: 'user-1', email: 'test@example.com' })
+  await next()
+})
+```
 
 Pagination test template (adjust default/max per route):
 

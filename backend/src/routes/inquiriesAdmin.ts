@@ -15,6 +15,7 @@ inquiriesAdmin.get('/', async (c) => {
   let query = supabase
     .from('inquiries')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   if (search) {

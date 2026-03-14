@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const portfolioEntries = new Hono()
 
@@ -31,6 +32,7 @@ portfolioEntries.get('/', zValidator('query', querySchema), async (c) => {
   let query = supabase
     .from('portfolio_entries')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .eq('student_id', student_id)
     .order('entry_date', { ascending: false })
     .range(from, to)
@@ -55,6 +57,7 @@ portfolioEntries.get('/:studentId/report/:term', async (c) => {
     supabase
       .from('portfolio_entries')
       .select('*')
+      .is('deleted_at', null)
       .eq('student_id', studentId)
       .eq('term', term)
       .order('entry_date', { ascending: false }),
@@ -82,7 +85,7 @@ portfolioEntries.post('/', zValidator('json', entrySchema), async (c) => {
 
   const { data, error } = await supabase
     .from('portfolio_entries')
-    .insert({ ...body, recorded_by: user?.email ?? null })
+    .insert({ ...body, recorded_by: user?.email ?? null, ...auditCreate(c) })
     .select()
     .single()
 
@@ -97,7 +100,7 @@ portfolioEntries.put('/:id', zValidator('json', entrySchema.partial()), async (c
 
   const { data, error } = await supabase
     .from('portfolio_entries')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -109,7 +112,11 @@ portfolioEntries.put('/:id', zValidator('json', entrySchema.partial()), async (c
 // DELETE /api/portfolio-entries/:id
 portfolioEntries.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('portfolio_entries').delete().eq('id', id)
+  const { error } = await supabase
+    .from('portfolio_entries')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Entry deleted' })
 })
