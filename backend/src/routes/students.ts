@@ -16,6 +16,7 @@ const studentSchema = z.object({
   parent_email: z.string().email(),
   parent_phone: z.string(),
   photo_url: z.string().optional(),
+  status: z.enum(['active', 'graduated', 'inactive']).default('active'),
 })
 
 /**
@@ -70,7 +71,7 @@ async function upsertParentLink(
 // Flatten classrooms + parent_students joins into flat fields
 function flattenStudent(row: Record<string, unknown>): Record<string, unknown> {
   const { classrooms, parent_students, ...rest } = row as {
-    classrooms?: { name?: string } | null
+    classrooms?: { name?: string; academic_year?: string } | null
     parent_students?: { parents?: { full_name?: string; email?: string; phone?: string } | null }[]
   } & Record<string, unknown>
 
@@ -83,7 +84,10 @@ function flattenStudent(row: Record<string, unknown>): Record<string, unknown> {
       }
     : null
 
-  return { ...rest, class_name: classrooms?.name ?? null, parent: parent }
+  const class_name = classrooms?.name
+    ? `${classrooms.name} (${classrooms.academic_year ?? ''})`
+    : null
+  return { ...rest, class_name, parent: parent }
 }
 
 const paginationSchema = z.object({
@@ -96,19 +100,23 @@ const paginationSchema = z.object({
     .enum(['true', 'false', ''])
     .optional()
     .transform((v) => v === 'true'),
+  status: z.enum(['active', 'graduated', 'inactive', '']).optional(),
 })
 
 // GET all students (paginated + filtered)
 students.get('/', zValidator('query', paginationSchema), async (c) => {
-  const { page, limit, search, class_id, gender, birthday_today } = c.req.valid('query')
+  const { page, limit, search, class_id, gender, birthday_today, status } = c.req.valid('query')
   const from = (page - 1) * limit
   const to = from + limit - 1
 
   let query = supabase
     .from('students')
-    .select('*, classrooms(name), parent_students(parents(full_name, email, phone))', {
-      count: 'exact',
-    })
+    .select(
+      '*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))',
+      {
+        count: 'exact',
+      }
+    )
     .is('deleted_at', null)
     .order('full_name')
     .range(from, to)
@@ -118,11 +126,14 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   }
   if (class_id) query = query.eq('class_id', class_id)
   if (gender) query = query.eq('gender', gender)
+  if (status) query = query.eq('status', status)
   if (birthday_today) {
     // Supabase JS can't do date part extraction, so fetch all and filter server-side
     let bdayQuery = supabase
       .from('students')
-      .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+      .select(
+        '*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))'
+      )
       .is('deleted_at', null)
       .order('full_name')
 
@@ -131,6 +142,7 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
     }
     if (class_id) bdayQuery = bdayQuery.eq('class_id', class_id)
     if (gender) bdayQuery = bdayQuery.eq('gender', gender)
+    if (status) bdayQuery = bdayQuery.eq('status', status)
 
     const { data: allData, error: allError } = await bdayQuery
 
@@ -172,7 +184,9 @@ students.get('/:id', async (c) => {
   const { id } = c.req.param()
   const { data, error } = await supabase
     .from('students')
-    .select('*, attendance(*), classrooms(name), parent_students(parents(full_name, email, phone))')
+    .select(
+      '*, attendance(*), classrooms(name, academic_year), parent_students(parents(full_name, email, phone))'
+    )
     .eq('id', id)
     .is('deleted_at', null)
     .single()
@@ -227,6 +241,7 @@ students.post('/bulk', async (c) => {
     .select('id, name')
     .in('name', uniqueClassNames)
     .is('deleted_at', null)
+    .eq('status', 'active')
 
   const classMap: Record<string, string> = {}
   for (const cls of classRows ?? []) classMap[cls.name] = cls.id
@@ -281,7 +296,7 @@ students.post('/', zValidator('json', studentSchema), async (c) => {
   const { data, error } = await supabase
     .from('students')
     .insert({ ...studentFields, ...auditCreate(c) })
-    .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+    .select('*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))')
     .single()
 
   if (error) return c.json({ error: error.message }, 500)
@@ -309,7 +324,7 @@ students.put('/:id', zValidator('json', studentSchema.partial()), async (c) => {
     .from('students')
     .update({ ...studentFields, ...auditUpdate(c) })
     .eq('id', id)
-    .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+    .select('*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))')
     .single()
 
   if (error) return c.json({ error: error.message }, 500)

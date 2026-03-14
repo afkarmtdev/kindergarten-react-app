@@ -19,6 +19,8 @@ export interface StudentParent {
   phone: string
 }
 
+export type StudentStatus = 'active' | 'graduated' | 'inactive'
+
 export interface Student extends AuditFields {
   id: string
   full_name: string
@@ -26,6 +28,7 @@ export interface Student extends AuditFields {
   gender: 'male' | 'female'
   class_id?: string | null
   class_name?: string | null // derived via join with classrooms; not stored on the row
+  status: StudentStatus
   parent?: StudentParent | null // derived via join through parent_students → parents
   photo_url?: string
   created_at: string
@@ -43,9 +46,13 @@ export interface AttendanceRecord extends AuditFields {
   students?: Pick<Student, 'full_name' | 'photo_url'> & { class_name?: string | null }
 }
 
+export type ClassStatus = 'active' | 'graduated'
+
 export interface ClassRoom extends AuditFields {
   id: string
   name: string
+  academic_year: string
+  status: ClassStatus
   teacher_name: string
   capacity: number
   created_at: string
@@ -344,6 +351,7 @@ export interface ParentChild {
   id: string
   full_name: string
   class_name: string | null
+  status: StudentStatus
   photo_url: string | null
   relationship: ParentRelationship
 }
@@ -390,6 +398,7 @@ export interface PortalChild {
   date_of_birth: string
   gender: 'male' | 'female'
   class_name: string | null
+  status: StudentStatus
   photo_url: string | null
   relationship: ParentRelationship
 }
@@ -437,6 +446,8 @@ export interface PortfolioReport extends AuditFields {
 }
 
 // ─── Inquiries ─────────────────────────────────────────────────────────────────
+export type InquiryStatus = 'new' | 'contacted' | 'enrolled' | 'closed'
+
 export interface Inquiry extends AuditFields {
   id: string
   parent_name: string
@@ -444,5 +455,6 @@ export interface Inquiry extends AuditFields {
   child_age: number
   phone: string
   message?: string
+  status: InquiryStatus
   created_at: string
 }

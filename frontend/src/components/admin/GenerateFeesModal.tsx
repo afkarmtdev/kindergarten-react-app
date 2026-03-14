@@ -37,8 +37,8 @@ export function GenerateFeesModal({ prefillPlan, onClose }: Props) {
   })
 
   const { data: classesData } = useQuery({
-    queryKey: ['classes', { page: 1, search: '' }],
-    queryFn: () => classesApi.getAll({ limit: 100 }),
+    queryKey: ['classes', { page: 1, search: '', status: 'active' }],
+    queryFn: () => classesApi.getAll({ limit: 100, status: 'active' }),
   })
 
   // Fetch student count for preview when moving to step 3

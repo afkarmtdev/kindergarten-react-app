@@ -16,14 +16,14 @@ describe('GET / — list students', () => {
         {
           id: '1',
           full_name: 'Ali',
-          classrooms: { name: 'Rose' },
+          classrooms: { name: 'Rose', academic_year: '2026' },
           parent_students: [{ parents: { full_name: 'Abu', email: 'abu@test.com', phone: '012' } }],
           gender: 'male',
         },
         {
           id: '2',
           full_name: 'Maya',
-          classrooms: { name: 'Lily' },
+          classrooms: { name: 'Lily', academic_year: '2026' },
           parent_students: [],
           gender: 'female',
         },
@@ -37,7 +37,7 @@ describe('GET / — list students', () => {
 
     const json = await res.json()
     expect(json.data).toHaveLength(2)
-    expect(json.data[0].class_name).toBe('Rose')
+    expect(json.data[0].class_name).toBe('Rose (2026)')
     expect(json.data[0].parent).toEqual({ full_name: 'Abu', email: 'abu@test.com', phone: '012' })
     expect(json.data[1].parent).toBeNull()
     expect(json.meta).toEqual({ total: 2, page: 1, limit: 12, totalPages: 1 })
@@ -188,7 +188,7 @@ describe('GET /:id — single student', () => {
       data: {
         id: '1',
         full_name: 'Ali',
-        classrooms: { name: 'Rose' },
+        classrooms: { name: 'Rose', academic_year: '2026' },
         parent_students: [{ parents: { full_name: 'Abu', email: 'abu@test.com', phone: '012' } }],
         attendance: [{ date: '2025-03-01', status: 'present' }],
       },
@@ -200,7 +200,7 @@ describe('GET /:id — single student', () => {
 
     const json = await res.json()
     expect(json.full_name).toBe('Ali')
-    expect(json.class_name).toBe('Rose')
+    expect(json.class_name).toBe('Rose (2026)')
     expect(json.parent).toEqual({ full_name: 'Abu', email: 'abu@test.com', phone: '012' })
     expect(json.attendance).toHaveLength(1)
   })
@@ -475,5 +475,126 @@ describe('DELETE /:id — delete student', () => {
 
     const res = await students.request('/1', { method: 'DELETE' })
     expect(res.status).toBe(500)
+  })
+})
+
+// ── POST /:id/access-code — generate access code ───────────────────────────
+
+describe('POST /:id/access-code — generate access code', () => {
+  test('generates and returns access code', async () => {
+    setMockResponse('students', {
+      data: { id: '1', access_code: 'KC-2026-1234' },
+      error: null,
+    })
+
+    const res = await students.request('/1/access-code', { method: 'POST' })
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.access_code).toBe('KC-2026-1234')
+  })
+
+  test('returns 500 on non-unique database error', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: { message: 'some database error' },
+    })
+
+    const res = await students.request('/1/access-code', { method: 'POST' })
+    expect(res.status).toBe(500)
+  })
+})
+
+// ── PUT /:id/portal-pin — set portal PIN ────────────────────────────────────
+
+describe('PUT /:id/portal-pin — set portal PIN', () => {
+  test('sets PIN and returns ok', async () => {
+    setMockResponse('students', { data: null, error: null })
+
+    const res = await students.request('/1/portal-pin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: '123456' }),
+    })
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.ok).toBe(true)
+  })
+
+  test('rejects non-6-digit PIN', async () => {
+    const res = await students.request('/1/portal-pin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: '12345' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects non-numeric PIN', async () => {
+    const res = await students.request('/1/portal-pin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: 'abcdef' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: { message: 'update failed' },
+    })
+
+    const res = await students.request('/1/portal-pin', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: '654321' }),
+    })
+
+    expect(res.status).toBe(500)
+  })
+})
+
+// ── DELETE /:id/portal-access — revoke portal access ────────────────────────
+
+describe('DELETE /:id/portal-access — revoke portal access', () => {
+  test('revokes access and returns ok', async () => {
+    setMockResponse('students', { data: null, error: null })
+    setMockResponse('parent_sessions', { data: null, error: null })
+
+    const res = await students.request('/1/portal-access', { method: 'DELETE' })
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.ok).toBe(true)
+  })
+
+  test('returns 500 on student update error', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: { message: 'student update failed' },
+    })
+    setMockResponse('parent_sessions', { data: null, error: null })
+
+    const res = await students.request('/1/portal-access', { method: 'DELETE' })
+    expect(res.status).toBe(500)
+
+    const json = await res.json()
+    expect(json.error).toBe('student update failed')
+  })
+
+  test('returns 500 on session delete error', async () => {
+    setMockResponse('students', { data: null, error: null })
+    setMockResponse('parent_sessions', {
+      data: null,
+      error: { message: 'session delete failed' },
+    })
+
+    const res = await students.request('/1/portal-access', { method: 'DELETE' })
+    expect(res.status).toBe(500)
+
+    const json = await res.json()
+    expect(json.error).toBe('session delete failed')
   })
 })

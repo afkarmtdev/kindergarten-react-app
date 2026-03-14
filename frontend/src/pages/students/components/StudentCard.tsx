@@ -22,7 +22,7 @@ export function StudentCard({
     <>
       <Link
         to={`/admin/students/${student.id}`}
-        className="block bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
+        className={`block bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5${student.status !== 'active' ? ' opacity-70' : ''}`}
       >
         <div className="flex items-start gap-4">
           {student.photo_url ? (
@@ -55,6 +55,16 @@ export function StudentCard({
             {isBirthdayToday(student.date_of_birth) && (
               <span className="ml-1.5 inline-block bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 text-xs font-semibold px-2 py-0.5 rounded-full mt-1">
                 {t('birthdayToday')}
+              </span>
+            )}
+            {student.status === 'graduated' && (
+              <span className="ml-1.5 inline-block bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-semibold px-2 py-0.5 rounded-full mt-1">
+                {t('graduated')}
+              </span>
+            )}
+            {student.status === 'inactive' && (
+              <span className="ml-1.5 inline-block bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-semibold px-2 py-0.5 rounded-full mt-1">
+                {t('inactive')}
               </span>
             )}
           </div>

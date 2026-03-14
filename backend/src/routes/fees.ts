@@ -16,7 +16,7 @@ import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 function flattenStudentClass(
   s:
     | ({
-        classrooms?: { name?: string } | null
+        classrooms?: { name?: string; academic_year?: string } | null
         parent_students?: { parents?: { full_name?: string } | null }[]
       } & Record<string, unknown>)
     | null
@@ -27,7 +27,7 @@ function flattenStudentClass(
   const parentLink = Array.isArray(parent_students) ? parent_students[0] : undefined
   return {
     ...rest,
-    class_name: classrooms?.name ?? null,
+    class_name: classrooms?.name ? `${classrooms.name} (${classrooms.academic_year ?? ''})` : null,
     parent_name: parentLink?.parents?.full_name ?? null,
   }
 }
@@ -247,7 +247,7 @@ fees.get('/export', async (c) => {
 
   let query = supabase
     .from('fee_records')
-    .select('*, students(full_name, classrooms(name))')
+    .select('*, students(full_name, classrooms(name, academic_year))')
     .is('deleted_at', null)
     .order('due_date', { ascending: true })
 
@@ -293,7 +293,9 @@ fees.get('/statement/:studentId', async (c) => {
   const [{ data: student }, { data: records, error }] = await Promise.all([
     supabase
       .from('students')
-      .select('full_name, classrooms(name), date_of_birth, parent_students(parents(full_name))')
+      .select(
+        'full_name, classrooms(name, academic_year), date_of_birth, parent_students(parents(full_name))'
+      )
       .eq('id', studentId)
       .is('deleted_at', null)
       .single(),
@@ -344,6 +346,7 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
   }
 
   let studentQuery = supabase.from('students').select('id, full_name').is('deleted_at', null)
+  studentQuery = studentQuery.eq('status', 'active')
   if (body.target_class_id) {
     studentQuery = studentQuery.eq('class_id', body.target_class_id)
   }
@@ -394,7 +397,7 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
   let query = supabase
     .from('fee_records')
     .select(
-      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))',
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))',
       { count: 'exact' }
     )
     .is('deleted_at', null)
@@ -429,7 +432,7 @@ fees.post('/', zValidator('json', recordSchema), async (c) => {
     .from('fee_records')
     .insert({ ...body, amount_paid: 0, status, ...auditCreate(c) })
     .select(
-      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
     )
     .single()
   if (error) return c.json({ error: error.message }, 500)
@@ -546,7 +549,7 @@ fees.get(
     const { data: records, error } = await supabase
       .from('fee_records')
       .select(
-        'id, student_id, type, description, amount_owed, discount_amount, amount_paid, status, due_date, students(full_name, classrooms(name))'
+        'id, student_id, type, description, amount_owed, discount_amount, amount_paid, status, due_date, students(full_name, classrooms(name, academic_year))'
       )
       .is('deleted_at', null)
       .gte('due_date', start)
@@ -754,7 +757,7 @@ fees.get('/:id', async (c) => {
   const { data, error } = await supabase
     .from('fee_records')
     .select(
-      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
     )
     .eq('id', id)
     .is('deleted_at', null)
@@ -814,7 +817,7 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
     })
     .eq('id', id)
     .select(
-      '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
     )
     .single()
 
@@ -857,7 +860,7 @@ fees.put(
       .update({ ...body, status, ...auditUpdate(c) })
       .eq('id', id)
       .select(
-        '*, students(full_name, classrooms(name), photo_url, parent_students(parents(full_name)))'
+        '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
       )
       .single()
 

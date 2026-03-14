@@ -4,10 +4,12 @@ import { devtools } from 'zustand/middleware'
 interface ClassesState {
   page: number
   search: string
+  statusFilter: string
   isModalOpen: boolean
   editingId: string | null
   setPage: (page: number) => void
   setSearch: (search: string) => void
+  setStatusFilter: (v: string) => void
   openModal: (id?: string) => void
   closeModal: () => void
   reset: () => void
@@ -16,6 +18,7 @@ interface ClassesState {
 const initialState = {
   page: 1,
   search: '',
+  statusFilter: 'active',
   isModalOpen: false,
   editingId: null,
 }
@@ -26,6 +29,7 @@ export const useClassesStore = create<ClassesState>()(
       ...initialState,
       setPage: (page) => set({ page }),
       setSearch: (search) => set({ search, page: 1 }),
+      setStatusFilter: (statusFilter) => set({ statusFilter, page: 1 }),
       openModal: (id) => set({ isModalOpen: true, editingId: id ?? null }),
       closeModal: () => set({ isModalOpen: false, editingId: null }),
       reset: () => set(initialState),

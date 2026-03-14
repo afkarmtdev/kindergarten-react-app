@@ -115,7 +115,19 @@ export default function PortalLayout() {
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
-              {child.full_name.split(' ')[0]}
+              <>
+                {child.full_name.split(' ')[0]}
+                {child.status === 'graduated' && (
+                  <span className="ml-1 text-[10px] text-purple-500 dark:text-purple-400 font-normal">
+                    (Graduated)
+                  </span>
+                )}
+                {child.status === 'inactive' && (
+                  <span className="ml-1 text-[10px] text-gray-400 dark:text-gray-500 font-normal">
+                    (Inactive)
+                  </span>
+                )}
+              </>
             </button>
           ))}
         </div>

@@ -25,10 +25,12 @@ export function StudentsPage() {
     search,
     classFilter,
     genderFilter,
+    statusFilter,
     setPage,
     setSearch,
     setClassFilter,
     setGenderFilter,
+    setStatusFilter,
   } = useStudentsStore()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -36,15 +38,18 @@ export function StudentsPage() {
   const [bulkModalOpen, setBulkModalOpen] = useState(false)
 
   const { data: classesData } = useQuery({
-    queryKey: ['classes', { page: 1, search: '' }],
-    queryFn: () => classesApi.getAll({ limit: 50 }),
+    queryKey: ['classes', { page: 1, search: '', status: 'active' }],
+    queryFn: () => classesApi.getAll({ limit: 50, status: 'active' }),
     staleTime: 60_000,
   })
 
   const classes = classesData?.data ?? []
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['students', { page, search, class_id: classFilter, gender: genderFilter }],
+    queryKey: [
+      'students',
+      { page, search, class_id: classFilter, gender: genderFilter, status: statusFilter },
+    ],
     queryFn: () =>
       studentsApi.getAll({
         page,
@@ -52,6 +57,7 @@ export function StudentsPage() {
         search,
         class_id: classFilter,
         gender: genderFilter,
+        status: statusFilter,
       }),
     placeholderData: (prev) => prev,
     staleTime: 30_000,
@@ -98,7 +104,13 @@ export function StudentsPage() {
       queryClient.prefetchQuery({
         queryKey: [
           'students',
-          { page: page + 1, search, class_id: classFilter, gender: genderFilter },
+          {
+            page: page + 1,
+            search,
+            class_id: classFilter,
+            gender: genderFilter,
+            status: statusFilter,
+          },
         ],
         queryFn: () =>
           studentsApi.getAll({
@@ -107,11 +119,12 @@ export function StudentsPage() {
             search,
             class_id: classFilter,
             gender: genderFilter,
+            status: statusFilter,
           }),
         staleTime: 30_000,
       })
     }
-  }, [data, page, search, classFilter, genderFilter, queryClient])
+  }, [data, page, search, classFilter, genderFilter, statusFilter, queryClient])
 
   const openAdd = () => {
     setEditingStudent(null)
@@ -185,12 +198,24 @@ export function StudentsPage() {
           <option value="female">{t('girls')}</option>
         </select>
 
-        {(search || classFilter || genderFilter) && (
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
+        >
+          <option value="">{t('allStatuses')}</option>
+          <option value="active">{t('statusActive')}</option>
+          <option value="graduated">{t('statusGraduated')}</option>
+          <option value="inactive">{t('statusInactive')}</option>
+        </select>
+
+        {(search || classFilter || genderFilter || statusFilter) && (
           <button
             onClick={() => {
               setSearch('')
               setClassFilter('')
               setGenderFilter('')
+              setStatusFilter('')
             }}
             className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2"
           >

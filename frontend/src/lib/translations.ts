@@ -9,6 +9,10 @@ export const translations = {
     classes: 'Classes',
     adminPortal: 'Admin Portal',
     administrator: 'Administrator',
+    people: 'People',
+    daily: 'Daily',
+    finance: 'Finance',
+    content: 'Content',
     logout: 'Logout',
 
     // Command palette
@@ -53,6 +57,11 @@ export const translations = {
     boy: 'Boy',
     girl: 'Girl',
     clearFilters: 'Clear filters',
+    statusActive: 'Active',
+    statusGraduated: 'Graduated',
+    statusInactive: 'Inactive',
+    graduated: 'Graduated',
+    inactive: 'Inactive',
     noStudentsFound: 'No students found',
     addFirstStudent: 'Start by adding your first student!',
     noResultsFor: 'No results for "{q}"',
@@ -75,6 +84,16 @@ export const translations = {
     capacity: 'Capacity: {n} students',
     full: '% full',
     removeClassConfirm: 'Remove class "{name}"?',
+    academicYear: 'Academic Year',
+    graduateClass: 'Graduate Class',
+    reassignTo: 'Reassign remaining to',
+    studentsToGraduate: '{n} students will be graduated',
+    studentsToReassign: '{n} students will be reassigned to {cls}',
+    classGraduated: 'Class graduated successfully',
+    noActiveStudents: 'No active students in this class',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    filterByClass: 'Filter by class',
 
     // Attendance page
     markAllPresent: 'Mark All Present',
@@ -521,6 +540,14 @@ export const translations = {
     searchInquiries: 'Search by name or phone...',
     noInquiriesFound: 'No enquiries received yet',
     noInquiriesFoundSub: 'Enquiries submitted via the landing page will appear here.',
+    inquiry_new: 'New',
+    inquiry_contacted: 'Contacted',
+    inquiry_enrolled: 'Enrolled',
+    inquiry_closed: 'Closed',
+    fromDate: 'From',
+    toDate: 'To',
+    status: 'Status',
+    date: 'Date',
 
     // Landing page — Feature expanded descriptions
     featureLearnExpanded:
@@ -758,6 +785,10 @@ export const translations = {
     classes: 'Kelas',
     adminPortal: 'Portal Pentadbir',
     administrator: 'Pentadbir',
+    people: 'Orang',
+    daily: 'Harian',
+    finance: 'Kewangan',
+    content: 'Kandungan',
     logout: 'Log Keluar',
 
     // Command palette
@@ -802,6 +833,11 @@ export const translations = {
     boy: 'Lelaki',
     girl: 'Perempuan',
     clearFilters: 'Kosongkan penapis',
+    statusActive: 'Aktif',
+    statusGraduated: 'Tamat',
+    statusInactive: 'Tidak Aktif',
+    graduated: 'Tamat',
+    inactive: 'Tidak Aktif',
     noStudentsFound: 'Tiada pelajar ditemui',
     addFirstStudent: 'Mulakan dengan menambah pelajar pertama anda!',
     noResultsFor: 'Tiada hasil untuk "{q}"',
@@ -824,6 +860,16 @@ export const translations = {
     capacity: 'Kapasiti: {n} pelajar',
     full: '% penuh',
     removeClassConfirm: 'Buang kelas "{name}"?',
+    academicYear: 'Tahun Akademik',
+    graduateClass: 'Tamatkan Kelas',
+    reassignTo: 'Pindahkan baki ke',
+    studentsToGraduate: '{n} pelajar akan ditamatkan',
+    studentsToReassign: '{n} pelajar akan dipindahkan ke {cls}',
+    classGraduated: 'Kelas berjaya ditamatkan',
+    noActiveStudents: 'Tiada pelajar aktif dalam kelas ini',
+    selectAll: 'Pilih Semua',
+    deselectAll: 'Nyahpilih Semua',
+    filterByClass: 'Tapis mengikut kelas',
 
     // Attendance page
     markAllPresent: 'Tandakan Semua Hadir',
@@ -1272,6 +1318,14 @@ export const translations = {
     searchInquiries: 'Cari nama atau telefon...',
     noInquiriesFound: 'Belum ada pertanyaan diterima',
     noInquiriesFoundSub: 'Pertanyaan yang dihantar melalui laman utama akan dipaparkan di sini.',
+    inquiry_new: 'Baru',
+    inquiry_contacted: 'Dihubungi',
+    inquiry_enrolled: 'Didaftarkan',
+    inquiry_closed: 'Ditutup',
+    fromDate: 'Dari',
+    toDate: 'Hingga',
+    status: 'Status',
+    date: 'Tarikh',
 
     // Landing page — Feature expanded descriptions
     featureLearnExpanded:
