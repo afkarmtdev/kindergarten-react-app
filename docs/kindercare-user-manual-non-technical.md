@@ -1,6 +1,6 @@
 # KinderCare — User Manual
 
-**Version:** 1.3.1-alpha
+**Version:** 1.8.0-alpha1
 **Audience:** Business consultants helping kindergarten school owners evaluate and use this software
 **Last updated:** March 2026
 
@@ -19,6 +19,11 @@
 9. [Settings](#9-settings)
 10. [Landing Page (Public Site)](#10-landing-page-public-site)
 11. [Testimonials](#11-testimonials)
+12. [Art Wall](#12-art-wall)
+13. [Daily Reports](#13-daily-reports)
+14. [Portfolio](#14-portfolio)
+15. [Inquiries](#15-inquiries)
+16. [Parent Portal](#16-parent-portal)
 
 [Appendix A — Shortcuts and Power-User Tips](#appendix-a--shortcuts-and-power-user-tips)
 [Appendix B — Error Messages Reference](#appendix-b--error-messages-reference)
@@ -56,8 +61,10 @@ The login screen is the entry point for the KinderCare administration system. On
 
 The Dashboard is the first page you see after logging in. It gives a snapshot of the whole school without having to click into any individual section. It shows:
 
-- **4 summary boxes** at the top: total number of students, total classes, how many students were present today, and the overall attendance rate for the current month.
+- **4 summary boxes** at the top: total number of active students, total classes, how many students were present today, and the overall attendance rate for the current month.
 - **Fee Collection Summary:** shows total fees charged, collected, and still outstanding for the current month, plus how many accounts are overdue.
+- **Attendance Trend Chart:** a line chart showing the last 6 months of attendance counts by status (Present, Late, Excused, Absent). Hover over a point to see the exact number.
+- **Fee Collection Chart:** a bar chart showing the last 6 months of fees charged, collected, and outstanding. Hover over a bar to see the exact amounts.
 - **Today's Attendance panel:** lists the 10 most recently recorded attendance entries for today (student name, class, and status).
 - **Today's Birthdays panel:** shows any students whose birthday falls on today's date, with their photo and class name.
 - **Monthly Summary panel:** a bar chart showing how many students were present, absent, late, or excused on each day of the current month.
@@ -65,11 +72,13 @@ The Dashboard is the first page you see after logging in. It gives a snapshot of
 ### B. How to Use It
 
 1. After logging in, the Dashboard loads automatically.
-2. The four summary boxes update whenever new information is saved elsewhere in the system.
+2. The four summary boxes update whenever new information is saved elsewhere in the system. The "Total Students" box counts only active students (not graduated or inactive ones).
 3. The **Fee Collection Summary** defaults to the current month and refreshes when you come back to the Dashboard.
-4. The **Today's Birthdays** panel checks all students and highlights anyone whose birthday matches today's date.
-5. The **Monthly Summary** bar chart shows one bar per day. Hover over a bar to see the exact numbers.
-6. To act on anything you see, click the relevant section in the left-hand menu.
+4. The **Attendance Trend Chart** and **Fee Collection Chart** show the last 6 months of data side by side. On mobile phones, they stack on top of each other.
+5. The **Today's Birthdays** panel checks all students and highlights anyone whose birthday matches today's date.
+6. The **Monthly Summary** bar chart shows one bar per day. Hover over a bar to see the exact numbers.
+7. To act on anything you see, click the relevant section in the left-hand menu.
+8. Use the **Quick Search** feature (press `Ctrl+K` or `Cmd+K`) from any page to jump to any section or search for students and classes by name.
 
 ### C. Tips for Client Demo
 
@@ -84,7 +93,7 @@ The Dashboard is the first page you see after logging in. It gives a snapshot of
 
 ### A. What It Does
 
-The Students section manages the school's complete list of enrolled students. Each student record holds personal details (name, date of birth, gender), which class they are in, parent contact information, and an optional profile photo. You can add students one at a time, edit existing records, or import a large list all at once from a spreadsheet file.
+The Students section manages the school's complete list of enrolled students. Each student record holds personal details (name, date of birth, gender), which class they are in, parent contact information, an optional profile photo, and a status (Active, Graduated, or Inactive). You can add students one at a time, edit existing records, import a large list all at once from a spreadsheet file, and view a detailed profile page for each student.
 
 ### B. How to Use It
 
@@ -95,8 +104,9 @@ The Students section manages the school's complete list of enrolled students. Ea
 3. Use the **Search** bar (top left of the filter row) to search by student name, parent name, or parent email. Type your search and wait a moment — the list updates automatically.
 4. Use the **Class** dropdown to show only students from a specific class.
 5. Use the **Gender** dropdown to filter by Male or Female.
-6. When a filter is active, a **Clear Filters** button appears — click it to remove all filters at once.
-7. Use the **Previous / Next** buttons at the bottom to move between pages.
+6. Use the **Status** dropdown to filter by Active (the default view), Graduated, or Inactive.
+7. When a filter is active, a **Clear Filters** button appears — click it to remove all filters at once.
+8. Use the **Previous / Next** buttons at the bottom to move between pages.
 
 #### Adding a Student
 
@@ -153,10 +163,14 @@ The Students section manages the school's complete list of enrolled students. Ea
 
 1. Click the student's name or photo on a student card.
 2. The Student Profile page opens.
-3. The profile shows the student's full details (photo, name, class, parent contacts) and a strip of quick stats.
+3. The profile shows the student's full details (photo, name, class, parent contacts) and a strip of quick stats (attendance rate, total days present).
 4. Below that, an **Attendance Heatmap** shows attendance across the past year at a glance (green = present, red = absent, grey = no record).
-5. The **Attendance History** table shows individual attendance entries, 15 per page, with the date, status, and any notes.
-6. Click **Edit Student** to open the edit form from this page.
+5. The **Portfolio** section shows learning entries grouped by term (Term 1 / Term 2 / Term 3 tabs). Each entry is tagged by learning area (Physical, Cognitive, Language, Social-Emotional, Creative). Click **Add Entry** to create a new observation. Click **View Report Card** to open the report card for that term.
+6. The **Student Artwork** section shows artwork uploaded for this student from the Art Wall.
+7. The **Portal Access** card shows the linked parent account and lets you manage the parent's login details for the Parent Portal.
+8. The **Student Timeline** is a combined activity feed showing all events for this student in one place: attendance (grouped into streaks like "Present for 5 days"), portfolio entries, artwork, fee payments, report cards, and daily reports. Events are colour-coded and grouped by month. Click **Load more** to see older events.
+9. The **Attendance History** table shows individual attendance entries, 15 per page, with the date, status, and any notes.
+10. Click **Edit Student** to open the edit form from this page.
 
 ### C. Tips for Client Demo
 
@@ -171,7 +185,7 @@ The Students section manages the school's complete list of enrolled students. Ea
 
 ### A. What It Does
 
-The Classes section manages the school's classrooms. Each class record stores the class name, the assigned teacher, and the maximum number of students allowed. The system automatically shows how many students are currently enrolled in each class and highlights classes that are getting close to full.
+The Classes section manages the school's classrooms. Each class record stores the class name, academic year, the assigned teacher, maximum capacity, and a status (Active or Graduated). The system automatically shows how many students are currently enrolled in each class and highlights classes that are getting close to full. At the end of an academic year, classes can be graduated in bulk.
 
 ### B. How to Use It
 
@@ -179,15 +193,17 @@ The Classes section manages the school's classrooms. Each class record stores th
 
 1. Click **Classes** in the left-hand menu.
 2. Classes are shown as cards, 9 per page.
-3. Each card shows the class name, teacher name, an enrollment bar showing how full the class is, and the student count.
+3. Each card shows the class name, academic year, teacher name, an enrollment bar showing how full the class is, and the student count. Graduated classes show a purple "Graduated" badge and appear faded.
 4. The enrollment bar turns **red** when a class is at 90% or more of its capacity.
 5. Use the **Search** bar to filter by class name or teacher name.
+6. Use the **Status** dropdown to switch between Active and Graduated classes.
 
 #### Adding a Class
 
 1. Click **Add Class** (top right).
 2. Fill in:
    - **Class Name** \* (e.g. "Kelas Bintang")
+   - **Academic Year** (e.g. "2026")
    - **Teacher Name** \*
    - **Capacity** \* (a number between 1 and 100; defaults to 25)
 3. Click **Save**.
@@ -200,6 +216,15 @@ The Classes section manages the school's classrooms. Each class record stores th
 
 **Note:** If you rename a class, the students already assigned to that class are not automatically updated. You will need to update each student's class separately.
 
+#### Graduating a Class
+
+1. Click the **graduation cap icon** on an active class card.
+2. A graduation window opens with a 3-step process:
+   - **Step 1 — Select Students:** A list of all students in the class with tick boxes. Use **Select All** / **Deselect All** to manage the list. Ticked students will be graduated.
+   - **Step 2 — Reassign:** Choose which class the un-ticked students should move to (for students continuing but changing class).
+   - **Step 3 — Confirm:** Review and confirm. Ticked students are marked as "Graduated". Un-ticked students move to the new class. The class itself is marked as Graduated.
+3. Graduated classes remain in the system for reference but are faded and hidden from the default view.
+
 #### Deleting a Class
 
 1. Click the **bin icon** on the class card.
@@ -209,6 +234,7 @@ The Classes section manages the school's classrooms. Each class record stores th
 
 - Create 3 to 5 classes before a demo so the Students, Attendance, and Fee sections have real class options to filter by.
 - Fill one class close to capacity to show the red capacity bar — it is an easy-to-understand at-a-glance warning.
+- Show the graduation feature by clicking the graduation cap on a class. Walk through the 3-step process to demonstrate end-of-year class management.
 
 ---
 
@@ -220,21 +246,22 @@ The Attendance section lets staff record daily attendance for all students. It s
 
 - Marking all students as Present in one click
 - Saving all your changes in one go
-- Filtering the view by status
+- Filtering the view by status and by class
 - Downloading the day's attendance as a spreadsheet file
 - Printing a blank or filled attendance sheet
 - Live updates — if another staff member marks attendance on a different device, changes appear on your screen automatically
 
 ### B. How to Use It
 
-#### Selecting a Date
+#### Selecting a Date and Class
 
 1. Click **Attendance** in the left-hand menu.
 2. The page defaults to today's date. Use the **date picker** at the top to switch to a different date.
+3. Use the **Class** dropdown (next to the date picker) to show only students from a specific class. The default is "All Classes". The class filter also applies to the spreadsheet export and print preview.
 
 #### Marking Attendance
 
-1. The table shows all students, 20 per page.
+1. The table shows students (20 per page), filtered by the selected class if one is chosen.
 2. Each row has four status buttons: **P** (Present), **A** (Absent), **L** (Late), **E** (Excused).
 3. Click a button to mark that student with that status. The button highlights to show the selected status.
 4. Your changes are held on screen but not yet saved. The row is lightly highlighted to show there are unsaved changes.
@@ -596,16 +623,22 @@ This produces: RCP-2026-0001, RCP-2026-0002, and so on.
 
 The public website is a marketing page for the school. It is separate from the admin area and requires no login to view. It pulls real information from the system:
 
-- **Gallery section** — shows published (visible) gallery photos with a lightbox viewer
-- **Notices section** — shows active (not yet expired) announcements
-- **Testimonials section** — shows a rotating carousel of visible parent testimonials
+- **Hero section** — animated bear mascot, stat counters, and a call-to-action
+- **Features section** — cards highlighting what the school offers
+- **Gallery section** — shows published (visible) gallery photos with a lightbox viewer (you can use arrow keys and Escape to navigate)
+- **Art Wall section** — "Our Little Artists" cork board showing student artwork, with a "Show More" / "Show Less" button
+- **Notices section** — shows active (not yet expired) announcements with coloured category badges
+- **Testimonials section** — shows a rotating carousel of visible parent testimonials (advances automatically every 4 seconds, pauses when you hover)
+- **Inquiry Form** — a public enrollment enquiry form where prospective parents can submit their details and a message
+- **Location section** — Google Maps embed (if set up), contact information, and operating hours
 - **Stats section** — shows animated counters (students enrolled, classes, years established, attendance rate)
+- **WhatsApp button** — a fixed button in the bottom-left corner linking to the school's WhatsApp number (only appears if set up in Settings > School Info)
 
 The public website also includes dark mode and language toggles in the top navigation bar — the same settings used in the admin area.
 
 ### B. How to Use It
 
-The public website is viewed by anyone who visits the school's web address. There is no admin action required beyond keeping the content sections (Gallery, Announcements, Testimonials) up to date in the admin area.
+The public website is viewed by anyone who visits the school's web address. There is no admin action required beyond keeping the content sections (Gallery, Art Wall, Announcements, Testimonials) up to date in the admin area. The Inquiry Form and Location section work automatically once School Info is filled in.
 
 **Navigation links on the public website:**
 
@@ -622,9 +655,11 @@ The **Admin Login** link in the top navigation bar (a lock icon on mobile, "Admi
 ### C. Tips for Client Demo
 
 - Keep the admin area open in one browser tab and the public website open in another. Add an announcement in the admin area, then refresh the public website to show it appearing immediately.
-- Click a gallery photo to demonstrate the lightbox — it opens full screen with a dark background and supports left/right navigation.
-- Scroll through all sections smoothly to show the layout: hero section with animated bear mascot, stats with counting animation, features, gallery, notices, testimonials carousel, call-to-action, and footer.
+- Click a gallery photo to demonstrate the lightbox — it opens full screen with a dark background and supports left/right navigation and keyboard controls.
+- Scroll through all sections smoothly to show the layout: hero section with animated bear mascot, stats with counting animation, features, gallery, art wall, notices, testimonials carousel, inquiry form, location map, and footer.
 - The testimonials carousel advances automatically every 4 seconds and pauses when you hover over it — point this out during the demo.
+- Submit a test inquiry on the public website, then switch to the admin area and open the Inquiries section to show it appearing straight away.
+- If the school has a WhatsApp number set up, show the fixed WhatsApp button in the bottom-left corner — it opens a chat directly with the school.
 
 ---
 
@@ -669,15 +704,229 @@ The Testimonials section manages parent quotes displayed on the public website i
 
 ---
 
+## 12. Art Wall
+
+### A. What It Does
+
+The Art Wall is a cork board-style page for displaying student artwork. Each artwork entry includes a photo, an optional caption, the student's name, the date, a display order, and a visibility toggle. Artwork is shown in the admin area, on the student's profile page, and in the "Our Little Artists" section of the public website. The student's name is stored separately, so artwork remains even if the student is later removed from the system.
+
+### B. How to Use It
+
+#### Viewing the Art Wall
+
+1. Click **Art Wall** in the left-hand menu (under the Content group).
+2. Artworks are displayed in a cork board grid (2 columns on mobile, 4 on larger screens), 12 per page.
+3. Each card looks like a pinned photo on a cork board, with a pushpin and a slight tilt for a realistic feel.
+4. Use the **Search** bar to filter by caption.
+5. Click a card to open a full-screen image viewer (use arrow keys to navigate and Escape to close).
+
+#### Adding Artwork
+
+1. Click **Add Artwork** (orange button, top right).
+2. Fill in:
+   - **Photo** \* (required — upload a JPG or PNG; compressed automatically)
+   - **Student** \* (select from the dropdown)
+   - **Caption** (optional)
+   - **Date** (when the artwork was created)
+   - **Display Order** (lower numbers appear first)
+   - **Visible** toggle (controls whether this artwork appears on the public website)
+3. Click **Save**.
+
+#### Editing or Deleting Artwork
+
+1. Click the **pencil icon** on a card to edit, or the **bin icon** to delete.
+2. Deletion requires confirmation.
+
+### C. Tips for Client Demo
+
+- Upload 4 to 6 student artworks before the demo. The cork board with pushpins and tilted cards is visually distinctive and immediately communicates a child-friendly feel.
+- Show the public website's "Our Little Artists" section — it pulls visible artwork automatically.
+- Click a student name on the Art Wall to go to their profile, where artwork also appears in a small gallery.
+
+---
+
+## 13. Daily Reports
+
+### A. What It Does
+
+The Daily Reports section provides per-student daily activity tracking. Staff can record each student's meals, nap duration, toilet count, mood, and an activity note for any given day. Parents can view these reports through the Parent Portal.
+
+### B. How to Use It
+
+#### Viewing and Filling in Reports
+
+1. Click **Daily Reports** in the left-hand menu (under the Daily group).
+2. The page defaults to today's date. Use the **date picker** to switch to a different date.
+3. Use the **Class** dropdown to show only students from a specific class (default: "All Classes").
+4. The table shows students with fields you can fill in directly on the page:
+   - **Mood** — 4-button picker with face icons: Happy, Okay, Tired, Upset (click one to select)
+   - **Meals Eaten** — dropdown: All / Most / Some / None
+   - **Nap Minutes** — number input
+   - **Toilet Count** — number input
+   - **Activity Note** — free-text input
+5. Rows with changes you have not yet saved are highlighted in orange.
+6. Click **Save All** (green button) to save everything at once. The button shows how many changes are waiting.
+
+### C. Tips for Client Demo
+
+- Fill in a few students' daily reports with different moods and activity notes. The mood face icons are visually intuitive and appealing.
+- Show the Parent Portal Daily Reports tab afterwards — parents see exactly what staff entered for their child.
+- Use the class filter to show how a teacher can focus on just their own class.
+
+---
+
+## 14. Portfolio
+
+### A. What It Does
+
+The Portfolio section tracks student learning observations aligned with curriculum areas. Teachers create portfolio entries tagged to one of five learning areas (Physical, Cognitive, Language, Social-Emotional, Creative), grouped by term (Term 1 / Term 2 / Term 3). Each term can have a report card with teacher and principal comments, which can be downloaded as a PDF document.
+
+### B. How to Use It
+
+#### Adding Portfolio Entries
+
+1. Go to a student's profile page (click a student card on the Students page).
+2. Scroll to the **Portfolio** section.
+3. Click the **Term tab** (T1, T2, or T3) for the relevant term.
+4. Click **Add Entry** (purple button).
+5. Fill in:
+   - **Learning Area** \* (Physical / Cognitive / Language / Social-Emotional / Creative)
+   - **Observation** \* (a description of what the student did or achieved)
+   - **Photo** (optional — upload a photo as evidence)
+   - **Date** (the date of the observation)
+6. Click **Save**. The entry appears under the matching learning area heading.
+
+#### Editing or Deleting an Entry
+
+1. Click an existing entry to open it for editing.
+2. Update the fields and click **Save**, or delete the entry from the pop-up.
+
+#### Viewing and Editing the Report Card
+
+1. From the student profile's Portfolio section, click **View Report Card** for a specific term.
+2. The Report Card page opens, showing all entries grouped by learning area (each section can be expanded or collapsed).
+3. At the bottom, type the **Teacher Comment** and **Principal Comment**. These save automatically when you click outside the field.
+4. Click **Download PDF** (top right) to download the report card as a formatted PDF file.
+
+### C. Tips for Client Demo
+
+- Add 2 to 3 portfolio entries across different learning areas for one student, then open the Report Card page to show the grouped layout.
+- Type a teacher comment and click outside the field — the auto-save confirmation message appears.
+- Click **Download PDF** to show the polished report card output with the school logo and branding.
+- Parents can view portfolio entries and the report card through the Parent Portal — show both sides during the demo.
+
+---
+
+## 15. Inquiries
+
+### A. What It Does
+
+The Inquiries section handles enrollment enquiries submitted through the school's public website. Prospective parents fill in a form with their name, child's name, child's age, phone number, and a message. These submissions appear in the admin area as tickets with a status flow: **New** then **Contacted** then **Enrolled** or **Closed**.
+
+### B. How to Use It
+
+#### Viewing Inquiries
+
+1. Click **Inquiries** in the left-hand menu.
+2. Inquiries are shown in a table, 20 per page.
+3. Use the **status tabs** at the top to filter: All / New / Contacted / Enrolled / Closed.
+4. Use the **Search** bar to search by parent name or child name.
+5. Use the **date range filters** (From / To) to narrow by submission date.
+6. When filters are active, a **Clear Filters** button appears.
+
+#### Updating Inquiry Status
+
+1. Each row has a **Status** dropdown. Click it to change the status directly from the table.
+2. The status updates immediately.
+
+#### Contacting a Parent via WhatsApp
+
+- Each row shows a **WhatsApp icon** next to the phone number. Click it to open a WhatsApp chat with that parent's number already filled in.
+
+### C. Tips for Client Demo
+
+- Submit a test inquiry on the public website first, then open the Inquiries section to show it appearing straight away with "New" status.
+- Change the status from New to Contacted to Enrolled to demonstrate the workflow.
+- Click the WhatsApp icon to show it opens WhatsApp directly — this is a strong selling point for Malaysian schools where WhatsApp is the main communication channel.
+
+---
+
+## 16. Parent Portal
+
+### A. What It Does
+
+The Parent Portal is a separate area for parents to view their child's information. It uses its own login system (Access Code + 6-digit PIN) — separate from the staff login. One parent account can be linked to multiple children. The portal gives parents read-only access to:
+
+- Today's attendance status and recent attendance history
+- Outstanding fees and payment history
+- School announcements
+- Daily activity reports (meals, nap, mood, notes)
+- Portfolio entries and report cards
+
+### B. How to Use It
+
+#### Setting Up Portal Access (Staff Side)
+
+1. Go to a student's profile page.
+2. Scroll to the **Portal Access** card.
+3. Click **Manage** to open the portal access window.
+4. Click **Generate Access Code** to create a unique code for the parent.
+5. Set a **6-digit PIN** for the parent.
+6. Copy the access code and PIN and share them with the parent (for example, print them out or send via WhatsApp).
+
+#### Parent Login
+
+1. Parents go to the portal login page.
+2. Enter the **Access Code** and **6-digit PIN** given by the school.
+3. Click **Sign In**. The parent is taken to their Dashboard.
+
+#### Portal Navigation
+
+The portal has 6 tabs (shown at the bottom on mobile, or in a side panel on larger screens):
+
+1. **Dashboard** — greeting with the child's photo, today's attendance status, number of unpaid fees, latest daily report, and recent announcements.
+2. **Attendance** — the last 5 attendance records with status badges and dates.
+3. **Fees** — list of unpaid and partially paid fee records with amounts.
+4. **Announcements** — latest school notices with category badges.
+5. **Daily Reports** — the most recent daily report showing mood, meals, nap, toilet, and activity note.
+6. **Portfolio** — portfolio entries grouped by term and learning area, with a link to view the report card.
+
+#### Switching Between Children
+
+- If a parent has more than one child linked to their account, a **child switcher** dropdown appears at the top of the portal. Click the child's name or photo to switch. All information on the screen updates to show the selected child's data.
+
+#### Portal Settings
+
+- A **settings icon** (top right) opens a menu with dark mode toggle, language toggle (EN/BM), and device management.
+
+### C. Tips for Client Demo
+
+- Set up portal access for a student from the admin side first. Then open the portal login in a separate browser or private window.
+- Log in as the parent and scroll through each tab to show what parents can see.
+- Show the child switcher by linking two students to the same parent account.
+- Point out that the portal is read-only — parents can view but not change any information.
+- Enter a daily report in the admin area (Daily Reports page), then refresh the parent portal to show it appearing straight away.
+
+---
+
 ## Appendix A — Shortcuts and Power-User Tips
 
 ### Navigation
 
-| Action                          | Method                                                                      |
-| ------------------------------- | --------------------------------------------------------------------------- |
-| Jump to any section             | Click the section name in the left-hand menu                                |
-| Open the menu on mobile         | Tap the hamburger (three-line) icon in the top bar                          |
-| Scroll to top of public website | Click the scroll-to-top button (bottom-right, appears after scrolling down) |
+| Action                          | Method                                                                                  |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| Quick Search (jump to anything) | Press `Ctrl+K` (Windows) or `Cmd+K` (Mac) — search pages, students, and classes by name |
+| Jump to any section             | Click the section name in the left-hand menu                                            |
+| Open the menu on mobile         | Tap the hamburger (three-line) icon in the top bar                                      |
+| Scroll to top of public website | Click the scroll-to-top button (bottom-right, appears after scrolling down)             |
+
+The left-hand menu groups sections into categories: **People** (Students, Classes, Parents), **Daily** (Attendance, Daily Reports), **Finance** (Fees), and **Content** (Announcements, Gallery, Art Wall, Testimonials). Inquiries and Settings sit at the bottom.
+
+### Quick Search
+
+- Press `Ctrl+K` (Windows) or `Cmd+K` (Mac) from any admin page to open the quick search.
+- Start typing to search. Results are grouped into **Pages** (all admin sections), **Students** (showing the class name), and **Classes** (showing the teacher name).
+- Use the up/down arrow keys to move through results, press Enter to go, or press Escape to close.
 
 ### Attendance
 
@@ -727,6 +976,12 @@ The Testimonials section manages parent quotes displayed on the public website i
 | "Only unpaid fee records can be deleted."                        | You are trying to delete a record that has already been paid or partially paid | You cannot delete paid records. Apply a full discount (waiver) if the record needs to be zeroed out |
 | "Failed to generate fees."                                       | Bulk fee creation did not work                                                 | Check that the selected plan exists and the target class has students; try again                    |
 | "Failed to export."                                              | The spreadsheet download did not work                                          | Try again; apply filters to narrow the data set and try again if it continues                       |
+| "Student not found."                                             | The system cannot find the student being looked for                            | Go back to the Students list and click the correct student card                                     |
+| "Logo upload failed" (student / gallery / announcement)          | A photo upload failed in one of the content sections                           | Check the file is under 2 MB and try again; contact your administrator if it keeps failing          |
+| "Too many submissions. Please try again later." (inquiry form)   | The inquiry rate limit has been reached                                        | Wait 10 minutes, then try again                                                                     |
+| "Invalid access code or PIN." (parent portal)                    | The parent portal login details are incorrect                                  | Check the access code and PIN; contact the school to get new ones if needed                         |
+| "Too many login attempts." (parent portal)                       | Too many wrong login attempts on the portal                                    | Wait and try again later                                                                            |
+| "Device limit reached." (parent portal)                          | Too many devices are logged in for this parent account                         | Log out from another device, or ask the school to reset the session                                 |
 | "Student not found."                                             | The system cannot find the student record being looked for                     | Go back to the Students list and click the correct student card                                     |
 | "Logo upload failed" (student / gallery / announcement)          | A photo upload failed in one of the content sections                           | Check the file is under 2 MB and try again; contact your administrator if it persists               |
 
@@ -750,6 +1005,7 @@ All print documents use the browser's built-in print function. No extra software
 | Fee Statement             | Student fee statement page > Print Statement                          | A4         | Portrait    |
 | Attendance Sheet (Filled) | Attendance page > Print Attendance > Filled                           | A4         | Portrait    |
 | Attendance Sheet (Blank)  | Attendance page > Print Attendance > Blank                            | A4         | Portrait    |
+| Portfolio Report Card     | Student profile > Portfolio > View Report Card > Download PDF         | A4         | Portrait    |
 
 ### Before Printing
 
@@ -818,6 +1074,13 @@ All print documents use the browser's built-in print function. No extra software
 2. Click **Print Attendance**.
 3. Choose **Filled** (shows the recorded statuses as tick marks) or **Blank** (empty tick boxes for collecting attendance on paper).
 4. Click **Print**.
+
+**Portfolio Report Card (PDF Download):**
+
+1. Go to a student's profile > Portfolio section > click **View Report Card** for the term you want.
+2. On the Report Card page, click **Download PDF** (top right).
+3. The PDF downloads directly to your computer — no print dialog is needed. The file is created automatically.
+4. Open the downloaded PDF and print from your PDF viewer if you need a paper copy.
 
 ### Print Troubleshooting
 
