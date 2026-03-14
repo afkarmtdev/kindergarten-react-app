@@ -1,40 +1,57 @@
 TRIGGER when: user mentions parent portal, portal login, daily activity report, daily report, child portfolio, learning portfolio, KSPK report card, or portfolio report card.
 
-# parent-portal — Build Parent Portal, Daily Reports & Portfolio
+# parent-portal — Parent Portal, Daily Reports & Portfolio
 
-Full spec: `memory/parent-portal-plan.md` (checklist with tick boxes)
-Detailed architecture: `C:\Users\Afkar\.claude\plans\resilient-waddling-rocket.md`
-
-Work through every phase in strict order. Do NOT start a later phase until the earlier one is verified working.
+**STATUS: FULLY IMPLEMENTED.** This skill documents the current architecture for reference and maintenance.
 
 ---
 
-## Critical Decisions (locked in — do not redesign)
+## Architecture (current state)
 
-- **Auth:** Access Code + 6-digit PIN. `Bun.password.hash()` / `Bun.password.verify()` for PIN — built-in, zero new deps. Separate `PORTAL_JWT_SECRET` env var (NOT the same as Supabase JWT secret).
-- **Sessions:** `parent_sessions` table stores `token_hash` (SHA-256 of JWT). Every portal request checks this table — allows instant revocation by deleting the row.
-- **Data isolation:** All `/api/portal/*` routes extract `student_id` from the verified session, then query ONLY that student's data. Never trust a client-supplied student_id.
+- **Auth:** Access Code + 6-digit PIN on the `parents` table (NOT students). `Bun.password.hash()` / `Bun.password.verify()` for PIN. Separate `PORTAL_JWT_SECRET` env var.
+- **Parent-level accounts:** One parent can link to multiple children via `parent_students` junction table. JWT contains `parent_id`. Portal middleware sets `c.set('parentId')` + `c.set('parentChildIds')`.
+- **Sessions:** `parent_sessions` table stores `token_hash` (SHA-256 of JWT) + `parent_id` + optional `device_id`/`device_label`. Every portal request checks this table — allows instant revocation by deleting the row.
+- **Data isolation:** All `/api/portal/*` routes use `parentChildIds` array from middleware. Portal routes accept `?student_id` param but validate it's in the parent's linked children.
 - **No Supabase Auth for parents** — service role client used for session lookup; parents are NOT Supabase Auth users.
 - **Daily report UI:** Inline table (one row per student), not per-student modal. Same pattern as AttendancePage.
-- **Report card:** Editable + printable on the same page. Auto-save on textarea blur. `@media print` hides edit controls.
+- **Report card:** Editable + printable on the same page. Auto-save on textarea blur. PDF download via `@react-pdf/renderer`.
+- **Audit trail:** All CRUD uses `auditCreate`/`auditUpdate`/`auditDelete` from `lib/audit.ts`. Soft-delete on parents, parent_students. Hard delete on parent_sessions (ephemeral).
 
 ---
 
-## Phase 0 — Database Schema
-
-Run ALL of this in Supabase SQL editor before writing any code. Add to `supabase-schema.sql`.
+## Database Schema (current)
 
 ```sql
--- Extend students table
-ALTER TABLE students
-  ADD COLUMN IF NOT EXISTS access_code text UNIQUE,
-  ADD COLUMN IF NOT EXISTS portal_pin_hash text;
+-- Parent accounts (NOT on students table)
+CREATE TABLE IF NOT EXISTS parents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name text NOT NULL,
+  email text UNIQUE,
+  phone text,
+  access_code text UNIQUE,
+  portal_pin_hash text,
+  created_at timestamptz DEFAULT now(),
+  -- + audit columns: created_by, modified_at, modified_by, deleted_at, deleted_by
+);
+
+-- Parent-student links (many-to-many)
+CREATE TABLE IF NOT EXISTS parent_students (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id uuid NOT NULL REFERENCES parents(id) ON DELETE CASCADE,
+  student_id uuid NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  relationship text DEFAULT 'parent' CHECK (relationship IN ('parent','guardian','step_parent','other')),
+  created_at timestamptz DEFAULT now(),
+  deleted_at timestamptz,
+  deleted_by text
+);
 
 -- Parent sessions (for JWT revocation)
 CREATE TABLE IF NOT EXISTS parent_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id uuid NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  parent_id uuid NOT NULL REFERENCES parents(id) ON DELETE CASCADE,
   token_hash text NOT NULL UNIQUE,
+  device_id text,
+  device_label text,
   expires_at timestamptz NOT NULL,
   created_at timestamptz DEFAULT now()
 );
@@ -114,164 +131,51 @@ PORTAL_JWT_SECRET: z.string().min(32),
 
 ### Step 1.2 — parentAuth route
 
-Create `backend/src/routes/parentAuth.ts`:
+File: `backend/src/routes/parentAuth.ts`
 
-```ts
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
-import { supabase } from '../db/supabase'
-import { createHash } from 'crypto'
-import { sign } from 'hono/jwt'
+Login queries the `parents` table (NOT students), validates PIN, creates session with `parent_id`. JWT payload contains `parent_id` (not student_id). Login also filters `.is('deleted_at', null)` on the parents table.
 
-const app = new Hono()
-
-const loginSchema = z.object({
-  access_code: z.string().min(1),
-  pin: z
-    .string()
-    .length(6)
-    .regex(/^\d{6}$/),
-})
-
-app.post('/login', zValidator('json', loginSchema), async (c) => {
-  const { access_code, pin } = c.req.valid('json')
-
-  const { data: student } = await supabase
-    .from('students')
-    .select('id, full_name, class_name, photo_url, portal_pin_hash')
-    .eq('access_code', access_code)
-    .single()
-
-  if (!student || !student.portal_pin_hash) {
-    return c.json({ error: 'Invalid access code or PIN' }, 401)
-  }
-
-  const valid = await Bun.password.verify(pin, student.portal_pin_hash)
-  if (!valid) return c.json({ error: 'Invalid access code or PIN' }, 401)
-
-  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-  const payload = { student_id: student.id, exp: Math.floor(expiresAt.getTime() / 1000) }
-  const token = await sign(payload, process.env.PORTAL_JWT_SECRET!)
-
-  const tokenHash = createHash('sha256').update(token).digest('hex')
-  await supabase
-    .from('parent_sessions')
-    .insert({ student_id: student.id, token_hash: tokenHash, expires_at: expiresAt.toISOString() })
-
-  return c.json({
-    token,
-    student: {
-      id: student.id,
-      full_name: student.full_name,
-      class_name: student.class_name,
-      photo_url: student.photo_url,
-    },
-  })
-})
-
-app.post('/logout', async (c) => {
-  const token = c.req.header('Authorization')?.replace('Bearer ', '')
-  if (token) {
-    const tokenHash = createHash('sha256').update(token).digest('hex')
-    await supabase.from('parent_sessions').delete().eq('token_hash', tokenHash)
-  }
-  return c.json({ ok: true })
-})
-
-export default app
-```
+Logout hard-deletes the session row (sessions are ephemeral, no soft-delete).
 
 ### Step 1.3 — parentMiddleware
 
-Create `backend/src/middleware/parentAuth.ts`:
+File: `backend/src/middleware/parentAuth.ts`
 
-```ts
-import { createMiddleware } from 'hono/factory'
-import { verify } from 'hono/jwt'
-import { createHash } from 'crypto'
-import { supabase } from '../db/supabase'
+Validates JWT, looks up session by `token_hash`, checks `expires_at`. Sets:
 
-export const parentMiddleware = createMiddleware(async (c, next) => {
-  const token = c.req.header('Authorization')?.replace('Bearer ', '')
-  if (!token) return c.json({ error: 'Unauthorized' }, 401)
+- `c.set('parentId', session.parent_id)` — the parent's UUID
+- `c.set('parentChildIds', [...])` — array of linked student UUIDs (from `parent_students` table, filtered `.is('deleted_at', null)`)
 
-  try {
-    const payload = await verify(token, process.env.PORTAL_JWT_SECRET!)
-    const tokenHash = createHash('sha256').update(token).digest('hex')
-
-    const { data: session } = await supabase
-      .from('parent_sessions')
-      .select('student_id, expires_at')
-      .eq('token_hash', tokenHash)
-      .single()
-
-    if (!session || new Date(session.expires_at) < new Date()) {
-      return c.json({ error: 'Session expired' }, 401)
-    }
-
-    c.set('parentStudentId', session.student_id)
-    await next()
-  } catch {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-})
-```
+Portal routes use `parentChildIds` to validate and scope data access.
 
 ### Step 1.4 — Portal data routes
 
-Create `backend/src/routes/portal.ts`. Every handler must use `c.get('parentStudentId')` — never trust a query param for student_id:
+File: `backend/src/routes/portal.ts`. Read-only. Every handler uses `c.get('parentChildIds')` to scope data. Accepts `?student_id` param but validates it's in the parent's linked children.
 
-- `GET /api/portal/me` — student profile
-- `GET /api/portal/attendance?page&limit` — paginated attendance for this student only
-- `GET /api/portal/fees` — fee records for this student (omit discount_reason, internal notes)
-- `GET /api/portal/announcements` — non-expired announcements (reuse public logic)
-- `GET /api/portal/daily-reports?limit=14` — recent daily reports for this student
-- `GET /api/portal/portfolio?term=` — portfolio entries + report for this student
+- `GET /api/portal/me` — parent profile + linked children
+- `GET /api/portal/attendance?student_id&page&limit` — paginated attendance for a linked child
+- `GET /api/portal/fees?student_id` — fee records for a linked child
+- `GET /api/portal/announcements` — non-expired announcements (school-wide, not child-specific)
+- `GET /api/portal/daily-reports?student_id&limit=14` — recent daily reports for a linked child
+- `GET /api/portal/portfolio?student_id&term=` — portfolio entries + report for a linked child
 
-### Step 1.5 — Admin: student portal management endpoints
+All queries include `.is('deleted_at', null)` on soft-deletable tables.
 
-Add to `backend/src/routes/students.ts`:
+### Step 1.5 — Admin: parent management endpoints
 
-```ts
-// Generate access code
-app.post('/:id/access-code', async (c) => {
-  const { id } = c.req.param()
-  // Generate KC-YYYY-NNN format, check uniqueness
-  const accessCode = `KC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`
-  await supabase.from('students').update({ access_code: accessCode }).eq('id', id)
-  return c.json({ access_code: accessCode })
-})
+File: `backend/src/routes/parents.ts` — 10 endpoints for full parent lifecycle:
 
-// Set PIN
-app.put(
-  '/:id/portal-pin',
-  zValidator(
-    'json',
-    z.object({
-      pin: z
-        .string()
-        .length(6)
-        .regex(/^\d{6}$/),
-    })
-  ),
-  async (c) => {
-    const { id } = c.req.param()
-    const { pin } = c.req.valid('json')
-    const hash = await Bun.password.hash(pin)
-    await supabase.from('students').update({ portal_pin_hash: hash }).eq('id', id)
-    return c.json({ ok: true })
-  }
-)
-
-// Revoke all parent access for a student
-app.delete('/:id/portal-access', async (c) => {
-  const { id } = c.req.param()
-  await supabase.from('students').update({ access_code: null, portal_pin_hash: null }).eq('id', id)
-  await supabase.from('parent_sessions').delete().eq('student_id', id)
-  return c.json({ ok: true })
-})
-```
+- `GET /` — paginated list with `children_count`
+- `GET /by-student/:studentId` — find parent linked to a student
+- `GET /:id` — single parent with linked children details
+- `POST /` — create parent (with `auditCreate`)
+- `PUT /:id` — update parent (with `auditUpdate`)
+- `DELETE /:id` — soft-delete parent (with `auditDelete`)
+- `POST /:id/access-code` — generate unique `KC-YYYY-NNNN` access code
+- `PUT /:id/portal-pin` — set 6-digit PIN (hashed with `Bun.password.hash`)
+- `DELETE /:id/portal-access` — revoke access (clear code/pin, delete sessions)
+- `POST /:id/link-student` — link child to parent (validates student exists, not deleted)
+- `DELETE /:id/unlink-student/:studentId` — soft-delete junction row
 
 ### Step 1.6 — Register in index.ts
 
@@ -293,7 +197,7 @@ app.route('/api/portal', portalRoute)
 
 ### New files to create (in order):
 
-1. `frontend/src/hooks/useParentAuth.tsx` — `ParentAuthContext` with `{ student, token, login(), logout(), loading }`. Read token from `localStorage('portal_token')`. On mount, call `GET /api/portal/me` to rehydrate session; on 401, clear token.
+1. `frontend/src/hooks/useParentAuth.tsx` — `ParentAuthContext` with `{ parent, children, selectedChild, token, login(), logout(), selectChild(), loading }`. Read token from `localStorage('portal_token')`. On mount, call `GET /api/portal/me` to rehydrate parent + children list; on 401, clear token. `selectChild(id)` switches active child across all portal tabs.
 
 2. `frontend/src/lib/api.ts` — add `portalApi` axios instance:
 
@@ -310,7 +214,7 @@ app.route('/api/portal', portalRoute)
 
 4. `frontend/src/pages/portal/PortalLoginPage.tsx` — two fields: Access Code + PIN. On submit: call `portalApi.post('/api/portal/login')`, store token, navigate to `/portal`. Error state for 401.
 
-5. `frontend/src/pages/portal/PortalLayout.tsx` — top bar: child photo + name + logout button. Bottom tab nav on mobile (Home / Attendance / Fees / Updates). Uses `<Outlet />`.
+5. `frontend/src/pages/portal/PortalLayout.tsx` — top bar: child switcher dropdown (if multiple children) + logout button. Bottom tab nav on mobile (Home / Attendance / Fees / Updates). Uses `<Outlet />`.
 
 6. Portal tab pages (all read-only, dark mode, mobile-first):
    - `PortalDashboardPage.tsx` — today attendance chip, outstanding fee amount, today's daily report card, latest 2 pinned announcements
