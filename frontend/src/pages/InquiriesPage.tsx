@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Inbox, Filter, ChevronDown } from 'lucide-react'
+import { Inbox, Filter, ChevronDown, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState, useRef } from 'react'
 import { inquiriesApi } from '@/lib/api'
@@ -154,7 +154,7 @@ export function InquiriesPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60">
+              <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60 [&>th:first-child]:rounded-tl-2xl [&>th:last-child]:rounded-tr-2xl">
                 <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
                   {t('inquiryParentName')}
                 </th>
@@ -249,9 +249,20 @@ function InquiryRow({
         {inquiry.parent_name}
       </td>
       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-        <a href={`tel:${inquiry.phone}`} className="hover:text-kinder-orange transition-colors">
-          {inquiry.phone}
-        </a>
+        <div className="flex items-center gap-2">
+          <a href={`tel:${inquiry.phone}`} className="hover:text-kinder-orange transition-colors">
+            {inquiry.phone}
+          </a>
+          <a
+            href={`https://wa.me/${inquiry.phone.replace(/[^0-9]/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-green-500 transition-colors shrink-0"
+            title="WhatsApp"
+          >
+            <MessageCircle size={14} />
+          </a>
+        </div>
       </td>
       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{inquiry.child_name}</td>
       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{inquiry.child_age}</td>
