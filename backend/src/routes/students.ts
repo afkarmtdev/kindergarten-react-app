@@ -16,6 +16,7 @@ const studentSchema = z.object({
   parent_email: z.string().email(),
   parent_phone: z.string(),
   photo_url: z.string().optional(),
+  status: z.enum(['active', 'graduated', 'inactive']).default('active'),
 })
 
 /**
@@ -70,7 +71,7 @@ async function upsertParentLink(
 // Flatten classrooms + parent_students joins into flat fields
 function flattenStudent(row: Record<string, unknown>): Record<string, unknown> {
   const { classrooms, parent_students, ...rest } = row as {
-    classrooms?: { name?: string } | null
+    classrooms?: { name?: string; academic_year?: string } | null
     parent_students?: { parents?: { full_name?: string; email?: string; phone?: string } | null }[]
   } & Record<string, unknown>
 
@@ -83,7 +84,10 @@ function flattenStudent(row: Record<string, unknown>): Record<string, unknown> {
       }
     : null
 
-  return { ...rest, class_name: classrooms?.name ?? null, parent: parent }
+  const class_name = classrooms?.name
+    ? `${classrooms.name} (${classrooms.academic_year ?? ''})`
+    : null
+  return { ...rest, class_name, parent: parent }
 }
 
 const paginationSchema = z.object({
@@ -96,19 +100,23 @@ const paginationSchema = z.object({
     .enum(['true', 'false', ''])
     .optional()
     .transform((v) => v === 'true'),
+  status: z.enum(['active', 'graduated', 'inactive', '']).optional(),
 })
 
 // GET all students (paginated + filtered)
 students.get('/', zValidator('query', paginationSchema), async (c) => {
-  const { page, limit, search, class_id, gender, birthday_today } = c.req.valid('query')
+  const { page, limit, search, class_id, gender, birthday_today, status } = c.req.valid('query')
   const from = (page - 1) * limit
   const to = from + limit - 1
 
   let query = supabase
     .from('students')
-    .select('*, classrooms(name), parent_students(parents(full_name, email, phone))', {
-      count: 'exact',
-    })
+    .select(
+      '*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))',
+      {
+        count: 'exact',
+      }
+    )
     .is('deleted_at', null)
     .order('full_name')
     .range(from, to)
@@ -118,11 +126,14 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   }
   if (class_id) query = query.eq('class_id', class_id)
   if (gender) query = query.eq('gender', gender)
+  if (status) query = query.eq('status', status)
   if (birthday_today) {
     // Supabase JS can't do date part extraction, so fetch all and filter server-side
     let bdayQuery = supabase
       .from('students')
-      .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+      .select(
+        '*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))'
+      )
       .is('deleted_at', null)
       .order('full_name')
 
@@ -131,6 +142,7 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
     }
     if (class_id) bdayQuery = bdayQuery.eq('class_id', class_id)
     if (gender) bdayQuery = bdayQuery.eq('gender', gender)
+    if (status) bdayQuery = bdayQuery.eq('status', status)
 
     const { data: allData, error: allError } = await bdayQuery
 
@@ -167,12 +179,167 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   })
 })
 
+// GET /:id/timeline — paginated student activity timeline
+const timelineSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  before: z.string().optional(),
+})
+
+students.get('/:id/timeline', zValidator('query', timelineSchema), async (c) => {
+  const { id } = c.req.param()
+  const { limit, before } = c.req.valid('query')
+  const perSource = limit + 1
+
+  // Build queries — each hits an index, returns ≤ perSource rows
+  let attendanceQ = supabase
+    .from('attendance')
+    .select('date, status')
+    .eq('student_id', id)
+    .order('date', { ascending: false })
+    .limit(perSource)
+
+  let portfolioQ = supabase
+    .from('portfolio_entries')
+    .select('id, domain, observation, entry_date')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('entry_date', { ascending: false })
+    .limit(perSource)
+
+  let artWallQ = supabase
+    .from('art_wall')
+    .select('id, caption, artwork_date')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('artwork_date', { ascending: false })
+    .limit(perSource)
+
+  let feesQ = supabase
+    .from('fee_records')
+    .select('id, description, amount_paid, paid_at')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .not('paid_at', 'is', null)
+    .order('paid_at', { ascending: false })
+    .limit(perSource)
+
+  let reportsQ = supabase
+    .from('portfolio_reports')
+    .select('term, generated_at')
+    .eq('student_id', id)
+    .order('generated_at', { ascending: false })
+    .limit(perSource)
+
+  let dailyQ = supabase
+    .from('daily_reports')
+    .select('id, report_date, mood, activity_note')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('report_date', { ascending: false })
+    .limit(perSource)
+
+  // Apply cursor filter if paginating
+  if (before) {
+    attendanceQ = attendanceQ.lt('date', before)
+    portfolioQ = portfolioQ.lt('entry_date', before)
+    artWallQ = artWallQ.lt('artwork_date', before)
+    feesQ = feesQ.lt('paid_at', before)
+    reportsQ = reportsQ.lt('generated_at', before)
+    dailyQ = dailyQ.lt('report_date', before)
+  }
+
+  const [attendance, portfolio, artWall, fees, reports, daily] = await Promise.all([
+    attendanceQ,
+    portfolioQ,
+    artWallQ,
+    feesQ,
+    reportsQ,
+    dailyQ,
+  ])
+
+  // Normalize into unified events
+  type Event = { type: string; date: string; title: string; subtitle?: string }
+  const events: Event[] = []
+
+  for (const r of attendance.data ?? []) {
+    events.push({
+      type: 'attendance',
+      date: r.date,
+      title: r.status.charAt(0).toUpperCase() + r.status.slice(1),
+      subtitle: undefined,
+    })
+  }
+
+  for (const r of portfolio.data ?? []) {
+    const domain = (r.domain as string).replace(/_/g, ' ')
+    events.push({
+      type: 'portfolio',
+      date: r.entry_date,
+      title: domain.charAt(0).toUpperCase() + domain.slice(1),
+      subtitle: r.observation ? (r.observation as string).slice(0, 80) : undefined,
+    })
+  }
+
+  for (const r of artWall.data ?? []) {
+    events.push({
+      type: 'artwork',
+      date: r.artwork_date ?? r.created_at?.slice(0, 10) ?? '',
+      title: (r.caption as string) || 'Artwork',
+      subtitle: undefined,
+    })
+  }
+
+  for (const r of fees.data ?? []) {
+    events.push({
+      type: 'fee_payment',
+      date: (r.paid_at as string).slice(0, 10),
+      title: `RM ${Number(r.amount_paid).toFixed(2)}`,
+      subtitle: r.description as string,
+    })
+  }
+
+  for (const r of reports.data ?? []) {
+    events.push({
+      type: 'report_card',
+      date: (r.generated_at as string).slice(0, 10),
+      title: `Report Card: ${r.term}`,
+      subtitle: undefined,
+    })
+  }
+
+  for (const r of daily.data ?? []) {
+    const mood = r.mood ? ` - ${r.mood}` : ''
+    events.push({
+      type: 'daily_report',
+      date: r.report_date,
+      title: `Daily Report${mood}`,
+      subtitle: r.activity_note ? (r.activity_note as string).slice(0, 80) : undefined,
+    })
+  }
+
+  // Sort by date descending
+  events.sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0))
+
+  // Paginate
+  const page = events.slice(0, limit)
+  const has_more = events.length > limit
+  const next_cursor = page.length > 0 ? page[page.length - 1].date : undefined
+
+  return c.json({
+    events: page,
+    has_more,
+    next_cursor,
+  })
+})
+
 // GET single student
 students.get('/:id', async (c) => {
   const { id } = c.req.param()
   const { data, error } = await supabase
     .from('students')
-    .select('*, attendance(*), classrooms(name), parent_students(parents(full_name, email, phone))')
+    .select(
+      '*, attendance(*), classrooms(name, academic_year), parent_students(parents(full_name, email, phone))'
+    )
     .eq('id', id)
     .is('deleted_at', null)
     .single()
@@ -227,6 +394,7 @@ students.post('/bulk', async (c) => {
     .select('id, name')
     .in('name', uniqueClassNames)
     .is('deleted_at', null)
+    .eq('status', 'active')
 
   const classMap: Record<string, string> = {}
   for (const cls of classRows ?? []) classMap[cls.name] = cls.id
@@ -281,7 +449,7 @@ students.post('/', zValidator('json', studentSchema), async (c) => {
   const { data, error } = await supabase
     .from('students')
     .insert({ ...studentFields, ...auditCreate(c) })
-    .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+    .select('*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))')
     .single()
 
   if (error) return c.json({ error: error.message }, 500)
@@ -309,7 +477,7 @@ students.put('/:id', zValidator('json', studentSchema.partial()), async (c) => {
     .from('students')
     .update({ ...studentFields, ...auditUpdate(c) })
     .eq('id', id)
-    .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+    .select('*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))')
     .single()
 
   if (error) return c.json({ error: error.message }, 500)

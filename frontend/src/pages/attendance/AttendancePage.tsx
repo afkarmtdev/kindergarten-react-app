@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { CalendarCheck, Save, Download, Printer } from 'lucide-react'
-import { attendanceApi, studentsApi } from '@/lib/api'
+import { attendanceApi, studentsApi, classesApi } from '@/lib/api'
 import { useAttendanceStore } from '@/store/attendanceStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton, EmptyState } from '@/components/ui/Skeletons'
@@ -26,19 +26,32 @@ export function AttendancePage() {
     selectedDate,
     page,
     statusFilter,
+    classFilter,
     pendingChanges,
     setDate,
     setPage,
     setStatusFilter,
+    setClassFilter,
     setPending,
     clearPending,
   } = useAttendanceStore()
 
   useAttendanceRealtime(selectedDate)
 
+  const { data: classesData } = useQuery({
+    queryKey: ['classes', { page: 1, search: '', status: 'active' }],
+    queryFn: () => classesApi.getAll({ limit: 50, status: 'active' }),
+    staleTime: 60_000,
+  })
+  const classes = classesData?.data ?? []
+  const selectedClassName = classFilter
+    ? (classes.find((c) => c.id === classFilter)?.name ?? '')
+    : ''
+
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
-    queryKey: ['students', { page, limit: LIMIT }],
-    queryFn: () => studentsApi.getAll({ page, limit: LIMIT }),
+    queryKey: ['students', { page, limit: LIMIT, status: 'active', class_id: classFilter }],
+    queryFn: () =>
+      studentsApi.getAll({ page, limit: LIMIT, status: 'active', class_id: classFilter }),
     placeholderData: (prev) => prev,
     staleTime: 60_000,
   })
@@ -50,8 +63,8 @@ export function AttendancePage() {
   })
 
   const { data: allStudentsData } = useQuery({
-    queryKey: ['students-print'],
-    queryFn: () => studentsApi.getAll({ limit: 100 }),
+    queryKey: ['students-print', { status: 'active', class_id: classFilter }],
+    queryFn: () => studentsApi.getAll({ limit: 100, status: 'active', class_id: classFilter }),
     enabled: printOpen,
     staleTime: 60_000,
   })
@@ -145,6 +158,18 @@ export function AttendancePage() {
             onChange={(e) => setDate(e.target.value)}
             className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 bg-white dark:bg-gray-800 dark:text-gray-200"
           />
+          <select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
+          >
+            <option value="">{t('allClasses')}</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.name}
+              </option>
+            ))}
+          </select>
           <button
             onClick={handleExportCsv}
             className="flex items-center justify-center gap-2 flex-1 md:flex-none border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
@@ -264,7 +289,7 @@ export function AttendancePage() {
           students={allStudentsData?.data ?? []}
           records={records}
           selectedDate={selectedDate}
-          classFilter=""
+          classFilter={selectedClassName}
           onClose={() => setPrintOpen(false)}
         />
       )}

@@ -16,6 +16,7 @@ interface ClassModalProps {
 
 const empty = {
   name: '',
+  academic_year: String(new Date().getFullYear()),
   teacher_name: '',
   capacity: '25',
 }
@@ -32,6 +33,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
     if (classroom) {
       setForm({
         name: classroom.name,
+        academic_year: classroom.academic_year ?? String(new Date().getFullYear()),
         teacher_name: classroom.teacher_name,
         capacity: String(classroom.capacity),
       })
@@ -43,8 +45,12 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
   }, [classroom, open])
 
   const mutation = useMutation({
-    mutationFn: (data: { name: string; teacher_name: string; capacity: number }) =>
-      classroom ? classesApi.update(classroom.id, data) : classesApi.create(data),
+    mutationFn: (data: {
+      name: string
+      academic_year: string
+      teacher_name: string
+      capacity: number
+    }) => (classroom ? classesApi.update(classroom.id, data) : classesApi.create(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes'] })
       toast.success(classroom ? 'Class updated' : 'Class created')
@@ -63,6 +69,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
   const validate = () => {
     const e: Partial<typeof empty> = {}
     if (!form.name.trim()) e.name = t('required')
+    if (!form.academic_year || !/^\d{4}$/.test(form.academic_year)) e.academic_year = t('required')
     if (!form.teacher_name.trim()) e.teacher_name = t('required')
     const cap = parseInt(form.capacity)
     if (!form.capacity || isNaN(cap) || cap < 1) e.capacity = t('required')
@@ -75,6 +82,7 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
     if (!validate()) return
     mutation.mutate({
       name: form.name.trim(),
+      academic_year: form.academic_year,
       teacher_name: form.teacher_name.trim(),
       capacity: parseInt(form.capacity),
     })
@@ -129,6 +137,24 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
               placeholder="Sunflower"
             />
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+          </div>
+
+          {/* Academic Year */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+              {t('academicYear')} *
+            </label>
+            <input
+              type="text"
+              maxLength={4}
+              value={form.academic_year}
+              onChange={(e) => set('academic_year', e.target.value.replace(/\D/g, ''))}
+              className={inputCls('academic_year')}
+              placeholder="2026"
+            />
+            {errors.academic_year && (
+              <p className="text-xs text-red-500 mt-1">{errors.academic_year}</p>
+            )}
           </div>
 
           {/* Teacher Name */}

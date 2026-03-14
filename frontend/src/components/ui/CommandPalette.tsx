@@ -13,6 +13,9 @@ import {
   Wallet,
   Inbox,
   Settings,
+  Palette,
+  ClipboardList,
+  UserCheck,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { studentsApi, classesApi } from '@/lib/api'
@@ -63,6 +66,13 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         section: 'pages' as const,
       },
       {
+        id: 'p-daily-reports',
+        label: t('dailyReports'),
+        icon: ClipboardList,
+        to: '/admin/daily-reports',
+        section: 'pages' as const,
+      },
+      {
         id: 'p-classes',
         label: t('classes'),
         icon: School,
@@ -70,10 +80,24 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         section: 'pages' as const,
       },
       {
+        id: 'p-parents',
+        label: t('parents'),
+        icon: UserCheck,
+        to: '/admin/parents',
+        section: 'pages' as const,
+      },
+      {
         id: 'p-gallery',
         label: t('gallery'),
         icon: Images,
         to: '/admin/gallery',
+        section: 'pages' as const,
+      },
+      {
+        id: 'p-art-wall',
+        label: t('artWall'),
+        icon: Palette,
+        to: '/admin/art-wall',
         section: 'pages' as const,
       },
       {
@@ -125,8 +149,9 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
   // Search classes
   const { data: classesData } = useQuery({
-    queryKey: ['command-palette-classes', debouncedQuery],
-    queryFn: () => classesApi.getAll({ search: debouncedQuery, page: 1, limit: 5 }),
+    queryKey: ['command-palette-classes', debouncedQuery, { status: 'active' }],
+    queryFn: () =>
+      classesApi.getAll({ search: debouncedQuery, page: 1, limit: 5, status: 'active' }),
     enabled: open && debouncedQuery.length >= 2,
     staleTime: 30_000,
   })

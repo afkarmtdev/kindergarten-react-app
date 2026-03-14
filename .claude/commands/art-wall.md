@@ -19,7 +19,7 @@ A cork board-style page where teachers pin photos of student artwork. Each photo
 
 ## Database
 
-Table: `art_wall` — see `supabase-schema.sql`
+Table: `art_wall` — see `supabase/migrations/001_initial_schema.sql`
 
 | Column          | Type               | Notes                                                             |
 | --------------- | ------------------ | ----------------------------------------------------------------- |

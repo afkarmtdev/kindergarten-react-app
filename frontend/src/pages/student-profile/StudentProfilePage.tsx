@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, BookOpen, Plus, FileText } from 'lucide-react'
+import { ArrowLeft, Pencil, BookOpen, Plus, FileText, Clock } from 'lucide-react'
 import { studentsApi, attendanceApi, portfolioEntriesApi, parentsApi } from '@/lib/api'
 import { StudentModal } from '@/components/admin/StudentModal'
 import { GeneratePortalAccessModal } from '@/components/admin/GeneratePortalAccessModal'
@@ -14,6 +14,7 @@ import { AttendanceHeatmap } from './components/AttendanceHeatmap'
 import { StudentArtwork } from './components/StudentArtwork'
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
 import { PortalAccessCard } from './components/PortalAccessCard'
+import { StudentTimeline } from './components/StudentTimeline'
 import type { Student, AttendanceRecord, PortfolioEntry, Parent } from '@/types'
 
 const LIMIT = 15
@@ -246,6 +247,17 @@ export function StudentProfilePage() {
 
           {/* Portal Access card */}
           <PortalAccessCard linkedParent={linkedParent} onManage={() => setPortalModalOpen(true)} />
+
+          {/* Timeline */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mt-6">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center shrink-0">
+                <Clock size={16} className="text-white" />
+              </div>
+              <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('timeline')}</h2>
+            </div>
+            <StudentTimeline studentId={id!} />
+          </div>
 
           <div className="mt-6">
             <AttendanceHistoryTable

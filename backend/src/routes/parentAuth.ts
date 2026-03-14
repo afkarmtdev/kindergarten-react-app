@@ -27,6 +27,28 @@ function parseDeviceLabel(ua: string): string {
   return `${browser} on ${os}`
 }
 
+// ── Rate limiter: 10 attempts per IP per minute ─────────────────────────────
+const portalLoginAttempts = new Map<string, { count: number; resetAt: number }>()
+
+function checkPortalRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const record = portalLoginAttempts.get(ip)
+  if (!record || now > record.resetAt) {
+    portalLoginAttempts.set(ip, { count: 1, resetAt: now + 60_000 })
+    return true
+  }
+  if (record.count >= 10) return false
+  record.count++
+  return true
+}
+
+setInterval(() => {
+  const now = Date.now()
+  for (const [ip, record] of portalLoginAttempts) {
+    if (now > record.resetAt) portalLoginAttempts.delete(ip)
+  }
+}, 5 * 60_000).unref()
+
 const loginSchema = z.object({
   access_code: z.string().min(1),
   pin: z
@@ -37,6 +59,14 @@ const loginSchema = z.object({
 
 // POST /api/portal/login — public, no auth required
 app.post('/login', zValidator('json', loginSchema), async (c) => {
+  const ip =
+    (c.req.header('x-forwarded-for') ?? '').split(',')[0].trim() ||
+    c.req.header('x-real-ip') ||
+    'unknown'
+  if (!checkPortalRateLimit(ip)) {
+    return c.json({ error: 'Too many login attempts. Please wait a minute and try again.' }, 429)
+  }
+
   const deviceId = c.req.header('X-Device-Id')
   if (!deviceId) {
     return c.json({ error: 'Device ID required' }, 400)

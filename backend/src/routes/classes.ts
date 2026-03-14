@@ -9,6 +9,10 @@ const classes = new Hono()
 
 const classSchema = z.object({
   name: z.string().min(1),
+  academic_year: z
+    .string()
+    .length(4)
+    .regex(/^\d{4}$/),
   teacher_name: z.string().min(1),
   capacity: z.number().int().positive(),
 })
@@ -17,11 +21,12 @@ const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(9),
   search: z.string().optional(),
+  status: z.enum(['active', 'graduated', '']).optional(),
 })
 
 // GET all classes (paginated) with student count
 classes.get('/', zValidator('query', paginationSchema), async (c) => {
-  const { page, limit, search } = c.req.valid('query')
+  const { page, limit, search, status } = c.req.valid('query')
   const from = (page - 1) * limit
   const to = from + limit - 1
 
@@ -35,6 +40,7 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
   if (search) {
     query = query.or(`name.ilike.%${search}%,teacher_name.ilike.%${search}%`)
   }
+  if (status) query = query.eq('status', status)
 
   const { data: classData, error, count } = await query
 
@@ -50,6 +56,7 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
       .select('class_id')
       .in('class_id', classIds)
       .is('deleted_at', null)
+      .eq('status', 'active')
 
     for (const s of studentData ?? []) {
       if (s.class_id) studentCounts[s.class_id] = (studentCounts[s.class_id] ?? 0) + 1
@@ -89,6 +96,7 @@ classes.get('/:id', async (c) => {
     .select('*')
     .eq('class_id', id)
     .is('deleted_at', null)
+    .eq('status', 'active')
 
   return c.json({ ...cls, students: students ?? [] })
 })
@@ -133,6 +141,76 @@ classes.delete('/:id', async (c) => {
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Class deleted' })
+})
+
+// POST /:id/graduate — graduate a class and its students
+const graduateSchema = z.object({
+  student_ids: z.array(z.string().uuid()).min(1),
+  reassign_class_id: z.preprocess((v) => (!v ? undefined : v), z.string().uuid().optional()),
+  reassign_student_ids: z.array(z.string().uuid()).optional(),
+})
+
+classes.post('/:id/graduate', zValidator('json', graduateSchema), async (c) => {
+  const { id } = c.req.param()
+  const { student_ids, reassign_class_id, reassign_student_ids } = c.req.valid('json')
+
+  // Verify class exists and is active
+  const { data: cls, error: clsError } = await supabase
+    .from('classrooms')
+    .select('id, status')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+
+  if (clsError || !cls) return c.json({ error: 'Class not found' }, 404)
+  if (cls.status === 'graduated') return c.json({ error: 'Class is already graduated' }, 400)
+
+  // Graduate selected students
+  const { error: gradError } = await supabase
+    .from('students')
+    .update({ status: 'graduated', ...auditUpdate(c) })
+    .in('id', student_ids)
+    .is('deleted_at', null)
+
+  if (gradError) return c.json({ error: gradError.message }, 500)
+
+  // Reassign remaining students if destination provided
+  let reassigned_count = 0
+  if (reassign_class_id && reassign_student_ids && reassign_student_ids.length > 0) {
+    // Verify destination class exists and is active
+    const { data: dest } = await supabase
+      .from('classrooms')
+      .select('id')
+      .eq('id', reassign_class_id)
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .single()
+
+    if (!dest) return c.json({ error: 'Destination class not found or not active' }, 400)
+
+    const { error: reassignError } = await supabase
+      .from('students')
+      .update({ class_id: reassign_class_id, ...auditUpdate(c) })
+      .in('id', reassign_student_ids)
+      .is('deleted_at', null)
+
+    if (reassignError) return c.json({ error: reassignError.message }, 500)
+    reassigned_count = reassign_student_ids.length
+  }
+
+  // Graduate the class itself
+  const { error: classGradError } = await supabase
+    .from('classrooms')
+    .update({ status: 'graduated', ...auditUpdate(c) })
+    .eq('id', id)
+
+  if (classGradError) return c.json({ error: classGradError.message }, 500)
+
+  return c.json({
+    message: 'Class graduated',
+    graduated_count: student_ids.length,
+    reassigned_count,
+  })
 })
 
 export default classes

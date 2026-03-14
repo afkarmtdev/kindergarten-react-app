@@ -302,3 +302,60 @@ describe('GET /stats/summary — monthly summary', () => {
     expect(json).toEqual({})
   })
 })
+
+// ── POST /bulk — bulk attendance ────────────────────────────────────────────
+
+describe('POST /bulk — bulk attendance', () => {
+  test('upserts multiple records and returns data', async () => {
+    const records = [
+      { student_id: 's1', date: '2025-03-14', status: 'present' },
+      { student_id: 's2', date: '2025-03-14', status: 'absent' },
+    ]
+
+    setMockResponse('attendance', {
+      data: records.map((r, i) => ({ id: String(i + 1), ...r })),
+      error: null,
+    })
+
+    const res = await attendance.request('/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(records),
+    })
+
+    expect(res.status).toBe(201)
+    const json = await res.json()
+    expect(json).toHaveLength(2)
+  })
+
+  test('handles empty array', async () => {
+    setMockResponse('attendance', { data: [], error: null })
+
+    const res = await attendance.request('/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify([]),
+    })
+
+    expect(res.status).toBe(201)
+    const json = await res.json()
+    expect(json).toEqual([])
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('attendance', {
+      data: null,
+      error: { message: 'bulk upsert failed' },
+    })
+
+    const res = await attendance.request('/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify([{ student_id: 's1', date: '2025-03-14', status: 'present' }]),
+    })
+
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toBe('bulk upsert failed')
+  })
+})

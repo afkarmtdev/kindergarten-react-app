@@ -25,6 +25,7 @@ const empty = {
   parent_email: '',
   parent_phone: '',
   photo_url: '',
+  status: 'active' as 'active' | 'graduated' | 'inactive',
 }
 
 export function StudentModal({ open, onClose, student }: StudentModalProps) {
@@ -32,8 +33,8 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
   const queryClient = useQueryClient()
 
   const { data: classesData } = useQuery({
-    queryKey: ['classes', { page: 1, search: '' }],
-    queryFn: () => classesApi.getAll({ limit: 50 }),
+    queryKey: ['classes', { page: 1, search: '', status: 'active' }],
+    queryFn: () => classesApi.getAll({ limit: 50, status: 'active' }),
     staleTime: 60_000,
   })
   const classes = classesData?.data ?? []
@@ -57,6 +58,7 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
         parent_email: student.parent?.email ?? '',
         parent_phone: student.parent?.phone ?? '',
         photo_url: student.photo_url ?? '',
+        status: student.status ?? 'active',
       })
     } else {
       setForm({ ...empty })
@@ -245,6 +247,23 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
             </select>
             {errors.class_id && <p className="text-xs text-red-500 mt-1">{errors.class_id}</p>}
           </div>
+
+          {student && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
+                Status
+              </label>
+              <select
+                value={form.status}
+                onChange={(e) => set('status', e.target.value)}
+                className={inputCls('status' as keyof typeof empty)}
+              >
+                <option value="active">{t('statusActive')}</option>
+                <option value="graduated">{t('statusGraduated')}</option>
+                <option value="inactive">{t('statusInactive')}</option>
+              </select>
+            </div>
+          )}
 
           <hr className="border-gray-200 dark:border-gray-700" />
 

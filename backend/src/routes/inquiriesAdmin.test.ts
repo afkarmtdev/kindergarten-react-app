@@ -89,20 +89,14 @@ describe('GET / — pagination', () => {
     expect(json.meta.totalPages).toBe(2)
   })
 
-  test('limit is capped at 50', async () => {
-    setMockResponse('inquiries', { data: [], error: null, count: 0 })
-
+  test('rejects limit above 50', async () => {
     const res = await inquiriesAdmin.request('/?limit=100')
-    const json = await res.json()
-    expect(json.meta.limit).toBe(50)
+    expect(res.status).toBe(400)
   })
 
-  test('page cannot go below 1', async () => {
-    setMockResponse('inquiries', { data: [], error: null, count: 0 })
-
+  test('rejects page below 1', async () => {
     const res = await inquiriesAdmin.request('/?page=0')
-    const json = await res.json()
-    expect(json.meta.page).toBe(1)
+    expect(res.status).toBe(400)
   })
 })
 
@@ -131,5 +125,68 @@ describe('GET / — search', () => {
     const json = await res.json()
     expect(json.data).toEqual([])
     expect(json.meta.total).toBe(0)
+  })
+})
+
+// ── PUT /:id/status — update inquiry status ─────────────────────────────────
+
+describe('PUT /:id/status — update inquiry status', () => {
+  test('updates status and returns updated inquiry', async () => {
+    setMockResponse('inquiries', {
+      data: { ...SAMPLE_INQUIRIES[0], status: 'contacted' },
+      error: null,
+    })
+
+    const res = await inquiriesAdmin.request('/1/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'contacted' }),
+    })
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.status).toBe('contacted')
+  })
+
+  test('accepts all valid status values', async () => {
+    for (const status of ['new', 'contacted', 'enrolled', 'closed']) {
+      setMockResponse('inquiries', {
+        data: { ...SAMPLE_INQUIRIES[0], status },
+        error: null,
+      })
+
+      const res = await inquiriesAdmin.request('/1/status', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      expect(res.status).toBe(200)
+    }
+  })
+
+  test('rejects invalid status value', async () => {
+    const res = await inquiriesAdmin.request('/1/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'invalid' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('inquiries', {
+      data: null,
+      error: { message: 'update failed' },
+    })
+
+    const res = await inquiriesAdmin.request('/1/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'contacted' }),
+    })
+
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toBe('update failed')
   })
 })
