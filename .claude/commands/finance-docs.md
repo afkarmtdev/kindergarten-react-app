@@ -339,7 +339,7 @@ fees.get(
 
 ## Adding a New Finance Document — Checklist
 
-1. **DB** (if needed): add columns/table to `supabase-schema.sql`, run in Supabase SQL editor
+1. **DB** (if needed): add a new migration in `supabase/migrations/`, run in Supabase SQL editor
 2. **Types:** add response interface to `packages/types/index.ts`
 3. **Backend:** add `GET /api/fees/<route>` in `fees.ts` BEFORE `/:id` wildcard
 4. **API method:** add `feesApi.<method>()` to `frontend/src/lib/api.ts`

@@ -78,7 +78,7 @@ kindergarten-app/
 │       │   ├── artWall.ts           # CRUD + /by-student/:studentId; public endpoint in index.ts
 │       │   ├── parents.ts           # CRUD + link/unlink students, access code, PIN, portal access management
 │       │   ├── inquiries.ts         # Public POST (rate-limited 5/IP/10min) — enrollment enquiries
-│       │   ├── inquiriesAdmin.ts    # Authenticated GET (paginated list for admin review)
+│       │   ├── inquiriesAdmin.ts    # Authenticated GET (paginated list) + PUT /:id/status for admin review
 │       │   ├── parentAuth.ts        # POST /api/portal/login (public), /logout — access code + PIN auth, issues JWT
 │       │   ├── portal.ts            # GET /api/portal/me|attendance|fees|announcements|daily-reports|portfolio — parent-auth protected
 │       │   ├── dailyReports.ts      # GET/?date&class_id, PUT/:studentId/:date (upsert), DELETE/:id
@@ -249,8 +249,18 @@ kindergarten-app/
 │   └── types/
 │       └── index.ts           # Shared types used by both backend and frontend; all resource types extend AuditFields
 │
-├── supabase-schema.sql             # Base schema: tables, RLS policies
-└── supabase-migration-audit-trail.sql  # Audit trail migration: adds created_by, modified_by, deleted_at etc. to all tables
+├── supabase/
+│   ├── migrations/
+│   │   ├── 001_initial_schema.sql        # Base schema: tables, RLS policies
+│   │   ├── 002_parents.sql               # Parent-level accounts migration
+│   │   ├── 003_audit_trail.sql           # Audit trail: created_by, modified_by, deleted_at etc.
+│   │   ├── 004_student_status.sql        # Student status field
+│   │   ├── 005_classroom_status.sql      # Classroom status field
+│   │   └── 006_inquiry_status.sql        # Inquiry status field
+│   └── seeds/
+│       ├── students.sql                  # Sample student data
+│       ├── art_wall.sql                  # Sample art wall data
+│       └── art_wall_2.sql               # Additional art wall data
 ```
 
 ## Database Schema
@@ -286,8 +296,8 @@ parent_students    (id, parent_id→parents, student_id→students, relationship
                    Junction table; soft-delete for unlinking audit
 parent_sessions    (id, parent_id→parents, token_hash UNIQUE, device_id, device_label, expires_at, created_at)
                    RLS: authenticated only; NO soft-delete (sessions are ephemeral, hard delete on logout/revoke)
-inquiries          (id, parent_name, child_name, child_age, phone, message, created_at, deleted_at, deleted_by)
-                   Public INSERT (rate-limited); authenticated SELECT
+inquiries          (id, parent_name, child_name, child_age, phone, message, status[new|contacted|enrolled|closed], created_at, modified_at, modified_by, deleted_at, deleted_by)
+                   Public INSERT (rate-limited); authenticated SELECT + PUT status
 school_info        (id, school_name, address, phone, email, logo_url, principal_name, registration_number, whatsapp_number, operating_hours jsonb, google_maps_embed_url, facebook_url, instagram_url, updated_at, created_by, modified_by)
                    Single-row config; no soft-delete
 daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at, +audit)
@@ -394,7 +404,7 @@ All list endpoints return paginated responses:
 
 ## Audit Trail & Soft Delete
 
-All business data tables have audit columns. Migration: `supabase-migration-audit-trail.sql`.
+All business data tables have audit columns. Migration: `supabase/migrations/003_audit_trail.sql`.
 
 ### Audit helper (`backend/src/lib/audit.ts`)
 
