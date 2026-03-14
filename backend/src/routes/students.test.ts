@@ -598,3 +598,256 @@ describe('DELETE /:id/portal-access — revoke portal access', () => {
     expect(json.error).toBe('session delete failed')
   })
 })
+
+// ── GET /:id/timeline — Student timeline ─────────────────────────────────────
+
+describe('GET /:id/timeline — student timeline', () => {
+  function setTimelineMocks(
+    overrides: Partial<Record<string, { data: unknown[]; error: null }>> = {}
+  ) {
+    setMockResponse('attendance', overrides.attendance ?? { data: [], error: null })
+    setMockResponse('portfolio_entries', overrides.portfolio_entries ?? { data: [], error: null })
+    setMockResponse('art_wall', overrides.art_wall ?? { data: [], error: null })
+    setMockResponse('fee_records', overrides.fee_records ?? { data: [], error: null })
+    setMockResponse('portfolio_reports', overrides.portfolio_reports ?? { data: [], error: null })
+    setMockResponse('daily_reports', overrides.daily_reports ?? { data: [], error: null })
+  }
+
+  test('returns empty events when student has no activity', async () => {
+    setTimelineMocks()
+
+    const res = await students.request('/abc-123/timeline')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.events).toEqual([])
+    expect(json.has_more).toBe(false)
+  })
+
+  test('returns attendance events with capitalized status', async () => {
+    setTimelineMocks({
+      attendance: {
+        data: [
+          { date: '2026-03-10', status: 'present' },
+          { date: '2026-03-09', status: 'absent' },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline?limit=20')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.events.length).toBe(2)
+    expect(json.events[0].type).toBe('attendance')
+    expect(json.events[0].title).toBe('Present')
+    expect(json.events[0].date).toBe('2026-03-10')
+    expect(json.events[1].title).toBe('Absent')
+  })
+
+  test('returns portfolio events with domain as title', async () => {
+    setTimelineMocks({
+      portfolio_entries: {
+        data: [
+          {
+            id: 'p1',
+            domain: 'social_emotional',
+            observation: 'Plays well with others',
+            entry_date: '2026-03-08',
+          },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(1)
+    expect(json.events[0].type).toBe('portfolio')
+    expect(json.events[0].title).toBe('Social emotional')
+    expect(json.events[0].subtitle).toBe('Plays well with others')
+  })
+
+  test('returns artwork events', async () => {
+    setTimelineMocks({
+      art_wall: {
+        data: [
+          { id: 'a1', caption: 'My Family', artwork_date: '2026-03-07' },
+          { id: 'a2', caption: '', artwork_date: '2026-03-06' },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(2)
+    expect(json.events[0].type).toBe('artwork')
+    expect(json.events[0].title).toBe('My Family')
+    expect(json.events[1].title).toBe('Artwork')
+  })
+
+  test('returns fee payment events with formatted amount', async () => {
+    setTimelineMocks({
+      fee_records: {
+        data: [
+          {
+            id: 'f1',
+            description: 'Tuition Feb',
+            amount_paid: 150,
+            paid_at: '2026-02-15T10:00:00Z',
+          },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(1)
+    expect(json.events[0].type).toBe('fee_payment')
+    expect(json.events[0].title).toBe('RM 150.00')
+    expect(json.events[0].subtitle).toBe('Tuition Feb')
+    expect(json.events[0].date).toBe('2026-02-15')
+  })
+
+  test('returns report card events', async () => {
+    setTimelineMocks({
+      portfolio_reports: {
+        data: [{ term: 'Term 1 2026', generated_at: '2026-06-01T00:00:00Z' }],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(1)
+    expect(json.events[0].type).toBe('report_card')
+    expect(json.events[0].title).toBe('Report Card: Term 1 2026')
+  })
+
+  test('returns daily report events with mood', async () => {
+    setTimelineMocks({
+      daily_reports: {
+        data: [
+          {
+            id: 'd1',
+            report_date: '2026-03-10',
+            mood: 'happy',
+            activity_note: 'Played with blocks',
+          },
+          { id: 'd2', report_date: '2026-03-09', mood: null, activity_note: null },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(2)
+    expect(json.events[0].type).toBe('daily_report')
+    expect(json.events[0].title).toBe('Daily Report - happy')
+    expect(json.events[0].subtitle).toBe('Played with blocks')
+    expect(json.events[1].title).toBe('Daily Report')
+    expect(json.events[1].subtitle).toBeUndefined()
+  })
+
+  test('merges and sorts events from multiple sources by date descending', async () => {
+    setTimelineMocks({
+      attendance: {
+        data: [{ date: '2026-03-10', status: 'present' }],
+        error: null,
+      },
+      portfolio_entries: {
+        data: [
+          { id: 'p1', domain: 'creative', observation: 'Drew a cat', entry_date: '2026-03-12' },
+        ],
+        error: null,
+      },
+      fee_records: {
+        data: [
+          { id: 'f1', description: 'Tuition', amount_paid: 100, paid_at: '2026-03-08T00:00:00Z' },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(3)
+    expect(json.events[0].date).toBe('2026-03-12')
+    expect(json.events[0].type).toBe('portfolio')
+    expect(json.events[1].date).toBe('2026-03-10')
+    expect(json.events[1].type).toBe('attendance')
+    expect(json.events[2].date).toBe('2026-03-08')
+    expect(json.events[2].type).toBe('fee_payment')
+  })
+
+  test('respects limit parameter', async () => {
+    setTimelineMocks({
+      attendance: {
+        data: [
+          { date: '2026-03-10', status: 'present' },
+          { date: '2026-03-09', status: 'absent' },
+          { date: '2026-03-08', status: 'late' },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline?limit=2')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(2)
+    expect(json.has_more).toBe(true)
+    expect(json.next_cursor).toBe('2026-03-09')
+  })
+
+  test('has_more is false when all events fit in one page', async () => {
+    setTimelineMocks({
+      attendance: {
+        data: [{ date: '2026-03-10', status: 'present' }],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline?limit=20')
+    const json = await res.json()
+
+    expect(json.events.length).toBe(1)
+    expect(json.has_more).toBe(false)
+  })
+
+  test('rejects limit above 50', async () => {
+    const res = await students.request('/abc-123/timeline?limit=51')
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects limit below 1', async () => {
+    const res = await students.request('/abc-123/timeline?limit=0')
+    expect(res.status).toBe(400)
+  })
+
+  test('accepts before cursor parameter', async () => {
+    setTimelineMocks({
+      attendance: {
+        data: [{ date: '2026-02-28', status: 'present' }],
+        error: null,
+      },
+    })
+
+    const res = await students.request('/abc-123/timeline?before=2026-03-01')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.events.length).toBe(1)
+    expect(json.events[0].date).toBe('2026-02-28')
+  })
+})

@@ -84,6 +84,17 @@ export const studentsApi = {
     api.put(`/students/${id}/portal-pin`, { pin }).then((r) => r.data),
   revokePortalAccess: (id: string) =>
     api.delete(`/students/${id}/portal-access`).then((r) => r.data),
+  getTimeline: (id: string, params?: { limit?: number; before?: string }) =>
+    api
+      .get(`/students/${id}/timeline`, { params })
+      .then(
+        (r) =>
+          r.data as {
+            events: import('@/types').TimelineEvent[]
+            has_more: boolean
+            next_cursor?: string
+          }
+      ),
 }
 
 export const attendanceApi = {

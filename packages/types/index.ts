@@ -458,3 +458,19 @@ export interface Inquiry extends AuditFields {
   status: InquiryStatus
   created_at: string
 }
+
+// ─── Timeline ─────────────────────────────────────────────────────────────────
+export type TimelineEventType =
+  | 'attendance'
+  | 'portfolio'
+  | 'artwork'
+  | 'fee_payment'
+  | 'report_card'
+  | 'daily_report'
+
+export interface TimelineEvent {
+  type: TimelineEventType
+  date: string
+  title: string
+  subtitle?: string
+}

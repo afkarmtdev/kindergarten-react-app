@@ -218,6 +218,9 @@ export const translations = {
     noAttendanceRecords: 'No attendance records yet',
     totalRecorded: 'Total Recorded',
     presentRate: 'Present Rate',
+    timeline: 'Timeline',
+    loadMore: 'Load more',
+    timelineEmpty: 'No activity recorded yet',
 
     // Bulk import CSV
     importCsv: 'Import CSV',
@@ -995,6 +998,9 @@ export const translations = {
     noAttendanceRecords: 'Tiada rekod kehadiran lagi',
     totalRecorded: 'Jumlah Direkod',
     presentRate: 'Kadar Hadir',
+    timeline: 'Garis Masa',
+    loadMore: 'Muat lagi',
+    timelineEmpty: 'Belum ada aktiviti direkodkan',
 
     // Bulk import CSV
     importCsv: 'Import CSV',

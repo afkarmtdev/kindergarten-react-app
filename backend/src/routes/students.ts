@@ -179,6 +179,159 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   })
 })
 
+// GET /:id/timeline — paginated student activity timeline
+const timelineSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  before: z.string().optional(),
+})
+
+students.get('/:id/timeline', zValidator('query', timelineSchema), async (c) => {
+  const { id } = c.req.param()
+  const { limit, before } = c.req.valid('query')
+  const perSource = limit + 1
+
+  // Build queries — each hits an index, returns ≤ perSource rows
+  let attendanceQ = supabase
+    .from('attendance')
+    .select('date, status')
+    .eq('student_id', id)
+    .order('date', { ascending: false })
+    .limit(perSource)
+
+  let portfolioQ = supabase
+    .from('portfolio_entries')
+    .select('id, domain, observation, entry_date')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('entry_date', { ascending: false })
+    .limit(perSource)
+
+  let artWallQ = supabase
+    .from('art_wall')
+    .select('id, caption, artwork_date')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('artwork_date', { ascending: false })
+    .limit(perSource)
+
+  let feesQ = supabase
+    .from('fee_records')
+    .select('id, description, amount_paid, paid_at')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .not('paid_at', 'is', null)
+    .order('paid_at', { ascending: false })
+    .limit(perSource)
+
+  let reportsQ = supabase
+    .from('portfolio_reports')
+    .select('term, generated_at')
+    .eq('student_id', id)
+    .order('generated_at', { ascending: false })
+    .limit(perSource)
+
+  let dailyQ = supabase
+    .from('daily_reports')
+    .select('id, report_date, mood, activity_note')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('report_date', { ascending: false })
+    .limit(perSource)
+
+  // Apply cursor filter if paginating
+  if (before) {
+    attendanceQ = attendanceQ.lt('date', before)
+    portfolioQ = portfolioQ.lt('entry_date', before)
+    artWallQ = artWallQ.lt('artwork_date', before)
+    feesQ = feesQ.lt('paid_at', before)
+    reportsQ = reportsQ.lt('generated_at', before)
+    dailyQ = dailyQ.lt('report_date', before)
+  }
+
+  const [attendance, portfolio, artWall, fees, reports, daily] = await Promise.all([
+    attendanceQ,
+    portfolioQ,
+    artWallQ,
+    feesQ,
+    reportsQ,
+    dailyQ,
+  ])
+
+  // Normalize into unified events
+  type Event = { type: string; date: string; title: string; subtitle?: string }
+  const events: Event[] = []
+
+  for (const r of attendance.data ?? []) {
+    events.push({
+      type: 'attendance',
+      date: r.date,
+      title: r.status.charAt(0).toUpperCase() + r.status.slice(1),
+      subtitle: undefined,
+    })
+  }
+
+  for (const r of portfolio.data ?? []) {
+    const domain = (r.domain as string).replace(/_/g, ' ')
+    events.push({
+      type: 'portfolio',
+      date: r.entry_date,
+      title: domain.charAt(0).toUpperCase() + domain.slice(1),
+      subtitle: r.observation ? (r.observation as string).slice(0, 80) : undefined,
+    })
+  }
+
+  for (const r of artWall.data ?? []) {
+    events.push({
+      type: 'artwork',
+      date: r.artwork_date ?? r.created_at?.slice(0, 10) ?? '',
+      title: (r.caption as string) || 'Artwork',
+      subtitle: undefined,
+    })
+  }
+
+  for (const r of fees.data ?? []) {
+    events.push({
+      type: 'fee_payment',
+      date: (r.paid_at as string).slice(0, 10),
+      title: `RM ${Number(r.amount_paid).toFixed(2)}`,
+      subtitle: r.description as string,
+    })
+  }
+
+  for (const r of reports.data ?? []) {
+    events.push({
+      type: 'report_card',
+      date: (r.generated_at as string).slice(0, 10),
+      title: `Report Card: ${r.term}`,
+      subtitle: undefined,
+    })
+  }
+
+  for (const r of daily.data ?? []) {
+    const mood = r.mood ? ` - ${r.mood}` : ''
+    events.push({
+      type: 'daily_report',
+      date: r.report_date,
+      title: `Daily Report${mood}`,
+      subtitle: r.activity_note ? (r.activity_note as string).slice(0, 80) : undefined,
+    })
+  }
+
+  // Sort by date descending
+  events.sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0))
+
+  // Paginate
+  const page = events.slice(0, limit)
+  const has_more = events.length > limit
+  const next_cursor = page.length > 0 ? page[page.length - 1].date : undefined
+
+  return c.json({
+    events: page,
+    has_more,
+    next_cursor,
+  })
+})
+
 // GET single student
 students.get('/:id', async (c) => {
   const { id } = c.req.param()

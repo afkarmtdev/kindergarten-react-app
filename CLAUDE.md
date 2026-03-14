@@ -67,7 +67,7 @@ kindergarten-app/
 │       ├── index.ts           # Hono app entry, CORS, middleware registration, public endpoints
 │       ├── routes/
 │       │   ├── auth.ts        # POST /api/auth/login (rate-limited), /logout, GET /me
-│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender); POST /bulk; portal access management
+│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender, status); POST /bulk; GET /:id/timeline (cursor-paginated); portal access management
 │       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary, trend
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
 │       │   ├── gallery.ts           # CRUD + paginated GET (?page, limit, search)
@@ -142,7 +142,8 @@ kindergarten-app/
 │       │   │       ├── AttendanceHistoryTable.tsx # Paginated history with status badges
 │       │   │       ├── AttendanceHeatmap.tsx      # Calendar heatmap visualization
 │       │   │       ├── StudentArtwork.tsx         # Mini art gallery on student profile
-│       │   │       └── PortalAccessCard.tsx       # Parent access code/PIN management
+│       │   │       ├── PortalAccessCard.tsx       # Parent access code/PIN management
+│       │   │       └── StudentTimeline.tsx        # Paginated activity timeline (cursor-based, 6 data sources)
 │       │   ├── art-wall/
 │       │   │   ├── ArtWallPage.tsx     # Cork board grid, search, pagination
 │       │   │   ├── constants.ts        # getRotation(), getPushpinColor(), PUSHPIN_COLORS
@@ -269,9 +270,9 @@ All tables with business data include **audit columns** (see Audit Trail section
 `created_by`, `modified_at`, `modified_by`, `deleted_at`, `deleted_by`
 
 ```sql
-students       (id, full_name, date_of_birth, gender, class_id→classrooms, parent_name, parent_email, parent_phone, photo_url, access_code UNIQUE, portal_pin_hash, created_at, +audit)
+students       (id, full_name, date_of_birth, gender, class_id→classrooms, status[active|graduated|inactive], parent_name, parent_email, parent_phone, photo_url, access_code UNIQUE, portal_pin_hash, created_at, +audit)
                NOTE: class_name is NOT stored — derive via .select('*, classrooms(name)') join, then flattenClassroom() in backend
-classrooms     (id, name, teacher_name, capacity, created_at, +audit)
+classrooms     (id, name, academic_year, status[active|graduated], teacher_name, capacity, created_at, +audit)
 attendance     (id, student_id→students, date, status[present|absent|late|excused], notes, recorded_by, created_at, +audit)
                UNIQUE(student_id, date); has audit columns but NO soft-delete (daily records are overwritten, not deleted)
 gallery_items  (id, photo_url, caption, display_order, is_visible, created_at, +audit)
@@ -569,10 +570,13 @@ Parent-facing portal with separate auth. Parents log in with Access Code + 6-dig
 
 ### Inquiries
 
-Public enrollment enquiry form on the landing page.
+Public enrollment enquiry form on the landing page + admin ticket system.
 
-- Backend: `inquiries.ts` (public POST, rate-limited 5/IP/10min) + `inquiriesAdmin.ts` (authenticated GET)
-- Frontend: `InquiryForm.tsx` (landing page) + `InquiriesPage.tsx` (admin table, 20/page)
+- Backend: `inquiries.ts` (public POST, rate-limited 5/IP/10min) + `inquiriesAdmin.ts` (authenticated GET with status/date filters, PUT /:id/status)
+- Frontend: `InquiryForm.tsx` (landing page) + `InquiriesPage.tsx` (admin table, 20/page, status tabs, date range filters, inline status dropdown)
+- Status flow: `new` → `contacted` → `enrolled` / `closed`
+- WhatsApp deep link on each row for quick parent follow-up
+- DB: `inquiries` table has `status TEXT DEFAULT 'new'` with CHECK constraint
 
 ### Daily Reports
 
@@ -588,6 +592,15 @@ Student learning portfolio with KSPK domain observations and termly report cards
 - Backend: `portfolioEntries.ts` (CRUD) + `portfolioReports.ts` (upsert comments)
 - Frontend: `PortfolioReportPage.tsx` (editable report card, auto-saves on blur) + `PortfolioReportPDF.tsx` (@react-pdf/renderer download)
 - Student profile: portfolio tab with domain-grouped entries + "View Report Card" button
+
+### Student Timeline
+
+Unified chronological activity feed on the student profile page. Aggregates events from 6 data sources into one paginated stream.
+
+- Backend: `GET /students/:id/timeline` — parallel `Promise.all` across attendance, portfolio entries, art wall, fee records, portfolio reports, daily reports. Cursor-based pagination (`before` param). Each query hits `student_id` index, returns max `limit+1` rows — scales to 100K+ records per table.
+- Frontend: `StudentTimeline.tsx` — `useInfiniteQuery` with "Load more" button. Events grouped by month, color-coded cards with left border per type. Attendance streaks collapsed ("Present for 5 days" instead of 5 separate entries). Icon tooltips translated via `useT()`.
+- Types: `TimelineEvent { type, date, title, subtitle? }` in `packages/types`
+- Event types: `attendance` (green), `portfolio` (purple), `artwork` (pink), `fee_payment` (orange), `report_card` (blue), `daily_report` (yellow)
 
 ### Finance Documents
 
@@ -606,6 +619,12 @@ Printable finance documents — invoices, overdue notices, enrollment letters, c
 - [x] Inquiries — public enrollment form + admin review page
 - [x] Audit trail + soft delete — all business tables have created_by/modified_by/deleted_at audit columns
 - [x] Finance documents — invoice, overdue notice, enrollment letter, collection sheet, monthly/annual reports, payment ledger
+- [x] Student status (active/graduated/inactive) — filters on Students page, dashboard/attendance scoped to active only
+- [x] Class academic year + graduation — `academic_year` field, Graduate Class modal (bulk graduate + reassign), class status filter
+- [x] Inquiry ticket system — status flow (new/contacted/enrolled/closed), date filters, WhatsApp deep links
+- [x] Student activity timeline — cursor-paginated feed from 6 data sources, attendance streak grouping
+- [x] Sidebar nav grouping — People/Daily/Finance/Content sections
+- [x] Attendance class filter — dropdown to filter by class
 - [ ] Admin Parents page — backend `/api/parents` CRUD exists, frontend page not yet built
 - [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
 
