@@ -32,8 +32,15 @@ export default function PortalLoginPage() {
     try {
       await login(accessCode.trim().toUpperCase(), pin)
       navigate('/portal', { replace: true })
-    } catch {
-      setError(t('portalInvalidCredentials'))
+    } catch (err: unknown) {
+      const axiosErr = err as {
+        response?: { status?: number; data?: { error?: string; message?: string } }
+      }
+      if (axiosErr.response?.status === 409) {
+        setError(axiosErr.response.data?.message ?? t('deviceLimitReached'))
+      } else {
+        setError(t('portalInvalidCredentials'))
+      }
     } finally {
       setLoading(false)
     }

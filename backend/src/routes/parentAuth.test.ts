@@ -199,6 +199,35 @@ describe('POST /api/portal/login — device binding', () => {
     const body = await res.json()
     expect(body.error).toBe('Device ID required')
   })
+
+  test('returns 409 when device limit is reached (3 active sessions)', async () => {
+    const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
+      error: null,
+    })
+    // Mock: 3 active sessions already exist — count check reads `count` field
+    setMockResponse('parent_sessions', { data: null, error: null, count: 3 })
+
+    const res = await post('/api/portal/login', { access_code: 'KC-2024-001', pin: '123456' })
+    expect(res.status).toBe(409)
+    const body = await res.json()
+    expect(body.error).toBe('Device limit reached')
+    expect(body.max_devices).toBe(3)
+  })
+
+  test('allows login when under device limit', async () => {
+    const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
+      error: null,
+    })
+    // count: 2 passes the limit check; error: null means insert succeeds
+    setMockResponse('parent_sessions', { data: null, error: null, count: 2 })
+
+    const res = await post('/api/portal/login', { access_code: 'KC-2024-001', pin: '123456' })
+    expect(res.status).toBe(200)
+  })
 })
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
