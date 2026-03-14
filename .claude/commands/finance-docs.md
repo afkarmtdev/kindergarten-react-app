@@ -324,6 +324,7 @@ fees.get(
     const { data, error } = await supabase
       .from('fee_records')
       .select('..., students(full_name, class_name, parent_name)')
+      .is('deleted_at', null) // always exclude soft-deleted records
     // filters...
     if (error) return c.json({ error: error.message }, 500)
     // aggregate in JS

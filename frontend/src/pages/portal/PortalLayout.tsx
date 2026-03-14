@@ -9,6 +9,7 @@ import {
   LogOut,
   Sun,
   Moon,
+  Smartphone,
 } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { useT } from '../../hooks/useT'
@@ -74,6 +75,13 @@ export default function PortalLayout() {
             <PortalBearCub size={16} />
             <span className="text-xs text-gray-400 dark:text-gray-500">{APP_NAME}</span>
           </div>
+          <button
+            onClick={() => navigate('/portal/devices')}
+            aria-label="My Devices"
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-kinder-orange dark:hover:text-kinder-orange hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <Smartphone className="w-4 h-4" />
+          </button>
           <button
             onClick={toggleDark}
             aria-label="Toggle dark mode"

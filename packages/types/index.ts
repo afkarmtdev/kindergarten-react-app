@@ -1,13 +1,25 @@
 // Shared types between frontend and backend.
 // Both packages import from '@kindergarten/types' — do not duplicate these elsewhere.
 
+// ─── Audit Trail ─────────────────────────────────────────────────────────────
+// Optional audit fields present on all resource types.
+// All fields are optional because they may not be present on older records
+// created before the audit migration.
+export interface AuditFields {
+  created_by?: string | null
+  modified_at?: string | null
+  modified_by?: string | null
+  deleted_at?: string | null
+  deleted_by?: string | null
+}
+
 export interface StudentParent {
   full_name: string
   email: string | null
   phone: string
 }
 
-export interface Student {
+export interface Student extends AuditFields {
   id: string
   full_name: string
   date_of_birth: string
@@ -19,7 +31,7 @@ export interface Student {
   created_at: string
 }
 
-export interface AttendanceRecord {
+export interface AttendanceRecord extends AuditFields {
   id: string
   student_id: string
   date: string
@@ -31,7 +43,7 @@ export interface AttendanceRecord {
   students?: Pick<Student, 'full_name' | 'photo_url'> & { class_name?: string | null }
 }
 
-export interface ClassRoom {
+export interface ClassRoom extends AuditFields {
   id: string
   name: string
   teacher_name: string
@@ -42,7 +54,7 @@ export interface ClassRoom {
   students?: Student[]
 }
 
-export interface GalleryItem {
+export interface GalleryItem extends AuditFields {
   id: string
   photo_url: string
   caption?: string
@@ -51,7 +63,7 @@ export interface GalleryItem {
   created_at: string
 }
 
-export interface Announcement {
+export interface Announcement extends AuditFields {
   id: string
   title: string
   body: string
@@ -103,7 +115,7 @@ export interface DocumentNumberingConfig {
 export type FeeType = 'tuition' | 'activity' | 'uniform' | 'registration' | 'other'
 export type FeeStatus = 'unpaid' | 'partial' | 'paid' | 'waived'
 
-export interface FeePlan {
+export interface FeePlan extends AuditFields {
   id: string
   name: string
   type: FeeType
@@ -112,7 +124,7 @@ export interface FeePlan {
   created_at: string
 }
 
-export interface FeeRecord {
+export interface FeeRecord extends AuditFields {
   id: string
   student_id: string
   type: FeeType
@@ -161,7 +173,7 @@ export interface FeeCollectionTrendPoint {
 }
 
 // ─── Testimonials ─────────────────────────────────────────────────────────────
-export interface Testimonial {
+export interface Testimonial extends AuditFields {
   id: string
   parent_name: string
   parent_role?: string
@@ -298,7 +310,7 @@ export interface AnnualReportResponse {
 }
 
 // ─── Art Wall ─────────────────────────────────────────────────────────────────
-export interface ArtWallItem {
+export interface ArtWallItem extends AuditFields {
   id: string
   photo_url: string
   caption?: string
@@ -315,7 +327,7 @@ export interface ArtWallItem {
 
 export type ParentRelationship = 'parent' | 'guardian' | 'step_parent' | 'other'
 
-export interface Parent {
+export interface Parent extends AuditFields {
   id: string
   full_name: string
   email: string | null
@@ -373,7 +385,7 @@ export interface PortalChild {
   relationship: ParentRelationship
 }
 
-export interface DailyReport {
+export interface DailyReport extends AuditFields {
   id: string
   student_id: string
   report_date: string
@@ -394,7 +406,7 @@ export type PortfolioDomain =
   | 'social_emotional'
   | 'creative'
 
-export interface PortfolioEntry {
+export interface PortfolioEntry extends AuditFields {
   id: string
   student_id: string
   domain: PortfolioDomain
@@ -406,7 +418,7 @@ export interface PortfolioEntry {
   created_at: string
 }
 
-export interface PortfolioReport {
+export interface PortfolioReport extends AuditFields {
   id?: string
   student_id: string
   term: string
@@ -416,7 +428,7 @@ export interface PortfolioReport {
 }
 
 // ─── Inquiries ─────────────────────────────────────────────────────────────────
-export interface Inquiry {
+export interface Inquiry extends AuditFields {
   id: string
   parent_name: string
   child_name: string

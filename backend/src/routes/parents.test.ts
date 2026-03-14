@@ -425,6 +425,91 @@ describe('POST /:id/link-student — link student', () => {
   })
 })
 
+// ─── GET /:id/sessions — List active portal sessions (admin) ────────────────
+
+describe('GET /:id/sessions — list active sessions', () => {
+  test('returns active sessions for a parent', async () => {
+    const sessions = [
+      {
+        id: 'sess-1',
+        device_label: 'Chrome on Windows',
+        created_at: '2026-03-01T00:00:00Z',
+        expires_at: '2026-04-01T00:00:00Z',
+      },
+      {
+        id: 'sess-2',
+        device_label: 'Safari on iOS',
+        created_at: '2026-03-02T00:00:00Z',
+        expires_at: '2026-04-02T00:00:00Z',
+      },
+    ]
+    setMockResponse('parent_sessions', { data: sessions, error: null })
+
+    const res = await parents.request(`/${PARENT_ID}/sessions`)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data).toBeArray()
+    expect(body.data.length).toBe(2)
+    expect(body.data[0].device_label).toBe('Chrome on Windows')
+    expect(body.data[1].device_label).toBe('Safari on iOS')
+  })
+
+  test('returns empty array when no active sessions', async () => {
+    setMockResponse('parent_sessions', { data: [], error: null })
+
+    const res = await parents.request(`/${PARENT_ID}/sessions`)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data).toEqual([])
+  })
+
+  test('returns 500 on DB error', async () => {
+    setMockResponse('parent_sessions', { data: null, error: { message: 'DB error' } })
+
+    const res = await parents.request(`/${PARENT_ID}/sessions`)
+    expect(res.status).toBe(500)
+  })
+})
+
+// ─── DELETE /:id/sessions/:sessionId — Revoke a specific session (admin) ────
+
+describe('DELETE /:id/sessions/:sessionId — revoke session', () => {
+  const SESSION_ID = '00000000-0000-0000-0000-000000000aaa'
+
+  test('revokes a session successfully', async () => {
+    setMockResponse('parent_sessions', { data: { id: SESSION_ID }, error: null })
+
+    const res = await del(`/${PARENT_ID}/sessions/${SESSION_ID}`)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.ok).toBe(true)
+  })
+
+  test('returns 404 when session not found', async () => {
+    setMockResponse('parent_sessions', { data: null, error: null })
+
+    const res = await del(`/${PARENT_ID}/sessions/nonexistent`)
+    expect(res.status).toBe(404)
+    const body = await res.json()
+    expect(body.error).toBe('Session not found')
+  })
+
+  test('returns 500 on DB error during delete', async () => {
+    // First call (select to verify) returns a session; second call (delete) returns error.
+    // Since mock is per-table and both queries hit parent_sessions, this tests that
+    // when data is found but delete fails, we get 500.
+    // Note: the mock returns the same response for both queries — we test the delete error path
+    // by setting a session with an error on the delete. The select uses .single() which reads data;
+    // the delete awaits the chain. We set error so the delete fails.
+    setMockResponse('parent_sessions', { data: { id: SESSION_ID }, error: { message: 'DB error' } })
+
+    const res = await del(`/${PARENT_ID}/sessions/${SESSION_ID}`)
+    // The select returns data (session found) but .single() ignores error when data is set.
+    // The delete then sees the error and returns 500.
+    expect(res.status).toBe(500)
+  })
+})
+
 // ─── DELETE /:parentId/unlink-student/:studentId — Unlink student ────────────
 
 describe('DELETE /:parentId/unlink-student/:studentId — unlink student', () => {

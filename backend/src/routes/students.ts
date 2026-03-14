@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const students = new Hono()
 
@@ -108,6 +109,7 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
     .select('*, classrooms(name), parent_students(parents(full_name, email, phone))', {
       count: 'exact',
     })
+    .is('deleted_at', null)
     .order('full_name')
     .range(from, to)
 
@@ -121,6 +123,7 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
     let bdayQuery = supabase
       .from('students')
       .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
+      .is('deleted_at', null)
       .order('full_name')
 
     if (search) {
@@ -171,6 +174,7 @@ students.get('/:id', async (c) => {
     .from('students')
     .select('*, attendance(*), classrooms(name), parent_students(parents(full_name, email, phone))')
     .eq('id', id)
+    .is('deleted_at', null)
     .single()
 
   if (error) return c.json({ error: error.message }, 404)
@@ -222,6 +226,7 @@ students.post('/bulk', async (c) => {
     .from('classrooms')
     .select('id, name')
     .in('name', uniqueClassNames)
+    .is('deleted_at', null)
 
   const classMap: Record<string, string> = {}
   for (const cls of classRows ?? []) classMap[cls.name] = cls.id
@@ -241,7 +246,7 @@ students.post('/bulk', async (c) => {
       continue
     }
     parentInfoMap[toInsert.length] = { parent_name, parent_email, parent_phone }
-    toInsert.push({ ...rest, class_id: classMap[_cn] })
+    toInsert.push({ ...rest, class_id: classMap[_cn], ...auditCreate(c) })
   }
 
   if (toInsert.length > 0) {
@@ -275,7 +280,7 @@ students.post('/', zValidator('json', studentSchema), async (c) => {
 
   const { data, error } = await supabase
     .from('students')
-    .insert(studentFields)
+    .insert({ ...studentFields, ...auditCreate(c) })
     .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
     .single()
 
@@ -302,7 +307,7 @@ students.put('/:id', zValidator('json', studentSchema.partial()), async (c) => {
 
   const { data, error } = await supabase
     .from('students')
-    .update(studentFields)
+    .update({ ...studentFields, ...auditUpdate(c) })
     .eq('id', id)
     .select('*, classrooms(name), parent_students(parents(full_name, email, phone))')
     .single()
@@ -317,10 +322,14 @@ students.put('/:id', zValidator('json', studentSchema.partial()), async (c) => {
   return c.json(flattenStudent(data as Record<string, unknown>))
 })
 
-// DELETE student
+// DELETE student (soft delete)
 students.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('students').delete().eq('id', id)
+  const { error } = await supabase
+    .from('students')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Student deleted' })

@@ -8,7 +8,7 @@ import dailyReports from './dailyReports'
 
 const app = new Hono()
 app.use('*', async (c, next) => {
-  c.set('user' as never, { email: 'test@example.com' })
+  c.set('user' as never, { id: 'user-1', email: 'test@example.com' })
   await next()
 })
 app.route('/api/daily-reports', dailyReports)

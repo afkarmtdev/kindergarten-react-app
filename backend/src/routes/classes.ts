@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const classes = new Hono()
 
@@ -27,6 +28,7 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
   let query = supabase
     .from('classrooms')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('name')
     .range(from, to)
 
@@ -47,6 +49,7 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
       .from('students')
       .select('class_id')
       .in('class_id', classIds)
+      .is('deleted_at', null)
 
     for (const s of studentData ?? []) {
       if (s.class_id) studentCounts[s.class_id] = (studentCounts[s.class_id] ?? 0) + 1
@@ -72,11 +75,20 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single class with students
 classes.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data: cls, error } = await supabase.from('classrooms').select('*').eq('id', id).single()
+  const { data: cls, error } = await supabase
+    .from('classrooms')
+    .select('*')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
 
   if (error) return c.json({ error: error.message }, 404)
 
-  const { data: students } = await supabase.from('students').select('*').eq('class_id', id)
+  const { data: students } = await supabase
+    .from('students')
+    .select('*')
+    .eq('class_id', id)
+    .is('deleted_at', null)
 
   return c.json({ ...cls, students: students ?? [] })
 })
@@ -84,7 +96,11 @@ classes.get('/:id', async (c) => {
 // POST create class
 classes.post('/', zValidator('json', classSchema), async (c) => {
   const body = sanitiseStrings(c.req.valid('json'))
-  const { data, error } = await supabase.from('classrooms').insert(body).select().single()
+  const { data, error } = await supabase
+    .from('classrooms')
+    .insert({ ...body, ...auditCreate(c) })
+    .select()
+    .single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -97,7 +113,7 @@ classes.put('/:id', zValidator('json', classSchema.partial()), async (c) => {
 
   const { data, error } = await supabase
     .from('classrooms')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -109,7 +125,11 @@ classes.put('/:id', zValidator('json', classSchema.partial()), async (c) => {
 // DELETE class
 classes.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('classrooms').delete().eq('id', id)
+  const { error } = await supabase
+    .from('classrooms')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Class deleted' })

@@ -316,6 +316,106 @@ describe('GET /daily-reports', () => {
   })
 })
 
+// ─── GET /devices — Active portal sessions ───────────────────────────────────
+
+describe('GET /devices', () => {
+  test('returns session list with max_devices', async () => {
+    setMockResponse('parent_sessions', {
+      data: [
+        {
+          id: 'sess-1',
+          token_hash: 'some-other-hash',
+          device_label: 'Chrome on Windows',
+          created_at: '2026-03-01T00:00:00Z',
+          expires_at: '2026-04-01T00:00:00Z',
+        },
+        {
+          id: 'sess-2',
+          token_hash: 'another-hash',
+          device_label: 'Safari on iOS',
+          created_at: '2026-03-02T00:00:00Z',
+          expires_at: '2026-04-02T00:00:00Z',
+        },
+      ],
+      error: null,
+    })
+
+    const res = await app.request('/devices')
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.data).toBeArray()
+    expect(json.data.length).toBe(2)
+    expect(json.max_devices).toBe(3)
+    expect(json.data[0].device_label).toBe('Chrome on Windows')
+    expect(json.data[0].id).toBe('sess-1')
+    expect(typeof json.data[0].is_current).toBe('boolean')
+  })
+
+  test('returns empty array when no active sessions', async () => {
+    setMockResponse('parent_sessions', { data: [], error: null })
+
+    const res = await app.request('/devices')
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.data).toEqual([])
+    expect(json.max_devices).toBe(3)
+  })
+
+  test('returns 500 on DB error', async () => {
+    setMockResponse('parent_sessions', { data: null, error: { message: 'DB error' } })
+
+    const res = await app.request('/devices')
+    expect(res.status).toBe(500)
+  })
+
+  test('uses "Unknown device" for sessions with null device_label', async () => {
+    setMockResponse('parent_sessions', {
+      data: [
+        {
+          id: 'sess-3',
+          token_hash: 'hash-abc',
+          device_label: null,
+          created_at: '2026-03-01T00:00:00Z',
+          expires_at: '2026-04-01T00:00:00Z',
+        },
+      ],
+      error: null,
+    })
+
+    const res = await app.request('/devices')
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.data[0].device_label).toBe('Unknown device')
+  })
+})
+
+// ─── DELETE /devices/:sessionId — Revoke a session ───────────────────────────
+
+describe('DELETE /devices/:sessionId', () => {
+  test('revokes session successfully', async () => {
+    const SESSION_ID = '00000000-0000-0000-0000-000000000aaa'
+    // First query: select to verify ownership; second: delete
+    setMockResponse('parent_sessions', {
+      data: { id: SESSION_ID, parent_id: PARENT_ID },
+      error: null,
+    })
+
+    const res = await app.request(`/devices/${SESSION_ID}`, { method: 'DELETE' })
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.ok).toBe(true)
+  })
+
+  test('returns 404 when session not found or belongs to different parent', async () => {
+    setMockResponse('parent_sessions', { data: null, error: null })
+
+    const res = await app.request('/devices/nonexistent-session', { method: 'DELETE' })
+    expect(res.status).toBe(404)
+    const json = await res.json()
+    expect(json.error).toBe('Session not found')
+  })
+})
+
 // ─── GET /portfolio — Portfolio entries + report ─────────────────────────────
 
 describe('GET /portfolio', () => {

@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const artWall = new Hono()
 
@@ -32,6 +33,7 @@ artWall.get('/', zValidator('query', paginationSchema), async (c) => {
   let query = supabase
     .from('art_wall')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -65,6 +67,7 @@ artWall.get('/by-student/:studentId', zValidator('query', paginationSchema), asy
   let query = supabase
     .from('art_wall')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .eq('student_id', studentId)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false })
@@ -92,7 +95,12 @@ artWall.get('/by-student/:studentId', zValidator('query', paginationSchema), asy
 // GET single art wall item
 artWall.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data, error } = await supabase.from('art_wall').select('*').eq('id', id).single()
+  const { data, error } = await supabase
+    .from('art_wall')
+    .select('*')
+    .is('deleted_at', null)
+    .eq('id', id)
+    .single()
 
   if (error) return c.json({ error: error.message }, 404)
   return c.json(data)
@@ -109,13 +117,18 @@ artWall.post('/', zValidator('json', artWallSchema), async (c) => {
       .from('students')
       .select('full_name')
       .eq('id', body.student_id)
+      .is('deleted_at', null)
       .single()
     if (student) {
       body.student_name = student.full_name
     }
   }
 
-  const { data, error } = await supabase.from('art_wall').insert(body).select().single()
+  const { data, error } = await supabase
+    .from('art_wall')
+    .insert({ ...body, ...auditCreate(c) })
+    .select()
+    .single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -133,6 +146,7 @@ artWall.put('/:id', zValidator('json', artWallSchema.partial()), async (c) => {
       .from('students')
       .select('full_name')
       .eq('id', body.student_id)
+      .is('deleted_at', null)
       .single()
     if (student) {
       body.student_name = student.full_name
@@ -141,7 +155,7 @@ artWall.put('/:id', zValidator('json', artWallSchema.partial()), async (c) => {
 
   const { data, error } = await supabase
     .from('art_wall')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -153,7 +167,11 @@ artWall.put('/:id', zValidator('json', artWallSchema.partial()), async (c) => {
 // DELETE art wall item
 artWall.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('art_wall').delete().eq('id', id)
+  const { error } = await supabase
+    .from('art_wall')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Art wall item deleted' })
