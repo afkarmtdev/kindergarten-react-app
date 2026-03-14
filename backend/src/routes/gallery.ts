@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { stripHtml } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const gallery = new Hono()
 
@@ -28,6 +29,7 @@ gallery.get('/', zValidator('query', paginationSchema), async (c) => {
   let query = supabase
     .from('gallery_items')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('display_order', { ascending: true })
     .range(from, to)
 
@@ -53,7 +55,12 @@ gallery.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single gallery item
 gallery.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data, error } = await supabase.from('gallery_items').select('*').eq('id', id).single()
+  const { data, error } = await supabase
+    .from('gallery_items')
+    .select('*')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
 
   if (error) return c.json({ error: error.message }, 404)
   return c.json(data)
@@ -63,7 +70,11 @@ gallery.get('/:id', async (c) => {
 gallery.post('/', zValidator('json', gallerySchema), async (c) => {
   const raw = c.req.valid('json')
   const body = { ...raw, caption: raw.caption ? stripHtml(raw.caption) : raw.caption }
-  const { data, error } = await supabase.from('gallery_items').insert(body).select().single()
+  const { data, error } = await supabase
+    .from('gallery_items')
+    .insert({ ...body, ...auditCreate(c) })
+    .select()
+    .single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -77,7 +88,7 @@ gallery.put('/:id', zValidator('json', gallerySchema.partial()), async (c) => {
 
   const { data, error } = await supabase
     .from('gallery_items')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -89,7 +100,11 @@ gallery.put('/:id', zValidator('json', gallerySchema.partial()), async (c) => {
 // DELETE gallery item
 gallery.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('gallery_items').delete().eq('id', id)
+  const { error } = await supabase
+    .from('gallery_items')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Gallery item deleted' })

@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditUpsert, auditDelete } from '../lib/audit'
 
 const dailyReports = new Hono()
 
@@ -33,6 +34,7 @@ dailyReports.get('/', zValidator('query', querySchema), async (c) => {
   let studentQuery = supabase
     .from('students')
     .select('id, full_name, classrooms(name), photo_url', { count: 'exact' })
+    .is('deleted_at', null)
     .order('full_name')
     .range(from, to)
 
@@ -54,6 +56,7 @@ dailyReports.get('/', zValidator('query', querySchema), async (c) => {
   const { data: reports, error: reportError } = await supabase
     .from('daily_reports')
     .select('*')
+    .is('deleted_at', null)
     .eq('report_date', date)
     .in('student_id', studentIds)
 
@@ -91,6 +94,7 @@ dailyReports.put('/:studentId/:date', zValidator('json', reportSchema), async (c
         report_date: date,
         ...body,
         recorded_by: user?.email ?? null,
+        ...auditUpsert(c),
       },
       { onConflict: 'student_id,report_date' }
     )
@@ -104,7 +108,11 @@ dailyReports.put('/:studentId/:date', zValidator('json', reportSchema), async (c
 // DELETE /api/daily-reports/:id
 dailyReports.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('daily_reports').delete().eq('id', id)
+  const { error } = await supabase
+    .from('daily_reports')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Report deleted' })
 })

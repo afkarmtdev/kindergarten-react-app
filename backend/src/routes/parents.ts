@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const parents = new Hono()
 
@@ -29,6 +30,7 @@ parents.get('/', zValidator('query', paginationSchema), async (c) => {
     .select('id, full_name, email, phone, access_code, created_at, parent_students(id)', {
       count: 'exact',
     })
+    .is('deleted_at', null)
     .order('full_name')
     .range(from, to)
 
@@ -82,6 +84,7 @@ parents.get('/:id', async (c) => {
   const { data: parent, error } = await supabase
     .from('parents')
     .select('id, full_name, email, phone, access_code, created_at')
+    .is('deleted_at', null)
     .eq('id', id)
     .single()
 
@@ -117,7 +120,7 @@ parents.post('/', zValidator('json', parentSchema), async (c) => {
   const body = sanitiseStrings(c.req.valid('json'))
   const { data, error } = await supabase
     .from('parents')
-    .insert(body)
+    .insert({ ...body, ...auditCreate(c) })
     .select('id, full_name, email, phone, access_code, created_at')
     .single()
 
@@ -132,7 +135,7 @@ parents.put('/:id', zValidator('json', parentSchema.partial()), async (c) => {
 
   const { data, error } = await supabase
     .from('parents')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select('id, full_name, email, phone, access_code, created_at')
     .single()
@@ -144,7 +147,11 @@ parents.put('/:id', zValidator('json', parentSchema.partial()), async (c) => {
 // DELETE parent
 parents.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('parents').delete().eq('id', id)
+  const { error } = await supabase
+    .from('parents')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Parent deleted' })
@@ -239,6 +246,7 @@ parents.post(
       .from('students')
       .select('id')
       .eq('id', student_id)
+      .is('deleted_at', null)
       .single()
 
     if (studentError || !student) {
@@ -262,9 +270,10 @@ parents.delete('/:parentId/unlink-student/:studentId', async (c) => {
 
   const { error } = await supabase
     .from('parent_students')
-    .delete()
+    .update(auditDelete(c))
     .eq('parent_id', parentId)
     .eq('student_id', studentId)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Student unlinked' })

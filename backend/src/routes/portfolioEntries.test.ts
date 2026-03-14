@@ -1,36 +1,25 @@
 import { describe, test, expect, mock } from 'bun:test'
 import { Hono } from 'hono'
 import portfolioEntries from './portfolioEntries'
+import {
+  mockSupabase,
+  setMockResponse,
+  setAuthGetUser,
+  clearMockResponses,
+} from '../test-utils/mockSupabase'
 
-mock.module('../db/supabase', () => ({
-  supabase: {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          eq: () => ({
-            order: () => ({ range: () => Promise.resolve({ data: [], error: null, count: 0 }) }),
-            single: () => Promise.resolve({ data: null, error: null }),
-          }),
-          order: () => ({ range: () => Promise.resolve({ data: [], error: null, count: 0 }) }),
-          single: () => Promise.resolve({ data: null, error: null }),
-        }),
-      }),
-      insert: () => ({
-        select: () => ({ single: () => Promise.resolve({ data: { id: 'test' }, error: null }) }),
-      }),
-      update: () => ({
-        eq: () => ({
-          select: () => ({ single: () => Promise.resolve({ data: { id: 'test' }, error: null }) }),
-        }),
-      }),
-      delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    }),
-  },
-}))
+mock.module('../db/supabase', () => ({ supabase: mockSupabase }))
+
+setAuthGetUser({
+  data: { user: { id: 'user-1', email: 'test@example.com' } },
+  error: null,
+})
+
+setMockResponse('portfolio_entries', { data: [], error: null, count: 0 })
 
 const app = new Hono()
 app.use('*', async (c, next) => {
-  c.set('user' as never, { email: 'test@example.com' })
+  c.set('user' as never, { id: 'user-1', email: 'test@example.com' })
   await next()
 })
 app.route('/api/portfolio-entries', portfolioEntries)

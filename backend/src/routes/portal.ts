@@ -40,6 +40,7 @@ app.get('/me', async (c) => {
       'relationship, students(id, full_name, date_of_birth, gender, photo_url, classrooms(name))'
     )
     .eq('parent_id', parentId)
+    .is('deleted_at', null)
 
   const children = (links ?? []).map((link: Record<string, unknown>) => {
     const student = link.students as {
@@ -78,6 +79,7 @@ app.get('/attendance', async (c) => {
     .from('attendance')
     .select('id, date, status, notes, created_at', { count: 'exact' })
     .eq('student_id', studentId)
+    .is('deleted_at', null)
     .order('date', { ascending: false })
     .range(from, to)
 
@@ -109,6 +111,7 @@ app.get('/fees', async (c) => {
       }
     )
     .eq('student_id', studentId)
+    .is('deleted_at', null)
     .order('due_date', { ascending: false })
     .range(from, to)
 
@@ -129,6 +132,7 @@ app.get('/announcements', async (c) => {
     .from('announcements')
     .select('id, title, body, category, image_url, is_pinned, expires_at, created_at')
     .or(`expires_at.is.null,expires_at.gte.${today}`)
+    .is('deleted_at', null)
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(20)
@@ -150,6 +154,7 @@ app.get('/daily-reports', async (c) => {
       'id, report_date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, created_at'
     )
     .eq('student_id', studentId)
+    .is('deleted_at', null)
     .order('report_date', { ascending: false })
     .limit(limit)
 
@@ -169,6 +174,7 @@ app.get('/portfolio', async (c) => {
     .from('portfolio_entries')
     .select('id, domain, observation, photo_url, term, entry_date, created_at')
     .eq('student_id', studentId)
+    .is('deleted_at', null)
     .order('entry_date', { ascending: false })
 
   if (entriesError) return c.json({ error: 'Failed to fetch portfolio' }, 500)

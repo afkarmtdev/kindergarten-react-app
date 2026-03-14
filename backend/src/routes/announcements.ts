@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 
 const announcements = new Hono()
 
@@ -31,6 +32,7 @@ announcements.get('/', zValidator('query', paginationSchema), async (c) => {
   let query = supabase
     .from('announcements')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -60,7 +62,12 @@ announcements.get('/', zValidator('query', paginationSchema), async (c) => {
 // GET single announcement
 announcements.get('/:id', async (c) => {
   const { id } = c.req.param()
-  const { data, error } = await supabase.from('announcements').select('*').eq('id', id).single()
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('*')
+    .is('deleted_at', null)
+    .eq('id', id)
+    .single()
 
   if (error) return c.json({ error: error.message }, 404)
   return c.json(data)
@@ -70,7 +77,11 @@ announcements.get('/:id', async (c) => {
 announcements.post('/', zValidator('json', announcementSchema), async (c) => {
   const raw = c.req.valid('json')
   const body = sanitiseStrings({ ...raw })
-  const { data, error } = await supabase.from('announcements').insert(body).select().single()
+  const { data, error } = await supabase
+    .from('announcements')
+    .insert({ ...body, ...auditCreate(c) })
+    .select()
+    .single()
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json(data, 201)
@@ -84,7 +95,7 @@ announcements.put('/:id', zValidator('json', announcementSchema.partial()), asyn
 
   const { data, error } = await supabase
     .from('announcements')
-    .update(body)
+    .update({ ...body, ...auditUpdate(c) })
     .eq('id', id)
     .select()
     .single()
@@ -96,7 +107,11 @@ announcements.put('/:id', zValidator('json', announcementSchema.partial()), asyn
 // DELETE announcement
 announcements.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase.from('announcements').delete().eq('id', id)
+  const { error } = await supabase
+    .from('announcements')
+    .update(auditDelete(c))
+    .eq('id', id)
+    .is('deleted_at', null)
 
   if (error) return c.json({ error: error.message }, 500)
   return c.json({ message: 'Announcement deleted' })

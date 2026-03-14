@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { auditCreate } from '../lib/audit'
 
 const attendance = new Hono()
 
@@ -30,6 +31,7 @@ attendance.get('/date/:date', zValidator('query', datePageSchema), async (c) => 
   let query = supabase
     .from('attendance')
     .select('*, students(full_name, classrooms(name), photo_url)', { count: 'exact' })
+    .is('deleted_at', null)
     .eq('date', date)
     .order('created_at')
     .range(from, to)
@@ -77,6 +79,7 @@ attendance.get('/student/:studentId', async (c) => {
   let query = supabase
     .from('attendance')
     .select('*', { count: 'exact' })
+    .is('deleted_at', null)
     .eq('student_id', studentId)
     .order('date', { ascending: false })
     .range(rangeFrom, rangeTo)
@@ -104,7 +107,7 @@ attendance.post('/', zValidator('json', attendanceSchema), async (c) => {
 
   const { data, error } = await supabase
     .from('attendance')
-    .upsert(body, { onConflict: 'student_id,date' })
+    .upsert({ ...body, ...auditCreate(c) }, { onConflict: 'student_id,date' })
     .select()
     .single()
 
@@ -114,7 +117,11 @@ attendance.post('/', zValidator('json', attendanceSchema), async (c) => {
 
 // POST bulk attendance
 attendance.post('/bulk', async (c) => {
-  const records = await c.req.json()
+  const raw = await c.req.json()
+  const records = (Array.isArray(raw) ? raw : []).map((r: Record<string, unknown>) => ({
+    ...r,
+    ...auditCreate(c),
+  }))
 
   const { data, error } = await supabase
     .from('attendance')
@@ -137,6 +144,7 @@ attendance.get('/stats/summary', async (c) => {
   const { data, error } = await supabase
     .from('attendance')
     .select('status')
+    .is('deleted_at', null)
     .gte('date', startDate)
     .lte('date', endDate)
 
@@ -173,6 +181,7 @@ attendance.get(
     const { data, error } = await supabase
       .from('attendance')
       .select('date, status')
+      .is('deleted_at', null)
       .gte('date', startDate)
       .lte('date', endDate)
 
