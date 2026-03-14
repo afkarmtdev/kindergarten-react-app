@@ -55,20 +55,44 @@ export function AdminLayout() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  const navItems = [
-    { to: '/admin/dashboard', icon: LayoutDashboard, label: t('dashboard') },
-    { to: '/admin/students', icon: Users, label: t('students') },
-    { to: '/admin/attendance', icon: CalendarCheck, label: t('attendance') },
-    { to: '/admin/daily-reports', icon: ClipboardList, label: t('dailyReports') },
-    { to: '/admin/classes', icon: School, label: t('classes') },
-    { to: '/admin/gallery', icon: Images, label: t('gallery') },
-    { to: '/admin/art-wall', icon: Palette, label: t('artWall') },
-    { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
-    { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
-    { to: '/admin/fees', icon: Wallet, label: t('fees') },
-    { to: '/admin/inquiries', icon: Inbox, label: t('inquiries') },
-    { to: '/admin/parents', icon: UserCheck, label: t('parents') },
-    { to: '/admin/settings', icon: Settings, label: t('settingsPage') },
+  const navSections = [
+    {
+      items: [{ to: '/admin/dashboard', icon: LayoutDashboard, label: t('dashboard') }],
+    },
+    {
+      label: t('people'),
+      items: [
+        { to: '/admin/students', icon: Users, label: t('students') },
+        { to: '/admin/classes', icon: School, label: t('classes') },
+        { to: '/admin/parents', icon: UserCheck, label: t('parents') },
+      ],
+    },
+    {
+      label: t('daily'),
+      items: [
+        { to: '/admin/attendance', icon: CalendarCheck, label: t('attendance') },
+        { to: '/admin/daily-reports', icon: ClipboardList, label: t('dailyReports') },
+      ],
+    },
+    {
+      label: t('finance'),
+      items: [{ to: '/admin/fees', icon: Wallet, label: t('fees') }],
+    },
+    {
+      label: t('content'),
+      items: [
+        { to: '/admin/announcements', icon: Megaphone, label: t('announcements') },
+        { to: '/admin/gallery', icon: Images, label: t('gallery') },
+        { to: '/admin/art-wall', icon: Palette, label: t('artWall') },
+        { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
+      ],
+    },
+    {
+      items: [
+        { to: '/admin/inquiries', icon: Inbox, label: t('inquiries') },
+        { to: '/admin/settings', icon: Settings, label: t('settingsPage') },
+      ],
+    },
   ]
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -111,12 +135,21 @@ export function AdminLayout() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-1">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink key={to} to={to} className={navLinkClass} onClick={onNavClick}>
-            <Icon size={18} />
-            {label}
-          </NavLink>
+      <nav className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+        {navSections.map((section, si) => (
+          <div key={si} className="space-y-1">
+            {section.label && (
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest px-4 pb-1 pt-1">
+                {section.label}
+              </p>
+            )}
+            {section.items.map(({ to, icon: Icon, label }) => (
+              <NavLink key={to} to={to} className={navLinkClass} onClick={onNavClick}>
+                <Icon size={18} />
+                {label}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 

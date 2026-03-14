@@ -177,6 +177,7 @@ describe('POST / — create class', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: '<b>Daisy</b>',
+        academic_year: '2026',
         teacher_name: 'Ms. Lina',
         capacity: 30,
       }),
@@ -203,6 +204,7 @@ describe('POST / — create class', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: 'Daisy',
+        academic_year: '2026',
         teacher_name: 'Ms. Lina',
         capacity: -5, // must be positive
       }),
@@ -222,6 +224,7 @@ describe('POST / — create class', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: 'Daisy',
+        academic_year: '2026',
         teacher_name: 'Ms. Lina',
         capacity: 30,
       }),
@@ -230,6 +233,221 @@ describe('POST / — create class', () => {
     expect(res.status).toBe(500)
     const json = await res.json()
     expect(json.error).toBe('duplicate key')
+  })
+})
+
+// ── GET / — Status filter ────────────────────────────────────────────────────
+
+describe('GET / — status filter', () => {
+  test('accepts status=active filter', async () => {
+    setMockResponse('classrooms', {
+      data: [{ id: '1', name: 'Rose', academic_year: '2026', status: 'active' }],
+      error: null,
+      count: 1,
+    })
+    setMockResponse('students', { data: [], error: null })
+
+    const res = await classes.request('/?status=active')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.data).toHaveLength(1)
+  })
+
+  test('accepts status=graduated filter', async () => {
+    setMockResponse('classrooms', {
+      data: [{ id: '2', name: 'Lily', academic_year: '2025', status: 'graduated' }],
+      error: null,
+      count: 1,
+    })
+    setMockResponse('students', { data: [], error: null })
+
+    const res = await classes.request('/?status=graduated')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.data).toHaveLength(1)
+  })
+
+  test('returns all classes when status is empty', async () => {
+    setMockResponse('classrooms', {
+      data: [
+        { id: '1', name: 'Rose', status: 'active' },
+        { id: '2', name: 'Lily', status: 'graduated' },
+      ],
+      error: null,
+      count: 2,
+    })
+    setMockResponse('students', { data: [], error: null })
+
+    const res = await classes.request('/?status=')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.data).toHaveLength(2)
+  })
+})
+
+// ── POST / — Academic year validation ────────────────────────────────────────
+
+describe('POST / — academic year validation', () => {
+  test('rejects non-numeric academic year', async () => {
+    const res = await classes.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Daisy',
+        academic_year: 'abcd',
+        teacher_name: 'Ms. Lina',
+        capacity: 30,
+      }),
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects academic year with wrong length', async () => {
+    const res = await classes.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Daisy',
+        academic_year: '26',
+        teacher_name: 'Ms. Lina',
+        capacity: 30,
+      }),
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects missing academic year', async () => {
+    const res = await classes.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Daisy',
+        teacher_name: 'Ms. Lina',
+        capacity: 30,
+      }),
+    })
+
+    expect(res.status).toBe(400)
+  })
+})
+
+// ── POST /:id/graduate — Graduate class ──────────────────────────────────────
+
+describe('POST /:id/graduate — graduate class', () => {
+  test('graduates students and marks class as graduated', async () => {
+    setMockResponse('classrooms', {
+      data: { id: 'class-1', status: 'active' },
+      error: null,
+    })
+    setMockResponse('students', { data: null, error: null })
+
+    const res = await classes.request('/class-1/graduate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_ids: [
+          '00000000-0000-0000-0000-000000000001',
+          '00000000-0000-0000-0000-000000000002',
+        ],
+      }),
+    })
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.message).toBe('Class graduated')
+    expect(json.graduated_count).toBe(2)
+    expect(json.reassigned_count).toBe(0)
+  })
+
+  test('graduates students and reassigns remaining', async () => {
+    setMockResponse('classrooms', {
+      data: { id: 'class-1', status: 'active' },
+      error: null,
+    })
+    setMockResponse('students', { data: null, error: null })
+
+    const res = await classes.request('/class-1/graduate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_ids: ['00000000-0000-0000-0000-000000000001'],
+        reassign_class_id: '00000000-0000-0000-0000-000000000099',
+        reassign_student_ids: [
+          '00000000-0000-0000-0000-000000000002',
+          '00000000-0000-0000-0000-000000000003',
+        ],
+      }),
+    })
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.graduated_count).toBe(1)
+    expect(json.reassigned_count).toBe(2)
+  })
+
+  test('returns 404 when class not found', async () => {
+    setMockResponse('classrooms', {
+      data: null,
+      error: { message: 'Row not found' },
+    })
+
+    const res = await classes.request('/nonexistent/graduate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_ids: ['00000000-0000-0000-0000-000000000001'],
+      }),
+    })
+
+    expect(res.status).toBe(404)
+  })
+
+  test('returns 400 when class is already graduated', async () => {
+    setMockResponse('classrooms', {
+      data: { id: 'class-1', status: 'graduated' },
+      error: null,
+    })
+
+    const res = await classes.request('/class-1/graduate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_ids: ['00000000-0000-0000-0000-000000000001'],
+      }),
+    })
+
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toBe('Class is already graduated')
+  })
+
+  test('rejects empty student_ids array', async () => {
+    const res = await classes.request('/class-1/graduate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_ids: [],
+      }),
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects invalid student_ids (not UUIDs)', async () => {
+    const res = await classes.request('/class-1/graduate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_ids: ['not-a-uuid'],
+      }),
+    })
+
+    expect(res.status).toBe(400)
   })
 })
 

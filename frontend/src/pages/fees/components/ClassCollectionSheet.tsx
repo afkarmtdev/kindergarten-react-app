@@ -28,8 +28,8 @@ export function ClassCollectionSheet({ initialClass = '', initialMonth = '', onC
   const [selectedMonth, setSelectedMonth] = useState(currentMonth)
 
   const { data: classesData } = useQuery({
-    queryKey: ['classes', { page: 1, search: '' }],
-    queryFn: () => classesApi.getAll({ limit: 50 }),
+    queryKey: ['classes', { page: 1, search: '', status: 'active' }],
+    queryFn: () => classesApi.getAll({ limit: 50, status: 'active' }),
   })
 
   const classes = classesData?.data ?? []

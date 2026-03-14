@@ -6,6 +6,7 @@ interface StudentsState {
   search: string
   classFilter: string
   genderFilter: string
+  statusFilter: string
   isModalOpen: boolean
   editingId: string | null
   // Actions
@@ -13,6 +14,7 @@ interface StudentsState {
   setSearch: (search: string) => void
   setClassFilter: (v: string) => void
   setGenderFilter: (v: string) => void
+  setStatusFilter: (v: string) => void
   openModal: (id?: string) => void
   closeModal: () => void
   reset: () => void
@@ -23,6 +25,7 @@ const initialState = {
   search: '',
   classFilter: '',
   genderFilter: '',
+  statusFilter: 'active',
   isModalOpen: false,
   editingId: null,
 }
@@ -35,6 +38,7 @@ export const useStudentsStore = create<StudentsState>()(
       setSearch: (search) => set({ search, page: 1 }),
       setClassFilter: (classFilter) => set({ classFilter, page: 1 }),
       setGenderFilter: (genderFilter) => set({ genderFilter, page: 1 }),
+      setStatusFilter: (statusFilter) => set({ statusFilter, page: 1 }),
       openModal: (id) => set({ isModalOpen: true, editingId: id ?? null }),
       closeModal: () => set({ isModalOpen: false, editingId: null }),
       reset: () => set(initialState),

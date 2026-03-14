@@ -31,7 +31,9 @@ kindergarten-app/
 │       ├── lib/              # API client (Axios), translations, Supabase browser client
 │       └── types/            # Shared types
 │
-└── supabase-schema.sql  # Database schema + RLS policies
+└── supabase/
+    ├── migrations/      # Numbered schema migrations (run in order)
+    └── seeds/           # Sample/test data
 ```
 
 ## State Management Architecture
@@ -130,7 +132,7 @@ For a small school this is more than sufficient. Upgrade to the Pro plan if you 
 ### 1. Supabase
 
 1. Create a free project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run the entire contents of `supabase-schema.sql`
+2. Go to **SQL Editor** and run each file in `supabase/migrations/` in order (001, 002, ...)
 3. Go to **Project Settings → API** and copy:
    - `Project URL` → used as `SUPABASE_URL` and `VITE_SUPABASE_URL`
    - `service_role` secret key → used as `SUPABASE_SERVICE_ROLE_KEY` (backend only, never expose this in frontend)

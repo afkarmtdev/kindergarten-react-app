@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, School, Users, Trash2, Pencil } from 'lucide-react'
+import { Plus, School, Users, Trash2, Pencil, GraduationCap } from 'lucide-react'
 import { classesApi } from '@/lib/api'
 import { useClassesStore } from '@/store/classesStore'
 import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { ClassModal } from '@/components/admin/ClassModal'
+import { GraduateClassModal } from '@/components/admin/GraduateClassModal'
 import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -26,15 +27,16 @@ export function ClassesPage() {
   usePageTitle('Classes')
   const t = useT()
   const queryClient = useQueryClient()
-  const { page, search, setPage, setSearch } = useClassesStore()
+  const { page, search, statusFilter, setPage, setSearch, setStatusFilter } = useClassesStore()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingClass, setEditingClass] = useState<ClassRoom | null>(null)
   const [deletingClass, setDeletingClass] = useState<ClassRoom | null>(null)
+  const [graduatingClass, setGraduatingClass] = useState<ClassRoom | null>(null)
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['classes', { page, search }],
-    queryFn: () => classesApi.getAll({ page, limit: LIMIT, search }),
+    queryKey: ['classes', { page, search, status: statusFilter }],
+    queryFn: () => classesApi.getAll({ page, limit: LIMIT, search, status: statusFilter }),
     placeholderData: (prev) => prev,
     staleTime: 30_000,
   })
@@ -79,12 +81,13 @@ export function ClassesPage() {
   useEffect(() => {
     if (data && page < data.meta.totalPages) {
       queryClient.prefetchQuery({
-        queryKey: ['classes', { page: page + 1, search }],
-        queryFn: () => classesApi.getAll({ page: page + 1, limit: LIMIT, search }),
+        queryKey: ['classes', { page: page + 1, search, status: statusFilter }],
+        queryFn: () =>
+          classesApi.getAll({ page: page + 1, limit: LIMIT, search, status: statusFilter }),
         staleTime: 30_000,
       })
     }
-  }, [data, page, search, queryClient])
+  }, [data, page, search, statusFilter, queryClient])
 
   const openAdd = () => {
     setEditingClass(null)
@@ -120,9 +123,20 @@ export function ClassesPage() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-6 w-full md:w-72">
-        <SearchBar value={search} onChange={setSearch} placeholder={t('searchClasses')} />
+      {/* Search + Status Filter */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <div className="w-full md:w-72">
+          <SearchBar value={search} onChange={setSearch} placeholder={t('searchClasses')} />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="flex-1 md:flex-none border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kinder-orange/50 text-gray-600"
+        >
+          <option value="">{t('allStatuses')}</option>
+          <option value="active">{t('statusActive')}</option>
+          <option value="graduated">{t('statusGraduated')}</option>
+        </select>
       </div>
 
       <div
@@ -150,7 +164,7 @@ export function ClassesPage() {
               return (
                 <div
                   key={cls.id}
-                  className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5"
+                  className={`bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5${cls.status === 'graduated' ? ' opacity-60' : ''}`}
                 >
                   <div className="flex items-start justify-between mb-5">
                     <div
@@ -159,25 +173,46 @@ export function ClassesPage() {
                       <School className="text-white" size={22} />
                     </div>
                     <div className="flex gap-1.5">
+                      {cls.status === 'active' && (
+                        <button
+                          onClick={() => setGraduatingClass(cls)}
+                          className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-kinder-purple dark:hover:text-kinder-purple transition-colors rounded-lg"
+                          title={t('graduateClass')}
+                        >
+                          <GraduationCap size={14} />
+                        </button>
+                      )}
                       <button
                         onClick={() => openEdit(cls)}
                         className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors rounded-lg"
                       >
                         <Pencil size={14} />
                       </button>
-                      <button
-                        onClick={() => setDeletingClass(cls)}
-                        className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {cls.status !== 'graduated' && (
+                        <button
+                          onClick={() => setDeletingClass(cls)}
+                          className="p-1.5 text-gray-400 dark:text-gray-600 hover:text-red-500 transition-colors rounded-lg"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">{cls.name}</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                    {cls.name}{' '}
+                    <span className="text-sm font-semibold text-gray-400 dark:text-gray-500">
+                      ({cls.academic_year})
+                    </span>
+                  </h3>
                   <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                     {t('teacher')}: {cls.teacher_name}
                   </p>
+                  {cls.status === 'graduated' && (
+                    <span className="inline-block bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-semibold px-2 py-0.5 rounded-full mt-1.5">
+                      {t('graduated')}
+                    </span>
+                  )}
 
                   <div className="mt-4">
                     <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
@@ -230,6 +265,11 @@ export function ClassesPage() {
           }
         }}
         onCancel={() => setDeletingClass(null)}
+      />
+      <GraduateClassModal
+        open={!!graduatingClass}
+        classroom={graduatingClass}
+        onClose={() => setGraduatingClass(null)}
       />
     </div>
   )

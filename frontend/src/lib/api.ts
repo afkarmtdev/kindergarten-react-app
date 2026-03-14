@@ -17,12 +17,14 @@ export interface StudentFilters {
   class_id?: string
   gender?: string
   birthday_today?: boolean
+  status?: string
 }
 
 export interface ClassFilters {
   page?: number
   limit?: number
   search?: string
+  status?: string
 }
 
 export interface AttendanceFilters {
@@ -82,6 +84,17 @@ export const studentsApi = {
     api.put(`/students/${id}/portal-pin`, { pin }).then((r) => r.data),
   revokePortalAccess: (id: string) =>
     api.delete(`/students/${id}/portal-access`).then((r) => r.data),
+  getTimeline: (id: string, params?: { limit?: number; before?: string }) =>
+    api
+      .get(`/students/${id}/timeline`, { params })
+      .then(
+        (r) =>
+          r.data as {
+            events: import('@/types').TimelineEvent[]
+            has_more: boolean
+            next_cursor?: string
+          }
+      ),
 }
 
 export const attendanceApi = {
@@ -110,6 +123,10 @@ export const classesApi = {
   create: (data: unknown) => api.post('/classes', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/classes/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/classes/${id}`).then((r) => r.data),
+  graduate: (
+    id: string,
+    data: { student_ids: string[]; reassign_class_id?: string; reassign_student_ids?: string[] }
+  ) => api.post(`/classes/${id}/graduate`, data).then((r) => r.data),
 }
 
 export const authApi = {
@@ -223,10 +240,21 @@ export const inquiriesApi = {
     phone: string
     message?: string
   }) => publicApi.post('/public/inquiries', data).then((r) => r.data),
-  getAll: (filters: { page?: number; limit?: number; search?: string } = {}) =>
+  getAll: (
+    filters: {
+      page?: number
+      limit?: number
+      search?: string
+      status?: string
+      from?: string
+      to?: string
+    } = {}
+  ) =>
     api
       .get('/inquiries', { params: filters })
       .then((r) => r.data as PaginatedResponse<import('@/types').Inquiry>),
+  updateStatus: (id: string, status: string) =>
+    api.put(`/inquiries/${id}/status`, { status }).then((r) => r.data),
 }
 
 export const testimonialsApi = {

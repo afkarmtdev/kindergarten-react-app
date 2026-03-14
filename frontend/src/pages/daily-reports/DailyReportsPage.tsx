@@ -38,8 +38,8 @@ export function DailyReportsPage() {
   } = useDailyReportsStore()
 
   const { data: classesData } = useQuery({
-    queryKey: ['classes', { page: 1, limit: 100 }],
-    queryFn: () => classesApi.getAll({ page: 1, limit: 100 }),
+    queryKey: ['classes', { page: 1, limit: 100, status: 'active' }],
+    queryFn: () => classesApi.getAll({ page: 1, limit: 100, status: 'active' }),
   })
   const classes: ClassRoom[] = classesData?.data ?? []
 

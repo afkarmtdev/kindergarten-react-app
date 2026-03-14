@@ -35,14 +35,14 @@ export function DashboardPage() {
   const currentMonth = useMemo(() => format(new Date(), 'yyyy-MM'), [])
 
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
-    queryKey: ['students', { page: 1, limit: 1 }],
-    queryFn: () => studentsApi.getAll({ page: 1, limit: 1 }),
+    queryKey: ['students', { page: 1, limit: 1, status: 'active' }],
+    queryFn: () => studentsApi.getAll({ page: 1, limit: 1, status: 'active' }),
     staleTime: 60_000,
   })
 
   const { data: classesData, isLoading: classesLoading } = useQuery({
-    queryKey: ['classes', { page: 1, limit: 1 }],
-    queryFn: () => classesApi.getAll({ page: 1, limit: 1 }),
+    queryKey: ['classes', { page: 1, limit: 1, status: 'active' }],
+    queryFn: () => classesApi.getAll({ page: 1, limit: 1, status: 'active' }),
     staleTime: 60_000,
   })
 
@@ -65,8 +65,9 @@ export function DashboardPage() {
   })
 
   const { data: birthdayData } = useQuery({
-    queryKey: ['students-birthday-check'],
-    queryFn: () => studentsApi.getAll({ page: 1, limit: 100, birthday_today: true }),
+    queryKey: ['students-birthday-check', { status: 'active' }],
+    queryFn: () =>
+      studentsApi.getAll({ page: 1, limit: 100, birthday_today: true, status: 'active' }),
     staleTime: 5 * 60_000,
   })
 
