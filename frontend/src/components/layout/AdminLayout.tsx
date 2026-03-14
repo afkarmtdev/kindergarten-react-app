@@ -20,6 +20,7 @@ import {
   Search,
   Palette,
   ClipboardList,
+  UserCheck,
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
@@ -66,6 +67,7 @@ export function AdminLayout() {
     { to: '/admin/testimonials', icon: Quote, label: t('testimonials') },
     { to: '/admin/fees', icon: Wallet, label: t('fees') },
     { to: '/admin/inquiries', icon: Inbox, label: t('inquiries') },
+    { to: '/admin/parents', icon: UserCheck, label: t('parents') },
     { to: '/admin/settings', icon: Settings, label: t('settingsPage') },
   ]
 

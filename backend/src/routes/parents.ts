@@ -270,4 +270,40 @@ parents.delete('/:parentId/unlink-student/:studentId', async (c) => {
   return c.json({ message: 'Student unlinked' })
 })
 
+// GET /:id/sessions — list active portal sessions for a parent (admin)
+parents.get('/:id/sessions', async (c) => {
+  const { id } = c.req.param()
+  const now = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from('parent_sessions')
+    .select('id, device_label, created_at, expires_at')
+    .eq('parent_id', id)
+    .gt('expires_at', now)
+    .order('created_at', { ascending: false })
+
+  if (error) return c.json({ error: error.message }, 500)
+  return c.json({ data: data ?? [] })
+})
+
+// DELETE /:id/sessions/:sessionId — revoke a specific session (admin)
+parents.delete('/:id/sessions/:sessionId', async (c) => {
+  const { id, sessionId } = c.req.param()
+
+  // Verify session belongs to this parent
+  const { data: session } = await supabase
+    .from('parent_sessions')
+    .select('id')
+    .eq('id', sessionId)
+    .eq('parent_id', id)
+    .single()
+
+  if (!session) return c.json({ error: 'Session not found' }, 404)
+
+  const { error } = await supabase.from('parent_sessions').delete().eq('id', sessionId)
+
+  if (error) return c.json({ error: error.message }, 500)
+  return c.json({ ok: true })
+})
+
 export default parents

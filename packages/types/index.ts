@@ -373,6 +373,16 @@ export interface PortalChild {
   relationship: ParentRelationship
 }
 
+// ─── Device Sessions ─────────────────────────────────────────────────────────
+
+export interface DeviceSession {
+  id: string
+  device_label: string
+  created_at: string
+  expires_at: string
+  is_current: boolean
+}
+
 export interface DailyReport {
   id: string
   student_id: string

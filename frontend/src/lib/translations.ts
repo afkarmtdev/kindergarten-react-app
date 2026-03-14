@@ -657,6 +657,23 @@ export const translations = {
     pinHelp: 'Share this code and PIN with the parent to give them portal access.',
     manage: 'Manage',
 
+    // Device management
+    myDevices: 'My Devices',
+    activeDevices: 'Active Devices',
+    thisDevice: 'This device',
+    deviceLimitReached: 'Device limit reached',
+    devicesOf: 'of',
+    devices: 'devices',
+    noActiveDevices: 'No active devices',
+    removeDevice: 'Remove Device',
+    deviceRemoved: 'Device removed',
+    sessionRevoked: 'Session revoked',
+    expiresIn: 'Expires in',
+    expired: 'Expired',
+    expiresSoon: 'Expires soon',
+    loggedInOn: 'Logged in on',
+    confirmRemoveCurrentDevice: 'This will log you out of this device. Are you sure?',
+
     // Parents
     parents: 'Parents',
     addParent: 'Add Parent',
@@ -668,6 +685,17 @@ export const translations = {
     stepParent: 'Step Parent',
     switchChild: 'Switch Child',
     parentAccount: 'Parent Account',
+    parentDetail: 'Parent Detail',
+    linkedChildren: 'Linked Children',
+    portalStatus: 'Portal Status',
+    activeSessions: 'Active Sessions',
+    noActiveSessions: 'No active sessions',
+    managePortalAccess: 'Manage Portal Access',
+    configured: 'Configured',
+    notConfigured: 'Not configured',
+    noChildrenLinked: 'No children linked',
+    parentDeleted: 'Parent removed',
+    failedDeleteParent: 'Failed to remove parent. Please try again.',
 
     // Daily Reports
     dailyReports: 'Daily Reports',
@@ -1380,6 +1408,23 @@ export const translations = {
     pinHelp: 'Kongsi kod dan PIN ini dengan ibu bapa untuk memberi akses portal kepada mereka.',
     manage: 'Urus',
 
+    // Device management
+    myDevices: 'Peranti Saya',
+    activeDevices: 'Peranti Aktif',
+    thisDevice: 'Peranti ini',
+    deviceLimitReached: 'Had peranti dicapai',
+    devicesOf: 'daripada',
+    devices: 'peranti',
+    noActiveDevices: 'Tiada peranti aktif',
+    removeDevice: 'Buang Peranti',
+    deviceRemoved: 'Peranti dibuang',
+    sessionRevoked: 'Sesi dibatalkan',
+    expiresIn: 'Tamat dalam',
+    expired: 'Tamat tempoh',
+    expiresSoon: 'Akan tamat',
+    loggedInOn: 'Log masuk pada',
+    confirmRemoveCurrentDevice: 'Ini akan log anda keluar dari peranti ini. Adakah anda pasti?',
+
     // Parents
     parents: 'Ibu Bapa',
     addParent: 'Tambah Ibu Bapa',
@@ -1391,6 +1436,17 @@ export const translations = {
     stepParent: 'Ibu/Bapa Tiri',
     switchChild: 'Tukar Anak',
     parentAccount: 'Akaun Ibu Bapa',
+    parentDetail: 'Butiran Ibu Bapa',
+    linkedChildren: 'Anak Dihubungkan',
+    portalStatus: 'Status Portal',
+    activeSessions: 'Sesi Aktif',
+    noActiveSessions: 'Tiada sesi aktif',
+    managePortalAccess: 'Urus Akses Portal',
+    configured: 'Dikonfigurasi',
+    notConfigured: 'Belum dikonfigurasi',
+    noChildrenLinked: 'Tiada anak dihubungkan',
+    parentDeleted: 'Ibu bapa dibuang',
+    failedDeleteParent: 'Gagal membuang ibu bapa. Sila cuba lagi.',
 
     // Daily Reports
     dailyReports: 'Laporan Harian',

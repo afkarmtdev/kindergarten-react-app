@@ -4,8 +4,28 @@ import { z } from 'zod'
 import { createHash } from 'crypto'
 import { sign } from 'hono/jwt'
 import { supabase } from '../db/supabase'
+import { MAX_DEVICE_SESSIONS } from '../lib/constants'
 
 const app = new Hono()
+
+function parseDeviceLabel(ua: string): string {
+  // Extract browser
+  let browser = 'Unknown browser'
+  if (ua.includes('Firefox/')) browser = 'Firefox'
+  else if (ua.includes('Edg/')) browser = 'Edge'
+  else if (ua.includes('Chrome/')) browser = 'Chrome'
+  else if (ua.includes('Safari/') && !ua.includes('Chrome')) browser = 'Safari'
+
+  // Extract OS
+  let os = 'Unknown OS'
+  if (ua.includes('Windows')) os = 'Windows'
+  else if (ua.includes('Macintosh') || ua.includes('Mac OS')) os = 'macOS'
+  else if (ua.includes('Android')) os = 'Android'
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS'
+  else if (ua.includes('Linux')) os = 'Linux'
+
+  return `${browser} on ${os}`
+}
 
 const loginSchema = z.object({
   access_code: z.string().min(1),
@@ -17,6 +37,11 @@ const loginSchema = z.object({
 
 // POST /api/portal/login — public, no auth required
 app.post('/login', zValidator('json', loginSchema), async (c) => {
+  const deviceId = c.req.header('X-Device-Id')
+  if (!deviceId) {
+    return c.json({ error: 'Device ID required' }, 400)
+  }
+
   const { access_code, pin } = c.req.valid('json')
 
   // Query parents table by access_code
@@ -35,6 +60,27 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
     return c.json({ error: 'Invalid access code or PIN' }, 401)
   }
 
+  // Enforce per-parent device limit
+  const now = new Date().toISOString()
+  const { count: activeCount } = await supabase
+    .from('parent_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('parent_id', parent.id)
+    .gt('expires_at', now)
+
+  if ((activeCount ?? 0) >= MAX_DEVICE_SESSIONS) {
+    return c.json(
+      {
+        error: 'Device limit reached',
+        message: `You can only be logged in on ${MAX_DEVICE_SESSIONS} devices at a time. Please remove a device from your account first.`,
+        max_devices: MAX_DEVICE_SESSIONS,
+      },
+      409
+    )
+  }
+
+  const deviceLabel = parseDeviceLabel(c.req.header('User-Agent') ?? 'Unknown device')
+
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
   const payload = {
     parent_id: parent.id,
@@ -43,10 +89,13 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
 
   const token = await sign(payload, process.env.PORTAL_JWT_SECRET!, 'HS256')
   const tokenHash = createHash('sha256').update(token).digest('hex')
+  const deviceIdHash = createHash('sha256').update(deviceId).digest('hex')
 
   const { error: sessionError } = await supabase.from('parent_sessions').insert({
     parent_id: parent.id,
     token_hash: tokenHash,
+    device_id: deviceIdHash,
+    device_label: deviceLabel,
     expires_at: expiresAt.toISOString(),
   })
 
