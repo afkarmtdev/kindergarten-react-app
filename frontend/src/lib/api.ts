@@ -293,9 +293,19 @@ export const portalApi = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
+function getOrCreateDeviceId(): string {
+  let id = localStorage.getItem('portal_device_id')
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('portal_device_id', id)
+  }
+  return id
+}
+
 portalApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('portal_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
+  config.headers['X-Device-Id'] = getOrCreateDeviceId()
   return config
 })
 
@@ -356,6 +366,12 @@ export const portalDataApi = {
             terms: string[]
           }
       ),
+  getDevices: () =>
+    portalApi
+      .get('/devices')
+      .then((r) => r.data as { data: import('@/types').DeviceSession[]; max_devices: number }),
+  removeDevice: (sessionId: string) =>
+    portalApi.delete(`/devices/${sessionId}`).then((r) => r.data),
 }
 
 export const artWallApi = {
@@ -395,6 +411,20 @@ export const parentsApi = {
       .then((r) => r.data),
   unlinkStudent: (parentId: string, studentId: string) =>
     api.delete(`/parents/${parentId}/unlink-student/${studentId}`).then((r) => r.data),
+  getSessions: (parentId: string) =>
+    api.get(`/parents/${parentId}/sessions`).then(
+      (r) =>
+        r.data as {
+          data: Array<{
+            id: string
+            device_label: string
+            created_at: string
+            expires_at: string
+          }>
+        }
+    ),
+  revokeSession: (parentId: string, sessionId: string) =>
+    api.delete(`/parents/${parentId}/sessions/${sessionId}`).then((r) => r.data),
 }
 
 export const announcementsApi = {

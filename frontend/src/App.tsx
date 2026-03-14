@@ -23,6 +23,7 @@ const PortalFeesPage = lazy(() => import('@/pages/portal/PortalFeesPage'))
 const PortalAnnouncementsPage = lazy(() => import('@/pages/portal/PortalAnnouncementsPage'))
 const PortalDailyReportPage = lazy(() => import('@/pages/portal/PortalDailyReportPage'))
 const PortalPortfolioPage = lazy(() => import('@/pages/portal/PortalPortfolioPage'))
+const PortalDevicesPage = lazy(() => import('@/pages/portal/PortalDevicesPage'))
 
 // Admin pages are lazy-loaded so they don't bloat the initial bundle
 const DashboardPage = lazy(() =>
@@ -71,6 +72,9 @@ const ArtWallPage = lazy(() =>
 )
 const InquiriesPage = lazy(() =>
   import('@/pages/InquiriesPage').then((m) => ({ default: m.InquiriesPage }))
+)
+const ParentsPage = lazy(() =>
+  import('@/pages/parents/ParentsPage').then((m) => ({ default: m.ParentsPage }))
 )
 const DailyReportsPage = lazy(() =>
   import('@/pages/daily-reports/DailyReportsPage').then((m) => ({ default: m.DailyReportsPage }))
@@ -164,6 +168,14 @@ export default function App() {
                     element={
                       <Suspense fallback={<CuteLoader />}>
                         <PortalPortfolioPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="devices"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalDevicesPage />
                       </Suspense>
                     }
                   />
@@ -326,6 +338,16 @@ export default function App() {
                     <ErrorBoundary>
                       <Suspense fallback={<CuteLoader />}>
                         <InquiriesPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="parents"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <ParentsPage />
                       </Suspense>
                     </ErrorBoundary>
                   }

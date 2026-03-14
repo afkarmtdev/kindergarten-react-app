@@ -35,10 +35,16 @@ const childrenLinks = [
   },
 ]
 
-function post(path: string, body: unknown) {
+const TEST_DEVICE_ID = 'test-device-00000000-0000-0000-0000-000000000001'
+
+function post(path: string, body: unknown, extraHeaders?: Record<string, string>) {
   return app.request(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Device-Id': TEST_DEVICE_ID,
+      ...extraHeaders,
+    },
     body: JSON.stringify(body),
   })
 }
@@ -177,6 +183,50 @@ describe('POST /api/portal/login — auth logic', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.parent.children[0].class_name).toBeNull()
+  })
+})
+
+// ─── Device binding ──────────────────────────────────────────────────────────
+
+describe('POST /api/portal/login — device binding', () => {
+  test('returns 400 when X-Device-Id header is missing', async () => {
+    const res = await app.request('/api/portal/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_code: 'KC-2024-001', pin: '123456' }),
+    })
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('Device ID required')
+  })
+
+  test('returns 409 when device limit is reached (3 active sessions)', async () => {
+    const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
+      error: null,
+    })
+    // Mock: 3 active sessions already exist — count check reads `count` field
+    setMockResponse('parent_sessions', { data: null, error: null, count: 3 })
+
+    const res = await post('/api/portal/login', { access_code: 'KC-2024-001', pin: '123456' })
+    expect(res.status).toBe(409)
+    const body = await res.json()
+    expect(body.error).toBe('Device limit reached')
+    expect(body.max_devices).toBe(3)
+  })
+
+  test('allows login when under device limit', async () => {
+    const pinHash = await Bun.password.hash('123456', { algorithm: 'bcrypt', cost: 4 })
+    setMockResponse('parents', {
+      data: { ...baseParent, portal_pin_hash: pinHash },
+      error: null,
+    })
+    // count: 2 passes the limit check; error: null means insert succeeds
+    setMockResponse('parent_sessions', { data: null, error: null, count: 2 })
+
+    const res = await post('/api/portal/login', { access_code: 'KC-2024-001', pin: '123456' })
+    expect(res.status).toBe(200)
   })
 })
 

@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
+import { createHash } from 'crypto'
 import { supabase } from '../db/supabase'
+import { MAX_DEVICE_SESSIONS } from '../lib/constants'
 
 // All routes here are protected by parentMiddleware in index.ts
 // c.get('parentId') and c.get('parentChildIds') are always set
@@ -200,6 +202,63 @@ app.get('/portfolio', async (c) => {
     report: report ?? null,
     terms,
   })
+})
+
+// GET /api/portal/devices — list active sessions for this parent
+app.get('/devices', async (c) => {
+  const parentId = c.get('parentId') as string
+  const now = new Date().toISOString()
+
+  const currentToken = c.req.header('Authorization')?.replace('Bearer ', '') ?? ''
+  const currentTokenHash = createHash('sha256').update(currentToken).digest('hex')
+
+  const { data, error } = await supabase
+    .from('parent_sessions')
+    .select('id, token_hash, device_label, created_at, expires_at')
+    .eq('parent_id', parentId)
+    .gt('expires_at', now)
+    .order('created_at', { ascending: false })
+
+  if (error) return c.json({ error: 'Failed to fetch devices' }, 500)
+
+  const sessions = (data ?? []).map(
+    (s: {
+      id: string
+      token_hash: string
+      device_label: string | null
+      created_at: string
+      expires_at: string
+    }) => ({
+      id: s.id,
+      device_label: s.device_label ?? 'Unknown device',
+      created_at: s.created_at,
+      expires_at: s.expires_at,
+      is_current: s.token_hash === currentTokenHash,
+    })
+  )
+
+  return c.json({ data: sessions, max_devices: MAX_DEVICE_SESSIONS })
+})
+
+// DELETE /api/portal/devices/:sessionId — revoke a specific session
+app.delete('/devices/:sessionId', async (c) => {
+  const parentId = c.get('parentId') as string
+  const { sessionId } = c.req.param()
+
+  // Only allow deleting own sessions
+  const { data: session } = await supabase
+    .from('parent_sessions')
+    .select('id, parent_id')
+    .eq('id', sessionId)
+    .eq('parent_id', parentId)
+    .single()
+
+  if (!session) return c.json({ error: 'Session not found' }, 404)
+
+  const { error } = await supabase.from('parent_sessions').delete().eq('id', sessionId)
+
+  if (error) return c.json({ error: 'Failed to revoke session' }, 500)
+  return c.json({ ok: true })
 })
 
 export default app

@@ -1,10 +1,30 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { X, Copy, Check, KeyRound, ShieldOff } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  X,
+  Copy,
+  Check,
+  KeyRound,
+  ShieldOff,
+  Monitor,
+  Smartphone,
+  Trash2,
+  Shield,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { parentsApi } from '../../lib/api'
 import { useT } from '../../hooks/useT'
+
+function getTimeRemaining(expiresAt: string): string {
+  const diff = new Date(expiresAt).getTime() - Date.now()
+  if (diff <= 0) return 'Expired'
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  if (days > 0) return `Expires in ${days}d ${hours}h`
+  if (hours > 0) return `Expires in ${hours}h`
+  return 'Expires soon'
+}
 
 interface Props {
   parentId: string
@@ -13,7 +33,7 @@ interface Props {
   onClose: () => void
 }
 
-type Step = 'main' | 'set-pin' | 'confirm-revoke'
+type Step = 'main' | 'set-pin' | 'confirm-revoke' | 'devices'
 
 export function GeneratePortalAccessModal({ parentId, parentName, existingCode, onClose }: Props) {
   const t = useT()
@@ -55,6 +75,21 @@ export function GeneratePortalAccessModal({ parentId, parentName, existingCode, 
       onClose()
     },
     onError: () => toast.error('Failed to revoke access'),
+  })
+
+  const sessionsQuery = useQuery({
+    queryKey: ['parent-sessions', parentId],
+    queryFn: () => parentsApi.getSessions(parentId),
+    enabled: step === 'devices',
+  })
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: (sessionId: string) => parentsApi.revokeSession(parentId, sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['parent-sessions', parentId] })
+      toast.success('Session revoked')
+    },
+    onError: () => toast.error('Failed to revoke session'),
   })
 
   function copyCode(code: string) {
@@ -138,6 +173,14 @@ export function GeneratePortalAccessModal({ parentId, parentName, existingCode, 
               >
                 <KeyRound className="w-4 h-4 inline mr-1.5" />
                 {t('setPin')}
+              </button>
+
+              <button
+                onClick={() => setStep('devices')}
+                className="w-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 py-2.5 rounded-xl font-semibold text-sm hover:border-kinder-blue hover:text-kinder-blue transition-colors"
+              >
+                <Monitor className="w-4 h-4 inline mr-1.5" />
+                Active Devices
               </button>
 
               {(existingCode || generatedCode) && (
@@ -233,6 +276,71 @@ export function GeneratePortalAccessModal({ parentId, parentName, existingCode, 
                 {revokeMutation.isPending ? 'Revoking...' : t('revokeAccess')}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Devices step */}
+        {step === 'devices' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-kinder-blue" />
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Active Devices
+              </span>
+            </div>
+
+            {sessionsQuery.isLoading && (
+              <div className="space-y-2">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-shimmer"
+                  />
+                ))}
+              </div>
+            )}
+
+            {sessionsQuery.data && sessionsQuery.data.data.length === 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                No active sessions
+              </p>
+            )}
+
+            {sessionsQuery.data?.data.map((session) => {
+              const isMobile = /Android|iOS|iPhone|iPad/i.test(session.device_label)
+              const Icon = isMobile ? Smartphone : Monitor
+              const expiresIn = getTimeRemaining(session.expires_at)
+
+              return (
+                <div
+                  key={session.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"
+                >
+                  <Icon className="w-5 h-5 text-gray-400 dark:text-gray-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {session.device_label}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{expiresIn}</p>
+                  </div>
+                  <button
+                    onClick={() => revokeSessionMutation.mutate(session.id)}
+                    disabled={revokeSessionMutation.isPending}
+                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors shrink-0"
+                    title="Revoke session"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )
+            })}
+
+            <button
+              onClick={() => setStep('main')}
+              className="w-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 py-2.5 rounded-xl text-sm font-semibold hover:border-gray-300 transition-colors"
+            >
+              Back
+            </button>
           </div>
         )}
       </div>

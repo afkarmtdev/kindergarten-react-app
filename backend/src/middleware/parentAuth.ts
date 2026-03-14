@@ -9,6 +9,11 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
     return c.json({ error: 'Unauthorized' }, 401)
   }
 
+  const deviceId = c.req.header('X-Device-Id')
+  if (!deviceId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
   try {
     await verify(token, process.env.PORTAL_JWT_SECRET!, 'HS256')
   } catch {
@@ -19,7 +24,7 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
 
   const { data: session } = await supabase
     .from('parent_sessions')
-    .select('parent_id, expires_at')
+    .select('parent_id, device_id, expires_at')
     .eq('token_hash', tokenHash)
     .single()
 
@@ -30,6 +35,11 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
   if (new Date(session.expires_at) < new Date()) {
     await supabase.from('parent_sessions').delete().eq('token_hash', tokenHash)
     return c.json({ error: 'Session expired' }, 401)
+  }
+
+  const deviceIdHash = createHash('sha256').update(deviceId).digest('hex')
+  if (deviceIdHash !== session.device_id) {
+    return c.json({ error: 'Session not valid for this device' }, 401)
   }
 
   // Fetch child student IDs for this parent
