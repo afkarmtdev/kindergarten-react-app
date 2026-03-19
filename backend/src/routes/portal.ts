@@ -261,4 +261,51 @@ app.delete('/devices/:sessionId', async (c) => {
   return c.json({ ok: true })
 })
 
+// GET /api/portal/medical — read-only medical profile for a child
+app.get('/medical', async (c) => {
+  const studentId = resolveStudentId(c)
+  if (!studentId) return c.json({ error: 'Access denied' }, 403)
+
+  const { data, error } = await supabase
+    .from('student_medical')
+    .select('*')
+    .eq('student_id', studentId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error && error.code !== 'PGRST116')
+    return c.json({ error: 'Failed to fetch medical profile' }, 500)
+  return c.json({ data: data ?? null })
+})
+
+// GET /api/portal/incidents — paginated incidents for a child
+app.get('/incidents', async (c) => {
+  const studentId = resolveStudentId(c)
+  if (!studentId) return c.json({ error: 'Access denied' }, 403)
+
+  const page = Math.max(1, Number(c.req.query('page') ?? 1))
+  const limit = Math.min(50, Math.max(1, Number(c.req.query('limit') ?? 20)))
+  const from = (page - 1) * limit
+  const to = from + limit - 1
+
+  const { data, error, count } = await supabase
+    .from('incidents')
+    .select(
+      'id, incident_date, incident_time, type, severity, description, action_taken, witnessed_by, parent_notified, photo_url, follow_up_notes, status, created_at',
+      { count: 'exact' }
+    )
+    .eq('student_id', studentId)
+    .is('deleted_at', null)
+    .order('incident_date', { ascending: false })
+    .range(from, to)
+
+  if (error) return c.json({ error: 'Failed to fetch incidents' }, 500)
+
+  const total = count ?? 0
+  return c.json({
+    data: data ?? [],
+    meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+  })
+})
+
 export default app

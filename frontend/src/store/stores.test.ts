@@ -8,6 +8,7 @@ import { useFeePlansStore } from './feePlansStore'
 import { useTestimonialsStore } from './testimonialsStore'
 import { useAttendanceStore } from './attendanceStore'
 import { useInquiriesStore } from './inquiriesStore'
+import { useIncidentsStore } from './incidentsStore'
 
 // ═════════════════════════════════════════════════════════════════════════════
 // studentsStore — page, search, 2 filters, modal
@@ -375,6 +376,84 @@ describe('inquiriesStore', () => {
     expect(s.statusFilter).toBe('')
     expect(s.dateFrom).toBe('')
     expect(s.dateTo).toBe('')
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// incidentsStore — page, search, 3 filters
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('incidentsStore', () => {
+  beforeEach(() => useIncidentsStore.getState().reset())
+
+  test('defaults: page 1, empty search/filters', () => {
+    const s = useIncidentsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.typeFilter).toBe('')
+    expect(s.severityFilter).toBe('')
+    expect(s.statusFilter).toBe('')
+  })
+
+  test('setSearch resets page to 1', () => {
+    useIncidentsStore.getState().setPage(5)
+    useIncidentsStore.getState().setSearch('fall')
+    const s = useIncidentsStore.getState()
+    expect(s.search).toBe('fall')
+    expect(s.page).toBe(1)
+  })
+
+  test('setTypeFilter resets page to 1', () => {
+    useIncidentsStore.getState().setPage(3)
+    useIncidentsStore.getState().setTypeFilter('injury')
+    const s = useIncidentsStore.getState()
+    expect(s.typeFilter).toBe('injury')
+    expect(s.page).toBe(1)
+  })
+
+  test('setSeverityFilter resets page to 1', () => {
+    useIncidentsStore.getState().setPage(2)
+    useIncidentsStore.getState().setSeverityFilter('serious')
+    const s = useIncidentsStore.getState()
+    expect(s.severityFilter).toBe('serious')
+    expect(s.page).toBe(1)
+  })
+
+  test('setStatusFilter resets page to 1', () => {
+    useIncidentsStore.getState().setPage(4)
+    useIncidentsStore.getState().setStatusFilter('resolved')
+    const s = useIncidentsStore.getState()
+    expect(s.statusFilter).toBe('resolved')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves all filters', () => {
+    useIncidentsStore.getState().setSearch('test')
+    useIncidentsStore.getState().setTypeFilter('injury')
+    useIncidentsStore.getState().setSeverityFilter('moderate')
+    useIncidentsStore.getState().setStatusFilter('open')
+    useIncidentsStore.getState().setPage(3)
+    const s = useIncidentsStore.getState()
+    expect(s.page).toBe(3)
+    expect(s.search).toBe('test')
+    expect(s.typeFilter).toBe('injury')
+    expect(s.severityFilter).toBe('moderate')
+    expect(s.statusFilter).toBe('open')
+  })
+
+  test('reset returns to initial state', () => {
+    useIncidentsStore.getState().setSearch('test')
+    useIncidentsStore.getState().setTypeFilter('injury')
+    useIncidentsStore.getState().setSeverityFilter('serious')
+    useIncidentsStore.getState().setStatusFilter('resolved')
+    useIncidentsStore.getState().setPage(5)
+    useIncidentsStore.getState().reset()
+    const s = useIncidentsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.typeFilter).toBe('')
+    expect(s.severityFilter).toBe('')
+    expect(s.statusFilter).toBe('')
   })
 })
 

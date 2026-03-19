@@ -238,6 +238,14 @@ students.get('/:id/timeline', zValidator('query', timelineSchema), async (c) => 
     .order('report_date', { ascending: false })
     .limit(perSource)
 
+  let incidentsQ = supabase
+    .from('incidents')
+    .select('id, incident_date, type, severity, description')
+    .eq('student_id', id)
+    .is('deleted_at', null)
+    .order('incident_date', { ascending: false })
+    .limit(perSource)
+
   // Apply cursor filter if paginating
   if (before) {
     attendanceQ = attendanceQ.lt('date', before)
@@ -246,16 +254,12 @@ students.get('/:id/timeline', zValidator('query', timelineSchema), async (c) => 
     feesQ = feesQ.lt('paid_at', before)
     reportsQ = reportsQ.lt('generated_at', before)
     dailyQ = dailyQ.lt('report_date', before)
+    incidentsQ = incidentsQ.lt('incident_date', before)
   }
 
-  const [attendance, portfolio, artWall, fees, reports, daily] = await Promise.all([
-    attendanceQ,
-    portfolioQ,
-    artWallQ,
-    feesQ,
-    reportsQ,
-    dailyQ,
-  ])
+  const [attendance, portfolio, artWall, fees, reports, daily, incidentsResult] = await Promise.all(
+    [attendanceQ, portfolioQ, artWallQ, feesQ, reportsQ, dailyQ, incidentsQ]
+  )
 
   // Normalize into unified events
   type Event = { type: string; date: string; title: string; subtitle?: string }
@@ -314,6 +318,16 @@ students.get('/:id/timeline', zValidator('query', timelineSchema), async (c) => 
       date: r.report_date,
       title: `Daily Report${mood}`,
       subtitle: r.activity_note ? (r.activity_note as string).slice(0, 80) : undefined,
+    })
+  }
+
+  for (const r of incidentsResult.data ?? []) {
+    const typeLabel = (r.type as string).replace(/_/g, ' ')
+    events.push({
+      type: 'incident',
+      date: r.incident_date,
+      title: `${(r.severity as string).charAt(0).toUpperCase() + (r.severity as string).slice(1)} ${typeLabel}`,
+      subtitle: r.description ? (r.description as string).slice(0, 80) : undefined,
     })
   }
 

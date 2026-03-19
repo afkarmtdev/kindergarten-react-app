@@ -82,6 +82,11 @@ const DailyReportsPage = lazy(() =>
 const PortfolioReportPage = lazy(() =>
   import('@/pages/portfolio/PortfolioReportPage').then((m) => ({ default: m.PortfolioReportPage }))
 )
+const IncidentsPage = lazy(() =>
+  import('@/pages/incidents/IncidentsPage').then((m) => ({ default: m.IncidentsPage }))
+)
+const PortalMedicalPage = lazy(() => import('@/pages/portal/PortalMedicalPage'))
+const PortalIncidentsPage = lazy(() => import('@/pages/portal/PortalIncidentsPage'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -168,6 +173,22 @@ export default function App() {
                     element={
                       <Suspense fallback={<CuteLoader />}>
                         <PortalPortfolioPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="medical"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalMedicalPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="incidents"
+                    element={
+                      <Suspense fallback={<CuteLoader />}>
+                        <PortalIncidentsPage />
                       </Suspense>
                     }
                   />
@@ -358,6 +379,16 @@ export default function App() {
                     <ErrorBoundary>
                       <Suspense fallback={<CuteLoader />}>
                         <DailyReportsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="incidents"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <IncidentsPage />
                       </Suspense>
                     </ErrorBoundary>
                   }

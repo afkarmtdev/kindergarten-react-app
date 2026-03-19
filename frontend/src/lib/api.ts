@@ -85,16 +85,14 @@ export const studentsApi = {
   revokePortalAccess: (id: string) =>
     api.delete(`/students/${id}/portal-access`).then((r) => r.data),
   getTimeline: (id: string, params?: { limit?: number; before?: string }) =>
-    api
-      .get(`/students/${id}/timeline`, { params })
-      .then(
-        (r) =>
-          r.data as {
-            events: import('@/types').TimelineEvent[]
-            has_more: boolean
-            next_cursor?: string
-          }
-      ),
+    api.get(`/students/${id}/timeline`, { params }).then(
+      (r) =>
+        r.data as {
+          events: import('@/types').TimelineEvent[]
+          has_more: boolean
+          next_cursor?: string
+        }
+    ),
 }
 
 export const attendanceApi = {
@@ -400,6 +398,14 @@ export const portalDataApi = {
       .then((r) => r.data as { data: import('@/types').DeviceSession[]; max_devices: number }),
   removeDevice: (sessionId: string) =>
     portalApi.delete(`/devices/${sessionId}`).then((r) => r.data),
+  getMedical: (student_id?: string) =>
+    portalApi
+      .get('/medical', { params: student_id ? { student_id } : {} })
+      .then((r) => r.data as { data: import('@/types').StudentMedical | null }),
+  getIncidents: (params: { page?: number; limit?: number; student_id?: string } = {}) =>
+    portalApi
+      .get('/incidents', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Incident>),
 }
 
 export const artWallApi = {
@@ -469,4 +475,43 @@ export const announcementsApi = {
     publicApi
       .get('/public/announcements')
       .then((r) => r.data as { data: import('@/types').Announcement[] }),
+}
+
+export const medicalProfilesApi = {
+  get: (studentId: string) =>
+    api
+      .get(`/medical-profiles/${studentId}`)
+      .then((r) => r.data as { data: import('@/types').StudentMedical | null }),
+  upsert: (studentId: string, data: Record<string, unknown>) =>
+    api.put(`/medical-profiles/${studentId}`, data).then((r) => r.data),
+  delete: (studentId: string) => api.delete(`/medical-profiles/${studentId}`).then((r) => r.data),
+}
+
+export const incidentsApi = {
+  getAll: (
+    filters: {
+      page?: number
+      limit?: number
+      search?: string
+      student_id?: string
+      type?: string
+      severity?: string
+      status?: string
+      from_date?: string
+      to_date?: string
+    } = {}
+  ) =>
+    api
+      .get('/incidents', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Incident>),
+  getById: (id: string) =>
+    api.get(`/incidents/${id}`).then((r) => r.data as import('@/types').Incident),
+  getByStudent: (studentId: string, params: { page?: number; limit?: number } = {}) =>
+    api
+      .get(`/incidents/by-student/${studentId}`, { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Incident>),
+  create: (data: Record<string, unknown>) => api.post('/incidents', data).then((r) => r.data),
+  update: (id: string, data: Record<string, unknown>) =>
+    api.put(`/incidents/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/incidents/${id}`).then((r) => r.data),
 }

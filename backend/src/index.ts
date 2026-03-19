@@ -48,6 +48,8 @@ import portfolioReports from './routes/portfolioReports'
 import parents from './routes/parents'
 import parentAuth from './routes/parentAuth'
 import portal from './routes/portal'
+import medicalProfiles from './routes/medicalProfiles'
+import incidents from './routes/incidents'
 import { authMiddleware } from './middleware/auth'
 import { parentMiddleware } from './middleware/parentAuth'
 import { supabase } from './db/supabase'
@@ -188,6 +190,8 @@ app.route('/api/parents', parents)
 app.route('/api/daily-reports', dailyReports)
 app.route('/api/portfolio-entries', portfolioEntries)
 app.route('/api/portfolio-reports', portfolioReports)
+app.route('/api/medical-profiles', medicalProfiles)
+app.route('/api/incidents', incidents)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))
