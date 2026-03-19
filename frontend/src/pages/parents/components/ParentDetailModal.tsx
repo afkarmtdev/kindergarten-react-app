@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -12,6 +12,8 @@ import {
   Smartphone,
   Trash2,
   KeyRound,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { parentsApi } from '@/lib/api'
@@ -51,6 +53,15 @@ export function ParentDetailModal({ parentId, onClose }: Props) {
   const t = useT()
   const queryClient = useQueryClient()
   const [showPortalModal, setShowPortalModal] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const copyAccessCode = useCallback((code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true)
+      toast.success('Access code copied')
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [])
 
   const { data: parent, isLoading } = useQuery<Parent>({
     queryKey: ['parent-detail', parentId],
@@ -206,9 +217,18 @@ export function ParentDetailModal({ parentId, onClose }: Props) {
                     </span>
                   </div>
                   {parent.access_code && (
-                    <span className="font-mono text-sm font-bold text-gray-900 dark:text-white">
+                    <button
+                      onClick={() => copyAccessCode(parent.access_code!)}
+                      className="flex items-center gap-1.5 font-mono text-sm font-bold text-gray-900 dark:text-white hover:text-kinder-blue dark:hover:text-kinder-blue transition-colors"
+                      title="Copy access code"
+                    >
                       {parent.access_code}
-                    </span>
+                      {copied ? (
+                        <Check size={14} className="text-kinder-green" />
+                      ) : (
+                        <Copy size={14} className="text-gray-400" />
+                      )}
+                    </button>
                   )}
                 </div>
 
