@@ -74,6 +74,49 @@
   }
 }
 
+/* Floating doodles — used by landing page + portal */
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-18px) rotate(6deg); }
+}
+@keyframes lp-float-alt {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%      { transform: translateY(-12px) rotate(-8deg); }
+  66%      { transform: translateY(-6px)  rotate(4deg); }
+}
+@keyframes lp-float-slow {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50%      { transform: translateY(-26px) scale(1.06); }
+}
+.lp-float        { animation: lp-float      4s   ease-in-out infinite; }
+.lp-float-alt    { animation: lp-float-alt  5.5s ease-in-out infinite; }
+.lp-float-slow   { animation: lp-float-slow 7s   ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-float, .lp-float-alt, .lp-float-slow { animation: none; }
+}
+
+/* Sparkle twinkle — used by StarField in landing page + portal */
+@keyframes lp-twinkle {
+  0%, 100% { opacity: 0.12; transform: scale(0.8); }
+  50%       { opacity: 0.70; transform: scale(1.2); }
+}
+@keyframes lp-twinkle-slow {
+  0%, 100% { opacity: 0.08; transform: scale(0.85); }
+  50%       { opacity: 0.50; transform: scale(1.15); }
+}
+.lp-twinkle      { animation: lp-twinkle      2.4s ease-in-out infinite; }
+.lp-twinkle-slow { animation: lp-twinkle-slow 4.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-twinkle, .lp-twinkle-slow { animation: none; opacity: 0.30; }
+}
+
+/* Bottom sheet slide up */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.25s ease-out; }
+
 @keyframes rainbow-char {
   0%   { color: hsl(0,   100%, 60%); }
   14%  { color: hsl(30,  100%, 55%); }

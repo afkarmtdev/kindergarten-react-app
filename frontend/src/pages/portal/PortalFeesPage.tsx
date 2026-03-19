@@ -14,13 +14,6 @@ const STATUS_STYLES: Record<string, string> = {
   waived: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
 }
 
-const BORDER_STYLES: Record<string, string> = {
-  unpaid: 'border-l-red-400',
-  partial: 'border-l-yellow-400',
-  paid: 'border-l-kinder-green',
-  waived: 'border-l-gray-400',
-}
-
 const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
 
 const LIMIT = 100
@@ -167,7 +160,7 @@ export default function PortalFeesPage() {
           {filteredRecords.map((r) => (
             <div
               key={r.id}
-              className={`bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800 border-l-4 ${BORDER_STYLES[r.status] ?? 'border-l-gray-300'}`}
+              className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">

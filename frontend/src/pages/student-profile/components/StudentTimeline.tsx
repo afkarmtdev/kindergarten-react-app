@@ -9,6 +9,7 @@ import {
   ClipboardList,
   ChevronDown,
   Clock,
+  AlertTriangle,
 } from 'lucide-react'
 import { studentsApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
@@ -73,6 +74,14 @@ const EVENT_CONFIG: Record<
     text: 'text-yellow-700 dark:text-yellow-400',
     border: 'border-l-kinder-yellow',
     iconBg: 'bg-kinder-yellow',
+  },
+  incident: {
+    icon: AlertTriangle,
+    labelKey: 'incidents' as TranslationKey,
+    bg: 'bg-red-100/70 dark:bg-gray-800/50',
+    text: 'text-red-700 dark:text-red-400',
+    border: 'border-l-red-500',
+    iconBg: 'bg-red-500',
   },
 }
 
@@ -244,9 +253,7 @@ function EventCard({ event }: { event: TimelineEvent }) {
   const Icon = config.icon
 
   return (
-    <div
-      className={`relative flex items-start gap-3 p-3 rounded-xl ${config.bg} border-l-4 ${config.border}`}
-    >
+    <div className={`relative flex items-start gap-3 p-3 rounded-xl ${config.bg}`}>
       {/* Icon circle */}
       <div
         className={`w-8 h-8 rounded-xl ${config.iconBg} flex items-center justify-center shrink-0 cursor-default`}
@@ -281,9 +288,7 @@ function StreakCard({ item }: { item: Extract<DisplayItem, { kind: 'streak' }> }
   const isPositive = statusLower === 'present' || statusLower === 'late'
 
   return (
-    <div
-      className={`relative flex items-start gap-3 p-3 rounded-xl ${config.bg} border-l-4 ${config.border}`}
-    >
+    <div className={`relative flex items-start gap-3 p-3 rounded-xl ${config.bg}`}>
       {/* Icon circle */}
       <div
         className={`w-8 h-8 rounded-xl ${config.iconBg} flex items-center justify-center shrink-0 cursor-default`}
