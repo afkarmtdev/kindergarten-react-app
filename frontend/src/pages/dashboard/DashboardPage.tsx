@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { CalendarCheck, School, TrendingUp, Gift, Wallet, Users } from 'lucide-react'
 import { studentsApi, attendanceApi, classesApi, feesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
@@ -34,19 +35,31 @@ export function DashboardPage() {
   const today = useMemo(() => format(new Date(), 'yyyy-MM-dd'), [])
   const currentMonth = useMemo(() => format(new Date(), 'yyyy-MM'), [])
 
-  const { data: studentsCountData, isLoading: studentsLoading } = useQuery({
+  const {
+    data: studentsCountData,
+    isLoading: studentsLoading,
+    isError: studentsErr,
+  } = useQuery({
     queryKey: ['students-count'],
     queryFn: () => studentsApi.getCount(),
     staleTime: 60_000,
   })
 
-  const { data: classesCountData, isLoading: classesLoading } = useQuery({
+  const {
+    data: classesCountData,
+    isLoading: classesLoading,
+    isError: classesErr,
+  } = useQuery({
     queryKey: ['classes-count'],
     queryFn: () => classesApi.getCount(),
     staleTime: 60_000,
   })
 
-  const { data: summary, isLoading: summaryLoading } = useQuery({
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    isError: summaryErr,
+  } = useQuery({
     queryKey: ['attendance-summary'],
     queryFn: () => attendanceApi.getSummary(),
     staleTime: 30_000,
@@ -58,30 +71,62 @@ export function DashboardPage() {
     staleTime: 15_000,
   })
 
-  const { data: feesSummary, isLoading: feesLoading } = useQuery({
+  const {
+    data: feesSummary,
+    isLoading: feesLoading,
+    isError: feesErr,
+  } = useQuery({
     queryKey: ['fees-summary', currentMonth],
     queryFn: () => feesApi.getSummary(currentMonth),
     staleTime: 60_000,
   })
 
-  const { data: birthdayData } = useQuery({
+  const { data: birthdayData, isError: birthdayErr } = useQuery({
     queryKey: ['students-birthday-check', { status: 'active' }],
     queryFn: () =>
       studentsApi.getAll({ page: 1, limit: 5, birthday_today: true, status: 'active' }),
     staleTime: 5 * 60_000,
   })
 
-  const { data: attendanceTrend, isLoading: trendLoading } = useQuery({
+  const {
+    data: attendanceTrend,
+    isLoading: trendLoading,
+    isError: trendErr,
+  } = useQuery({
     queryKey: ['attendance-trend'],
     queryFn: () => attendanceApi.getTrend(6),
     staleTime: 5 * 60_000,
   })
 
-  const { data: feesTrend, isLoading: feesTrendLoading } = useQuery({
+  const {
+    data: feesTrend,
+    isLoading: feesTrendLoading,
+    isError: feesTrendErr,
+  } = useQuery({
     queryKey: ['fees-trend'],
     queryFn: () => feesApi.getTrend(6),
     staleTime: 5 * 60_000,
   })
+
+  // Notify admin when any dashboard RPC query fails
+  const errorFlags = [
+    studentsErr,
+    classesErr,
+    summaryErr,
+    feesErr,
+    birthdayErr,
+    trendErr,
+    feesTrendErr,
+  ]
+  const hasError = errorFlags.some(Boolean)
+  const toastShown = useRef(false)
+  useEffect(() => {
+    if (hasError && !toastShown.current) {
+      toastShown.current = true
+      toast.error('Some dashboard data failed to load. Try refreshing the page.')
+    }
+    if (!hasError) toastShown.current = false
+  }, [hasError])
 
   const birthdayStudents = birthdayData?.data ?? []
   const birthdayTotal = birthdayData?.meta?.total ?? 0
