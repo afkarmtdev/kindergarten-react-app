@@ -18,6 +18,7 @@ create index if not exists idx_parents_access_code on parents(access_code);
 create index if not exists idx_parents_email on parents(email);
 
 alter table parents enable row level security;
+drop policy if exists "Auth users manage parents" on parents;
 create policy "Auth users manage parents" on parents for all to authenticated using (true) with check (true);
 
 -- Step 2: Create junction table
@@ -34,6 +35,7 @@ create index if not exists idx_parent_students_parent on parent_students(parent_
 create index if not exists idx_parent_students_student on parent_students(student_id);
 
 alter table parent_students enable row level security;
+drop policy if exists "Auth users manage parent_students" on parent_students;
 create policy "Auth users manage parent_students" on parent_students for all to authenticated using (true) with check (true);
 
 -- Step 3: Add parent_id to parent_sessions (keep student_id for now)
@@ -49,20 +51,23 @@ select distinct on (lower(trim(parent_email)))
   parent_name, lower(trim(parent_email)), parent_phone
 from students
 where parent_email is not null and trim(parent_email) != ''
-order by lower(trim(parent_email)), created_at asc;
+order by lower(trim(parent_email)), created_at asc
+on conflict do nothing;
 
 -- 4b: Create parent rows for students without email (one parent per student)
 insert into parents (full_name, phone)
 select parent_name, parent_phone
 from students
-where parent_email is null or trim(parent_email) = '';
+where parent_email is null or trim(parent_email) = ''
+on conflict do nothing;
 
 -- 4c: Link students to parents (email-based matches)
 insert into parent_students (parent_id, student_id)
 select p.id, s.id
 from students s
 join parents p on lower(trim(p.email)) = lower(trim(s.parent_email))
-where s.parent_email is not null and trim(s.parent_email) != '';
+where s.parent_email is not null and trim(s.parent_email) != ''
+on conflict do nothing;
 
 -- 4d: Link students to parents (no-email, matched by name+phone)
 insert into parent_students (parent_id, student_id)
@@ -70,7 +75,8 @@ select p.id, s.id
 from students s
 join parents p on p.full_name = s.parent_name and p.phone = s.parent_phone
 where (s.parent_email is null or trim(s.parent_email) = '')
-  and p.email is null;
+  and p.email is null
+on conflict do nothing;
 
 -- 4e: Copy access codes and PIN hashes from students to their parents
 update parents p

@@ -2,7 +2,7 @@
 create extension if not exists "uuid-ossp";
 
 -- Classrooms
-create table classrooms (
+create table if not exists classrooms (
   id uuid primary key default uuid_generate_v4(),
   name text not null,
   teacher_name text not null,
@@ -11,7 +11,7 @@ create table classrooms (
 );
 
 -- Students
-create table students (
+create table if not exists students (
   id uuid primary key default uuid_generate_v4(),
   full_name text not null,
   date_of_birth date not null,
@@ -35,7 +35,7 @@ create table students (
 -- create index if not exists idx_students_class_id on students(class_id);
 
 -- Attendance
-create table attendance (
+create table if not exists attendance (
   id uuid primary key default uuid_generate_v4(),
   student_id uuid references students(id) on delete cascade,
   date date not null,
@@ -47,9 +47,9 @@ create table attendance (
 );
 
 -- Indexes
-create index idx_attendance_date on attendance(date);
-create index idx_attendance_student on attendance(student_id);
-create index idx_students_class_id on students(class_id);
+create index if not exists idx_attendance_date on attendance(date);
+create index if not exists idx_attendance_student on attendance(student_id);
+create index if not exists idx_students_class_id on students(class_id);
 
 -- RLS (Row Level Security) - enable for production
 alter table students enable row level security;
@@ -57,22 +57,33 @@ alter table attendance enable row level security;
 alter table classrooms enable row level security;
 
 -- Allow authenticated users full access (adjust per role if needed)
+drop policy if exists "Auth users can read students" on students;
 create policy "Auth users can read students" on students for select to authenticated using (true);
+drop policy if exists "Auth users can insert students" on students;
 create policy "Auth users can insert students" on students for insert to authenticated with check (true);
+drop policy if exists "Auth users can update students" on students;
 create policy "Auth users can update students" on students for update to authenticated using (true);
+drop policy if exists "Auth users can delete students" on students;
 create policy "Auth users can delete students" on students for delete to authenticated using (true);
 
+drop policy if exists "Auth users can read attendance" on attendance;
 create policy "Auth users can read attendance" on attendance for select to authenticated using (true);
+drop policy if exists "Auth users can insert attendance" on attendance;
 create policy "Auth users can insert attendance" on attendance for insert to authenticated with check (true);
+drop policy if exists "Auth users can update attendance" on attendance;
 create policy "Auth users can update attendance" on attendance for update to authenticated using (true);
 
+drop policy if exists "Auth users can read classrooms" on classrooms;
 create policy "Auth users can read classrooms" on classrooms for select to authenticated using (true);
+drop policy if exists "Auth users can insert classrooms" on classrooms;
 create policy "Auth users can insert classrooms" on classrooms for insert to authenticated with check (true);
+drop policy if exists "Auth users can update classrooms" on classrooms;
 create policy "Auth users can update classrooms" on classrooms for update to authenticated using (true);
+drop policy if exists "Auth users can delete classrooms" on classrooms;
 create policy "Auth users can delete classrooms" on classrooms for delete to authenticated using (true);
 
 -- Gallery
-create table gallery_items (
+create table if not exists gallery_items (
   id             uuid primary key default uuid_generate_v4(),
   photo_url      text not null,
   caption        text,
@@ -81,21 +92,26 @@ create table gallery_items (
   created_at     timestamptz default now()
 );
 
-create index idx_gallery_display_order on gallery_items(display_order);
+create index if not exists idx_gallery_display_order on gallery_items(display_order);
 
 alter table gallery_items enable row level security;
 
 -- Authenticated users (admin) — full CRUD
+drop policy if exists "Auth users can read gallery" on gallery_items;
 create policy "Auth users can read gallery"   on gallery_items for select to authenticated using (true);
+drop policy if exists "Auth users can insert gallery" on gallery_items;
 create policy "Auth users can insert gallery" on gallery_items for insert to authenticated with check (true);
+drop policy if exists "Auth users can update gallery" on gallery_items;
 create policy "Auth users can update gallery" on gallery_items for update to authenticated using (true);
+drop policy if exists "Auth users can delete gallery" on gallery_items;
 create policy "Auth users can delete gallery" on gallery_items for delete to authenticated using (true);
 
 -- Anonymous users (LandingPage visitors) — read visible items only
+drop policy if exists "Anyone can read visible gallery" on gallery_items;
 create policy "Anyone can read visible gallery" on gallery_items for select to anon using (is_visible = true);
 
 -- Announcements
-create table announcements (
+create table if not exists announcements (
   id          uuid primary key default uuid_generate_v4(),
   title       text not null,
   body        text not null,
@@ -106,24 +122,29 @@ create table announcements (
   created_at  timestamptz default now()
 );
 
-create index idx_announcements_created on announcements(created_at desc);
-create index idx_announcements_pinned  on announcements(is_pinned);
+create index if not exists idx_announcements_created on announcements(created_at desc);
+create index if not exists idx_announcements_pinned  on announcements(is_pinned);
 
 alter table announcements enable row level security;
 
 -- Authenticated users (admin) — full CRUD
+drop policy if exists "Auth users can read announcements" on announcements;
 create policy "Auth users can read announcements"   on announcements for select to authenticated using (true);
+drop policy if exists "Auth users can insert announcements" on announcements;
 create policy "Auth users can insert announcements" on announcements for insert to authenticated with check (true);
+drop policy if exists "Auth users can update announcements" on announcements;
 create policy "Auth users can update announcements" on announcements for update to authenticated using (true);
+drop policy if exists "Auth users can delete announcements" on announcements;
 create policy "Auth users can delete announcements" on announcements for delete to authenticated using (true);
 
 -- Anonymous users (LandingPage visitors) — non-expired only
+drop policy if exists "Anyone can read active announcements" on announcements;
 create policy "Anyone can read active announcements" on announcements
   for select to anon
   using (expires_at is null or expires_at >= current_date);
 
 -- Document Numbering
-create table document_numbering (
+create table if not exists document_numbering (
   id             uuid primary key default uuid_generate_v4(),
   document_type  text unique not null,
   segments       jsonb not null default '[]',
@@ -133,12 +154,15 @@ create table document_numbering (
 );
 
 alter table document_numbering enable row level security;
+drop policy if exists "Auth users can read doc numbering" on document_numbering;
 create policy "Auth users can read doc numbering"   on document_numbering for select to authenticated using (true);
+drop policy if exists "Auth users can insert doc numbering" on document_numbering;
 create policy "Auth users can insert doc numbering" on document_numbering for insert to authenticated with check (true);
+drop policy if exists "Auth users can update doc numbering" on document_numbering;
 create policy "Auth users can update doc numbering" on document_numbering for update to authenticated using (true);
 
 -- Fee Plans
-create table fee_plans (
+create table if not exists fee_plans (
   id          uuid primary key default uuid_generate_v4(),
   name        text not null,
   type        text check (type in ('tuition','activity','uniform','registration','other')) not null default 'tuition',
@@ -148,13 +172,17 @@ create table fee_plans (
 );
 
 alter table fee_plans enable row level security;
+drop policy if exists "Auth users can read fee plans" on fee_plans;
 create policy "Auth users can read fee plans"   on fee_plans for select to authenticated using (true);
+drop policy if exists "Auth users can insert fee plans" on fee_plans;
 create policy "Auth users can insert fee plans" on fee_plans for insert to authenticated with check (true);
+drop policy if exists "Auth users can update fee plans" on fee_plans;
 create policy "Auth users can update fee plans" on fee_plans for update to authenticated using (true);
+drop policy if exists "Auth users can delete fee plans" on fee_plans;
 create policy "Auth users can delete fee plans" on fee_plans for delete to authenticated using (true);
 
 -- Fee Records
-create table fee_records (
+create table if not exists fee_records (
   id              uuid primary key default uuid_generate_v4(),
   student_id      uuid references students(id) on delete cascade not null,
   type            text check (type in ('tuition','activity','uniform','registration','other')) not null default 'tuition',
@@ -170,18 +198,22 @@ create table fee_records (
   created_at      timestamptz default now()
 );
 
-create index idx_fee_records_student  on fee_records(student_id);
-create index idx_fee_records_status   on fee_records(status);
-create index idx_fee_records_due_date on fee_records(due_date);
+create index if not exists idx_fee_records_student  on fee_records(student_id);
+create index if not exists idx_fee_records_status   on fee_records(status);
+create index if not exists idx_fee_records_due_date on fee_records(due_date);
 
 alter table fee_records enable row level security;
+drop policy if exists "Auth users can read fee records" on fee_records;
 create policy "Auth users can read fee records"   on fee_records for select to authenticated using (true);
+drop policy if exists "Auth users can insert fee records" on fee_records;
 create policy "Auth users can insert fee records" on fee_records for insert to authenticated with check (true);
+drop policy if exists "Auth users can update fee records" on fee_records;
 create policy "Auth users can update fee records" on fee_records for update to authenticated using (true);
+drop policy if exists "Auth users can delete fee records" on fee_records;
 create policy "Auth users can delete fee records" on fee_records for delete to authenticated using (true);
 
 -- School Info (single-row config)
-create table school_info (
+create table if not exists school_info (
   id                   uuid primary key default gen_random_uuid(),
   school_name          text not null default '',
   address              text not null default '',
@@ -209,9 +241,13 @@ create table school_info (
 --   add column if not exists registration_number text not null default '';
 
 alter table school_info enable row level security;
+drop policy if exists "Auth users can read school info" on school_info;
 create policy "Auth users can read school info"   on school_info for select to authenticated using (true);
+drop policy if exists "Auth users can insert school info" on school_info;
 create policy "Auth users can insert school info" on school_info for insert to authenticated with check (true);
+drop policy if exists "Auth users can update school info" on school_info;
 create policy "Auth users can update school info" on school_info for update to authenticated using (true);
+drop policy if exists "Anyone can read school info" on school_info;
 create policy "Anyone can read school info"       on school_info for select to anon using (true);
 
 -- Storage Bucket Policies
@@ -273,7 +309,7 @@ create policy "Auth users can delete artwork photos"  on storage.objects for del
 create policy "Anyone can read artwork photos"        on storage.objects for select to anon, authenticated using (bucket_id = 'artwork-photos');
 
 -- Testimonials
-create table testimonials (
+create table if not exists testimonials (
   id            uuid primary key default uuid_generate_v4(),
   parent_name   text not null,
   parent_role   text,
@@ -284,14 +320,16 @@ create table testimonials (
   created_at    timestamptz default now()
 );
 
-create index idx_testimonials_display_order on testimonials(display_order);
+create index if not exists idx_testimonials_display_order on testimonials(display_order);
 
 alter table testimonials enable row level security;
+drop policy if exists "Auth users manage testimonials" on testimonials;
 create policy "Auth users manage testimonials"        on testimonials for all    to authenticated using (true) with check (true);
+drop policy if exists "Anyone reads visible testimonials" on testimonials;
 create policy "Anyone reads visible testimonials"     on testimonials for select to anon          using (is_visible = true);
 
 -- Inquiries
-create table inquiries (
+create table if not exists inquiries (
   id          uuid primary key default uuid_generate_v4(),
   parent_name text not null,
   child_name  text not null,
@@ -301,14 +339,16 @@ create table inquiries (
   created_at  timestamptz default now()
 );
 
-create index idx_inquiries_created_at on inquiries(created_at desc);
+create index if not exists idx_inquiries_created_at on inquiries(created_at desc);
 
 alter table inquiries enable row level security;
+drop policy if exists "Auth users manage inquiries" on inquiries;
 create policy "Auth users manage inquiries"    on inquiries for all    to authenticated using (true) with check (true);
+drop policy if exists "Anyone can submit an inquiry" on inquiries;
 create policy "Anyone can submit an inquiry"   on inquiries for insert to anon          with check (true);
 
 -- Art Wall
-create table art_wall (
+create table if not exists art_wall (
   id             uuid primary key default uuid_generate_v4(),
   photo_url      text not null,
   caption        text,
@@ -323,15 +363,20 @@ create table art_wall (
 -- Run this if the table already exists:
 -- alter table art_wall add column if not exists tilt_angle int check (tilt_angle between -15 and 15);
 
-create index idx_art_wall_display_order on art_wall(display_order);
-create index idx_art_wall_student_id on art_wall(student_id);
+create index if not exists idx_art_wall_display_order on art_wall(display_order);
+create index if not exists idx_art_wall_student_id on art_wall(student_id);
 
 alter table art_wall enable row level security;
 
+drop policy if exists "Auth users can read art_wall" on art_wall;
 create policy "Auth users can read art_wall"   on art_wall for select to authenticated using (true);
+drop policy if exists "Auth users can insert art_wall" on art_wall;
 create policy "Auth users can insert art_wall" on art_wall for insert to authenticated with check (true);
+drop policy if exists "Auth users can update art_wall" on art_wall;
 create policy "Auth users can update art_wall" on art_wall for update to authenticated using (true);
+drop policy if exists "Auth users can delete art_wall" on art_wall;
 create policy "Auth users can delete art_wall" on art_wall for delete to authenticated using (true);
+drop policy if exists "Anyone can read visible art_wall" on art_wall;
 create policy "Anyone can read visible art_wall" on art_wall for select to anon using (is_visible = true);
 
 -- ── Parent Portal ─────────────────────────────────────────────────────────────
@@ -357,6 +402,7 @@ create index if not exists idx_parent_sessions_student on parent_sessions(studen
 create index if not exists idx_parent_sessions_token   on parent_sessions(token_hash);
 
 alter table parent_sessions enable row level security;
+drop policy if exists "Auth users manage parent sessions" on parent_sessions;
 create policy "Auth users manage parent sessions" on parent_sessions for all to authenticated using (true) with check (true);
 
 -- Daily activity reports
@@ -379,6 +425,7 @@ create index if not exists idx_daily_reports_student on daily_reports(student_id
 create index if not exists idx_daily_reports_date    on daily_reports(report_date);
 
 alter table daily_reports enable row level security;
+drop policy if exists "Auth users manage daily reports" on daily_reports;
 create policy "Auth users manage daily reports" on daily_reports for all to authenticated using (true) with check (true);
 
 -- Portfolio entries (KSPK developmental observations)
@@ -398,6 +445,7 @@ create index if not exists idx_portfolio_entries_student on portfolio_entries(st
 create index if not exists idx_portfolio_entries_term    on portfolio_entries(term);
 
 alter table portfolio_entries enable row level security;
+drop policy if exists "Auth users manage portfolio entries" on portfolio_entries;
 create policy "Auth users manage portfolio entries" on portfolio_entries for all to authenticated using (true) with check (true);
 
 -- Termly report cards
@@ -414,6 +462,7 @@ create table if not exists portfolio_reports (
 create index if not exists idx_portfolio_reports_student on portfolio_reports(student_id);
 
 alter table portfolio_reports enable row level security;
+drop policy if exists "Auth users manage portfolio reports" on portfolio_reports;
 create policy "Auth users manage portfolio reports" on portfolio_reports for all to authenticated using (true) with check (true);
 
 -- portfolio-photos storage bucket

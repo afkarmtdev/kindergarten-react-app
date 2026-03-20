@@ -27,6 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_student_medical_student_id ON student_medical(stu
 
 -- RLS
 ALTER TABLE student_medical ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Authenticated users full access to student_medical" ON student_medical;
 CREATE POLICY "Authenticated users full access to student_medical"
   ON student_medical FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -62,5 +63,6 @@ CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status) WHERE delet
 
 -- RLS
 ALTER TABLE incidents ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Authenticated users full access to incidents" ON incidents;
 CREATE POLICY "Authenticated users full access to incidents"
   ON incidents FOR ALL TO authenticated USING (true) WITH CHECK (true);
