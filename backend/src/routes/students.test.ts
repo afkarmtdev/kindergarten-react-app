@@ -1,11 +1,60 @@
 import { describe, test, expect, beforeEach, mock } from 'bun:test'
-import { mockSupabase, setMockResponse, clearMockResponses } from '../test-utils/mockSupabase'
+import {
+  mockSupabase,
+  setMockResponse,
+  setRpcMockResponse,
+  clearMockResponses,
+} from '../test-utils/mockSupabase'
 
 mock.module('../db/supabase', () => ({ supabase: mockSupabase }))
 
 import students from './students'
 
 beforeEach(() => clearMockResponses())
+
+// ── GET /count — Active student count ─────────────────────────────────────────
+
+describe('GET /count — active student count', () => {
+  test('returns count from RPC', async () => {
+    setRpcMockResponse('dashboard_active_student_count', { data: 42, error: null })
+
+    const res = await students.request('/count')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.count).toBe(42)
+  })
+
+  test('returns 500 on RPC error', async () => {
+    setRpcMockResponse('dashboard_active_student_count', {
+      data: null,
+      error: { message: 'RPC failed' },
+    })
+
+    const res = await students.request('/count')
+    expect(res.status).toBe(500)
+  })
+
+  test('returns 0 when RPC returns zero students', async () => {
+    setRpcMockResponse('dashboard_active_student_count', { data: 0, error: null })
+
+    const res = await students.request('/count')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.count).toBe(0)
+  })
+
+  test('returns 0 when RPC returns null data', async () => {
+    setRpcMockResponse('dashboard_active_student_count', { data: null, error: null })
+
+    const res = await students.request('/count')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.count).toBe(0)
+  })
+})
 
 // ── GET / — List students ────────────────────────────────────────────────────
 
@@ -180,6 +229,60 @@ describe('GET / — filter params', () => {
   })
 })
 
+// ── GET /?birthday_today=true — Birthday filter ──────────────────────────────
+
+describe('GET /?birthday_today=true — birthday filter', () => {
+  test('returns students with birthdays today via RPC', async () => {
+    setRpcMockResponse('dashboard_birthdays_today', {
+      data: [
+        {
+          id: 's1',
+          full_name: 'Birthday Kid',
+          photo_url: null,
+          class_name: 'Mawar',
+          date_of_birth: '2020-03-20',
+        },
+      ],
+      error: null,
+    })
+    setRpcMockResponse('dashboard_birthday_count', {
+      data: 1,
+      error: null,
+    })
+
+    const res = await students.request('/?birthday_today=true')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.data).toHaveLength(1)
+    expect(json.data[0].full_name).toBe('Birthday Kid')
+    expect(json.meta.total).toBe(1)
+  })
+
+  test('returns empty when no birthdays today', async () => {
+    setRpcMockResponse('dashboard_birthdays_today', { data: [], error: null })
+    setRpcMockResponse('dashboard_birthday_count', { data: 0, error: null })
+
+    const res = await students.request('/?birthday_today=true')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.data).toEqual([])
+    expect(json.meta.total).toBe(0)
+  })
+
+  test('returns 500 on RPC error', async () => {
+    setRpcMockResponse('dashboard_birthdays_today', {
+      data: null,
+      error: { message: 'RPC failed' },
+    })
+    setRpcMockResponse('dashboard_birthday_count', { data: null, error: null })
+
+    const res = await students.request('/?birthday_today=true')
+    expect(res.status).toBe(500)
+  })
+})
+
 // ── GET /:id — Single student ────────────────────────────────────────────────
 
 describe('GET /:id — single student', () => {
@@ -257,6 +360,22 @@ describe('POST / — create student', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ full_name: 'Ali' }),
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects missing full_name specifically', async () => {
+    const res = await students.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date_of_birth: '2019-05-10',
+        gender: 'male',
+        parent_name: 'Abu',
+        parent_email: 'abu@example.com',
+        parent_phone: '0123456789',
+      }),
     })
 
     expect(res.status).toBe(400)
@@ -406,6 +525,23 @@ describe('PUT /:id — update student', () => {
 
     expect(res.status).toBe(200)
   })
+
+  test('returns 500 when database update fails', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: { message: 'update failed — connection lost' },
+    })
+
+    const res = await students.request('/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name: 'Ali Updated' }),
+    })
+
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toBe('update failed — connection lost')
+  })
 })
 
 // ── PUT /:id — Parent auto-link on update ────────────────────────────────────
@@ -475,6 +611,33 @@ describe('DELETE /:id — delete student', () => {
 
     const res = await students.request('/1', { method: 'DELETE' })
     expect(res.status).toBe(500)
+  })
+
+  test('returns 200 even when student was already soft-deleted (mock returns no error)', async () => {
+    // The route uses .update(auditDelete(c)).eq('id', id).is('deleted_at', null)
+    // When the student is already deleted, the WHERE clause matches no rows.
+    // Supabase UPDATE with no matching rows returns { data: null, error: null, count: 0 }.
+    // The route treats no-error as success — this verifies that behaviour.
+    setMockResponse('students', { data: null, error: null, count: 0 })
+
+    const res = await students.request('/already-deleted-id', { method: 'DELETE' })
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.message).toBe('Student deleted')
+  })
+
+  test('returns 500 on database error during soft-delete', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: { message: 'DB write failed' },
+    })
+
+    const res = await students.request('/bad-id', { method: 'DELETE' })
+    expect(res.status).toBe(500)
+
+    const json = await res.json()
+    expect(json.error).toBe('DB write failed')
   })
 })
 

@@ -1,4 +1,4 @@
-import { describe, test, expect, mock } from 'bun:test'
+import { describe, test, expect, beforeEach, mock } from 'bun:test'
 import { Hono } from 'hono'
 import incidents from './incidents'
 import {
@@ -36,6 +36,12 @@ const validIncident = {
   action_taken: 'Applied ice pack, comforted student',
 }
 
+beforeEach(() => {
+  clearMockResponses()
+  setMockResponse('incidents', { data: [], error: null, count: 0 })
+  setMockResponse('students', { data: [], error: null, count: 0 })
+})
+
 describe('GET /api/incidents', () => {
   test('returns paginated list with meta', async () => {
     const res = await app.request('/api/incidents')
@@ -55,9 +61,52 @@ describe('GET /api/incidents', () => {
     expect(res.status).toBe(200)
   })
 
+  test('accepts status filter', async () => {
+    const res = await app.request('/api/incidents?status=open')
+    expect(res.status).toBe(200)
+  })
+
+  test('accepts resolved status filter', async () => {
+    const res = await app.request('/api/incidents?status=resolved')
+    expect(res.status).toBe(200)
+  })
+
+  test('accepts from_date and to_date range filters', async () => {
+    const res = await app.request('/api/incidents?from_date=2026-01-01&to_date=2026-03-31')
+    expect(res.status).toBe(200)
+  })
+
+  test('accepts from_date alone', async () => {
+    const res = await app.request('/api/incidents?from_date=2026-01-01')
+    expect(res.status).toBe(200)
+  })
+
+  test('accepts to_date alone', async () => {
+    const res = await app.request('/api/incidents?to_date=2026-03-31')
+    expect(res.status).toBe(200)
+  })
+
   test('rejects invalid type filter', async () => {
     const res = await app.request('/api/incidents?type=invalid')
     expect(res.status).toBe(400)
+  })
+
+  test('rejects invalid severity filter', async () => {
+    const res = await app.request('/api/incidents?severity=critical')
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects invalid status filter', async () => {
+    const res = await app.request('/api/incidents?status=pending')
+    expect(res.status).toBe(400)
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('incidents', { data: null, error: { message: 'query failed' }, count: 0 })
+    const res = await app.request('/api/incidents')
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body.error).toBe('query failed')
   })
 })
 
@@ -69,6 +118,14 @@ describe('GET /api/incidents/by-student/:studentId', () => {
     expect(body).toHaveProperty('data')
     expect(body).toHaveProperty('meta')
   })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('incidents', { data: null, error: { message: 'db error' }, count: 0 })
+    const res = await app.request(`/api/incidents/by-student/${VALID_UUID}`)
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body.error).toBe('db error')
+  })
 })
 
 describe('POST /api/incidents', () => {
@@ -79,6 +136,46 @@ describe('POST /api/incidents', () => {
       body: JSON.stringify(validIncident),
     })
     expect(res.status).toBe(201)
+  })
+
+  test('rejects missing student_id', async () => {
+    const { student_id, ...noStudentId } = validIncident
+    const res = await app.request('/api/incidents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(noStudentId),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects missing type', async () => {
+    const { type, ...noType } = validIncident
+    const res = await app.request('/api/incidents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(noType),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects missing severity', async () => {
+    const { severity, ...noSeverity } = validIncident
+    const res = await app.request('/api/incidents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(noSeverity),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects missing incident_date', async () => {
+    const { incident_date, ...noDate } = validIncident
+    const res = await app.request('/api/incidents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(noDate),
+    })
+    expect(res.status).toBe(400)
   })
 
   test('rejects missing description', async () => {
@@ -131,20 +228,59 @@ describe('POST /api/incidents', () => {
 
 describe('PUT /api/incidents/:id', () => {
   test('accepts partial update', async () => {
+    setMockResponse('incidents', { data: { id: 'some-id', status: 'resolved' }, error: null })
     const res = await app.request('/api/incidents/some-id', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'resolved' }),
     })
     expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.status).toBe('resolved')
+  })
+
+  test('accepts full incident update', async () => {
+    setMockResponse('incidents', {
+      data: { id: 'some-id', ...validIncident, follow_up_notes: 'Student recovered well' },
+      error: null,
+    })
+    const res = await app.request('/api/incidents/some-id', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...validIncident, follow_up_notes: 'Student recovered well' }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.follow_up_notes).toBe('Student recovered well')
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('incidents', { data: null, error: { message: 'update failed' } })
+    const res = await app.request('/api/incidents/some-id', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'resolved' }),
+    })
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body.error).toBe('update failed')
   })
 })
 
 describe('DELETE /api/incidents/:id', () => {
-  test('returns success', async () => {
+  test('returns success message', async () => {
+    setMockResponse('incidents', { data: null, error: null })
     const res = await app.request('/api/incidents/some-id', { method: 'DELETE' })
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.message).toBe('Incident deleted')
+  })
+
+  test('returns 500 on database error', async () => {
+    setMockResponse('incidents', { data: null, error: { message: 'delete failed' } })
+    const res = await app.request('/api/incidents/some-id', { method: 'DELETE' })
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body.error).toBe('delete failed')
   })
 })
