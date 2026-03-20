@@ -635,7 +635,7 @@ export function LandingPage() {
                     />
                   </svg>
                 </span>
-                <span className="block md:inline"> {t('heroPart2')}</span>
+                <span className="block xl:inline"> {t('heroPart2')}</span>
               </h1>
 
               <p className="lp-enter-2 text-gray-500 dark:text-gray-400 text-lg md:text-xl max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-10">

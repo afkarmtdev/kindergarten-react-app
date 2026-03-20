@@ -7,7 +7,7 @@ import { APP_NAME } from '@/lib/version'
  */
 export function usePageTitle(page?: string) {
   useEffect(() => {
-    document.title = page ? `${page} — ${APP_NAME}` : APP_NAME
+    document.title = page ? `${page} - ${APP_NAME}` : APP_NAME
     return () => {
       document.title = APP_NAME
     }
