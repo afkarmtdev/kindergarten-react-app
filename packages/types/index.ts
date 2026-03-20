@@ -543,3 +543,36 @@ export interface Incident extends AuditFields {
     photo_url?: string
   } | null
 }
+
+// ── Careers ──────────────────────────────────────────────────────────────────
+
+export type JobPostingStatus = 'draft' | 'published' | 'closed'
+export type JobType = 'full_time' | 'part_time' | 'internship' | 'contract'
+export type ApplicationStatus = 'new' | 'reviewed' | 'interviewed' | 'hired' | 'rejected'
+
+export interface JobPosting extends AuditFields {
+  id: string
+  title: string
+  type: JobType
+  department?: string | null
+  description: string
+  requirements?: string | null
+  salary_min?: number | null
+  salary_max?: number | null
+  status: JobPostingStatus
+  display_order: number
+  created_at: string
+}
+
+export interface JobApplication extends AuditFields {
+  id: string
+  posting_id: string
+  applicant_name: string
+  email: string
+  phone: string
+  resume_url?: string | null
+  cover_message?: string | null
+  status: ApplicationStatus
+  created_at: string
+  posting_title?: string
+}

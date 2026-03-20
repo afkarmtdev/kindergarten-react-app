@@ -22,6 +22,7 @@ import {
   ClipboardList,
   UserCheck,
   ShieldAlert,
+  Briefcase,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react'
@@ -114,6 +115,7 @@ export function AdminLayout() {
     {
       items: [
         { to: '/admin/inquiries', icon: Inbox, label: t('inquiries') },
+        { to: '/admin/careers', icon: Briefcase, label: t('careers') },
         { to: '/admin/settings', icon: Settings, label: t('settingsPage') },
       ],
     },

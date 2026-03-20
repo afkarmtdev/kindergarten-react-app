@@ -66,6 +66,7 @@ export const studentsApi = {
     api
       .get('/students', { params: filters })
       .then((r) => r.data as PaginatedResponse<import('@/types').Student>),
+  getCount: () => api.get('/students/count').then((r) => r.data as { count: number }),
   getById: (id: string) => api.get(`/students/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post('/students', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/students/${id}`, data).then((r) => r.data),
@@ -117,6 +118,7 @@ export const classesApi = {
     api
       .get('/classes', { params: filters })
       .then((r) => r.data as PaginatedResponse<import('@/types').ClassRoom>),
+  getCount: () => api.get('/classes/count').then((r) => r.data as { count: number }),
   getById: (id: string) => api.get(`/classes/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post('/classes', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/classes/${id}`, data).then((r) => r.data),
@@ -475,6 +477,51 @@ export const announcementsApi = {
     publicApi
       .get('/public/announcements')
       .then((r) => r.data as { data: import('@/types').Announcement[] }),
+}
+
+export const careersApi = {
+  // Public (no auth)
+  getPublicPostings: () =>
+    publicApi
+      .get('/public/careers/postings')
+      .then((r) => r.data as { data: import('@/types').JobPosting[] }),
+  submitApplication: (data: {
+    posting_id: string
+    applicant_name: string
+    email: string
+    phone: string
+    resume_url?: string
+    cover_message?: string
+  }) => publicApi.post('/public/careers', data).then((r) => r.data),
+
+  // Admin — Postings
+  getPostings: (params: { page?: number; limit?: number; search?: string; status?: string } = {}) =>
+    api
+      .get('/careers/postings', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').JobPosting>),
+  createPosting: (data: unknown) => api.post('/careers/postings', data).then((r) => r.data),
+  updatePosting: (id: string, data: unknown) =>
+    api.put(`/careers/postings/${id}`, data).then((r) => r.data),
+  deletePosting: (id: string) => api.delete(`/careers/postings/${id}`).then((r) => r.data),
+
+  // Admin — Applications
+  getApplications: (
+    params: {
+      page?: number
+      limit?: number
+      search?: string
+      status?: string
+      posting_id?: string
+    } = {}
+  ) =>
+    api
+      .get('/careers/applications', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').JobApplication>),
+  getApplication: (id: string) =>
+    api.get(`/careers/applications/${id}`).then((r) => r.data as import('@/types').JobApplication),
+  updateApplicationStatus: (id: string, status: string) =>
+    api.put(`/careers/applications/${id}/status`, { status }).then((r) => r.data),
+  deleteApplication: (id: string) => api.delete(`/careers/applications/${id}`).then((r) => r.data),
 }
 
 export const medicalProfilesApi = {

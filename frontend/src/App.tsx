@@ -85,6 +85,14 @@ const PortfolioReportPage = lazy(() =>
 const IncidentsPage = lazy(() =>
   import('@/pages/incidents/IncidentsPage').then((m) => ({ default: m.IncidentsPage }))
 )
+const CareersPage = lazy(() =>
+  import('@/pages/careers/CareersPage').then((m) => ({ default: m.CareersPage }))
+)
+const JobApplicationsPage = lazy(() =>
+  import('@/pages/careers/JobApplicationsPage').then((m) => ({
+    default: m.JobApplicationsPage,
+  }))
+)
 const PortalMedicalPage = lazy(() => import('@/pages/portal/PortalMedicalPage'))
 const PortalIncidentsPage = lazy(() => import('@/pages/portal/PortalIncidentsPage'))
 
@@ -389,6 +397,26 @@ export default function App() {
                     <ErrorBoundary>
                       <Suspense fallback={<CuteLoader />}>
                         <IncidentsPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="careers"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <CareersPage />
+                      </Suspense>
+                    </ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="careers/applications"
+                  element={
+                    <ErrorBoundary>
+                      <Suspense fallback={<CuteLoader />}>
+                        <JobApplicationsPage />
                       </Suspense>
                     </ErrorBoundary>
                   }
