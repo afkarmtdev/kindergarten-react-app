@@ -34,15 +34,15 @@ export function DashboardPage() {
   const today = useMemo(() => format(new Date(), 'yyyy-MM-dd'), [])
   const currentMonth = useMemo(() => format(new Date(), 'yyyy-MM'), [])
 
-  const { data: studentsData, isLoading: studentsLoading } = useQuery({
-    queryKey: ['students', { page: 1, limit: 1, status: 'active' }],
-    queryFn: () => studentsApi.getAll({ page: 1, limit: 1, status: 'active' }),
+  const { data: studentsCountData, isLoading: studentsLoading } = useQuery({
+    queryKey: ['students-count'],
+    queryFn: () => studentsApi.getCount(),
     staleTime: 60_000,
   })
 
-  const { data: classesData, isLoading: classesLoading } = useQuery({
-    queryKey: ['classes', { page: 1, limit: 1, status: 'active' }],
-    queryFn: () => classesApi.getAll({ page: 1, limit: 1, status: 'active' }),
+  const { data: classesCountData, isLoading: classesLoading } = useQuery({
+    queryKey: ['classes-count'],
+    queryFn: () => classesApi.getCount(),
     staleTime: 60_000,
   })
 
@@ -67,7 +67,7 @@ export function DashboardPage() {
   const { data: birthdayData } = useQuery({
     queryKey: ['students-birthday-check', { status: 'active' }],
     queryFn: () =>
-      studentsApi.getAll({ page: 1, limit: 100, birthday_today: true, status: 'active' }),
+      studentsApi.getAll({ page: 1, limit: 5, birthday_today: true, status: 'active' }),
     staleTime: 5 * 60_000,
   })
 
@@ -84,9 +84,10 @@ export function DashboardPage() {
   })
 
   const birthdayStudents = birthdayData?.data ?? []
+  const birthdayTotal = birthdayData?.meta?.total ?? 0
 
-  const totalStudents = studentsData?.meta?.total ?? 0
-  const totalClasses = classesData?.meta?.total ?? 0
+  const totalStudents = studentsCountData?.count ?? 0
+  const totalClasses = classesCountData?.count ?? 0
   const todayRecords: { id: string; status: string; students?: { full_name: string } }[] =
     todayData?.data ?? []
   const presentToday = todayRecords.filter((r) => r.status === 'present').length
@@ -305,6 +306,11 @@ export function DashboardPage() {
                   </span>
                 </div>
               ))}
+              {birthdayTotal > birthdayStudents.length && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                  {t('andMoreBirthdays', { n: birthdayTotal - birthdayStudents.length })}
+                </p>
+              )}
             </div>
           )}
         </div>

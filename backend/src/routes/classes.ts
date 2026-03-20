@@ -24,6 +24,18 @@ const paginationSchema = z.object({
   status: z.enum(['active', 'graduated', '']).optional(),
 })
 
+// GET /count — lightweight active class count (no joins)
+classes.get('/count', async (c) => {
+  const { count, error } = await supabase
+    .from('classrooms')
+    .select('id', { count: 'exact', head: true })
+    .is('deleted_at', null)
+    .eq('status', 'active')
+
+  if (error) return c.json({ error: error.message }, 500)
+  return c.json({ count: count ?? 0 })
+})
+
 // GET all classes (paginated) with student count
 classes.get('/', zValidator('query', paginationSchema), async (c) => {
   const { page, limit, search, status } = c.req.valid('query')
@@ -51,15 +63,12 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
   const studentCounts: Record<string, number> = {}
 
   if (classIds.length > 0) {
-    const { data: studentData } = await supabase
-      .from('students')
-      .select('class_id')
-      .in('class_id', classIds)
-      .is('deleted_at', null)
-      .eq('status', 'active')
+    const { data: countData } = await supabase.rpc('dashboard_class_student_counts', {
+      p_class_ids: classIds,
+    })
 
-    for (const s of studentData ?? []) {
-      if (s.class_id) studentCounts[s.class_id] = (studentCounts[s.class_id] ?? 0) + 1
+    for (const row of countData ?? []) {
+      studentCounts[row.class_id] = Number(row.student_count)
     }
   }
 

@@ -103,6 +103,13 @@ const paginationSchema = z.object({
   status: z.enum(['active', 'graduated', 'inactive', '']).optional(),
 })
 
+// GET /count — lightweight active student count (no joins)
+students.get('/count', async (c) => {
+  const { data, error } = await supabase.rpc('dashboard_active_student_count')
+  if (error) return c.json({ error: error.message }, 500)
+  return c.json({ count: Number(data) || 0 })
+})
+
 // GET all students (paginated + filtered)
 students.get('/', zValidator('query', paginationSchema), async (c) => {
   const { page, limit, search, class_id, gender, birthday_today, status } = c.req.valid('query')
@@ -128,39 +135,30 @@ students.get('/', zValidator('query', paginationSchema), async (c) => {
   if (gender) query = query.eq('gender', gender)
   if (status) query = query.eq('status', status)
   if (birthday_today) {
-    // Supabase JS can't do date part extraction, so fetch all and filter server-side
-    let bdayQuery = supabase
-      .from('students')
-      .select(
-        '*, classrooms(name, academic_year), parent_students(parents(full_name, email, phone))'
-      )
-      .is('deleted_at', null)
-      .order('full_name')
-
-    if (search) {
-      bdayQuery = bdayQuery.or(`full_name.ilike.%${search}%`)
-    }
-    if (class_id) bdayQuery = bdayQuery.eq('class_id', class_id)
-    if (gender) bdayQuery = bdayQuery.eq('gender', gender)
-    if (status) bdayQuery = bdayQuery.eq('status', status)
-
-    const { data: allData, error: allError } = await bdayQuery
-
-    if (allError) return c.json({ error: allError.message }, 500)
-
     const now = new Date()
-    const mm = String(now.getMonth() + 1).padStart(2, '0')
-    const dd = String(now.getDate()).padStart(2, '0')
-    const suffix = `-${mm}-${dd}`
-    const filtered = (allData ?? []).filter(
-      (s) => typeof s.date_of_birth === 'string' && s.date_of_birth.endsWith(suffix)
-    )
+    const mm = now.getMonth() + 1
+    const dd = now.getDate()
 
-    const total = filtered.length
-    const paged = filtered.slice(from, from + limit)
+    const [{ data: bdayData, error: bdayError }, { data: bdayCount }] = await Promise.all([
+      supabase.rpc('dashboard_birthdays_today', {
+        p_month: mm,
+        p_day: dd,
+        p_limit: limit,
+      }),
+      supabase.rpc('dashboard_birthday_count', {
+        p_month: mm,
+        p_day: dd,
+      }),
+    ])
+
+    if (bdayError) return c.json({ error: bdayError.message }, 500)
+
+    const students = bdayData ?? []
+    const total = Number(bdayCount) || students.length
+
     return c.json({
-      data: paged.map(flattenStudent),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      data: students,
+      meta: { total, page: 1, limit, totalPages: Math.ceil(total / limit) },
     })
   }
 

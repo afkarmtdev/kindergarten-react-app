@@ -160,35 +160,21 @@ const fees = new Hono()
 fees.get('/summary', async (c) => {
   const month = c.req.query('month')
 
-  let query = supabase
-    .from('fee_records')
-    .select('amount_owed, amount_paid, discount_amount, status, due_date')
-    .is('deleted_at', null)
-
+  let startDate: string | null = null
+  let endDate: string | null = null
   if (month) {
     const { start, end } = monthRange(month)
-    query = query.gte('due_date', start).lte('due_date', end)
+    startDate = start
+    endDate = end
   }
 
-  const { data, error } = await query
+  const { data, error } = await supabase.rpc('dashboard_fees_summary', {
+    p_start_date: startDate,
+    p_end_date: endDate,
+  })
+
   if (error) return c.json({ error: error.message }, 500)
-
-  const today = new Date().toISOString().split('T')[0]
-  const records = data ?? []
-
-  const total_owed = records.reduce((s, r) => s + Number(r.amount_owed), 0)
-  const total_paid = records.reduce((s, r) => s + Number(r.amount_paid), 0)
-  const total_outstanding = records
-    .filter((r) => r.status !== 'paid' && r.status !== 'waived')
-    .reduce(
-      (s, r) => s + (Number(r.amount_owed) - Number(r.discount_amount) - Number(r.amount_paid)),
-      0
-    )
-  const overdue_count = records.filter(
-    (r) => (r.status === 'unpaid' || r.status === 'partial') && r.due_date && r.due_date < today
-  ).length
-
-  return c.json({ total_owed, total_paid, total_outstanding, overdue_count })
+  return c.json(data ?? { total_owed: 0, total_paid: 0, total_outstanding: 0, overdue_count: 0 })
 })
 
 // GET /api/fees/trend?months=6
@@ -209,28 +195,13 @@ fees.get(
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
     const endDate = endOfMonth.toISOString().split('T')[0]
 
-    const { data, error } = await supabase
-      .from('fee_records')
-      .select('amount_owed, amount_paid, discount_amount, due_date')
-      .is('deleted_at', null)
-      .gte('due_date', startDate)
-      .lte('due_date', endDate)
+    const { data, error } = await supabase.rpc('dashboard_fees_trend', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    })
 
     if (error) return c.json({ error: error.message }, 500)
-
-    const byMonth: Record<string, { owed: number; collected: number }> = {}
-    for (const row of data ?? []) {
-      const month = (row.due_date as string).substring(0, 7)
-      if (!byMonth[month]) byMonth[month] = { owed: 0, collected: 0 }
-      byMonth[month].owed += Number(row.amount_owed)
-      byMonth[month].collected += Number(row.amount_paid)
-    }
-
-    const result = Object.entries(byMonth)
-      .map(([month, { owed, collected }]) => ({ month, owed, collected }))
-      .sort((a, b) => a.month.localeCompare(b.month))
-
-    return c.json(result)
+    return c.json(data ?? [])
   }
 )
 
