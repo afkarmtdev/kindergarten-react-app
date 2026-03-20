@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { auditCreate } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const attendance = new Hono()
 
@@ -133,22 +134,35 @@ attendance.post('/bulk', async (c) => {
 })
 
 // GET summary stats
-attendance.get('/stats/summary', async (c) => {
-  const { month, year } = c.req.query()
-  const targetMonth = month || new Date().getMonth() + 1
-  const targetYear = year || new Date().getFullYear()
+attendance.get(
+  '/stats/summary',
+  zValidator(
+    'query',
+    z.object({
+      month: z.coerce.number().int().min(1).max(12).optional(),
+      year: z.coerce.number().int().min(2000).max(2100).optional(),
+    })
+  ),
+  async (c) => {
+    const { month, year } = c.req.valid('query')
+    const targetMonth = month ?? new Date().getMonth() + 1
+    const targetYear = year ?? new Date().getFullYear()
 
-  const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`
-  const endDate = new Date(Number(targetYear), Number(targetMonth), 0).toISOString().split('T')[0]
+    const startDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`
+    const endDate = new Date(Number(targetYear), Number(targetMonth), 0).toISOString().split('T')[0]
 
-  const { data, error } = await supabase.rpc('dashboard_attendance_summary', {
-    p_start_date: startDate,
-    p_end_date: endDate,
-  })
+    const { data, error } = await supabase.rpc('dashboard_attendance_summary', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    })
 
-  if (error) return c.json({ error: error.message }, 500)
-  return c.json(data ?? {})
-})
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch attendance summary')
+      return c.json({ error: 'Failed to fetch attendance summary' }, 500)
+    }
+    return c.json(data ?? {})
+  }
+)
 
 // GET attendance trend for charts (non-paginated)
 attendance.get(
@@ -172,7 +186,10 @@ attendance.get(
       p_end_date: endDate,
     })
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch attendance trend')
+      return c.json({ error: 'Failed to fetch attendance trend' }, 500)
+    }
     return c.json(data ?? [])
   }
 )

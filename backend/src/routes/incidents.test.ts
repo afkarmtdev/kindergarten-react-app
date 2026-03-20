@@ -106,7 +106,7 @@ describe('GET /api/incidents', () => {
     const res = await app.request('/api/incidents')
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('query failed')
+    expect(body.error).toBe('Failed to fetch incidents')
   })
 })
 
@@ -124,7 +124,7 @@ describe('GET /api/incidents/by-student/:studentId', () => {
     const res = await app.request(`/api/incidents/by-student/${VALID_UUID}`)
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('db error')
+    expect(body.error).toBe('Failed to fetch student incidents')
   })
 })
 
@@ -228,8 +228,8 @@ describe('POST /api/incidents', () => {
 
 describe('PUT /api/incidents/:id', () => {
   test('accepts partial update', async () => {
-    setMockResponse('incidents', { data: { id: 'some-id', status: 'resolved' }, error: null })
-    const res = await app.request('/api/incidents/some-id', {
+    setMockResponse('incidents', { data: { id: VALID_UUID, status: 'resolved' }, error: null })
+    const res = await app.request(`/api/incidents/${VALID_UUID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'resolved' }),
@@ -241,10 +241,10 @@ describe('PUT /api/incidents/:id', () => {
 
   test('accepts full incident update', async () => {
     setMockResponse('incidents', {
-      data: { id: 'some-id', ...validIncident, follow_up_notes: 'Student recovered well' },
+      data: { id: VALID_UUID, ...validIncident, follow_up_notes: 'Student recovered well' },
       error: null,
     })
-    const res = await app.request('/api/incidents/some-id', {
+    const res = await app.request(`/api/incidents/${VALID_UUID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...validIncident, follow_up_notes: 'Student recovered well' }),
@@ -254,33 +254,47 @@ describe('PUT /api/incidents/:id', () => {
     expect(body.follow_up_notes).toBe('Student recovered well')
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/api/incidents/not-a-uuid', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'resolved' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
   test('returns 500 on database error', async () => {
     setMockResponse('incidents', { data: null, error: { message: 'update failed' } })
-    const res = await app.request('/api/incidents/some-id', {
+    const res = await app.request(`/api/incidents/${VALID_UUID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'resolved' }),
     })
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('update failed')
+    expect(body.error).toBe('Failed to update incident')
   })
 })
 
 describe('DELETE /api/incidents/:id', () => {
   test('returns success message', async () => {
     setMockResponse('incidents', { data: null, error: null })
-    const res = await app.request('/api/incidents/some-id', { method: 'DELETE' })
+    const res = await app.request(`/api/incidents/${VALID_UUID}`, { method: 'DELETE' })
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.message).toBe('Incident deleted')
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/api/incidents/not-a-uuid', { method: 'DELETE' })
+    expect(res.status).toBe(400)
+  })
+
   test('returns 500 on database error', async () => {
     setMockResponse('incidents', { data: null, error: { message: 'delete failed' } })
-    const res = await app.request('/api/incidents/some-id', { method: 'DELETE' })
+    const res = await app.request(`/api/incidents/${VALID_UUID}`, { method: 'DELETE' })
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('delete failed')
+    expect(body.error).toBe('Failed to delete incident')
   })
 })

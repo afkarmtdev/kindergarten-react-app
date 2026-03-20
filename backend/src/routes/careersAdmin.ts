@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { isValidUUID } from '../lib/validation'
+import { logger } from '../lib/logger'
 
 const careersAdmin = new Hono()
 
@@ -36,7 +38,10 @@ careersAdmin.get('/postings', zValidator('query', postingsPaginationSchema), asy
   if (status) query = query.eq('status', status)
 
   const { data, count, error } = await query.range((page - 1) * limit, page * limit - 1)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch postings')
+    return c.json({ error: 'Failed to fetch postings' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -72,7 +77,10 @@ careersAdmin.post('/postings', zValidator('json', createPostingSchema), async (c
     .insert({ ...body, ...auditCreate(c) })
     .select()
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create posting')
+    return c.json({ error: 'Failed to create posting' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -91,6 +99,7 @@ const updatePostingSchema = z.object({
 // PUT /postings/:id — update posting
 careersAdmin.put('/postings/:id', zValidator('json', updatePostingSchema), async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const body = sanitiseStrings(c.req.valid('json'))
   const { data, error } = await supabase
     .from('job_postings')
@@ -99,19 +108,26 @@ careersAdmin.put('/postings/:id', zValidator('json', updatePostingSchema), async
     .is('deleted_at', null)
     .select()
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update posting')
+    return c.json({ error: 'Failed to update posting' }, 500)
+  }
   return c.json(data)
 })
 
 // DELETE /postings/:id — soft-delete
 careersAdmin.delete('/postings/:id', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const { error } = await supabase
     .from('job_postings')
     .update(auditDelete(c))
     .eq('id', id)
     .is('deleted_at', null)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete posting')
+    return c.json({ error: 'Failed to delete posting' }, 500)
+  }
   return c.json({ success: true })
 })
 
@@ -144,7 +160,10 @@ careersAdmin.get('/applications', zValidator('query', applicationsPaginationSche
   if (posting_id) query = query.eq('posting_id', posting_id)
 
   const { data, count, error } = await query.range((page - 1) * limit, page * limit - 1)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch applications')
+    return c.json({ error: 'Failed to fetch applications' }, 500)
+  }
 
   const mapped = (data ?? []).map((row: Record<string, unknown>) => {
     const { job_postings, ...rest } = row
@@ -168,6 +187,7 @@ careersAdmin.get('/applications', zValidator('query', applicationsPaginationSche
 // GET /applications/:id — single application
 careersAdmin.get('/applications/:id', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const { data, error } = await supabase
     .from('job_applications')
     .select('*, job_postings(title)')
@@ -176,7 +196,8 @@ careersAdmin.get('/applications/:id', async (c) => {
     .single()
   if (error) {
     if (error.code === 'PGRST116') return c.json({ error: 'Not found' }, 404)
-    return c.json({ error: error.message }, 500)
+    logger.error({ error: error.message }, 'Failed to fetch applications')
+    return c.json({ error: 'Failed to fetch applications' }, 500)
   }
 
   const { job_postings, ...rest } = data as Record<string, unknown>
@@ -196,6 +217,7 @@ careersAdmin.put(
   zValidator('json', applicationStatusSchema),
   async (c) => {
     const { id } = c.req.param()
+    if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
     const { status } = c.req.valid('json')
 
     const { data, error } = await supabase
@@ -206,7 +228,10 @@ careersAdmin.put(
       .select()
       .single()
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to update application status')
+      return c.json({ error: 'Failed to update application status' }, 500)
+    }
     return c.json(data)
   }
 )
@@ -214,12 +239,16 @@ careersAdmin.put(
 // DELETE /applications/:id — soft-delete
 careersAdmin.delete('/applications/:id', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const { error } = await supabase
     .from('job_applications')
     .update(auditDelete(c))
     .eq('id', id)
     .is('deleted_at', null)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete application')
+    return c.json({ error: 'Failed to delete application' }, 500)
+  }
   return c.json({ success: true })
 })
 

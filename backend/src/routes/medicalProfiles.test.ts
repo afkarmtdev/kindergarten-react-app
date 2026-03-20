@@ -83,7 +83,7 @@ describe('GET /api/medical-profiles/:studentId', () => {
     const res = await app.request(`/api/medical-profiles/${VALID_UUID}`)
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('query failed')
+    expect(body.error).toBe('Failed to fetch medical profile')
   })
 })
 
@@ -199,7 +199,7 @@ describe('PUT /api/medical-profiles/:studentId', () => {
     })
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('upsert failed')
+    expect(body.error).toBe('Failed to update medical profile')
   })
 })
 
@@ -217,6 +217,6 @@ describe('DELETE /api/medical-profiles/:studentId', () => {
     const res = await app.request(`/api/medical-profiles/${VALID_UUID}`, { method: 'DELETE' })
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('delete failed')
+    expect(body.error).toBe('Failed to delete medical profile')
   })
 })

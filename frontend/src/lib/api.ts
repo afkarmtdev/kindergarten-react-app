@@ -180,10 +180,12 @@ export const feesApi = {
   create: (data: unknown) => api.post('/fees', data).then((r) => r.data),
   generate: (data: unknown) => api.post('/fees/generate', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/fees/${id}`, data).then((r) => r.data),
-  recordPayment: (id: string, data: { amount: number }) =>
+  recordPayment: (id: string, data: { amount: number; payment_proof_url?: string | null }) =>
     api
       .put(`/fees/${id}/payment`, data)
       .then((r) => r.data as import('@/types').FeePaymentResponse),
+  getProofUrl: (id: string) =>
+    api.get(`/fees/${id}/proof-url`).then((r) => r.data as { url: string }),
   delete: (id: string) => api.delete(`/fees/${id}`).then((r) => r.data),
   getStatement: (studentId: string, year: number) =>
     api.get(`/fees/statement/${studentId}`, { params: { year } }).then((r) => r.data),
@@ -331,7 +333,7 @@ function getOrCreateDeviceId(): string {
 }
 
 portalApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('portal_token')
+  const token = localStorage.getItem('portal_token') ?? sessionStorage.getItem('portal_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   config.headers['X-Device-Id'] = getOrCreateDeviceId()
   return config
@@ -340,10 +342,16 @@ portalApi.interceptors.request.use((config) => {
 portalApi.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 && localStorage.getItem('portal_token')) {
+    if (
+      err.response?.status === 401 &&
+      (localStorage.getItem('portal_token') || sessionStorage.getItem('portal_token'))
+    ) {
       localStorage.removeItem('portal_token')
       localStorage.removeItem('portal_parent')
       localStorage.removeItem('portal_selected_child')
+      sessionStorage.removeItem('portal_token')
+      sessionStorage.removeItem('portal_parent')
+      sessionStorage.removeItem('portal_selected_child')
       window.location.href = '/portal/login'
     }
     return Promise.reject(err)
@@ -370,6 +378,8 @@ export const portalDataApi = {
       .then((r) => r.data as PaginatedResponse<import('@/types').AttendanceRecord>),
   getFees: (params: { page?: number; limit?: number; student_id?: string } = {}) =>
     portalApi.get('/fees', { params }).then((r) => r.data),
+  getFeeProofUrl: (id: string) =>
+    portalApi.get(`/fees/${id}/proof-url`).then((r) => r.data as { url: string }),
   getAnnouncements: () =>
     portalApi
       .get('/announcements')

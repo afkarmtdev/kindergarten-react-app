@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const careers = new Hono()
 
@@ -55,7 +56,10 @@ careers.post('/', zValidator('json', applicationSchema), async (c) => {
   }
   const body = sanitiseStrings(c.req.valid('json'))
   const { error } = await supabase.from('job_applications').insert({ ...body, ...auditCreate(c) })
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to submit application')
+    return c.json({ error: 'Failed to submit application' }, 500)
+  }
   return c.json({ success: true }, 201)
 })
 
@@ -64,12 +68,17 @@ careers.post('/', zValidator('json', applicationSchema), async (c) => {
 careers.get('/postings', async (c) => {
   const { data, error } = await supabase
     .from('job_postings')
-    .select('*')
+    .select(
+      'id, title, type, department, description, requirements, salary_min, salary_max, display_order, status, created_at'
+    )
     .eq('status', 'published')
     .is('deleted_at', null)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false })
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch postings')
+    return c.json({ error: 'Failed to fetch postings' }, 500)
+  }
   return c.json({ data: data ?? [] })
 })
 

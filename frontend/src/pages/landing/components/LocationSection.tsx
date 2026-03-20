@@ -27,22 +27,23 @@ export function LocationSection() {
           <p className="text-gray-400 text-base sm:text-lg">{t('locationSubtitle')}</p>
         </div>
 
-        {googleMapsEmbedUrl && (
-          <div className="mb-10 rounded-2xl overflow-hidden">
-            <iframe
-              src={googleMapsEmbedUrl}
-              width="100%"
-              height="400"
-              style={{ border: 0 }}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="School location map"
-              className="w-full h-72 md:h-96"
-            />
-          </div>
-        )}
+        {googleMapsEmbedUrl &&
+          googleMapsEmbedUrl.startsWith('https://www.google.com/maps/embed') && (
+            <div className="mb-10 rounded-2xl overflow-hidden">
+              <iframe
+                src={googleMapsEmbedUrl}
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="School location map"
+                className="w-full h-72 md:h-96"
+              />
+            </div>
+          )}
 
         <div className="grid md:grid-cols-2 gap-8">
           <div>

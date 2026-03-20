@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { isValidUUID } from '../lib/validation'
+import { logger } from '../lib/logger'
 
 const incidents = new Hono()
 
@@ -90,7 +92,10 @@ incidents.get('/', zValidator('query', querySchema), async (c) => {
   if (search) query = query.ilike('description', `%${search}%`)
 
   const { data, error, count } = await query
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch incidents')
+    return c.json({ error: 'Failed to fetch incidents' }, 500)
+  }
 
   return c.json({
     data: (data ?? []).map((r) => flattenIncident(r as Record<string, unknown>)),
@@ -110,6 +115,7 @@ incidents.get(
   ),
   async (c) => {
     const { studentId } = c.req.param()
+    if (!isValidUUID(studentId)) return c.json({ error: 'Invalid student ID' }, 400)
     const { page, limit } = c.req.valid('query')
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -122,7 +128,10 @@ incidents.get(
       .order('incident_date', { ascending: false })
       .range(from, to)
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch student incidents')
+      return c.json({ error: 'Failed to fetch student incidents' }, 500)
+    }
 
     return c.json({
       data: data ?? [],
@@ -134,6 +143,7 @@ incidents.get(
 // GET /api/incidents/:id — single incident
 incidents.get('/:id', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const { data, error } = await supabase
     .from('incidents')
     .select('*, students(full_name, photo_url, classrooms(name))')
@@ -141,7 +151,11 @@ incidents.get('/:id', async (c) => {
     .is('deleted_at', null)
     .single()
 
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) {
+    if (error.code === 'PGRST116') return c.json({ error: 'Incident not found' }, 404)
+    logger.error({ error: error.message }, 'Failed to fetch incident')
+    return c.json({ error: 'Failed to fetch incident' }, 500)
+  }
   return c.json(flattenIncident(data as Record<string, unknown>))
 })
 
@@ -156,13 +170,17 @@ incidents.post('/', zValidator('json', incidentSchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create incident')
+    return c.json({ error: 'Failed to create incident' }, 500)
+  }
   return c.json(data, 201)
 })
 
 // PUT /api/incidents/:id — update
 incidents.put('/:id', zValidator('json', incidentSchema.partial()), async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const body = sanitiseStrings(c.req.valid('json'))
 
   const { data, error } = await supabase
@@ -173,20 +191,27 @@ incidents.put('/:id', zValidator('json', incidentSchema.partial()), async (c) =>
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update incident')
+    return c.json({ error: 'Failed to update incident' }, 500)
+  }
   return c.json(data)
 })
 
 // DELETE /api/incidents/:id — soft delete
 incidents.delete('/:id', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const { error } = await supabase
     .from('incidents')
     .update(auditDelete(c))
     .eq('id', id)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete incident')
+    return c.json({ error: 'Failed to delete incident' }, 500)
+  }
   return c.json({ message: 'Incident deleted' })
 })
 

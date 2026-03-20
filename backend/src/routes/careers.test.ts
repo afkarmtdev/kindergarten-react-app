@@ -81,7 +81,7 @@ describe('GET /postings — public listing', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('query failed')
+    expect(json.error).toBe('Failed to fetch postings')
   })
 })
 

@@ -11,6 +11,7 @@ import { sanitiseStrings } from '../lib/sanitise'
 import { deriveStatus, monthRange } from '../lib/fees'
 import { generateNextNumber } from './documentNumbering'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 // Flatten nested classrooms + parent_students joins on a student sub-object
 function flattenStudentClass(
@@ -65,6 +66,7 @@ const generateSchema = z.object({
 
 const paymentSchema = z.object({
   amount: z.number().positive(),
+  payment_proof_url: z.string().url().nullable().optional(),
 })
 
 const listSchema = z.object({
@@ -157,25 +159,40 @@ const fees = new Hono()
 // ── Static paths MUST come before /:id ───────────────────────────────────────
 
 // GET /api/fees/summary?month=YYYY-MM
-fees.get('/summary', async (c) => {
-  const month = c.req.query('month')
+fees.get(
+  '/summary',
+  zValidator(
+    'query',
+    z.object({
+      month: z
+        .string()
+        .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+        .optional(),
+    })
+  ),
+  async (c) => {
+    const { month } = c.req.valid('query')
 
-  let startDate: string | null = null
-  let endDate: string | null = null
-  if (month) {
-    const { start, end } = monthRange(month)
-    startDate = start
-    endDate = end
+    let startDate: string | null = null
+    let endDate: string | null = null
+    if (month) {
+      const { start, end } = monthRange(month)
+      startDate = start
+      endDate = end
+    }
+
+    const { data, error } = await supabase.rpc('dashboard_fees_summary', {
+      p_start_date: startDate,
+      p_end_date: endDate,
+    })
+
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch fees summary')
+      return c.json({ error: 'Failed to fetch fees summary' }, 500)
+    }
+    return c.json(data ?? { total_owed: 0, total_paid: 0, total_outstanding: 0, overdue_count: 0 })
   }
-
-  const { data, error } = await supabase.rpc('dashboard_fees_summary', {
-    p_start_date: startDate,
-    p_end_date: endDate,
-  })
-
-  if (error) return c.json({ error: error.message }, 500)
-  return c.json(data ?? { total_owed: 0, total_paid: 0, total_outstanding: 0, overdue_count: 0 })
-})
+)
 
 // GET /api/fees/trend?months=6
 fees.get(
@@ -200,7 +217,10 @@ fees.get(
       p_end_date: endDate,
     })
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch fees trend')
+      return c.json({ error: 'Failed to fetch fees trend' }, 500)
+    }
     return c.json(data ?? [])
   }
 )
@@ -743,7 +763,7 @@ fees.get('/:id', async (c) => {
 // PUT /api/fees/:id/payment
 fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
   const { id } = c.req.param()
-  const { amount } = c.req.valid('json')
+  const { amount, payment_proof_url } = c.req.valid('json')
 
   const { data: record, error: fetchError } = await supabase
     .from('fee_records')
@@ -784,6 +804,7 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
       status: newStatus,
       receipt_number: receiptNumber,
       paid_at: newStatus === 'paid' ? new Date().toISOString() : record.paid_at,
+      ...(payment_proof_url !== undefined ? { payment_proof_url } : {}),
       ...auditUpdate(c),
     })
     .eq('id', id)
@@ -798,6 +819,35 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
     students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
     this_payment: amount,
   })
+})
+
+// GET /api/fees/:id/proof-url — generate a signed URL for the payment proof
+fees.get('/:id/proof-url', async (c) => {
+  const { id } = c.req.param()
+  const { data: record, error } = await supabase
+    .from('fee_records')
+    .select('payment_proof_url')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+
+  if (error || !record?.payment_proof_url) return c.json({ error: 'Not found' }, 404)
+
+  // If it's already a full URL (legacy), return as-is
+  if (record.payment_proof_url.startsWith('http')) {
+    return c.json({ url: record.payment_proof_url })
+  }
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from('payment-proofs')
+    .createSignedUrl(record.payment_proof_url, 3600)
+
+  if (signError || !signed?.signedUrl) {
+    logger.error({ error: signError?.message }, 'Failed to generate signed URL')
+    return c.json({ error: 'Failed to generate proof URL' }, 500)
+  }
+
+  return c.json({ url: signed.signedUrl })
 })
 
 // PUT /api/fees/:id

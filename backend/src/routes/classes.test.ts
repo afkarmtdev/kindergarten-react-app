@@ -557,7 +557,7 @@ describe('GET /count — database error', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('connection timeout')
+    expect(json.error).toBe('Failed to count classes')
   })
 })
 

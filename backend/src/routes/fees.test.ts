@@ -988,6 +988,45 @@ describe('Fee Records — PUT /:id/payment', () => {
     const json = await res.json()
     expect(json.this_payment).toBe(100)
   })
+
+  test('records payment with proof of payment URL', async () => {
+    setMockResponse('fee_records', {
+      data: {
+        id: 'f-1',
+        amount_owed: 500,
+        amount_paid: 0,
+        discount_amount: 0,
+        status: 'unpaid',
+        paid_at: null,
+        students: {
+          full_name: 'Ali',
+          classrooms: { name: 'Rose' },
+          photo_url: null,
+          parent_name: 'Abu',
+        },
+      },
+      error: null,
+    })
+    setMockResponse('document_numbering', { data: validConfig, error: null })
+
+    const res = await fees.request('/f-1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 500, payment_proof_url: 'https://example.com/proof.jpg' }),
+    })
+
+    expect(res.status).toBe(200)
+  })
+
+  test('rejects invalid payment proof URL', async () => {
+    const res = await fees.request('/f-1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100, payment_proof_url: 'not-a-url' }),
+    })
+
+    expect(res.status).toBe(400)
+  })
 })
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -1074,7 +1113,7 @@ describe('Fee Records — GET /trend error case', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('database connection lost')
+    expect(json.error).toBe('Failed to fetch fees trend')
   })
 })
 

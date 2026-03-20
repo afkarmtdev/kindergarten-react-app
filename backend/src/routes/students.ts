@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const students = new Hono()
 
@@ -106,7 +107,10 @@ const paginationSchema = z.object({
 // GET /count — lightweight active student count (no joins)
 students.get('/count', async (c) => {
   const { data, error } = await supabase.rpc('dashboard_active_student_count')
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to count students')
+    return c.json({ error: 'Failed to count students' }, 500)
+  }
   return c.json({ count: Number(data) || 0 })
 })
 

@@ -14,6 +14,9 @@ app.use('*', async (c, next) => {
 })
 app.route('/', careersAdmin)
 
+const VALID_POSTING_ID = '00000000-0000-0000-0000-000000000001'
+const VALID_APPLICATION_ID = '00000000-0000-0000-0000-000000000002'
+
 const VALID_POSTING = {
   title: 'Kindergarten Teacher',
   type: 'full_time',
@@ -116,7 +119,7 @@ describe('GET /postings — paginated list', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('query failed')
+    expect(json.error).toBe('Failed to fetch postings')
   })
 })
 
@@ -165,7 +168,7 @@ describe('PUT /postings/:id — update posting', () => {
       error: null,
     })
 
-    const res = await app.request('/postings/p-1', {
+    const res = await app.request(`/postings/${VALID_POSTING_ID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: 'Senior Teacher' }),
@@ -176,10 +179,19 @@ describe('PUT /postings/:id — update posting', () => {
     expect(json.title).toBe('Senior Teacher')
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/postings/not-a-uuid', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Senior Teacher' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
   test('returns 500 on database error', async () => {
     setMockResponse('job_postings', { data: null, error: { message: 'update failed' } })
 
-    const res = await app.request('/postings/p-1', {
+    const res = await app.request(`/postings/${VALID_POSTING_ID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: 'Senior Teacher' }),
@@ -187,7 +199,7 @@ describe('PUT /postings/:id — update posting', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('update failed')
+    expect(json.error).toBe('Failed to update posting')
   })
 })
 
@@ -195,21 +207,26 @@ describe('DELETE /postings/:id — soft-delete posting', () => {
   test('soft-deletes posting and returns 200', async () => {
     setMockResponse('job_postings', { data: null, error: null })
 
-    const res = await app.request('/postings/p-1', { method: 'DELETE' })
+    const res = await app.request(`/postings/${VALID_POSTING_ID}`, { method: 'DELETE' })
     expect(res.status).toBe(200)
 
     const json = await res.json()
     expect(json.success).toBe(true)
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/postings/not-a-uuid', { method: 'DELETE' })
+    expect(res.status).toBe(400)
+  })
+
   test('returns 500 on database error', async () => {
     setMockResponse('job_postings', { data: null, error: { message: 'delete failed' } })
 
-    const res = await app.request('/postings/p-1', { method: 'DELETE' })
+    const res = await app.request(`/postings/${VALID_POSTING_ID}`, { method: 'DELETE' })
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('delete failed')
+    expect(json.error).toBe('Failed to delete posting')
   })
 })
 
@@ -273,7 +290,7 @@ describe('GET /applications — paginated list', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('query failed')
+    expect(json.error).toBe('Failed to fetch applications')
   })
 })
 
@@ -284,7 +301,7 @@ describe('GET /applications/:id — single application', () => {
       error: null,
     })
 
-    const res = await app.request('/applications/a-1')
+    const res = await app.request(`/applications/${VALID_APPLICATION_ID}`)
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -293,13 +310,18 @@ describe('GET /applications/:id — single application', () => {
     expect(json.job_postings).toBeUndefined()
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/applications/not-a-uuid')
+    expect(res.status).toBe(400)
+  })
+
   test('returns 404 when not found', async () => {
     setMockResponse('job_applications', {
       data: null,
       error: { message: 'Row not found', code: 'PGRST116' },
     })
 
-    const res = await app.request('/applications/nonexistent')
+    const res = await app.request(`/applications/${VALID_APPLICATION_ID}`)
     expect(res.status).toBe(404)
 
     const json = await res.json()
@@ -314,7 +336,7 @@ describe('PUT /applications/:id/status — update status', () => {
       error: null,
     })
 
-    const res = await app.request('/applications/a-1/status', {
+    const res = await app.request(`/applications/${VALID_APPLICATION_ID}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'reviewed' }),
@@ -332,7 +354,7 @@ describe('PUT /applications/:id/status — update status', () => {
         error: null,
       })
 
-      const res = await app.request('/applications/a-1/status', {
+      const res = await app.request(`/applications/${VALID_APPLICATION_ID}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -341,8 +363,17 @@ describe('PUT /applications/:id/status — update status', () => {
     }
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/applications/not-a-uuid/status', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'reviewed' }),
+    })
+    expect(res.status).toBe(400)
+  })
+
   test('rejects invalid status value', async () => {
-    const res = await app.request('/applications/a-1/status', {
+    const res = await app.request(`/applications/${VALID_APPLICATION_ID}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'invalid' }),
@@ -355,20 +386,25 @@ describe('DELETE /applications/:id — soft-delete application', () => {
   test('soft-deletes application and returns 200', async () => {
     setMockResponse('job_applications', { data: null, error: null })
 
-    const res = await app.request('/applications/a-1', { method: 'DELETE' })
+    const res = await app.request(`/applications/${VALID_APPLICATION_ID}`, { method: 'DELETE' })
     expect(res.status).toBe(200)
 
     const json = await res.json()
     expect(json.success).toBe(true)
   })
 
+  test('returns 400 on invalid UUID', async () => {
+    const res = await app.request('/applications/not-a-uuid', { method: 'DELETE' })
+    expect(res.status).toBe(400)
+  })
+
   test('returns 500 on database error', async () => {
     setMockResponse('job_applications', { data: null, error: { message: 'delete failed' } })
 
-    const res = await app.request('/applications/a-1', { method: 'DELETE' })
+    const res = await app.request(`/applications/${VALID_APPLICATION_ID}`, { method: 'DELETE' })
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('delete failed')
+    expect(json.error).toBe('Failed to delete application')
   })
 })

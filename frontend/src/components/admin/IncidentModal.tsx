@@ -37,6 +37,7 @@ export function IncidentModal({ show, onClose, incident, defaultStudentId }: Pro
   const [witnessedBy, setWitnessedBy] = useState('')
   const [parentNotified, setParentNotified] = useState(false)
   const [photoUrl, setPhotoUrl] = useState('')
+  const [photoUrlError, setPhotoUrlError] = useState('')
   const [followUpNotes, setFollowUpNotes] = useState('')
   const [status, setStatus] = useState<IncidentStatus>('open')
 
@@ -71,6 +72,7 @@ export function IncidentModal({ show, onClose, incident, defaultStudentId }: Pro
         setWitnessedBy(incident.witnessed_by ?? '')
         setParentNotified(incident.parent_notified)
         setPhotoUrl(incident.photo_url ?? '')
+        setPhotoUrlError('')
         setFollowUpNotes(incident.follow_up_notes ?? '')
         setStatus(incident.status)
       } else {
@@ -85,6 +87,7 @@ export function IncidentModal({ show, onClose, incident, defaultStudentId }: Pro
         setWitnessedBy('')
         setParentNotified(false)
         setPhotoUrl('')
+        setPhotoUrlError('')
         setFollowUpNotes('')
         setStatus('open')
       }
@@ -128,7 +131,8 @@ export function IncidentModal({ show, onClose, incident, defaultStudentId }: Pro
     description.trim().length > 0 &&
     actionTaken.trim().length > 0 &&
     studentId.trim().length > 0 &&
-    incidentDate.length > 0
+    incidentDate.length > 0 &&
+    photoUrlError === ''
 
   if (!show) return null
 
@@ -365,12 +369,29 @@ export function IncidentModal({ show, onClose, incident, defaultStudentId }: Pro
               type="text"
               value={photoUrl}
               onChange={(e) => {
-                setPhotoUrl(e.target.value)
+                const val = e.target.value
+                setPhotoUrl(val)
                 markDirty()
+                if (val.trim()) {
+                  try {
+                    new URL(val.trim())
+                    setPhotoUrlError('')
+                  } catch {
+                    setPhotoUrlError('Please enter a valid URL.')
+                  }
+                } else {
+                  setPhotoUrlError('')
+                }
               }}
               placeholder="https://..."
-              className={inputClass}
+              className={
+                inputClass +
+                (photoUrlError
+                  ? ' border-red-400 dark:border-red-500 focus:ring-red-400/50 focus:border-red-400'
+                  : '')
+              }
             />
+            {photoUrlError && <p className="mt-1 text-xs text-red-500">{photoUrlError}</p>}
           </div>
 
           {/* Follow-up Notes */}

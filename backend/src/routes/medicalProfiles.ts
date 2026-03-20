@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditUpsert, auditDelete } from '../lib/audit'
+import { isValidUUID } from '../lib/validation'
+import { logger } from '../lib/logger'
 
 const medicalProfiles = new Hono()
 
@@ -53,6 +55,7 @@ const medicalSchema = z.object({
 // GET /api/medical-profiles/:studentId
 medicalProfiles.get('/:studentId', async (c) => {
   const { studentId } = c.req.param()
+  if (!isValidUUID(studentId)) return c.json({ error: 'Invalid student ID' }, 400)
   const { data, error } = await supabase
     .from('student_medical')
     .select('*')
@@ -60,13 +63,17 @@ medicalProfiles.get('/:studentId', async (c) => {
     .is('deleted_at', null)
     .single()
 
-  if (error && error.code !== 'PGRST116') return c.json({ error: error.message }, 500)
+  if (error && error.code !== 'PGRST116') {
+    logger.error({ error: error.message }, 'Failed to fetch medical profile')
+    return c.json({ error: 'Failed to fetch medical profile' }, 500)
+  }
   return c.json({ data: data ?? null })
 })
 
 // PUT /api/medical-profiles/:studentId — upsert
 medicalProfiles.put('/:studentId', zValidator('json', medicalSchema), async (c) => {
   const { studentId } = c.req.param()
+  if (!isValidUUID(studentId)) return c.json({ error: 'Invalid student ID' }, 400)
   const body = sanitiseStrings(c.req.valid('json'))
 
   const { data, error } = await supabase
@@ -75,20 +82,27 @@ medicalProfiles.put('/:studentId', zValidator('json', medicalSchema), async (c) 
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update medical profile')
+    return c.json({ error: 'Failed to update medical profile' }, 500)
+  }
   return c.json(data)
 })
 
 // DELETE /api/medical-profiles/:studentId — soft delete
 medicalProfiles.delete('/:studentId', async (c) => {
   const { studentId } = c.req.param()
+  if (!isValidUUID(studentId)) return c.json({ error: 'Invalid student ID' }, 400)
   const { error } = await supabase
     .from('student_medical')
     .update(auditDelete(c))
     .eq('student_id', studentId)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete medical profile')
+    return c.json({ error: 'Failed to delete medical profile' }, 500)
+  }
   return c.json({ message: 'Medical profile deleted' })
 })
 

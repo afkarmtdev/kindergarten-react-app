@@ -10,9 +10,11 @@
 // This mock replicates that chain and lets tests configure
 // per-table responses via setMockResponse().
 
+type MockError = { message: string; code?: string }
+
 type MockResponse = {
   data: unknown
-  error: { message: string } | null
+  error: MockError | null
   count?: number
 }
 

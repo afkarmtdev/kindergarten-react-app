@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const classes = new Hono()
 
@@ -32,7 +33,10 @@ classes.get('/count', async (c) => {
     .is('deleted_at', null)
     .eq('status', 'active')
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to count classes')
+    return c.json({ error: 'Failed to count classes' }, 500)
+  }
   return c.json({ count: count ?? 0 })
 })
 
