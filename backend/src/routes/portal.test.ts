@@ -508,3 +508,130 @@ describe('GET /portfolio', () => {
     expect(json.terms).toHaveLength(2)
   })
 })
+
+// ─── GET /medical — Medical profile ──────────────────────────────────────────
+
+describe('GET /medical', () => {
+  test('returns medical profile for selected child', async () => {
+    setMockResponse('student_medical', {
+      data: {
+        id: 'mp1',
+        student_id: CHILD_1,
+        blood_type: 'O+',
+        allergies: ['peanuts', 'shellfish'],
+        medications: ['inhaler'],
+        vaccination_records: [{ name: 'MMR', date: '2022-06-01' }],
+        emergency_contacts: [{ name: 'Siti', phone: '012-999', relationship: 'mother' }],
+        doctor_name: 'Dr. Ahmad',
+        doctor_phone: '03-1234567',
+        medical_notes: 'Asthma — carries inhaler',
+      },
+      error: null,
+    })
+
+    const res = await app.request(`/medical?student_id=${CHILD_1}`)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.data.blood_type).toBe('O+')
+    expect(json.data.allergies).toEqual(['peanuts', 'shellfish'])
+    expect(json.data.emergency_contacts).toHaveLength(1)
+    expect(json.data.doctor_name).toBe('Dr. Ahmad')
+  })
+
+  test('returns null data when no profile exists', async () => {
+    setMockResponse('student_medical', { data: null, error: null })
+
+    const res = await app.request(`/medical?student_id=${CHILD_1}`)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.data).toBeNull()
+  })
+
+  test('returns 403 for unlinked child', async () => {
+    const res = await app.request(`/medical?student_id=${UNLINKED_CHILD}`)
+    expect(res.status).toBe(403)
+  })
+
+  test('returns 500 on DB error', async () => {
+    setMockResponse('student_medical', {
+      data: null,
+      error: { code: 'XXYYY', message: 'DB error' },
+    })
+
+    const res = await app.request(`/medical?student_id=${CHILD_1}`)
+    expect(res.status).toBe(500)
+  })
+})
+
+// ─── GET /incidents — Incident reports ───────────────────────────────────────
+
+describe('GET /incidents', () => {
+  test('returns paginated incidents for selected child', async () => {
+    setMockResponse('incidents', {
+      data: [
+        {
+          id: 'inc1',
+          student_id: CHILD_1,
+          incident_date: '2026-03-15',
+          incident_type: 'injury',
+          severity: 'minor',
+          description: 'Scraped knee on playground',
+          action_taken: 'Cleaned and applied bandage',
+          witnesses: 'Teacher Aminah',
+          photo_url: null,
+          follow_up_notes: null,
+          status: 'resolved',
+          created_at: '2026-03-15',
+        },
+      ],
+      error: null,
+      count: 1,
+    })
+
+    const res = await app.request(`/incidents?student_id=${CHILD_1}`)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.data).toHaveLength(1)
+    expect(json.data[0].incident_type).toBe('injury')
+    expect(json.data[0].severity).toBe('minor')
+    expect(json.data[0].status).toBe('resolved')
+    expect(json.meta.total).toBe(1)
+    expect(json.meta.page).toBe(1)
+  })
+
+  test('returns empty data when no incidents', async () => {
+    setMockResponse('incidents', { data: [], error: null, count: 0 })
+
+    const res = await app.request(`/incidents?student_id=${CHILD_1}`)
+    const json = await res.json()
+    expect(json.data).toEqual([])
+    expect(json.meta.total).toBe(0)
+  })
+
+  test('returns 403 for unlinked child', async () => {
+    const res = await app.request(`/incidents?student_id=${UNLINKED_CHILD}`)
+    expect(res.status).toBe(403)
+  })
+
+  test('returns 500 on DB error', async () => {
+    setMockResponse('incidents', { data: null, error: { message: 'DB error' } })
+
+    const res = await app.request(`/incidents?student_id=${CHILD_1}`)
+    expect(res.status).toBe(500)
+  })
+
+  test('respects pagination params', async () => {
+    setMockResponse('incidents', {
+      data: [{ id: 'inc2', incident_date: '2026-03-10', description: 'test' }],
+      error: null,
+      count: 15,
+    })
+
+    const res = await app.request(`/incidents?student_id=${CHILD_1}&page=2&limit=5`)
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.meta.page).toBe(2)
+    expect(json.meta.limit).toBe(5)
+    expect(json.meta.totalPages).toBe(3)
+  })
+})

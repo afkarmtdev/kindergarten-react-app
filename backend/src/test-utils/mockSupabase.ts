@@ -10,13 +10,16 @@
 // This mock replicates that chain and lets tests configure
 // per-table responses via setMockResponse().
 
+type MockError = { message: string; code?: string }
+
 type MockResponse = {
   data: unknown
-  error: { message: string } | null
+  error: MockError | null
   count?: number
 }
 
 const responses: Record<string, MockResponse> = {}
+const rpcResponses: Record<string, MockResponse> = {}
 
 // ── Auth mock state ──────────────────────────────────────────────────────────
 // supabase.auth.getUser(), signInWithPassword(), signOut()
@@ -63,10 +66,18 @@ export function setMockResponse(table: string, response: MockResponse) {
   responses[table] = response
 }
 
+/** Set what a `supabase.rpc(name)` call will return. */
+export function setRpcMockResponse(name: string, response: MockResponse) {
+  rpcResponses[name] = response
+}
+
 /** Clear all mock responses between tests. */
 export function clearMockResponses() {
   for (const key of Object.keys(responses)) {
     delete responses[key]
+  }
+  for (const key of Object.keys(rpcResponses)) {
+    delete rpcResponses[key]
   }
   // Reset auth mocks to default (rejected)
   authGetUserResponse = {
@@ -128,6 +139,10 @@ function createMockChain(response: MockResponse) {
 /** The fake supabase client. Wire this up via mock.module(). */
 export const mockSupabase = {
   from: (table: string) => createMockChain(responses[table] ?? { data: null, error: null }),
+  rpc: (name: string, _params?: Record<string, unknown>) => {
+    const response = rpcResponses[name] ?? { data: null, error: null }
+    return Promise.resolve({ data: response.data, error: response.error })
+  },
   auth: {
     getUser: () => Promise.resolve(authGetUserResponse),
     signInWithPassword: () => Promise.resolve(authLoginResponse),

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Wallet } from 'lucide-react'
+import { FileText, Wallet, Image } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { portalDataApi } from '../../lib/api'
+import { toast } from 'sonner'
 import { useT } from '../../hooks/useT'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import type { FeeRecord } from '../../types'
@@ -12,13 +13,6 @@ const STATUS_STYLES: Record<string, string> = {
   partial: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
   paid: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
   waived: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
-}
-
-const BORDER_STYLES: Record<string, string> = {
-  unpaid: 'border-l-red-400',
-  partial: 'border-l-yellow-400',
-  paid: 'border-l-kinder-green',
-  waived: 'border-l-gray-400',
 }
 
 const formatRM = (v: number) => `RM ${Number(v).toFixed(2)}`
@@ -32,6 +26,7 @@ export default function PortalFeesPage() {
   const { selectedChild } = useParentAuth()
   const t = useT()
   const [filter, setFilter] = useState<FilterTab>('all')
+  const [viewingProof, setViewingProof] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['portal-fees', selectedChild?.id, { page: 1, limit: LIMIT }],
@@ -167,7 +162,7 @@ export default function PortalFeesPage() {
           {filteredRecords.map((r) => (
             <div
               key={r.id}
-              className={`bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800 border-l-4 ${BORDER_STYLES[r.status] ?? 'border-l-gray-300'}`}
+              className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-800"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="min-w-0">
@@ -224,8 +219,50 @@ export default function PortalFeesPage() {
                   Receipt: {r.receipt_number}
                 </div>
               )}
+              {r.payment_proof_url && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const { url } = await portalDataApi.getFeeProofUrl(r.id)
+                      setViewingProof(url)
+                    } catch {
+                      toast.error('Failed to load payment proof')
+                    }
+                  }}
+                  className="flex items-center gap-1 text-xs text-kinder-blue hover:underline mt-1"
+                >
+                  <Image size={12} />
+                  {t('viewProof')}
+                </button>
+              )}
             </div>
           ))}
+        </div>
+      )}
+
+      {viewingProof && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setViewingProof(null)}
+        >
+          <div className="max-w-2xl max-h-[80vh] p-2" onClick={(e) => e.stopPropagation()}>
+            {viewingProof.endsWith('.pdf') ? (
+              <a
+                href={viewingProof}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white underline text-lg"
+              >
+                Open PDF proof
+              </a>
+            ) : (
+              <img
+                src={viewingProof}
+                alt="Payment proof"
+                className="max-w-full max-h-[75vh] rounded-xl shadow-2xl"
+              />
+            )}
+          </div>
         </div>
       )}
     </div>

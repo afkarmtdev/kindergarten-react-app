@@ -173,7 +173,7 @@ export default function PortalDailyReportPage() {
 
           {/* Activity note */}
           {report.activity_note && (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800 border-l-4 border-l-kinder-orange">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-200 dark:border-gray-800">
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 {report.activity_note}
               </p>

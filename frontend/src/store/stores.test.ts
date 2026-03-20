@@ -8,6 +8,11 @@ import { useFeePlansStore } from './feePlansStore'
 import { useTestimonialsStore } from './testimonialsStore'
 import { useAttendanceStore } from './attendanceStore'
 import { useInquiriesStore } from './inquiriesStore'
+import { useIncidentsStore } from './incidentsStore'
+import { useCareersStore } from './careersStore'
+import { useJobApplicationsStore } from './jobApplicationsStore'
+import { useDailyReportsStore } from './dailyReportsStore'
+import { useArtWallStore } from './artWallStore'
 
 // ═════════════════════════════════════════════════════════════════════════════
 // studentsStore — page, search, 2 filters, modal
@@ -379,6 +384,201 @@ describe('inquiriesStore', () => {
 })
 
 // ═════════════════════════════════════════════════════════════════════════════
+// incidentsStore — page, search, 3 filters
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('incidentsStore', () => {
+  beforeEach(() => useIncidentsStore.getState().reset())
+
+  test('defaults: page 1, empty search/filters', () => {
+    const s = useIncidentsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.typeFilter).toBe('')
+    expect(s.severityFilter).toBe('')
+    expect(s.statusFilter).toBe('')
+  })
+
+  test('setSearch resets page to 1', () => {
+    useIncidentsStore.getState().setPage(5)
+    useIncidentsStore.getState().setSearch('fall')
+    const s = useIncidentsStore.getState()
+    expect(s.search).toBe('fall')
+    expect(s.page).toBe(1)
+  })
+
+  test('setTypeFilter resets page to 1', () => {
+    useIncidentsStore.getState().setPage(3)
+    useIncidentsStore.getState().setTypeFilter('injury')
+    const s = useIncidentsStore.getState()
+    expect(s.typeFilter).toBe('injury')
+    expect(s.page).toBe(1)
+  })
+
+  test('setSeverityFilter resets page to 1', () => {
+    useIncidentsStore.getState().setPage(2)
+    useIncidentsStore.getState().setSeverityFilter('serious')
+    const s = useIncidentsStore.getState()
+    expect(s.severityFilter).toBe('serious')
+    expect(s.page).toBe(1)
+  })
+
+  test('setStatusFilter resets page to 1', () => {
+    useIncidentsStore.getState().setPage(4)
+    useIncidentsStore.getState().setStatusFilter('resolved')
+    const s = useIncidentsStore.getState()
+    expect(s.statusFilter).toBe('resolved')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves all filters', () => {
+    useIncidentsStore.getState().setSearch('test')
+    useIncidentsStore.getState().setTypeFilter('injury')
+    useIncidentsStore.getState().setSeverityFilter('moderate')
+    useIncidentsStore.getState().setStatusFilter('open')
+    useIncidentsStore.getState().setPage(3)
+    const s = useIncidentsStore.getState()
+    expect(s.page).toBe(3)
+    expect(s.search).toBe('test')
+    expect(s.typeFilter).toBe('injury')
+    expect(s.severityFilter).toBe('moderate')
+    expect(s.statusFilter).toBe('open')
+  })
+
+  test('reset returns to initial state', () => {
+    useIncidentsStore.getState().setSearch('test')
+    useIncidentsStore.getState().setTypeFilter('injury')
+    useIncidentsStore.getState().setSeverityFilter('serious')
+    useIncidentsStore.getState().setStatusFilter('resolved')
+    useIncidentsStore.getState().setPage(5)
+    useIncidentsStore.getState().reset()
+    const s = useIncidentsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.typeFilter).toBe('')
+    expect(s.severityFilter).toBe('')
+    expect(s.statusFilter).toBe('')
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// careersStore — page, search, statusFilter
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('careersStore', () => {
+  beforeEach(() => useCareersStore.getState().reset())
+
+  test('defaults: page 1, empty search/filters', () => {
+    const s = useCareersStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('')
+  })
+
+  test('setSearch resets page to 1', () => {
+    useCareersStore.getState().setPage(5)
+    useCareersStore.getState().setSearch('teacher')
+    const s = useCareersStore.getState()
+    expect(s.search).toBe('teacher')
+    expect(s.page).toBe(1)
+  })
+
+  test('setStatusFilter resets page to 1', () => {
+    useCareersStore.getState().setPage(3)
+    useCareersStore.getState().setStatusFilter('published')
+    const s = useCareersStore.getState()
+    expect(s.statusFilter).toBe('published')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves filters', () => {
+    useCareersStore.getState().setSearch('test')
+    useCareersStore.getState().setStatusFilter('draft')
+    useCareersStore.getState().setPage(3)
+    const s = useCareersStore.getState()
+    expect(s.page).toBe(3)
+    expect(s.search).toBe('test')
+    expect(s.statusFilter).toBe('draft')
+  })
+
+  test('reset returns to initial state', () => {
+    useCareersStore.getState().setSearch('test')
+    useCareersStore.getState().setStatusFilter('published')
+    useCareersStore.getState().setPage(5)
+    useCareersStore.getState().reset()
+    const s = useCareersStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('')
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// jobApplicationsStore — page, search, statusFilter, postingFilter
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('jobApplicationsStore', () => {
+  beforeEach(() => useJobApplicationsStore.getState().reset())
+
+  test('defaults: page 1, empty search/filters', () => {
+    const s = useJobApplicationsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('')
+    expect(s.postingFilter).toBe('')
+  })
+
+  test('setSearch resets page to 1', () => {
+    useJobApplicationsStore.getState().setPage(5)
+    useJobApplicationsStore.getState().setSearch('Ali')
+    const s = useJobApplicationsStore.getState()
+    expect(s.search).toBe('Ali')
+    expect(s.page).toBe(1)
+  })
+
+  test('setStatusFilter resets page to 1', () => {
+    useJobApplicationsStore.getState().setPage(3)
+    useJobApplicationsStore.getState().setStatusFilter('reviewed')
+    const s = useJobApplicationsStore.getState()
+    expect(s.statusFilter).toBe('reviewed')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPostingFilter resets page to 1', () => {
+    useJobApplicationsStore.getState().setPage(2)
+    useJobApplicationsStore.getState().setPostingFilter('posting-uuid-1')
+    const s = useJobApplicationsStore.getState()
+    expect(s.postingFilter).toBe('posting-uuid-1')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves all filters', () => {
+    useJobApplicationsStore.getState().setSearch('test')
+    useJobApplicationsStore.getState().setStatusFilter('hired')
+    useJobApplicationsStore.getState().setPostingFilter('posting-1')
+    useJobApplicationsStore.getState().setPage(4)
+    const s = useJobApplicationsStore.getState()
+    expect(s.page).toBe(4)
+    expect(s.search).toBe('test')
+    expect(s.statusFilter).toBe('hired')
+    expect(s.postingFilter).toBe('posting-1')
+  })
+
+  test('reset returns to initial state', () => {
+    useJobApplicationsStore.getState().setSearch('test')
+    useJobApplicationsStore.getState().setStatusFilter('rejected')
+    useJobApplicationsStore.getState().setPostingFilter('posting-1')
+    useJobApplicationsStore.getState().setPage(5)
+    useJobApplicationsStore.getState().reset()
+    const s = useJobApplicationsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+    expect(s.statusFilter).toBe('')
+    expect(s.postingFilter).toBe('')
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
 // attendanceStore — date, statusFilter, pendingChanges
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -447,6 +647,114 @@ describe('attendanceStore', () => {
     const s = useAttendanceStore.getState()
     expect(s.classFilter).toBe('class-uuid-1')
     expect(s.page).toBe(1)
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// dailyReportsStore — selectedDate, classFilter, page, pendingChanges
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('dailyReportsStore', () => {
+  beforeEach(() => {
+    useDailyReportsStore.setState({
+      classFilter: '',
+      page: 1,
+      pendingChanges: new Map(),
+    })
+  })
+
+  test('defaults: page 1, empty classFilter, empty pendingChanges', () => {
+    const s = useDailyReportsStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.classFilter).toBe('')
+    expect(s.pendingChanges.size).toBe(0)
+  })
+
+  test('setClassFilter resets page to 1', () => {
+    useDailyReportsStore.getState().setPage(4)
+    useDailyReportsStore.getState().setClassFilter('class-uuid-1')
+    const s = useDailyReportsStore.getState()
+    expect(s.classFilter).toBe('class-uuid-1')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves classFilter', () => {
+    useDailyReportsStore.getState().setClassFilter('class-uuid-1')
+    useDailyReportsStore.getState().setPage(3)
+    const s = useDailyReportsStore.getState()
+    expect(s.page).toBe(3)
+    expect(s.classFilter).toBe('class-uuid-1')
+  })
+
+  test('setSelectedDate resets page and clears pendingChanges', () => {
+    useDailyReportsStore.getState().setPage(3)
+    useDailyReportsStore.getState().setPendingChange('s1', { mood: 'happy' })
+    useDailyReportsStore.getState().setSelectedDate('2026-04-01')
+    const s = useDailyReportsStore.getState()
+    expect(s.selectedDate).toBe('2026-04-01')
+    expect(s.page).toBe(1)
+    expect(s.pendingChanges.size).toBe(0)
+  })
+
+  test('setPendingChange merges fields for same student', () => {
+    useDailyReportsStore.getState().setPendingChange('s1', { mood: 'happy' })
+    useDailyReportsStore.getState().setPendingChange('s1', { nap_minutes: 60 })
+    const changes = useDailyReportsStore.getState().pendingChanges
+    expect(changes.get('s1')).toEqual({ mood: 'happy', nap_minutes: 60 })
+  })
+
+  test('setPendingChange tracks multiple students independently', () => {
+    useDailyReportsStore.getState().setPendingChange('s1', { mood: 'happy' })
+    useDailyReportsStore.getState().setPendingChange('s2', { mood: 'tired', toilet_count: 2 })
+    const changes = useDailyReportsStore.getState().pendingChanges
+    expect(changes.get('s1')).toEqual({ mood: 'happy' })
+    expect(changes.get('s2')).toEqual({ mood: 'tired', toilet_count: 2 })
+  })
+
+  test('clearPendingChanges removes all changes', () => {
+    useDailyReportsStore.getState().setPendingChange('s1', { mood: 'happy' })
+    useDailyReportsStore.getState().setPendingChange('s2', { nap_minutes: 30 })
+    useDailyReportsStore.getState().clearPendingChanges()
+    expect(useDailyReportsStore.getState().pendingChanges.size).toBe(0)
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// artWallStore — page, search
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('artWallStore', () => {
+  beforeEach(() => useArtWallStore.getState().reset())
+
+  test('defaults: page 1, empty search', () => {
+    const s = useArtWallStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
+  })
+
+  test('setSearch resets page to 1', () => {
+    useArtWallStore.getState().setPage(4)
+    useArtWallStore.getState().setSearch('butterfly')
+    const s = useArtWallStore.getState()
+    expect(s.search).toBe('butterfly')
+    expect(s.page).toBe(1)
+  })
+
+  test('setPage preserves search', () => {
+    useArtWallStore.getState().setSearch('butterfly')
+    useArtWallStore.getState().setPage(3)
+    const s = useArtWallStore.getState()
+    expect(s.page).toBe(3)
+    expect(s.search).toBe('butterfly')
+  })
+
+  test('reset returns to initial state', () => {
+    useArtWallStore.getState().setPage(5)
+    useArtWallStore.getState().setSearch('fish')
+    useArtWallStore.getState().reset()
+    const s = useArtWallStore.getState()
+    expect(s.page).toBe(1)
+    expect(s.search).toBe('')
   })
 })
 

@@ -9,7 +9,7 @@ interface ParentAuthContextValue {
   selectChild: (childId: string) => void
   token: string | null
   loading: boolean
-  login: (access_code: string, pin: string) => Promise<void>
+  login: (access_code: string, pin: string, rememberMe?: boolean) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -17,7 +17,9 @@ const ParentAuthContext = createContext<ParentAuthContextValue | null>(null)
 
 export function ParentAuthProvider({ children: kids }: { children: ReactNode }) {
   const [parent, setParent] = useState<PortalParent | null>(null)
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('portal_token'))
+  const [token, setToken] = useState<string | null>(
+    () => localStorage.getItem('portal_token') ?? sessionStorage.getItem('portal_token')
+  )
   const [loading, setLoading] = useState(true)
   const [selectedChildId, setSelectedChildId] = useState<string | null>(() =>
     localStorage.getItem('portal_selected_child')
@@ -32,9 +34,9 @@ export function ParentAuthProvider({ children: kids }: { children: ReactNode }) 
     localStorage.setItem('portal_selected_child', childId)
   }, [])
 
-  // Rehydrate from localStorage on mount
+  // Rehydrate from localStorage or sessionStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem('portal_token')
+    const stored = localStorage.getItem('portal_token') ?? sessionStorage.getItem('portal_token')
     if (!stored) {
       setLoading(false)
       return
@@ -49,15 +51,18 @@ export function ParentAuthProvider({ children: kids }: { children: ReactNode }) 
       .catch(() => {
         localStorage.removeItem('portal_token')
         localStorage.removeItem('portal_selected_child')
+        sessionStorage.removeItem('portal_token')
+        sessionStorage.removeItem('portal_selected_child')
         setToken(null)
         setParent(null)
       })
       .finally(() => setLoading(false))
   }, [])
 
-  const login = useCallback(async (access_code: string, pin: string) => {
+  const login = useCallback(async (access_code: string, pin: string, rememberMe = false) => {
     const { token: newToken, parent: newParent } = await portalAuthApi.login(access_code, pin)
-    localStorage.setItem('portal_token', newToken)
+    const storage = rememberMe ? localStorage : sessionStorage
+    storage.setItem('portal_token', newToken)
     setToken(newToken)
     setParent(newParent)
   }, [])
@@ -70,6 +75,8 @@ export function ParentAuthProvider({ children: kids }: { children: ReactNode }) 
     }
     localStorage.removeItem('portal_token')
     localStorage.removeItem('portal_selected_child')
+    sessionStorage.removeItem('portal_token')
+    sessionStorage.removeItem('portal_selected_child')
     setToken(null)
     setParent(null)
   }, [])

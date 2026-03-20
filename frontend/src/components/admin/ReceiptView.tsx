@@ -5,6 +5,7 @@
 import { X, Printer } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 import type { FeeRecord } from '@/types'
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 export function ReceiptView({ record, thisPayment, onClose }: Props) {
   const t = useT()
   const { schoolName, address, logoUrl } = useSchoolInfo()
+  const proofDisplayUrl = useSignedUrl('payment-proofs', record.payment_proof_url)
 
   const formatRM = (v: number | string) => `RM ${Number(v).toFixed(2)}`
   const balance =
@@ -164,6 +166,23 @@ export function ReceiptView({ record, thisPayment, onClose }: Props) {
                 )}
               </tfoot>
             </table>
+
+            {/* Payment proof */}
+            {record.payment_proof_url && proofDisplayUrl && (
+              <div className="mt-6 border-t border-gray-200 pt-4">
+                <p className="text-xs text-gray-500 font-semibold mb-2">{t('paymentProof')}</p>
+                {record.payment_proof_url.endsWith('.pdf') ? (
+                  <p className="text-xs text-gray-500">{t('pdfAttached')}</p>
+                ) : (
+                  <img
+                    src={proofDisplayUrl}
+                    alt="Payment proof"
+                    className="max-h-48 rounded-lg border border-gray-200"
+                  />
+                )}
+                <p className="text-xs text-gray-400 mt-1">{t('proofAttached')}</p>
+              </div>
+            )}
 
             {/* Footer */}
             <div className="border-t border-dashed border-gray-300 pt-4 text-center">

@@ -32,8 +32,8 @@ export function FeeRecordModal({ record, onClose }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { data: studentsData } = useQuery({
-    queryKey: ['students', { page: 1, limit: 500 }],
-    queryFn: () => studentsApi.getAll({ limit: 500 }),
+    queryKey: ['students', { page: 1, limit: 100 }],
+    queryFn: () => studentsApi.getAll({ limit: 100 }),
     enabled: !isEdit,
   })
 

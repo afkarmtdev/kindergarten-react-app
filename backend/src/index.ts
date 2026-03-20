@@ -48,6 +48,10 @@ import portfolioReports from './routes/portfolioReports'
 import parents from './routes/parents'
 import parentAuth from './routes/parentAuth'
 import portal from './routes/portal'
+import medicalProfiles from './routes/medicalProfiles'
+import incidents from './routes/incidents'
+import careers from './routes/careers'
+import careersAdmin from './routes/careersAdmin'
 import { authMiddleware } from './middleware/auth'
 import { parentMiddleware } from './middleware/parentAuth'
 import { supabase } from './db/supabase'
@@ -155,6 +159,9 @@ app.get('/api/public/art-wall', async (c) => {
 // Public inquiries — no auth required (LandingPage enrollment form)
 app.route('/api/public/inquiries', inquiries)
 
+// Public careers — job postings listing + application submission (LandingPage visitors)
+app.route('/api/public/careers', careers)
+
 // Parent portal login/logout — public (must be before authMiddleware)
 app.route('/api/portal', parentAuth)
 
@@ -188,6 +195,9 @@ app.route('/api/parents', parents)
 app.route('/api/daily-reports', dailyReports)
 app.route('/api/portfolio-entries', portfolioEntries)
 app.route('/api/portfolio-reports', portfolioReports)
+app.route('/api/medical-profiles', medicalProfiles)
+app.route('/api/incidents', incidents)
+app.route('/api/careers', careersAdmin)
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ error: 'Route not found' }, 404))

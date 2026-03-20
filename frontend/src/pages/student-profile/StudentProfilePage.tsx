@@ -15,6 +15,8 @@ import { StudentArtwork } from './components/StudentArtwork'
 import { AttendanceHistoryTable } from './components/AttendanceHistoryTable'
 import { PortalAccessCard } from './components/PortalAccessCard'
 import { StudentTimeline } from './components/StudentTimeline'
+import { MedicalProfileCard } from './components/MedicalProfileCard'
+import { StudentIncidents } from './components/StudentIncidents'
 import type { Student, AttendanceRecord, PortfolioEntry, Parent } from '@/types'
 
 const LIMIT = 15
@@ -161,6 +163,9 @@ export function StudentProfilePage() {
           />
 
           <AttendanceHeatmap studentId={s.id} />
+
+          <MedicalProfileCard studentId={s.id} />
+          <StudentIncidents studentId={s.id} />
 
           {/* Portfolio section */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mt-6">

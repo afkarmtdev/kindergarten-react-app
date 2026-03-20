@@ -221,7 +221,7 @@ export default function PortalPortfolioPage() {
                       return (
                         <div
                           key={entry.id}
-                          className={`border-l-4 ${cfg.border} bg-gray-50 dark:bg-gray-800/50 rounded-r-xl px-3 py-2`}
+                          className="bg-gray-50 dark:bg-gray-800/50 rounded-xl px-3 py-2"
                         >
                           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                             {entry.observation}
@@ -242,7 +242,7 @@ export default function PortalPortfolioPage() {
               <p className="text-sm font-bold text-gray-900 dark:text-white">{t('reportCard')}</p>
 
               {report.teacher_comment && (
-                <div className="relative border-l-4 border-l-kinder-orange bg-orange-50 dark:bg-orange-900/10 rounded-r-xl px-4 py-3">
+                <div className="relative bg-orange-50 dark:bg-orange-900/10 rounded-xl px-4 py-3">
                   <Quote className="w-4 h-4 text-kinder-orange opacity-40 absolute top-2.5 right-3" />
                   <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-1.5">
                     {t('teacherComment')}
@@ -254,7 +254,7 @@ export default function PortalPortfolioPage() {
               )}
 
               {report.principal_comment && (
-                <div className="relative border-l-4 border-l-kinder-blue bg-blue-50 dark:bg-blue-900/10 rounded-r-xl px-4 py-3">
+                <div className="relative bg-blue-50 dark:bg-blue-900/10 rounded-xl px-4 py-3">
                   <Quote className="w-4 h-4 text-kinder-blue opacity-40 absolute top-2.5 right-3" />
                   <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1.5">
                     {t('principalComment')}
