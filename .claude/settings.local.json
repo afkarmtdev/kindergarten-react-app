@@ -8,7 +8,11 @@
       "Bash(bun run test:backend)",
       "Bash(npx tsc --noEmit)",
       "Bash(bunx --bun tsc --noEmit)",
-      "Bash(bun run:*)"
+      "Bash(bun run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx --prefix frontend tsc --noEmit --pretty false)",
+      "Bash(bun test:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [
       "Read(**/.env)",
