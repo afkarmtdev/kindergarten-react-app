@@ -62,11 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('refresh_token')
     sessionStorage.removeItem('access_token')
     sessionStorage.removeItem('refresh_token')
-    try {
-      await supabase.auth.signOut()
-    } catch {
-      /* session already invalidated */
-    }
+    await supabase.auth.signOut({ scope: 'global' }).catch(() => {})
     setUser(null)
   }
 

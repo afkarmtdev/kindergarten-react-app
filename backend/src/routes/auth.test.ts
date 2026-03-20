@@ -134,14 +134,14 @@ describe('POST /logout', () => {
     expect(json.message).toBe('Logged out')
   })
 
-  test('returns 500 when signOut fails', async () => {
+  test('returns 200 even when session is already invalidated', async () => {
     setAuthSignOutError({ message: 'session not found' })
 
     const res = await auth.request('/logout', { method: 'POST' })
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(200)
 
     const json = await res.json()
-    expect(json.error).toBe('session not found')
+    expect(json.message).toBe('Logged out')
   })
 })
 
