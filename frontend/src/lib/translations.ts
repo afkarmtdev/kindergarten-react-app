@@ -433,6 +433,12 @@ export const translations = {
     totalPaid: 'Total Paid',
     balanceRemaining: 'Balance Remaining',
     paymentSuccess: 'Payment recorded',
+    paymentProof: 'Payment Proof',
+    attachPaymentProof: 'Payment Proof (optional)',
+    viewProof: 'View Proof',
+    proofAttached: 'Proof of payment attached',
+    uploadProof: 'Upload Proof',
+    pdfAttached: 'PDF attached',
 
     // Receipt
     receiptTitle: 'RECEIPT',
@@ -1359,6 +1365,12 @@ export const translations = {
     totalPaid: 'Jumlah Telah Dibayar',
     balanceRemaining: 'Baki Belum Bayar',
     paymentSuccess: 'Pembayaran direkodkan',
+    paymentProof: 'Bukti Pembayaran',
+    attachPaymentProof: 'Bukti Pembayaran (pilihan)',
+    viewProof: 'Lihat Bukti',
+    proofAttached: 'Bukti pembayaran dilampirkan',
+    uploadProof: 'Muat Naik Bukti',
+    pdfAttached: 'PDF dilampirkan',
 
     // Receipt
     receiptTitle: 'RESIT',

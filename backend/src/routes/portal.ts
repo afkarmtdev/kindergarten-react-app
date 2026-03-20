@@ -107,7 +107,7 @@ app.get('/fees', async (c) => {
   const { data, error, count } = await supabase
     .from('fee_records')
     .select(
-      'id, type, description, amount_owed, amount_paid, discount_amount, status, due_date, paid_at, created_at',
+      'id, type, description, amount_owed, amount_paid, discount_amount, status, due_date, paid_at, receipt_number, payment_proof_url, created_at',
       {
         count: 'exact',
       }
@@ -124,6 +124,33 @@ app.get('/fees', async (c) => {
     data: data ?? [],
     meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
   })
+})
+
+// GET /api/portal/fees/:id/proof-url — signed URL for payment proof
+app.get('/fees/:id/proof-url', async (c) => {
+  const childIds: string[] = c.get('parentChildIds') ?? []
+  const { id } = c.req.param()
+
+  const { data: record, error } = await supabase
+    .from('fee_records')
+    .select('student_id, payment_proof_url')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+
+  if (error || !record?.payment_proof_url) return c.json({ error: 'Not found' }, 404)
+  if (!childIds.includes(record.student_id)) return c.json({ error: 'Access denied' }, 403)
+
+  if (record.payment_proof_url.startsWith('http')) {
+    return c.json({ url: record.payment_proof_url })
+  }
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from('payment-proofs')
+    .createSignedUrl(record.payment_proof_url, 3600)
+
+  if (signError || !signed?.signedUrl) return c.json({ error: 'Failed to generate proof URL' }, 500)
+  return c.json({ url: signed.signedUrl })
 })
 
 // GET /api/portal/announcements — non-expired announcements (school-wide, no student scoping)

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { FileText, Wallet } from 'lucide-react'
+import { FileText, Wallet, Image } from 'lucide-react'
 import { useParentAuth } from '../../hooks/useParentAuth'
 import { portalDataApi } from '../../lib/api'
+import { toast } from 'sonner'
 import { useT } from '../../hooks/useT'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import type { FeeRecord } from '../../types'
@@ -25,6 +26,7 @@ export default function PortalFeesPage() {
   const { selectedChild } = useParentAuth()
   const t = useT()
   const [filter, setFilter] = useState<FilterTab>('all')
+  const [viewingProof, setViewingProof] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['portal-fees', selectedChild?.id, { page: 1, limit: LIMIT }],
@@ -217,8 +219,50 @@ export default function PortalFeesPage() {
                   Receipt: {r.receipt_number}
                 </div>
               )}
+              {r.payment_proof_url && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const { url } = await portalDataApi.getFeeProofUrl(r.id)
+                      setViewingProof(url)
+                    } catch {
+                      toast.error('Failed to load payment proof')
+                    }
+                  }}
+                  className="flex items-center gap-1 text-xs text-kinder-blue hover:underline mt-1"
+                >
+                  <Image size={12} />
+                  {t('viewProof')}
+                </button>
+              )}
             </div>
           ))}
+        </div>
+      )}
+
+      {viewingProof && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setViewingProof(null)}
+        >
+          <div className="max-w-2xl max-h-[80vh] p-2" onClick={(e) => e.stopPropagation()}>
+            {viewingProof.endsWith('.pdf') ? (
+              <a
+                href={viewingProof}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white underline text-lg"
+              >
+                Open PDF proof
+              </a>
+            ) : (
+              <img
+                src={viewingProof}
+                alt="Payment proof"
+                className="max-w-full max-h-[75vh] rounded-xl shadow-2xl"
+              />
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Receipt, FileText, Pencil, Trash2, AlertCircle, BookOpen } from 'lucide-react'
+import { Receipt, FileText, Pencil, Trash2, AlertCircle, BookOpen, Image } from 'lucide-react'
 import { useT } from '@/hooks/useT'
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { STATUS_STYLES, TYPE_STYLES, formatRM } from '../constants'
 import type { FeeRecord } from '@/types'
@@ -27,6 +28,8 @@ export function FeeTableRow({
 }) {
   const t = useT()
   const [showDelete, setShowDelete] = useState(false)
+  const [showProof, setShowProof] = useState(false)
+  const proofDisplayUrl = useSignedUrl('payment-proofs', record.payment_proof_url)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -91,11 +94,22 @@ export function FeeTableRow({
         </td>
         {/* Status */}
         <td className="px-4 py-3 text-center">
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${STATUS_STYLES[record.status] ?? ''}`}
-          >
-            {statusLabel(record.status)}
-          </span>
+          <div className="flex items-center justify-center gap-1">
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${STATUS_STYLES[record.status] ?? ''}`}
+            >
+              {statusLabel(record.status)}
+            </span>
+            {record.payment_proof_url && (
+              <button
+                onClick={() => setShowProof(true)}
+                title="View proof"
+                className="ml-1 text-kinder-blue hover:text-kinder-blue/80"
+              >
+                <Image size={14} />
+              </button>
+            )}
+          </div>
         </td>
         {/* Actions */}
         <td className="px-4 py-3">
@@ -180,6 +194,44 @@ export function FeeTableRow({
         }}
         onCancel={() => setShowDelete(false)}
       />
+      {showProof && proofDisplayUrl && (
+        <tr>
+          <td colSpan={8}>
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+              onClick={() => setShowProof(false)}
+            >
+              <div
+                className="relative max-w-2xl max-h-[80vh] p-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {record.payment_proof_url?.endsWith('.pdf') ? (
+                  <a
+                    href={proofDisplayUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white underline text-lg"
+                  >
+                    Open PDF proof
+                  </a>
+                ) : (
+                  <img
+                    src={proofDisplayUrl}
+                    alt="Payment proof"
+                    className="max-w-full max-h-[75vh] rounded-xl shadow-2xl"
+                  />
+                )}
+                <button
+                  onClick={() => setShowProof(false)}
+                  className="absolute top-4 right-4 text-white text-2xl font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
     </>
   )
 }

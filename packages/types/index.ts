@@ -141,6 +141,7 @@ export interface FeeRecord extends AuditFields {
   discount_amount: number
   discount_reason?: string
   receipt_number?: string
+  payment_proof_url?: string | null
   status: FeeStatus
   due_date?: string | null
   paid_at?: string | null
