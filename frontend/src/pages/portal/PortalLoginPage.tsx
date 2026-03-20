@@ -19,6 +19,7 @@ export default function PortalLoginPage() {
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function PortalLoginPage() {
     setError('')
     setLoading(true)
     try {
-      await login(accessCode.trim().toUpperCase(), pin)
+      await login(accessCode.trim().toUpperCase(), pin, rememberMe)
       navigate('/portal', { replace: true })
     } catch (err: unknown) {
       const axiosErr = err as {
@@ -77,7 +78,7 @@ export default function PortalLoginPage() {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700 border-t-4 border-t-kinder-orange space-y-4"
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700 space-y-4"
         >
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
@@ -141,6 +142,18 @@ export default function PortalLoginPage() {
               t('portalLoginBtn')
             )}
           </button>
+
+          <label className="flex items-center justify-center gap-2 cursor-pointer select-none">
+            <div
+              onClick={() => setRememberMe(!rememberMe)}
+              className={`relative w-8 h-4 rounded-full transition-colors duration-200 ${rememberMe ? 'bg-kinder-orange' : 'bg-gray-200 dark:bg-gray-700'}`}
+            >
+              <div
+                className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${rememberMe ? 'translate-x-4' : 'translate-x-0.5'}`}
+              />
+            </div>
+            <span className="text-xs text-gray-400 dark:text-gray-500">{t('keepMeSignedIn')}</span>
+          </label>
         </form>
 
         {/* Help text */}

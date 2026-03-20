@@ -141,6 +141,7 @@ export interface FeeRecord extends AuditFields {
   discount_amount: number
   discount_reason?: string
   receipt_number?: string
+  payment_proof_url?: string | null
   status: FeeStatus
   due_date?: string | null
   paid_at?: string | null
@@ -467,10 +468,112 @@ export type TimelineEventType =
   | 'fee_payment'
   | 'report_card'
   | 'daily_report'
+  | 'incident'
 
 export interface TimelineEvent {
   type: TimelineEventType
   date: string
   title: string
   subtitle?: string
+}
+
+// ─── Medical Profiles ────────────────────────────────────────────────────────
+export interface Medication {
+  name: string
+  dosage: string
+  frequency: string
+}
+
+export interface VaccinationRecord {
+  name: string
+  date: string
+}
+
+export interface EmergencyContact {
+  name: string
+  relationship: string
+  phone: string
+  is_primary: boolean
+}
+
+export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-' | 'unknown'
+
+export interface StudentMedical extends AuditFields {
+  id: string
+  student_id: string
+  blood_type: BloodType | null
+  allergies: string[]
+  medical_conditions: string[]
+  medications: Medication[]
+  vaccination_records: VaccinationRecord[]
+  emergency_contacts: EmergencyContact[]
+  doctor_name: string | null
+  doctor_phone: string | null
+  insurance_info: string | null
+  medical_notes: string | null
+  created_at: string
+}
+
+// ─── Incidents ───────────────────────────────────────────────────────────────
+export type IncidentType = 'injury' | 'illness' | 'behavioral' | 'allergic_reaction' | 'other'
+export type IncidentSeverity = 'minor' | 'moderate' | 'serious'
+export type IncidentStatus = 'open' | 'resolved'
+
+export interface Incident extends AuditFields {
+  id: string
+  student_id: string
+  incident_date: string
+  incident_time: string | null
+  type: IncidentType
+  severity: IncidentSeverity
+  location: string | null
+  description: string
+  action_taken: string
+  witnessed_by: string | null
+  parent_notified: boolean
+  parent_notified_at: string | null
+  photo_url: string | null
+  follow_up_notes: string | null
+  status: IncidentStatus
+  recorded_by: string | null
+  created_at: string
+  // Joined fields from students table (present in list responses)
+  students?: {
+    full_name: string
+    class_name?: string | null
+    photo_url?: string
+  } | null
+}
+
+// ── Careers ──────────────────────────────────────────────────────────────────
+
+export type JobPostingStatus = 'draft' | 'published' | 'closed'
+export type JobType = 'full_time' | 'part_time' | 'internship' | 'contract'
+export type ApplicationStatus = 'new' | 'reviewed' | 'interviewed' | 'hired' | 'rejected'
+
+export interface JobPosting extends AuditFields {
+  id: string
+  title: string
+  type: JobType
+  department?: string | null
+  description: string
+  requirements?: string | null
+  salary_min?: number | null
+  salary_max?: number | null
+  status: JobPostingStatus
+  display_order: number
+  created_at: string
+}
+
+export interface JobApplication extends AuditFields {
+  id: string
+  posting_id: string
+  applicant_name: string
+  email: string
+  phone: string
+  resume_url?: string | null
+  cover_message?: string | null
+  status: ApplicationStatus
+  created_at: string
+  posting_title?: string
 }

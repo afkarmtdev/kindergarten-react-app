@@ -1,5 +1,10 @@
 import { describe, test, expect, beforeEach, mock } from 'bun:test'
-import { mockSupabase, setMockResponse, clearMockResponses } from '../test-utils/mockSupabase'
+import {
+  mockSupabase,
+  setMockResponse,
+  setRpcMockResponse,
+  clearMockResponses,
+} from '../test-utils/mockSupabase'
 
 mock.module('../db/supabase', () => ({ supabase: mockSupabase }))
 
@@ -312,30 +317,8 @@ describe('Fee Records — POST /generate', () => {
 
 describe('Fee Records — GET /summary', () => {
   test('returns fee summary totals', async () => {
-    setMockResponse('fee_records', {
-      data: [
-        {
-          amount_owed: 100,
-          amount_paid: 100,
-          discount_amount: 0,
-          status: 'paid',
-          due_date: '2025-03-01',
-        },
-        {
-          amount_owed: 200,
-          amount_paid: 50,
-          discount_amount: 0,
-          status: 'partial',
-          due_date: '2025-03-15',
-        },
-        {
-          amount_owed: 150,
-          amount_paid: 0,
-          discount_amount: 0,
-          status: 'unpaid',
-          due_date: '2025-02-01',
-        },
-      ],
+    setRpcMockResponse('dashboard_fees_summary', {
+      data: { total_owed: 5000, total_paid: 3000, total_outstanding: 2000, overdue_count: 5 },
       error: null,
     })
 
@@ -343,12 +326,17 @@ describe('Fee Records — GET /summary', () => {
     expect(res.status).toBe(200)
 
     const json = await res.json()
-    expect(json.total_owed).toBe(450)
-    expect(json.total_paid).toBe(150)
+    expect(json.total_owed).toBe(5000)
+    expect(json.total_paid).toBe(3000)
+    expect(json.total_outstanding).toBe(2000)
+    expect(json.overdue_count).toBe(5)
   })
 
   test('returns zeros when no records', async () => {
-    setMockResponse('fee_records', { data: [], error: null })
+    setRpcMockResponse('dashboard_fees_summary', {
+      data: { total_owed: 0, total_paid: 0, total_outstanding: 0, overdue_count: 0 },
+      error: null,
+    })
 
     const res = await fees.request('/summary')
     expect(res.status).toBe(200)
@@ -359,6 +347,16 @@ describe('Fee Records — GET /summary', () => {
     expect(json.total_outstanding).toBe(0)
     expect(json.overdue_count).toBe(0)
   })
+
+  test('returns 500 on database error', async () => {
+    setRpcMockResponse('dashboard_fees_summary', {
+      data: null,
+      error: { message: 'RPC failed' },
+    })
+
+    const res = await fees.request('/summary?month=2025-03')
+    expect(res.status).toBe(500)
+  })
 })
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -366,12 +364,11 @@ describe('Fee Records — GET /summary', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('Fee Records — GET /trend', () => {
-  test('returns monthly owed/collected data with correct sums', async () => {
-    setMockResponse('fee_records', {
+  test('returns monthly owed/collected data', async () => {
+    setRpcMockResponse('dashboard_fees_trend', {
       data: [
-        { amount_owed: 350, amount_paid: 350, discount_amount: 0, due_date: '2025-01-15' },
-        { amount_owed: 200, amount_paid: 100, discount_amount: 0, due_date: '2025-01-20' },
-        { amount_owed: 400, amount_paid: 400, discount_amount: 0, due_date: '2025-02-10' },
+        { month: '2026-01', owed: 5000, collected: 3000 },
+        { month: '2026-02', owed: 4500, collected: 4000 },
       ],
       error: null,
     })
@@ -382,17 +379,17 @@ describe('Fee Records — GET /trend', () => {
     const json = await res.json()
     expect(json).toHaveLength(2)
 
-    const jan = json.find((p: { month: string }) => p.month === '2025-01')
-    expect(jan.owed).toBe(550)
-    expect(jan.collected).toBe(450)
+    const jan = json.find((p: { month: string }) => p.month === '2026-01')
+    expect(jan.owed).toBe(5000)
+    expect(jan.collected).toBe(3000)
 
-    const feb = json.find((p: { month: string }) => p.month === '2025-02')
-    expect(feb.owed).toBe(400)
-    expect(feb.collected).toBe(400)
+    const feb = json.find((p: { month: string }) => p.month === '2026-02')
+    expect(feb.owed).toBe(4500)
+    expect(feb.collected).toBe(4000)
   })
 
   test('returns empty array when no data', async () => {
-    setMockResponse('fee_records', { data: [], error: null })
+    setRpcMockResponse('dashboard_fees_trend', { data: [], error: null })
 
     const res = await fees.request('/trend?months=3')
     expect(res.status).toBe(200)
@@ -402,9 +399,9 @@ describe('Fee Records — GET /trend', () => {
   })
 
   test('returns 500 on database error', async () => {
-    setMockResponse('fee_records', {
+    setRpcMockResponse('dashboard_fees_trend', {
       data: null,
-      error: { message: 'query failed' },
+      error: { message: 'RPC failed' },
     })
 
     const res = await fees.request('/trend?months=6')
@@ -990,5 +987,158 @@ describe('Fee Records — PUT /:id/payment', () => {
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.this_payment).toBe(100)
+  })
+
+  test('records payment with proof of payment URL', async () => {
+    setMockResponse('fee_records', {
+      data: {
+        id: 'f-1',
+        amount_owed: 500,
+        amount_paid: 0,
+        discount_amount: 0,
+        status: 'unpaid',
+        paid_at: null,
+        students: {
+          full_name: 'Ali',
+          classrooms: { name: 'Rose' },
+          photo_url: null,
+          parent_name: 'Abu',
+        },
+      },
+      error: null,
+    })
+    setMockResponse('document_numbering', { data: validConfig, error: null })
+
+    const res = await fees.request('/f-1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 500, payment_proof_url: 'https://example.com/proof.jpg' }),
+    })
+
+    expect(res.status).toBe(200)
+  })
+
+  test('rejects invalid payment proof URL', async () => {
+    const res = await fees.request('/f-1/payment', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: 100, payment_proof_url: 'not-a-url' }),
+    })
+
+    expect(res.status).toBe(400)
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Summary — no month param (all-time)
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — GET /summary without month param', () => {
+  test('returns all-time summary when no month is supplied', async () => {
+    setRpcMockResponse('dashboard_fees_summary', {
+      data: { total_owed: 12000, total_paid: 9000, total_outstanding: 3000, overdue_count: 8 },
+      error: null,
+    })
+
+    const res = await fees.request('/summary')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.total_owed).toBe(12000)
+    expect(json.total_paid).toBe(9000)
+    expect(json.total_outstanding).toBe(3000)
+    expect(json.overdue_count).toBe(8)
+  })
+
+  test('returns default zeros when RPC returns null and no month param', async () => {
+    setRpcMockResponse('dashboard_fees_summary', {
+      data: null,
+      error: null,
+    })
+
+    const res = await fees.request('/summary')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json.total_owed).toBe(0)
+    expect(json.total_paid).toBe(0)
+    expect(json.total_outstanding).toBe(0)
+    expect(json.overdue_count).toBe(0)
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Trend — custom months param and error case
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — GET /trend with custom months', () => {
+  test('returns 3 months of data when months=3 is supplied', async () => {
+    setRpcMockResponse('dashboard_fees_trend', {
+      data: [
+        { month: '2026-01', owed: 4000, collected: 3500 },
+        { month: '2026-02', owed: 4200, collected: 4000 },
+        { month: '2026-03', owed: 3800, collected: 3600 },
+      ],
+      error: null,
+    })
+
+    const res = await fees.request('/trend?months=3')
+    expect(res.status).toBe(200)
+
+    const json = await res.json()
+    expect(json).toHaveLength(3)
+    expect(json[0].month).toBe('2026-01')
+    expect(json[2].month).toBe('2026-03')
+  })
+
+  test('rejects months=0 (below min)', async () => {
+    const res = await fees.request('/trend?months=0')
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects months=13 (above max)', async () => {
+    const res = await fees.request('/trend?months=13')
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('Fee Records — GET /trend error case', () => {
+  test('returns 500 when RPC fails', async () => {
+    setRpcMockResponse('dashboard_fees_trend', {
+      data: null,
+      error: { message: 'database connection lost' },
+    })
+
+    const res = await fees.request('/trend?months=3')
+    expect(res.status).toBe(500)
+
+    const json = await res.json()
+    expect(json.error).toBe('Failed to fetch fees trend')
+  })
+})
+
+// ═════════════════════════════════════════════════════════════════════════════
+// DELETE /:id — paid record rejection
+// ═════════════════════════════════════════════════════════════════════════════
+
+describe('Fee Records — DELETE /:id paid/partial record', () => {
+  test('rejects deleting a partial record', async () => {
+    setMockResponse('fee_records', { data: { status: 'partial' }, error: null })
+
+    const res = await fees.request('/r1', { method: 'DELETE' })
+    expect(res.status).toBe(400)
+
+    const json = await res.json()
+    expect(json.error).toContain('Only unpaid')
+  })
+
+  test('rejects deleting a waived record', async () => {
+    setMockResponse('fee_records', { data: { status: 'waived' }, error: null })
+
+    const res = await fees.request('/r1', { method: 'DELETE' })
+    expect(res.status).toBe(400)
+
+    const json = await res.json()
+    expect(json.error).toContain('Only unpaid')
   })
 })

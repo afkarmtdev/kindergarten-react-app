@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Lock, Mail, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Lock, Mail, AlertCircle, ArrowLeft, Sun, Moon } from 'lucide-react'
 import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { useAuth } from '@/hooks/useAuth'
+import { useSettingsStore } from '@/store/settingsStore'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
 import { usePageTitle } from '@/hooks/usePageTitle'
 
@@ -10,6 +11,7 @@ export function LoginPage() {
   usePageTitle('Admin Login')
   const { login } = useAuth()
   const navigate = useNavigate()
+  const { darkMode, toggleDark } = useSettingsStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -39,7 +41,14 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 font-display flex items-center justify-center p-4 transition-colors duration-200">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 font-display flex items-center justify-center p-4 transition-colors duration-200 relative">
+      <button
+        onClick={toggleDark}
+        aria-label="Toggle dark mode"
+        className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur text-gray-500 dark:text-gray-400 hover:text-kinder-orange dark:hover:text-kinder-orange border border-gray-200 dark:border-gray-700 shadow-sm transition-colors"
+      >
+        {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      </button>
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 sm:p-10 border border-transparent dark:border-gray-800">
           <div className="text-center mb-8">

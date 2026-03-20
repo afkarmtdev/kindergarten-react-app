@@ -449,13 +449,14 @@ This project runs on the **free tier**. Key limits:
 
 - 500 MB database storage, 1 GB file storage, 50 MB max upload size
 - No automatic backups / point-in-time recovery
-- Six Storage buckets required (all must be created as **public** in the Supabase dashboard):
+- Seven Storage buckets required (all must be created as **public** in the Supabase dashboard):
   - `student-photos` — student profile photo uploads (StudentModal)
   - `gallery-photos` — landing page gallery photo uploads (GalleryModal)
   - `announcement-banners` — announcement banner image uploads (AnnouncementModal)
   - `testimonial-avatars` — optional parent avatar uploads (TestimonialModal); 2 MB limit
   - `artwork-photos` — art wall artwork uploads (ArtWallModal); compressed before upload
   - `portfolio-photos` — portfolio entry photo uploads (PortfolioEntryModal)
+  - `resumes` — job application resume uploads (ApplicationFormModal); PDF/DOC/DOCX, 5 MB limit; anon upload + authenticated read/delete
 
 ## Environment Variables
 
@@ -608,43 +609,147 @@ Printable finance documents — invoices, overdue notices, enrollment letters, c
 
 ## Remaining Backlog (prioritised)
 
+### Completed
+
+- [x] Real-time attendance updates — `hooks/useAttendanceRealtime.ts`
+- [x] Parent portal — access code + PIN login, JWT sessions, 8 portal tabs (dashboard hub, attendance, fees, announcements, daily reports, portfolio, medical, incidents)
+- [x] Parent-level accounts — one parent → multiple children, child switcher bottom sheet
+- [x] Art Wall — cork board page, landing page section, student profile integration
+- [x] Inquiries — public enrollment form + admin review page with status flow
+- [x] Audit trail + soft delete — all business tables have audit columns
+- [x] Finance documents — invoice, overdue notice, enrollment letter, collection sheet, monthly/annual reports, payment ledger
+- [x] Student status (active/graduated/inactive) — filters, dashboard scoped to active
+- [x] Class academic year + graduation — Graduate Class modal, class status filter
+- [x] Student activity timeline — cursor-paginated feed from 7 data sources
+- [x] Sidebar nav grouping + collapsible sidebar
+- [x] Attendance class filter
+- [x] Admin Parents page — full CRUD, parent detail modal, link/unlink children
+- [x] Medical profiles — blood type, allergies, medications, vaccinations, emergency contacts, doctor info
+- [x] Incident reports — admin CRUD + student profile tab + portal read-only view
+- [x] Careers module — job postings (draft/published/closed), applications with resume upload, landing page section with detail modal
+- [x] Dashboard performance — SQL aggregation via PostgreSQL RPC functions, ~30s → ~500ms at 500K scale
+- [x] Attendance heatmap on student profile
+- [x] Dashboard charts (recharts) — attendance trend + fee collection
+- [x] Print-friendly attendance sheet
+- [x] PWA / installable app
+- [x] Global search (Cmd+K)
+
+### Quick Wins
+
+- [ ] School calendar — events, holidays, term dates; show on portal; simple CRUD + public endpoint
+- [ ] Audit log viewer UI — data already in DB, just needs an admin page to browse/search/filter audit trail
+- [ ] Waitlist management — add `waitlisted` to inquiry status flow (new → contacted → waitlisted → enrolled/closed)
+- [ ] Graduation certificates — auto-generated PDF with school branding (similar to PortfolioReportPDF pattern)
+- [ ] Award/achievement badges — "Star Reader", "Kind Friend" etc, visible on student profile + portal
+
 ### Medium Priority
 
-- [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
-- [ ] Role-based access (superadmin vs teacher — schema has AdminUser.role already)
-- [x] Real-time attendance updates — implemented in `hooks/useAttendanceRealtime.ts`
-- [x] Parent portal — access code + PIN login, JWT sessions, 6 portal tabs, admin generate/reset/revoke UI
-- [x] Parent-level accounts — migrated from student-scoped to parent-scoped (one parent → multiple children)
-- [x] Art Wall — cork board page with pushpin artwork cards, landing page section, student profile integration
-- [x] Inquiries — public enrollment form + admin review page
-- [x] Audit trail + soft delete — all business tables have created_by/modified_by/deleted_at audit columns
-- [x] Finance documents — invoice, overdue notice, enrollment letter, collection sheet, monthly/annual reports, payment ledger
-- [x] Student status (active/graduated/inactive) — filters on Students page, dashboard/attendance scoped to active only
-- [x] Class academic year + graduation — `academic_year` field, Graduate Class modal (bulk graduate + reassign), class status filter
-- [x] Inquiry ticket system — status flow (new/contacted/enrolled/closed), date filters, WhatsApp deep links
-- [x] Student activity timeline — cursor-paginated feed from 6 data sources, attendance streak grouping
-- [x] Sidebar nav grouping — People/Daily/Finance/Content sections
-- [x] Attendance class filter — dropdown to filter by class
-- [ ] Admin Parents page — backend `/api/parents` CRUD exists, frontend page not yet built
-- [ ] Sentry crash logging — needs a Sentry project DSN; `@sentry/react` on frontend, Sentry Bun SDK on backend
-
 - [ ] Newsletter/Posts module — full-page TipTap WYSIWYG editor (StarterKit), draft/published states, auto-slug from title, cover image + photo gallery strip, public `/posts` listing + `/posts/:slug` reader pages, DOMPurify or `sanitize-html` for HTML sanitization on save; separate from Announcements (short notices stay as-is)
+- [ ] Simple Mode (home childcare profile) — a `business_type` field in `school_info` (`'kindergarten' | 'home_childcare'`); `useBusinessType()` hook reads it; toggleable in Settings. Changes: hides Classrooms module (sidebar + route), hides `class_name` on student form (defaults to single auto-created group), removes class filter on Attendance, landing page swaps content via per-mode translation key maps (hero copy, stats labels, feature cards, CTA text), sidebar nav filtered by `item.modes`. Backend unchanged — classrooms just go unused.
+- [ ] Role-based access (superadmin vs teacher) — `AdminUser.role` type already defined, needs RBAC middleware + permission checks per route
+- [ ] Email notifications to parents for absences (Supabase Edge Functions or Resend)
+- [ ] Sentry crash logging — `@sentry/react` on frontend, Sentry Bun SDK on backend
+- [ ] Staff management — employee records, roles, leave tracking, clock-in/out
+- [ ] Milestone checklists — KSPK 2026 developmental milestones per student per term (extends portfolio)
+- [ ] QR code check-in/out — parent scans at drop-off/pickup, logs exact time + who picked up
+- [ ] Pickup authorization — registered list of who is allowed to pick up each child, photo ID, one-time guest passes
+- [ ] In-app parent-teacher messaging — scoped per child, not a free-for-all
+- [ ] Push notifications (PWA) — service worker exists, needs notification API + triggers (attendance, fees, announcements)
+- [ ] Meal planning / menu management — weekly menu displayed on portal, ties into daily report meals
+- [ ] Digital consent forms — field trip permission, photo usage, medical consent, e-signature
+- [ ] Parent-teacher conference booking — time slot picker, auto-confirmed
+- [ ] Progress dashboard — visual charts showing growth across KSPK domains over time
+- [ ] Auto-absence alerts — if not marked present by 9:30am, parent gets notified
+- [ ] Bulk WhatsApp broadcast — templates for fee reminders, event invites (WhatsApp Business API)
+- [ ] Event RSVP — parents confirm attendance for school events through portal
+- [ ] Online enrollment form — full application (beyond inquiry), document uploads, auto-creates student on approval
+- [ ] Referral tracking — "referred by" field on inquiries, track which parents bring new families
+- [ ] Full data export/backup — ZIP download of all school data (compliance, peace of mind)
 
-- [ ] Simple Mode (home childcare profile) — a `business_type` field in `school_info` (`'kindergarten' | 'home_childcare'`); `useBusinessType()` hook reads it; toggleable in Settings. Changes: hides Classrooms module (sidebar + route), hides `class_name` on student form (defaults to single auto-created group), removes class filter on Attendance, landing page swaps content via per-mode translation key maps (hero copy, stats labels, feature cards, CTA text), sidebar nav filtered by `item.modes`. Backend unchanged — classrooms just go unused. Fees, gallery, announcements, testimonials, bear mascot all stay as-is.
+### Growth & Health Tracking
+
+- [ ] Growth chart — height/weight tracking over time with percentile curves
+- [ ] Hydration tracker — glasses of water per day (ties into daily report)
+- [ ] Diaper change log — for nursery/younger kids (time, type, notes)
+- [ ] Sleep pattern analytics — visualize nap trends from daily reports data
+- [ ] Allergy alert badges — prominent warning on student cards, attendance, daily reports
+
+### Teacher Tools
+
+- [ ] Lesson plan builder — weekly planner tied to KSPK domains, shareable between teachers
+- [ ] Class rotation schedule — auto-generate timetables for shared spaces (playground, art room, music room)
+- [ ] Substitute teacher quick-access — one-page summary per class (special needs, allergies, routines)
+- [ ] Professional development log — training hours, certifications, expiry dates
+- [ ] Voice notes for daily reports — teachers record audio instead of typing
+
+### Communication & Community
+
+- [ ] Parent satisfaction surveys — periodic anonymous surveys, results dashboard
+- [ ] Suggestion box — anonymous parent submissions, admin review
+- [ ] Class-specific updates — photo + text updates per class (like a private story)
+- [ ] Lost and found board — photo + description, claimed/unclaimed status
+- [ ] Carpool matching — parents in same area opt-in, system suggests matches
+
+### Events & Activities
+
+- [ ] Sports day module — event registration, scoring, leaderboards, printable certificates
+- [ ] Concert/performance planner — role assignments, rehearsal schedule, seating chart
+- [ ] Field trip planner — itinerary, cost breakdown, permission slip generation, headcount
+- [ ] Year-end slideshow generator — auto-compile photos from gallery + art wall + daily reports per student
+- [ ] Student of the week/month — spotlight card on portal dashboard + landing page
+
+### Finance Extras
+
+- [ ] Late fee auto-calculation — configurable grace period + daily/weekly penalty rate
+- [ ] Payment plan installments — split fee into monthly instalments with auto-reminders
+- [ ] Expense tracking — school-side expenditure (supplies, maintenance, utilities) for profit/loss view
+- [ ] Scholarship/subsidy tracking — tag students with financial aid, offset against fees
+- [ ] Petty cash log — small daily expenses with receipt photo upload
+
+### Operations
+
+- [ ] Visitor management — sign-in/out log with photo, purpose, who they're visiting
+- [ ] Maintenance request tracker — teachers submit requests, admin assigns + tracks
+- [ ] Supply request system — teachers request materials, admin approves + tracks budget
+- [ ] Classroom/facility booking — shared spaces (hall, playground) time-slot calendar
+- [ ] Vendor/supplier directory — contact list, order history, payment tracking
+
+### Parent Portal Extras
+
+- [ ] School supply checklist — per-class list, parents tick off what they've prepared
+- [ ] Uniform ordering — size selection, quantity, integrated with fee system
+- [ ] Homework/activity log — simple task list per child, parents mark complete
+- [ ] Reading log — books read tracker with star ratings, builds a "library" per child
+- [ ] Learning resources — curated links/PDFs/videos per KSPK domain for home activities
+
+### Marketing & Retention
+
+- [ ] Alumni tracking — graduated students, where they went, birthday greetings
+- [ ] Google Reviews widget — pull and display on landing page
+- [ ] Social media auto-post — publish announcements/gallery to Facebook/Instagram automatically
+- [ ] School newsletter email — Resend/Mailchimp integration, template builder
+
+### Malaysian-Specific
+
+- [ ] JPNJ/JPN reporting — auto-generate enrollment reports for state education department
+- [ ] KWAPM subsidy tracking — tag eligible students, track disbursement
+- [ ] MyInvois integration — e-invoicing for schools hitting RM1M threshold (mandatory 2025)
+- [ ] Hari Raya/CNY/Deepavali calendar templates — pre-built holiday announcements
+- [ ] Dual-language report cards — auto-generate in both BM and EN
+
+### AI-Powered (Future)
+
+- [ ] Smart attendance — face recognition at gate camera
+- [ ] Photo auto-tagging — detect which students are in a group photo
+- [ ] Daily report auto-suggestions — AI drafts based on mood + activity patterns
+- [ ] Developmental insight summaries — AI analyzes portfolio entries, flags areas needing attention
+- [ ] Smart scheduling — auto-generate optimal class timetables based on constraints
 
 ### Big / Future
 
 - [ ] Multi-tenant (SaaS) — add `schools` table + `school_id` FK on every resource table (row-level isolation); tenant resolved from subdomain or path (`schoolA.kindercare.app`); auth scoped per school; storage paths `bucket/{school_id}/...`; RLS rewritten to scope all queries by `school_id`. See Option A (data-driven) approach.
 - [ ] Per-school landing page — current LandingPage is already data-driven; add `hero_title`, `hero_subtitle`, `cta_text`, `primary_color` to `school_info`/`school_branding`; scope public API calls by school slug. Phase 2: curated theme variants (`LandingTheme = 'default' | 'minimal' | 'modern'`) — each a different section layout using the same data.
 - [ ] Plan-based feature gating — `plan` (`'free'|'basic'|'pro'`) + `plan_expires_at` columns on `schools` table. Backend: `PLAN_LIMITS` config (free: 20 students / 1 class / no exports; basic: unlimited / all core; pro: + custom landing + custom domain). Enforce at creation routes (count + reject), export routes (403), auth middleware (expiry check). Frontend: disabled buttons with upgrade tooltip, usage counter on dashboard ("18/20 students"), expiry banner at 7 days. Payment collection manual at first (bank transfer / ToyyibPay link, admin updates `plan_expires_at`); automate with ToyyibPay/Billplz webhooks at ~30+ schools.
-
-### Low Priority / Nice to Have
-
-- [x] Attendance heatmap on student profile — implemented in `pages/student-profile/components/AttendanceHeatmap.tsx`
-- [x] Dashboard charts (recharts) — implemented in `pages/dashboard/components/AttendanceTrendChart.tsx` + `FeeCollectionChart.tsx`
-- [x] Print-friendly attendance sheet — implemented in `pages/attendance/components/AttendancePrintView.tsx`
-- [x] PWA / installable app for teachers marking attendance on phones — implemented with offline shell caching
-- [x] Global search (Cmd+K) — implemented in `components/ui/CommandPalette.tsx`, wired into AdminLayout
 
 ## Admin Bear (Sidebar Easter Egg)
 
@@ -666,6 +771,7 @@ Full implementation details — eye states, idle machine timing, critical timer 
         DocumentNumberingSection.tsx
   ```
   Simple pages with no sub-components stay as a flat `.tsx` file directly in `pages/` (e.g. `LoginPage.tsx`, `ClassesPage.tsx`, `GalleryPage.tsx`). Upgrade to a folder only when a `components/` subfolder is actually needed.
+- **No `as any` type casts** — never use `as any` to silence TypeScript errors. Fix the underlying type instead. If a type is missing a field, extend it properly (e.g. add `code?: string` to the error type rather than casting the whole object to `any`).
 - No emojis anywhere in the codebase — not in UI, not in console.log, not in comments, not in documentation. Use lucide-react icons instead.
 - **Brand name** (`APP_NAME`) and **version** (`APP_VERSION`) are exported from `frontend/src/lib/version.ts` — the single source of truth. Never hardcode the school name anywhere else; always import and reference `APP_NAME`.
 - **All new routes must use audit helpers**: `auditCreate(c)` on INSERT, `auditUpdate(c)` on UPDATE, `auditDelete(c)` for soft-delete, `auditUpsert(c)` for UPSERT. All SELECT queries on soft-deletable tables must include `.is('deleted_at', null)`.
@@ -680,3 +786,11 @@ Full implementation details — eye states, idle machine timing, critical timer 
 - All new pages must be mobile-responsive: `p-4 md:p-8` container padding, `text-2xl md:text-3xl` headings, header rows use `flex flex-col gap-4 md:flex-row md:items-center md:justify-between`, action buttons `w-full md:w-auto`, SearchBars `w-full md:w-72`
 - **AdminLayout mobile nav**: desktop sidebar is `hidden lg:flex`; mobile gets a top bar (hamburger + logo) + slide-in drawer with dark backdrop overlay. `sidebarOpen` state controls drawer visibility.
 - **Page titles**: every page must call `usePageTitle` from `frontend/src/hooks/usePageTitle.ts` at the top of its component. Admin pages pass the page label (e.g. `usePageTitle('Dashboard')`) → tab shows `"Dashboard — KinderCare"`. Landing page passes no argument → tab shows just `APP_NAME`. StudentProfilePage passes `student?.full_name` (reactive — updates when data loads).
+- **No `console.log` in backend routes** — use `logger` from `lib/logger.ts` (pino). `logger.error({ error: error.message }, 'context')` for errors, `logger.info()` for informational. Route files never use `console.log`.
+- **Generic error messages to clients** — never expose `error.message` from Supabase/PostgreSQL in API responses. Log the real error with `logger.error()`, return a human-friendly generic message: `c.json({ error: 'Failed to fetch students' }, 500)`. Postgres errors can leak table names, column names, and constraint details.
+- **UUID validation on path params** — all route handlers using `:id` or `:studentId` params must validate with `isValidUUID()` from `lib/validation.ts` before querying. Return 400 on invalid UUID, not 500 from Postgres.
+- **Public endpoints must use explicit SELECT columns** — never `.select('*')` on public-facing (anon) queries. Always list columns explicitly and exclude audit columns (`created_by`, `modified_by`, `deleted_by`, `deleted_at`, `modified_at`) to prevent leaking admin user IDs.
+- **Rate limiting on public POST endpoints** — all unauthenticated POST routes (inquiries, job applications, portal login) must have rate limiting using the in-memory Map pattern. Typical limits: 3-10 requests per IP per 10 minutes.
+- **Storage bucket path scoping** — anon upload RLS policies must scope uploads to a specific folder prefix (e.g. `(storage.foldername(name))[1] = 'applications'`). Never allow unrestricted bucket-wide uploads from anonymous users.
+- **Audit columns are UUID type** — `created_by`, `modified_by`, `deleted_by` columns store Supabase Auth UUIDs and must be typed as `UUID`, not `TEXT`.
+- **SQL migrations must use transactions** — wrap every migration in `BEGIN;` ... `COMMIT;` so that if any statement fails, PostgreSQL rolls back all changes automatically. No partial migrations.

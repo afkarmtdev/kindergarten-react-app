@@ -66,6 +66,7 @@ export const studentsApi = {
     api
       .get('/students', { params: filters })
       .then((r) => r.data as PaginatedResponse<import('@/types').Student>),
+  getCount: () => api.get('/students/count').then((r) => r.data as { count: number }),
   getById: (id: string) => api.get(`/students/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post('/students', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/students/${id}`, data).then((r) => r.data),
@@ -85,16 +86,14 @@ export const studentsApi = {
   revokePortalAccess: (id: string) =>
     api.delete(`/students/${id}/portal-access`).then((r) => r.data),
   getTimeline: (id: string, params?: { limit?: number; before?: string }) =>
-    api
-      .get(`/students/${id}/timeline`, { params })
-      .then(
-        (r) =>
-          r.data as {
-            events: import('@/types').TimelineEvent[]
-            has_more: boolean
-            next_cursor?: string
-          }
-      ),
+    api.get(`/students/${id}/timeline`, { params }).then(
+      (r) =>
+        r.data as {
+          events: import('@/types').TimelineEvent[]
+          has_more: boolean
+          next_cursor?: string
+        }
+    ),
 }
 
 export const attendanceApi = {
@@ -119,6 +118,7 @@ export const classesApi = {
     api
       .get('/classes', { params: filters })
       .then((r) => r.data as PaginatedResponse<import('@/types').ClassRoom>),
+  getCount: () => api.get('/classes/count').then((r) => r.data as { count: number }),
   getById: (id: string) => api.get(`/classes/${id}`).then((r) => r.data),
   create: (data: unknown) => api.post('/classes', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/classes/${id}`, data).then((r) => r.data),
@@ -180,10 +180,12 @@ export const feesApi = {
   create: (data: unknown) => api.post('/fees', data).then((r) => r.data),
   generate: (data: unknown) => api.post('/fees/generate', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/fees/${id}`, data).then((r) => r.data),
-  recordPayment: (id: string, data: { amount: number }) =>
+  recordPayment: (id: string, data: { amount: number; payment_proof_url?: string | null }) =>
     api
       .put(`/fees/${id}/payment`, data)
       .then((r) => r.data as import('@/types').FeePaymentResponse),
+  getProofUrl: (id: string) =>
+    api.get(`/fees/${id}/proof-url`).then((r) => r.data as { url: string }),
   delete: (id: string) => api.delete(`/fees/${id}`).then((r) => r.data),
   getStatement: (studentId: string, year: number) =>
     api.get(`/fees/statement/${studentId}`, { params: { year } }).then((r) => r.data),
@@ -331,7 +333,7 @@ function getOrCreateDeviceId(): string {
 }
 
 portalApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('portal_token')
+  const token = localStorage.getItem('portal_token') ?? sessionStorage.getItem('portal_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   config.headers['X-Device-Id'] = getOrCreateDeviceId()
   return config
@@ -340,10 +342,16 @@ portalApi.interceptors.request.use((config) => {
 portalApi.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 && localStorage.getItem('portal_token')) {
+    if (
+      err.response?.status === 401 &&
+      (localStorage.getItem('portal_token') || sessionStorage.getItem('portal_token'))
+    ) {
       localStorage.removeItem('portal_token')
       localStorage.removeItem('portal_parent')
       localStorage.removeItem('portal_selected_child')
+      sessionStorage.removeItem('portal_token')
+      sessionStorage.removeItem('portal_parent')
+      sessionStorage.removeItem('portal_selected_child')
       window.location.href = '/portal/login'
     }
     return Promise.reject(err)
@@ -370,6 +378,8 @@ export const portalDataApi = {
       .then((r) => r.data as PaginatedResponse<import('@/types').AttendanceRecord>),
   getFees: (params: { page?: number; limit?: number; student_id?: string } = {}) =>
     portalApi.get('/fees', { params }).then((r) => r.data),
+  getFeeProofUrl: (id: string) =>
+    portalApi.get(`/fees/${id}/proof-url`).then((r) => r.data as { url: string }),
   getAnnouncements: () =>
     portalApi
       .get('/announcements')
@@ -400,6 +410,14 @@ export const portalDataApi = {
       .then((r) => r.data as { data: import('@/types').DeviceSession[]; max_devices: number }),
   removeDevice: (sessionId: string) =>
     portalApi.delete(`/devices/${sessionId}`).then((r) => r.data),
+  getMedical: (student_id?: string) =>
+    portalApi
+      .get('/medical', { params: student_id ? { student_id } : {} })
+      .then((r) => r.data as { data: import('@/types').StudentMedical | null }),
+  getIncidents: (params: { page?: number; limit?: number; student_id?: string } = {}) =>
+    portalApi
+      .get('/incidents', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Incident>),
 }
 
 export const artWallApi = {
@@ -469,4 +487,88 @@ export const announcementsApi = {
     publicApi
       .get('/public/announcements')
       .then((r) => r.data as { data: import('@/types').Announcement[] }),
+}
+
+export const careersApi = {
+  // Public (no auth)
+  getPublicPostings: () =>
+    publicApi
+      .get('/public/careers/postings')
+      .then((r) => r.data as { data: import('@/types').JobPosting[] }),
+  submitApplication: (data: {
+    posting_id: string
+    applicant_name: string
+    email: string
+    phone: string
+    resume_url?: string
+    cover_message?: string
+  }) => publicApi.post('/public/careers', data).then((r) => r.data),
+
+  // Admin — Postings
+  getPostings: (params: { page?: number; limit?: number; search?: string; status?: string } = {}) =>
+    api
+      .get('/careers/postings', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').JobPosting>),
+  createPosting: (data: unknown) => api.post('/careers/postings', data).then((r) => r.data),
+  updatePosting: (id: string, data: unknown) =>
+    api.put(`/careers/postings/${id}`, data).then((r) => r.data),
+  deletePosting: (id: string) => api.delete(`/careers/postings/${id}`).then((r) => r.data),
+
+  // Admin — Applications
+  getApplications: (
+    params: {
+      page?: number
+      limit?: number
+      search?: string
+      status?: string
+      posting_id?: string
+    } = {}
+  ) =>
+    api
+      .get('/careers/applications', { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').JobApplication>),
+  getApplication: (id: string) =>
+    api.get(`/careers/applications/${id}`).then((r) => r.data as import('@/types').JobApplication),
+  updateApplicationStatus: (id: string, status: string) =>
+    api.put(`/careers/applications/${id}/status`, { status }).then((r) => r.data),
+  deleteApplication: (id: string) => api.delete(`/careers/applications/${id}`).then((r) => r.data),
+}
+
+export const medicalProfilesApi = {
+  get: (studentId: string) =>
+    api
+      .get(`/medical-profiles/${studentId}`)
+      .then((r) => r.data as { data: import('@/types').StudentMedical | null }),
+  upsert: (studentId: string, data: Record<string, unknown>) =>
+    api.put(`/medical-profiles/${studentId}`, data).then((r) => r.data),
+  delete: (studentId: string) => api.delete(`/medical-profiles/${studentId}`).then((r) => r.data),
+}
+
+export const incidentsApi = {
+  getAll: (
+    filters: {
+      page?: number
+      limit?: number
+      search?: string
+      student_id?: string
+      type?: string
+      severity?: string
+      status?: string
+      from_date?: string
+      to_date?: string
+    } = {}
+  ) =>
+    api
+      .get('/incidents', { params: filters })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Incident>),
+  getById: (id: string) =>
+    api.get(`/incidents/${id}`).then((r) => r.data as import('@/types').Incident),
+  getByStudent: (studentId: string, params: { page?: number; limit?: number } = {}) =>
+    api
+      .get(`/incidents/by-student/${studentId}`, { params })
+      .then((r) => r.data as PaginatedResponse<import('@/types').Incident>),
+  create: (data: Record<string, unknown>) => api.post('/incidents', data).then((r) => r.data),
+  update: (id: string, data: Record<string, unknown>) =>
+    api.put(`/incidents/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/incidents/${id}`).then((r) => r.data),
 }

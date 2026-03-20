@@ -46,6 +46,7 @@ import { FeatureCard } from './components/FeatureCard'
 import { MobileCTABar } from './components/MobileCTABar'
 import { WhatsAppButton } from './components/WhatsAppButton'
 import { InquiryForm } from './components/InquiryForm'
+import { CareersSection } from './components/CareersSection'
 import { LocationSection } from './components/LocationSection'
 import { LandingFooter } from './components/LandingFooter'
 import { StarField } from './components/StarField'
@@ -99,24 +100,26 @@ export function LandingPage() {
   const noticesFadeIn = useFadeIn()
   const testimonialsFadeIn = useFadeIn()
 
+  const ONE_HOUR = 60 * 60 * 1000
+
   const { data: galleryData } = useQuery({
     queryKey: ['gallery-public'],
     queryFn: () => galleryApi.getVisible(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: ONE_HOUR,
   })
   const galleryItems = galleryData?.data ?? []
 
   const { data: announcementsData } = useQuery({
     queryKey: ['announcements-public'],
     queryFn: () => announcementsApi.getPublic(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: ONE_HOUR,
   })
   const notices = announcementsData?.data ?? []
 
   const { data: testimonialsData } = useQuery({
     queryKey: ['testimonials-public'],
     queryFn: () => testimonialsApi.getPublic(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: ONE_HOUR,
   })
   const testimonials = testimonialsData?.data ?? []
 
@@ -133,7 +136,7 @@ export function LandingPage() {
       data: import('@/types').ArtWallItem[]
       meta: { page: number; totalPages: number }
     }) => (lastPage.meta.page < lastPage.meta.totalPages ? lastPage.meta.page + 1 : undefined),
-    staleTime: 60_000,
+    staleTime: ONE_HOUR,
   })
   const allArtWallItems = (artWallInfiniteData?.pages.flatMap(
     (p: { data: import('@/types').ArtWallItem[] }) => p.data
@@ -1243,6 +1246,8 @@ export function LandingPage() {
       )}
 
       <InquiryForm />
+
+      <CareersSection />
 
       {/* ════════════════════════════════════════════════════════
           CTA — kinder-green bg, pill buttons

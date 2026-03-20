@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const classes = new Hono()
 
@@ -22,6 +23,21 @@ const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(9),
   search: z.string().optional(),
   status: z.enum(['active', 'graduated', '']).optional(),
+})
+
+// GET /count — lightweight active class count (no joins)
+classes.get('/count', async (c) => {
+  const { count, error } = await supabase
+    .from('classrooms')
+    .select('id', { count: 'exact', head: true })
+    .is('deleted_at', null)
+    .eq('status', 'active')
+
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to count classes')
+    return c.json({ error: 'Failed to count classes' }, 500)
+  }
+  return c.json({ count: count ?? 0 })
 })
 
 // GET all classes (paginated) with student count
@@ -51,15 +67,12 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
   const studentCounts: Record<string, number> = {}
 
   if (classIds.length > 0) {
-    const { data: studentData } = await supabase
-      .from('students')
-      .select('class_id')
-      .in('class_id', classIds)
-      .is('deleted_at', null)
-      .eq('status', 'active')
+    const { data: countData } = await supabase.rpc('dashboard_class_student_counts', {
+      p_class_ids: classIds,
+    })
 
-    for (const s of studentData ?? []) {
-      if (s.class_id) studentCounts[s.class_id] = (studentCounts[s.class_id] ?? 0) + 1
+    for (const row of countData ?? []) {
+      studentCounts[row.class_id] = Number(row.student_count)
     }
   }
 

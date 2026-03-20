@@ -25,7 +25,7 @@ export function useSchoolInfo(options?: { public?: boolean }) {
   const { data } = useQuery({
     queryKey: isPublic ? ['school-info', 'public'] : ['school-info'],
     queryFn: isPublic ? () => schoolInfoApi.getPublic() : () => schoolInfoApi.get(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: isPublic ? 24 * 60 * 60 * 1000 : 5 * 60 * 1000,
   })
 
   const info: SchoolInfo | null = data?.data ?? null
