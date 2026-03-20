@@ -61,8 +61,9 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
 
 // POST logout
 auth.post('/logout', async (c) => {
-  const { error } = await supabase.auth.signOut()
-  if (error) return c.json({ error: error.message }, 500)
+  // No need to call supabase.auth.signOut() here — the frontend clears the
+  // local Supabase session, and JWT tokens are stateless (they expire naturally).
+  // The backend service-role client doesn't hold user sessions.
   return c.json({ message: 'Logged out' })
 })
 
