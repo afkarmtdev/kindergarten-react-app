@@ -12,11 +12,22 @@
       "Bash(npx tsc:*)",
       "Bash(npx --prefix frontend tsc --noEmit --pretty false)",
       "Bash(bun test:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(bunx tsc:*)"
     ],
     "deny": [
       "Read(**/.env)",
-      "Read(**/.env.*)"
+      "Read(**/.env.*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(git checkout -- .)",
+      "Bash(git clean -f*)",
+      "Bash(rm -rf *)",
+      "Bash(bun run deploy*)"
     ]
   }
 }
