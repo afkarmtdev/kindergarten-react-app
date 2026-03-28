@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts'
-import { TrendingUp } from 'lucide-react'
 import { useSettingsStore } from '../../../store/settingsStore'
 import { useT } from '../../../hooks/useT'
 import type { AttendanceTrendPoint } from '../../../types'
@@ -31,13 +30,10 @@ export function AttendanceTrendChart({
   const gridStroke = isDark ? '#374151' : '#e5e7eb'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-      <div className="flex items-center gap-2 mb-5">
-        <div className="w-8 h-8 bg-kinder-green rounded-xl flex items-center justify-center flex-shrink-0">
-          <TrendingUp size={16} className="text-white" />
-        </div>
-        <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('attendanceTrend')}</h2>
-      </div>
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+      <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-5">
+        {t('attendanceTrend')}
+      </h2>
 
       {loading ? (
         <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl animate-shimmer bg-[length:200%_100%]" />
