@@ -6,6 +6,7 @@ import { classesApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import type { ClassRoom } from '@/types'
 
 interface ClassModalProps {
@@ -56,13 +57,25 @@ export function ClassModal({ open, onClose, classroom }: ClassModalProps) {
       toast.success(classroom ? 'Class updated' : 'Class created')
       onClose()
     },
-    onError: () => {
-      toast.error('Failed to save class. Please try again.')
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        setErrors((prev) => ({ ...prev, ...fieldErrs }))
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save class. Please try again.')
+      }
     },
   })
 
   const set = (k: keyof typeof form, v: string) => {
     setForm((f) => ({ ...f, [k]: v }))
+    if (errors[k])
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[k]
+        return next
+      })
     markDirty()
   }
 

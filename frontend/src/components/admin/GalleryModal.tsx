@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { GalleryItem } from '@/types'
 
@@ -58,8 +59,14 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
       toast.success(item ? 'Photo updated' : 'Photo added')
       onClose()
     },
-    onError: () => {
-      toast.error('Failed to save photo. Please try again.')
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        if (fieldErrs.photo_url) setPhotoError(fieldErrs.photo_url)
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save photo. Please try again.')
+      }
     },
   })
 

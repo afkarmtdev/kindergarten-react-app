@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { Announcement } from '@/types'
 
@@ -56,6 +57,12 @@ export function AnnouncementModal({ open, onClose, announcement }: AnnouncementM
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [k]: v }))
+    if (errors[k as 'title' | 'body'])
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[k as 'title' | 'body']
+        return next
+      })
     markDirty()
   }
 
@@ -84,8 +91,14 @@ export function AnnouncementModal({ open, onClose, announcement }: AnnouncementM
       toast.success(announcement ? 'Announcement updated' : 'Announcement posted')
       onClose()
     },
-    onError: () => {
-      toast.error('Failed to save announcement. Please try again.')
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        setErrors((prev) => ({ ...prev, ...fieldErrs }))
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save announcement. Please try again.')
+      }
     },
   })
 
