@@ -5,6 +5,7 @@ import { X, User, Upload, Loader } from 'lucide-react'
 import { studentsApi, classesApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
@@ -76,13 +77,25 @@ export function StudentModal({ open, onClose, student }: StudentModalProps) {
       toast.success(student ? 'Student updated' : 'Student added')
       onClose()
     },
-    onError: () => {
-      toast.error('Failed to save student. Please try again.')
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        setErrors((prev) => ({ ...prev, ...fieldErrs }))
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save student. Please try again.')
+      }
     },
   })
 
   const set = (k: keyof typeof form, v: string) => {
     setForm((f) => ({ ...f, [k]: v }))
+    if (errors[k])
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[k]
+        return next
+      })
     markDirty()
   }
 

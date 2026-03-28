@@ -6,6 +6,7 @@ import { schoolInfoApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import type { DayKey, OperatingHours } from '@/types'
 
 const DAY_KEYS: DayKey[] = [
@@ -49,6 +50,7 @@ export function SchoolInfoSection() {
   })
   const [isDirty, setIsDirty] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const { data, isLoading } = useQuery({
     queryKey: ['school-info'],
@@ -95,13 +97,28 @@ export function SchoolInfoSection() {
       queryClient.invalidateQueries({ queryKey: ['school-info'] })
       toast.success(t('settingsSchoolInfoSaved'))
       setIsDirty(false)
+      setFieldErrors({})
     },
-    onError: () => toast.error('Failed to save school info. Please try again.'),
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        setFieldErrors(fieldErrs)
+        toast.error('Please fill in the required fields.')
+      } else {
+        toast.error('Failed to save school info. Please try again.')
+      }
+    },
   })
 
   const set = (field: Exclude<keyof typeof form, 'operating_hours'>, value: string | null) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     setIsDirty(true)
+    if (fieldErrors[field])
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
   }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,9 +143,15 @@ export function SchoolInfoSection() {
     }
   }
 
-  const inputCls =
-    'w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-kinder-orange/30 focus:border-kinder-orange'
+  const inputCls = (field?: string) =>
+    `w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 ${
+      field && fieldErrors[field]
+        ? 'border-red-400 dark:border-red-500 focus:ring-red-300/30 focus:border-red-400'
+        : 'border-gray-200 dark:border-gray-700 focus:ring-kinder-orange/30 focus:border-kinder-orange'
+    }`
   const labelCls = 'block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1'
+  const errorCls = 'text-xs text-red-500 dark:text-red-400 mt-1'
+  const requiredMark = <span className="text-red-400 ml-0.5">*</span>
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
@@ -201,49 +224,73 @@ export function SchoolInfoSection() {
 
           {/* School Name */}
           <div>
-            <label className={labelCls}>{t('settingsSchoolName')}</label>
+            <label className={labelCls}>
+              {t('settingsSchoolName')}
+              {requiredMark}
+            </label>
             <input
               type="text"
               value={form.school_name}
               onChange={(e) => set('school_name', e.target.value)}
               placeholder={t('settingsSchoolNamePlaceholder')}
-              className={inputCls}
+              className={inputCls('school_name')}
             />
+            {fieldErrors.school_name && (
+              <p className={errorCls}>{t('settingsSchoolName')} is required</p>
+            )}
           </div>
 
           {/* Address */}
           <div>
-            <label className={labelCls}>{t('settingsAddress')}</label>
+            <label className={labelCls}>
+              {t('settingsAddress')}
+              {requiredMark}
+            </label>
             <textarea
               value={form.address}
               onChange={(e) => set('address', e.target.value)}
               placeholder={t('settingsAddressPlaceholder')}
               rows={2}
-              className={`${inputCls} resize-none`}
+              className={`${inputCls('address')} resize-none`}
             />
+            {fieldErrors.address && <p className={errorCls}>{t('settingsAddress')} is required</p>}
           </div>
 
           {/* Phone + Email */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className={labelCls}>{t('settingsPhone')}</label>
+              <label className={labelCls}>
+                {t('settingsPhone')}
+                {requiredMark}
+              </label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => set('phone', e.target.value)}
                 placeholder={t('settingsPhonePlaceholder')}
-                className={inputCls}
+                className={inputCls('phone')}
               />
+              {fieldErrors.phone && <p className={errorCls}>{t('settingsPhone')} is required</p>}
             </div>
             <div className="flex-1">
-              <label className={labelCls}>{t('settingsEmail')}</label>
+              <label className={labelCls}>
+                {t('settingsEmail')}
+                {requiredMark}
+              </label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
                 placeholder={t('settingsEmailPlaceholder')}
-                className={inputCls}
+                className={inputCls('email')}
               />
+              {fieldErrors.email && (
+                <p className={errorCls}>
+                  {fieldErrors.email === 'Invalid email'
+                    ? 'Valid email is required'
+                    : `${t('settingsEmail')} is required`}
+                </p>
+              )}
             </div>
           </div>
 
@@ -256,7 +303,7 @@ export function SchoolInfoSection() {
                 value={form.principal_name}
                 onChange={(e) => set('principal_name', e.target.value)}
                 placeholder={t('settingsPrincipalNamePlaceholder')}
-                className={inputCls}
+                className={inputCls()}
               />
             </div>
             <div className="flex-1">
@@ -266,7 +313,7 @@ export function SchoolInfoSection() {
                 value={form.registration_number}
                 onChange={(e) => set('registration_number', e.target.value)}
                 placeholder={t('settingsRegistrationNumberPlaceholder')}
-                className={inputCls}
+                className={inputCls()}
               />
             </div>
           </div>
@@ -279,7 +326,7 @@ export function SchoolInfoSection() {
               value={form.whatsapp_number}
               onChange={(e) => set('whatsapp_number', e.target.value)}
               placeholder={t('settingsWhatsappPlaceholder')}
-              className={inputCls}
+              className={inputCls()}
             />
           </div>
 
@@ -376,7 +423,7 @@ export function SchoolInfoSection() {
               value={form.google_maps_embed_url}
               onChange={(e) => set('google_maps_embed_url', e.target.value)}
               placeholder="https://www.google.com/maps/embed?..."
-              className={inputCls}
+              className={inputCls()}
             />
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               {t('settingsGoogleMapsHelper')}
@@ -392,7 +439,7 @@ export function SchoolInfoSection() {
                 value={form.facebook_url}
                 onChange={(e) => set('facebook_url', e.target.value)}
                 placeholder={t('settingsFacebookPlaceholder')}
-                className={inputCls}
+                className={inputCls()}
               />
             </div>
             <div className="flex-1">
@@ -402,7 +449,7 @@ export function SchoolInfoSection() {
                 value={form.instagram_url}
                 onChange={(e) => set('instagram_url', e.target.value)}
                 placeholder={t('settingsInstagramPlaceholder')}
-                className={inputCls}
+                className={inputCls()}
               />
             </div>
           </div>

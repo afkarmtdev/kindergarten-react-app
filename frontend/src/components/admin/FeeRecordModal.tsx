@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { feesApi, studentsApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import type { FeeRecord } from '@/types'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
 
@@ -58,7 +59,18 @@ export function FeeRecordModal({ record, onClose }: Props) {
       toast.success(isEdit ? 'Fee record updated' : 'Fee record created')
       onClose()
     },
-    onError: () => toast.error('Failed to save fee record. Please try again.'),
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err, {
+        student_id: 'studentId',
+        amount_owed: 'amountOwed',
+      })
+      if (fieldErrs) {
+        setErrors((prev) => ({ ...prev, ...fieldErrs }))
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save fee record. Please try again.')
+      }
+    },
   })
 
   const validate = () => {
@@ -129,6 +141,11 @@ export function FeeRecordModal({ record, onClose }: Props) {
                 value={studentId}
                 onChange={(e) => {
                   setStudentId(e.target.value)
+                  if (errors.studentId)
+                    setErrors((prev) => {
+                      const { studentId: _, ...rest } = prev
+                      return rest
+                    })
                   markDirty()
                 }}
                 className={inputCls(errors.studentId)}
@@ -183,6 +200,11 @@ export function FeeRecordModal({ record, onClose }: Props) {
               value={description}
               onChange={(e) => {
                 setDescription(e.target.value)
+                if (errors.description)
+                  setErrors((prev) => {
+                    const { description: _, ...rest } = prev
+                    return rest
+                  })
                 markDirty()
               }}
               placeholder="e.g. January 2026 Tuition"
@@ -203,6 +225,11 @@ export function FeeRecordModal({ record, onClose }: Props) {
               value={amountOwed}
               onChange={(e) => {
                 setAmountOwed(e.target.value)
+                if (errors.amountOwed)
+                  setErrors((prev) => {
+                    const { amountOwed: _, ...rest } = prev
+                    return rest
+                  })
                 markDirty()
               }}
               placeholder="0.00"

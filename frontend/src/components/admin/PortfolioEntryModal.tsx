@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { portfolioEntriesApi } from '../../lib/api'
 import { useT } from '../../hooks/useT'
+import { parseFieldErrors } from '../../lib/parseFieldErrors'
 import type { PortfolioEntry, PortfolioDomain } from '../../types'
 
 interface Props {
@@ -38,6 +39,7 @@ export function PortfolioEntryModal({ studentId, term, entry, onClose }: Props) 
   const [entryDate, setEntryDate] = useState(
     entry?.entry_date ?? new Date().toISOString().split('T')[0]
   )
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (entry) {
@@ -57,7 +59,15 @@ export function PortfolioEntryModal({ studentId, term, entry, onClose }: Props) 
       toast.success(entry ? 'Entry updated' : 'Entry added')
       onClose()
     },
-    onError: () => toast.error('Failed to save entry'),
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        setErrors(fieldErrs)
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save entry')
+      }
+    },
   })
 
   const modal = (
@@ -105,11 +115,22 @@ export function PortfolioEntryModal({ studentId, term, entry, onClose }: Props) 
             </label>
             <textarea
               value={observation}
-              onChange={(e) => setObservation(e.target.value)}
+              onChange={(e) => {
+                setObservation(e.target.value)
+                if (errors.observation)
+                  setErrors((prev) => {
+                    const next = { ...prev }
+                    delete next.observation
+                    return next
+                  })
+              }}
               placeholder="Describe what you observed..."
               rows={4}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kinder-orange resize-none"
+              className={`w-full px-4 py-2.5 rounded-xl border ${errors.observation ? 'border-red-400 focus:ring-red-300' : 'border-gray-200 dark:border-gray-700 focus:ring-kinder-orange'} bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 resize-none`}
             />
+            {errors.observation && (
+              <p className="text-xs text-red-500 mt-1">{errors.observation}</p>
+            )}
           </div>
 
           <div>

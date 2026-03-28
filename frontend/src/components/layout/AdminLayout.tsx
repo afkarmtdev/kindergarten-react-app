@@ -28,7 +28,9 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { CommandPalette } from '@/components/ui/CommandPalette'
+import { CoinFlipLogo } from '@/components/ui/CoinFlipLogo'
 import { AdminBearLogo } from '@/components/admin/AdminBearLogo'
 import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -52,6 +54,7 @@ export function AdminLayout() {
     }
   })
   const { updateAvailable } = useVersionCheck()
+  const { logoUrl } = useSchoolInfo()
 
   const toggleCollapsed = useCallback(() => {
     setSidebarCollapsed((prev) => {
@@ -148,12 +151,16 @@ export function AdminLayout() {
         className={`border-b border-gray-200 dark:border-gray-800 ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}
       >
         {collapsed ? (
-          <div className="w-9 h-9 bg-kinder-orange rounded-xl flex items-center justify-center">
+          <CoinFlipLogo
+            logoUrl={logoUrl}
+            frontClassName="w-9 h-9 bg-kinder-orange rounded-xl flex items-center justify-center"
+            backClassName="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700"
+          >
             <AdminBearIcon size={22} />
-          </div>
+          </CoinFlipLogo>
         ) : (
           <div className="flex items-center gap-3">
-            <AdminBearLogo />
+            <AdminBearLogo logoUrl={logoUrl} />
             <div>
               <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</h1>
               <div className="flex items-center gap-1.5">
@@ -409,9 +416,13 @@ export function AdminLayout() {
             <Menu size={20} />
           </button>
           <div className="flex items-center gap-2.5 flex-1">
-            <div className="w-9 h-9 bg-kinder-orange rounded-xl flex items-center justify-center">
+            <CoinFlipLogo
+              logoUrl={logoUrl}
+              frontClassName="w-9 h-9 bg-kinder-orange rounded-xl flex items-center justify-center"
+              backClassName="w-9 h-9 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700"
+            >
               <AdminBearIcon size={22} />
-            </div>
+            </CoinFlipLogo>
             <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</span>
           </div>
           <button

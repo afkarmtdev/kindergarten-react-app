@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { ArtWallItem } from '@/types'
 
@@ -79,8 +80,14 @@ export function ArtWallModal({ show, onClose, editingItem }: ArtWallModalProps) 
       toast.success(editingItem ? 'Artwork updated' : 'Artwork added')
       onClose()
     },
-    onError: () => {
-      toast.error('Failed to save artwork. Please try again.')
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        if (fieldErrs.photo_url) setPhotoError(fieldErrs.photo_url)
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save artwork. Please try again.')
+      }
     },
   })
 

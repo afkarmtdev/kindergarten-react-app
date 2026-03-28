@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { feesApi, documentNumberingApi } from '@/lib/api'
 import { supabase } from '@/lib/supabaseClient'
 import { useT } from '@/hooks/useT'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import type { FeeRecord } from '@/types'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
 import { useSignedUrl } from '@/hooks/useSignedUrl'
@@ -60,10 +61,16 @@ export function RecordPaymentModal({ record, onClose, onPaymentDone }: Props) {
       onPaymentDone(data)
     },
     onError: (err: unknown) => {
-      const msg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
-        'Failed to record payment. Please try again.'
-      toast.error(msg)
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        if (fieldErrs.amount) setError(fieldErrs.amount)
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        const msg =
+          (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+          'Failed to record payment. Please try again.'
+        toast.error(msg)
+      }
     },
   })
 
