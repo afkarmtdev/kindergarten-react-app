@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { CalendarCheck, School, TrendingUp, Gift, Wallet, Users } from 'lucide-react'
+import { CalendarCheck, School, TrendingUp, Gift, Users } from 'lucide-react'
 import { studentsApi, attendanceApi, classesApi, feesApi } from '@/lib/api'
 import { StatCardSkeleton } from '@/components/ui/Skeletons'
 import { useT } from '@/hooks/useT'
@@ -146,8 +146,9 @@ export function DashboardPage() {
   const statsLoading = studentsLoading || classesLoading || todayLoading
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8">
+    <div className="p-4 md:p-8 space-y-8">
+      {/* Header */}
+      <div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
           {t('dashboard')}
         </h1>
@@ -156,8 +157,8 @@ export function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-8">
+      {/* Stats row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {statsLoading ? (
           Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
@@ -167,95 +168,82 @@ export function DashboardPage() {
               label={t('totalStudents')}
               value={totalStudents}
               color="bg-kinder-blue"
-              sub={t('enrolled')}
+              sub={`/ ${t('enrolled')}`}
             />
             <StatCard
               icon={School}
               label={t('classes')}
               value={totalClasses}
               color="bg-kinder-purple"
-              sub={t('active')}
+              sub={`/ ${t('active')}`}
             />
             <StatCard
               icon={CalendarCheck}
               label={t('presentToday')}
               value={presentToday}
               color="bg-kinder-green"
-              sub={t('ofStudents', { n: totalStudents })}
+              sub={`/ ${totalStudents}`}
             />
             <StatCard
               icon={TrendingUp}
               label={t('attendanceRate')}
               value={`${attendanceRate}%`}
               color="bg-kinder-orange"
-              sub={t('thisMonth')}
+              sub={`/ ${t('thisMonth')}`}
             />
           </>
         )}
       </div>
 
-      {/* Fee Collection Summary */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mb-8">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-8 h-8 bg-kinder-orange rounded-xl flex items-center justify-center flex-shrink-0">
-            <Wallet size={16} className="text-white" />
-          </div>
-          <h2 className="font-bold text-gray-900 dark:text-gray-100">
-            {t('feeCollection')}
-            <span className="ml-2 text-xs font-semibold text-gray-400 dark:text-gray-500">
-              {currentMonth}
-            </span>
-          </h2>
-        </div>
+      {/* Fee summary — inline row, not a card-in-card */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {feesLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-shimmer bg-[length:200%_100%]"
-              />
-            ))}
-          </div>
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-16 rounded-xl bg-gray-100 dark:bg-gray-800 animate-shimmer bg-[length:200%_100%]"
+            />
+          ))
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
-              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+          <>
+            <div className="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-3">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide">
                 {t('totalCharged')}
               </p>
-              <p className="text-xl font-extrabold text-gray-900 dark:text-gray-100 tabular-nums">
+              <p className="text-lg font-extrabold text-gray-900 dark:text-gray-100 tabular-nums mt-0.5">
                 {formatRM(feesSummary?.total_owed ?? 0)}
               </p>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
-              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+            <div className="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-3">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide">
                 {t('totalCollected')}
               </p>
-              <p className="text-xl font-extrabold text-kinder-green tabular-nums">
+              <p className="text-lg font-extrabold text-kinder-green tabular-nums mt-0.5">
                 {formatRM(feesSummary?.total_paid ?? 0)}
               </p>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
-              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+            <div className="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-3">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide">
                 {t('outstanding')}
               </p>
-              <p className="text-xl font-extrabold text-kinder-orange tabular-nums">
+              <p className="text-lg font-extrabold text-kinder-orange tabular-nums mt-0.5">
                 {formatRM(feesSummary?.total_outstanding ?? 0)}
               </p>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4">
-              <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide mb-1">
+            <div className="rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-3">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wide">
                 {t('overdueCount')}
               </p>
-              <p className="text-xl font-extrabold text-red-500 tabular-nums">
+              <p className="text-lg font-extrabold text-red-500 tabular-nums mt-0.5">
                 {feesSummary?.overdue_count ?? 0}
               </p>
             </div>
-          </div>
+          </>
         )}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AttendanceTrendChart data={attendanceTrend ?? []} loading={trendLoading} />
         <FeeCollectionChart data={feesTrend ?? []} loading={feesTrendLoading} />
       </div>
@@ -263,13 +251,10 @@ export function DashboardPage() {
       {/* Bottom panels */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Today's Attendance */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-kinder-green rounded-xl flex items-center justify-center flex-shrink-0">
-              <CalendarCheck size={16} className="text-white" />
-            </div>
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('todayAttendance')}</h2>
-          </div>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">
+            {t('todayAttendance')}
+          </h2>
           {todayLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -284,7 +269,7 @@ export function DashboardPage() {
             </div>
           ) : todayRecords.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              <CalendarCheck size={32} className="mx-auto mb-2 opacity-40" />
+              <CalendarCheck size={28} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm font-medium">{t('noAttendanceYet')}</p>
             </div>
           ) : (
@@ -309,16 +294,13 @@ export function DashboardPage() {
         </div>
 
         {/* Birthdays */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-kinder-yellow rounded-xl flex items-center justify-center flex-shrink-0">
-              <Gift size={16} className="text-white" />
-            </div>
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('todaysBirthdays')}</h2>
-          </div>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">
+            {t('todaysBirthdays')}
+          </h2>
           {birthdayStudents.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              <Gift size={32} className="mx-auto mb-2 opacity-40" />
+              <Gift size={28} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm font-medium">{t('noBirthdaysToday')}</p>
               <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{t('noBirthdaysSub')}</p>
             </div>
@@ -361,13 +343,10 @@ export function DashboardPage() {
         </div>
 
         {/* Monthly Summary */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center flex-shrink-0">
-              <TrendingUp size={16} className="text-white" />
-            </div>
-            <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('monthlySummary')}</h2>
-          </div>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4">
+            {t('monthlySummary')}
+          </h2>
           {summaryLoading ? (
             <div className="space-y-5">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -382,7 +361,7 @@ export function DashboardPage() {
             </div>
           ) : !summary || totalRecords === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              <TrendingUp size={32} className="mx-auto mb-2 opacity-40" />
+              <TrendingUp size={28} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm font-medium">{t('noDataYet')}</p>
               <p className="text-xs mt-1 text-gray-400 dark:text-gray-600">{t('noDataYetSub')}</p>
             </div>
