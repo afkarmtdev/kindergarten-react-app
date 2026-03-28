@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -46,6 +46,7 @@ import { FeatureCard } from './components/FeatureCard'
 import { MobileCTABar } from './components/MobileCTABar'
 import { WhatsAppButton } from './components/WhatsAppButton'
 import { InquiryForm } from './components/InquiryForm'
+import { CoinFlipLogo } from '@/components/ui/CoinFlipLogo'
 import { CareersSection } from './components/CareersSection'
 import { LocationSection } from './components/LocationSection'
 import { LandingFooter } from './components/LandingFooter'
@@ -64,11 +65,17 @@ import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 
 export function LandingPage() {
-  usePageTitle()
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
-  const { email: schoolEmail } = useSchoolInfo({ public: true })
+  const { email: schoolEmail, logoUrl, schoolName } = useSchoolInfo({ public: true })
+  usePageTitle(undefined, schoolName)
   const [showTop, setShowTop] = useState(false)
+  const [navFlipped, setNavFlipped] = useState(false)
+  const navFlipCount = useRef(0)
+  const handleNavFlip = useCallback((flipped: boolean) => {
+    navFlipCount.current++
+    setNavFlipped(flipped)
+  }, [])
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
@@ -320,9 +327,25 @@ export function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <BearLogo size={40} />
+            <CoinFlipLogo
+              logoUrl={logoUrl}
+              frontClassName="w-10 h-10 flex items-center justify-center"
+              backClassName="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700"
+              onFlip={handleNavFlip}
+            >
+              <BearLogo size={40} />
+            </CoinFlipLogo>
             <span className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">
-              {APP_NAME}
+              {navFlipCount.current === 0 ? (
+                APP_NAME
+              ) : (
+                <TypedText
+                  key={navFlipCount.current}
+                  text={navFlipped ? schoolName : APP_NAME}
+                  delay={200}
+                  speed={50}
+                />
+              )}
             </span>
           </div>
 

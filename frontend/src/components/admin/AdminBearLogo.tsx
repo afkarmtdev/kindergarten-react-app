@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { AdminBearSpeechBubble } from '@/components/admin/AdminBearSpeechBubble'
+import { CoinFlipLogo } from '@/components/ui/CoinFlipLogo'
 
 const BEAR_LOGO_KEYFRAMES = `
   @keyframes admin-bear-sleepy {
@@ -54,7 +55,7 @@ const IDLE_EVENTS: (keyof DocumentEventMap)[] = [
 
 type IdlePhase = 'active' | 'sleepy' | 'asleep' | 'waking'
 
-export function AdminBearLogo() {
+export function AdminBearLogo({ logoUrl }: { logoUrl?: string | null }) {
   const [idlePhase, setIdlePhase] = useState<IdlePhase>('active')
   const [wakeMessageVisible, setWakeMessageVisible] = useState(false)
 
@@ -161,11 +162,15 @@ export function AdminBearLogo() {
       <div className="relative">
         <AdminBearSpeechBubble variant={zzzVariant} />
         <AdminBearSpeechBubble variant={wakeVariant} message={wakeMessageRef.current} />
-        <div className="w-12 h-12 bg-kinder-orange rounded-2xl flex items-center justify-center">
+        <CoinFlipLogo
+          logoUrl={logoUrl ?? null}
+          frontClassName="w-12 h-12 bg-kinder-orange rounded-2xl flex items-center justify-center"
+          backClassName="w-12 h-12 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700"
+        >
           <div className={bearClass}>
             <AdminBearIcon size={34} eyeState={eyeState} />
           </div>
-        </div>
+        </CoinFlipLogo>
       </div>
     </>
   )

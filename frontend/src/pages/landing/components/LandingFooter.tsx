@@ -8,7 +8,7 @@ import { StarField } from './StarField'
 
 export function LandingFooter() {
   const t = useT()
-  const { schoolName, address, phone, email, operatingHours, facebookUrl, instagramUrl } =
+  const { schoolName, address, phone, email, operatingHours, facebookUrl, instagramUrl, logoUrl } =
     useSchoolInfo({ public: true })
   const hasContact = address || phone || email
   const hasSocial = facebookUrl || instagramUrl
@@ -21,7 +21,15 @@ export function LandingFooter() {
           {/* Column 1 — Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <BearLogo size={32} />
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                />
+              ) : (
+                <BearLogo size={32} />
+              )}
               <span className="font-extrabold text-white text-lg">{schoolName}</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">{t('heroSubtitle')}</p>
