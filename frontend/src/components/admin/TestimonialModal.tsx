@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
 import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
+import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
 import type { Testimonial } from '@/types'
 
@@ -56,6 +57,12 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [k]: v }))
+    if (errors[k as 'parent_name' | 'quote'])
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[k as 'parent_name' | 'quote']
+        return next
+      })
     markDirty()
   }
 
@@ -84,8 +91,14 @@ export function TestimonialModal({ open, onClose, testimonial }: TestimonialModa
       toast.success(testimonial ? 'Testimonial updated' : 'Testimonial added')
       onClose()
     },
-    onError: () => {
-      toast.error('Failed to save testimonial. Please try again.')
+    onError: (err: unknown) => {
+      const fieldErrs = parseFieldErrors(err)
+      if (fieldErrs) {
+        setErrors((prev) => ({ ...prev, ...fieldErrs }))
+        toast.error('Please fix the highlighted fields.')
+      } else {
+        toast.error('Failed to save testimonial. Please try again.')
+      }
     },
   })
 

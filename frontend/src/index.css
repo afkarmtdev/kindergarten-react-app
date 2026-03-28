@@ -4,6 +4,36 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Warm beige light mode / cool gray dark mode via CSS vars ── */
+  :root {
+    --color-white: 255 250 245;       /* #FFFAF5 — soft warm white */
+    --color-gray-50: 253 246 240;     /* #FDF6F0 — warm cream */
+    --color-gray-100: 248 238 228;    /* #F8EEE4 — light beige */
+    --color-gray-200: 236 222 208;    /* #ECDED0 — warm border */
+    --color-gray-300: 218 200 182;    /* #DAC8B6 — warm muted */
+    --color-gray-400: 178 160 142;    /* #B2A08E — warm placeholder */
+    --color-gray-500: 148 130 114;    /* #948272 — warm secondary text */
+    --color-gray-600: 120 104 90;     /* #78685A — warm body text */
+    --color-gray-700: 98 84 72;       /* #625448 — warm strong text */
+    --color-gray-800: 72 60 50;       /* #483C32 — warm heading */
+    --color-gray-900: 52 42 34;       /* #342A22 — warm darkest */
+    --color-gray-950: 30 24 18;       /* #1E1812 — near-black warm */
+  }
+  html.dark {
+    --color-white: 255 255 255;       /* #FFFFFF — pure white (overridden by dark:bg-*) */
+    --color-gray-50: 249 250 251;     /* #F9FAFB — original Tailwind */
+    --color-gray-100: 243 244 246;    /* #F3F4F6 */
+    --color-gray-200: 229 231 235;    /* #E5E7EB */
+    --color-gray-300: 209 213 219;    /* #D1D5DB */
+    --color-gray-400: 156 163 175;    /* #9CA3AF */
+    --color-gray-500: 107 114 128;    /* #6B7280 */
+    --color-gray-600: 75 85 99;       /* #4B5563 */
+    --color-gray-700: 55 65 81;       /* #374151 */
+    --color-gray-800: 31 41 55;       /* #1F2937 */
+    --color-gray-900: 17 24 39;       /* #111827 */
+    --color-gray-950: 3 7 18;         /* #030712 */
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -35,19 +65,19 @@
     background: #4b5563;
   }
 
-  /* Light scrollbar */
+  /* Light scrollbar (warm beige) */
   ::-webkit-scrollbar {
     width: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #f9fafb;
+    background: #FDF6F0;
   }
   ::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
+    background: #ECDED0;
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #d1d5db;
+    background: #DAC8B6;
   }
 }
 
