@@ -59,14 +59,11 @@ export function TableRowSkeleton({ cols = 3 }: { cols?: number }) {
 
 export function StatCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <Bone className="h-3 w-24" />
-          <Bone className="h-8 w-16" />
-          <Bone className="h-3 w-20" />
-        </div>
-        <Bone className="w-12 h-12 rounded-2xl" />
+    <div className="flex items-center gap-3 md:gap-4 bg-white dark:bg-gray-900 rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-gray-800">
+      <Bone className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0" />
+      <div className="space-y-1.5 flex-1">
+        <Bone className="h-6 w-14" />
+        <Bone className="h-3 w-24" />
       </div>
     </div>
   )
