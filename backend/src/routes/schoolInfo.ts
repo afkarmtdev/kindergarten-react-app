@@ -6,7 +6,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings, stripHtml } from '../lib/sanitise'
-import { auditCreate, auditUpdate } from '../lib/audit'
+import { auditCreate, getActor } from '../lib/audit'
 
 const schoolInfo = new Hono()
 
@@ -90,7 +90,7 @@ schoolInfo.put('/', zValidator('json', schoolInfoSchema), async (c) => {
   if (existing) {
     const { data, error } = await supabase
       .from('school_info')
-      .update({ ...body, updated_at: new Date().toISOString(), ...auditUpdate(c) })
+      .update({ ...body, updated_at: new Date().toISOString(), modified_by: getActor(c) })
       .eq('id', existing.id)
       .select()
       .single()
