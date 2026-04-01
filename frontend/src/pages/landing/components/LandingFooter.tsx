@@ -76,10 +76,15 @@ export function LandingFooter() {
               </h4>
               <div className="space-y-2.5">
                 {address && (
-                  <div className="flex items-start gap-2 text-gray-400 text-sm">
+                  <a
+                    href={`https://www.google.com/maps/search/${encodeURIComponent(address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-2 text-gray-400 text-sm hover:text-white transition-colors"
+                  >
                     <MapPin size={14} className="mt-0.5 flex-shrink-0 text-kinder-orange" />
                     <span>{address}</span>
-                  </div>
+                  </a>
                 )}
                 {phone && (
                   <div className="flex items-center gap-2 text-gray-400 text-sm">

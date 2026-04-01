@@ -6,12 +6,12 @@ import { formatOperatingHours } from '@/lib/formatOperatingHours'
 
 export function LocationSection() {
   const t = useT()
-  const { address, phone, email, operatingHours, googleMapsEmbedUrl } = useSchoolInfo({
+  const { address, phone, email, operatingHours } = useSchoolInfo({
     public: true,
   })
   const { ref, isVisible } = useFadeIn()
 
-  const hasContent = address || phone || email || operatingHours || googleMapsEmbedUrl
+  const hasContent = address || phone || email || operatingHours
   if (!hasContent) return null
 
   return (
@@ -27,33 +27,22 @@ export function LocationSection() {
           <p className="text-gray-400 text-base sm:text-lg">{t('locationSubtitle')}</p>
         </div>
 
-        {googleMapsEmbedUrl &&
-          googleMapsEmbedUrl.startsWith('https://www.google.com/maps/embed') && (
-            <div className="mb-10 rounded-2xl overflow-hidden">
-              <iframe
-                src={googleMapsEmbedUrl}
-                width="100%"
-                height="400"
-                style={{ border: 0 }}
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="School location map"
-                className="w-full h-72 md:h-96"
-              />
-            </div>
-          )}
-
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <h3 className="font-bold text-white text-lg mb-4">{t('footerContactUs')}</h3>
             <div className="space-y-3">
               {address && (
-                <div className="flex items-start gap-3 text-gray-300">
+                <a
+                  href={`https://www.google.com/maps/search/${encodeURIComponent(address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 text-gray-300 hover:text-white transition-colors group"
+                >
                   <MapPin size={16} className="text-kinder-orange mt-1 flex-shrink-0" />
-                  <span className="text-sm leading-relaxed">{address}</span>
-                </div>
+                  <span className="text-sm leading-relaxed underline decoration-gray-600 group-hover:decoration-white">
+                    {address}
+                  </span>
+                </a>
               )}
               {phone && (
                 <div className="flex items-center gap-3 text-gray-300">

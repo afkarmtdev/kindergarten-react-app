@@ -335,7 +335,16 @@ export function LandingPage() {
             >
               <BearLogo size={40} />
             </CoinFlipLogo>
-            <span className="font-extrabold text-gray-900 dark:text-white text-xl tracking-tight">
+            <span
+              className={`font-extrabold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
+                (navFlipped ? schoolName : APP_NAME).length > 30
+                  ? 'text-base'
+                  : (navFlipped ? schoolName : APP_NAME).length > 20
+                    ? 'text-lg'
+                    : 'text-xl'
+              } transition-all duration-300`}
+              title={navFlipped ? schoolName : APP_NAME}
+            >
               {navFlipCount.current === 0 ? (
                 APP_NAME
               ) : (
