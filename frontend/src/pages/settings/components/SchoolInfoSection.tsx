@@ -415,21 +415,6 @@ export function SchoolInfoSection() {
             </div>
           </div>
 
-          {/* Google Maps Embed URL */}
-          <div>
-            <label className={labelCls}>{t('settingsGoogleMaps')}</label>
-            <input
-              type="text"
-              value={form.google_maps_embed_url}
-              onChange={(e) => set('google_maps_embed_url', e.target.value)}
-              placeholder="https://www.google.com/maps/embed?..."
-              className={inputCls()}
-            />
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {t('settingsGoogleMapsHelper')}
-            </p>
-          </div>
-
           {/* Facebook + Instagram */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
