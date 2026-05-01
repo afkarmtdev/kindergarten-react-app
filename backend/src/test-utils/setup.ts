@@ -3,5 +3,5 @@
 // (like db/supabase.ts) don't throw.
 
 process.env.SUPABASE_URL = 'http://localhost:0'
-process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key-dummy'
+process.env.SUPABASE_SECRET_KEY = 'test-key-dummy'
 process.env.PORTAL_JWT_SECRET = 'test-portal-jwt-secret-at-least-32-chars-long'

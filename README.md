@@ -25,7 +25,7 @@ bun dev                               # http://localhost:5173
 
 ```
 SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_SECRET_KEY=         # sb_secret_... from Supabase dashboard → API keys
 FRONTEND_URL=http://localhost:5173
 PORT=3000
 PORTAL_JWT_SECRET=           # min 32 chars, for parent portal JWT
@@ -35,7 +35,7 @@ PORTAL_JWT_SECRET=           # min 32 chars, for parent portal JWT
 
 ```
 VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_KEY=  # sb_publishable_... from Supabase dashboard → API keys
 ```
 
 ## Supabase Setup
