@@ -464,7 +464,7 @@ This project runs on the **free tier**. Key limits:
 
 ```
 SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_SECRET_KEY=<sb_secret_... from Supabase dashboard → API keys>
 FRONTEND_URL=http://localhost:5173
 PORT=3000
 PORTAL_JWT_SECRET=<min 32 chars, NOT the same as Supabase JWT secret>
@@ -474,7 +474,7 @@ PORTAL_JWT_SECRET=<min 32 chars, NOT the same as Supabase JWT secret>
 
 ```
 VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_KEY=<sb_publishable_... from Supabase dashboard → API keys>
 ```
 
 ## Running the Project
@@ -756,6 +756,8 @@ Printable finance documents — invoices, overdue notices, enrollment letters, c
 Full implementation details — eye states, idle machine timing, critical timer pattern, bubble positioning, mobile vs desktop rules — live in the `/build-a-bear` skill (`.claude/commands/build-a-bear.md`). Use `/build-a-bear` whenever modifying the bear mascot.
 
 ## Known Conventions
+
+- **Git commit messages — short and concise**: one-line subject only, no lengthy description body, no `Co-Authored-By` trailer. Match the style of recent commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:` prefix + brief subject).
 
 - **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled into JS) AND `frontend/public/version.json` (served live, never cached). Vite forbids importing from `public/` as a JS module, so they cannot share a source — bump both manually. `useVersionCheck` fetches `/version.json` (`cache: 'no-store'`) and compares against the bundled `APP_VERSION` — mismatch shows the `UpdateBanner` prompting a hard reload.
 

@@ -2,6 +2,8 @@
 -- 008 — Careers: Job Postings + Applications
 -- ═══════════════════════════════════════════════════════════════════
 
+BEGIN;
+
 -- Job Postings
 CREATE TABLE IF NOT EXISTS job_postings (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -60,3 +62,5 @@ DROP POLICY IF EXISTS "Auth users manage applications" ON job_applications;
 CREATE POLICY "Auth users manage applications" ON job_applications FOR ALL TO authenticated USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS "Public submit applications" ON job_applications;
 CREATE POLICY "Public submit applications" ON job_applications FOR INSERT TO anon WITH CHECK (true);
+
+COMMIT;

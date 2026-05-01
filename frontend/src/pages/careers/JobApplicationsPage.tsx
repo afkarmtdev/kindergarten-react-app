@@ -7,6 +7,7 @@ import { careersApi } from '@/lib/api'
 import { useJobApplicationsStore } from '@/store/jobApplicationsStore'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { Pagination } from '@/components/ui/Pagination'
 import { TableRowSkeleton } from '@/components/ui/Skeletons'
@@ -387,6 +388,28 @@ function ApplicationRow({
   )
 }
 
+function ResumeLink({ path }: { path: string }) {
+  const t = useT()
+  const url = useSignedUrl('resumes', path)
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+        {t('resume')}
+      </p>
+      <a
+        href={url ?? '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-disabled={!url}
+        className={`inline-flex items-center gap-2 text-sm text-kinder-blue hover:underline ${!url ? 'pointer-events-none opacity-50' : ''}`}
+      >
+        <FileText size={14} />
+        {t('downloadResume')}
+      </a>
+    </div>
+  )
+}
+
 function ApplicationDetailModal({
   application,
   onClose,
@@ -494,22 +517,7 @@ function ApplicationDetailModal({
           )}
 
           {/* Resume link */}
-          {application.resume_url && (
-            <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                {t('resume')}
-              </p>
-              <a
-                href={application.resume_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-kinder-blue hover:underline"
-              >
-                <FileText size={14} />
-                {t('downloadResume')}
-              </a>
-            </div>
-          )}
+          {application.resume_url && <ResumeLink path={application.resume_url} />}
 
           {/* Date */}
           <div>

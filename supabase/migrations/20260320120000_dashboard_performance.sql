@@ -12,6 +12,7 @@
 --   - Functions:  CREATE OR REPLACE FUNCTION
 -- ═══════════════════════════════════════════════════════════════════
 
+BEGIN;
 
 -- ═══════════════════════════════════════════════════════════════════
 -- Section 1: Composite Indexes
@@ -297,3 +298,5 @@ AS $$
   WHERE deleted_at IS NULL
     AND status     = 'active';
 $$;
+
+COMMIT;

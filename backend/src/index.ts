@@ -3,7 +3,7 @@ import { z } from 'zod'
 // ── Env validation — fail fast before anything else ──────────────────────────
 const envSchema = z.object({
   SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
+  SUPABASE_SECRET_KEY: z.string().min(1, 'SUPABASE_SECRET_KEY is required'),
   FRONTEND_URL: z.string().url().optional().default('http://localhost:5173'),
   PORT: z.coerce.number().int().positive().optional().default(3000),
   PORTAL_JWT_SECRET: z.string().min(32, 'PORTAL_JWT_SECRET must be at least 32 characters'),

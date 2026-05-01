@@ -3,6 +3,8 @@
 -- Moves portal auth from student-scoped to parent-scoped
 -- ============================================================================
 
+BEGIN;
+
 -- Step 1: Create parents table
 create table if not exists parents (
   id              uuid primary key default uuid_generate_v4(),
@@ -121,3 +123,5 @@ where ps.student_id = pst.student_id;
 -- alter table students drop column if exists parent_name;
 -- alter table students drop column if exists parent_email;
 -- alter table students drop column if exists parent_phone;
+
+COMMIT;
