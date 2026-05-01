@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { X, User, Mail, Phone, MessageSquare, FileText, Briefcase } from 'lucide-react'
 import { careersApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
+import { useSignedUrl } from '@/hooks/useSignedUrl'
 import type { JobApplication, ApplicationStatus } from '@/types'
 
 interface Props {
@@ -27,6 +28,28 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   interviewed: 'Interviewed',
   hired: 'Hired',
   rejected: 'Rejected',
+}
+
+function ResumeLink({ path }: { path: string }) {
+  const t = useT()
+  const url = useSignedUrl('resumes', path)
+  return (
+    <div className="space-y-2">
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        {t('resume')}
+      </h3>
+      <a
+        href={url ?? '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-disabled={!url}
+        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-kinder-blue hover:bg-gray-50 dark:hover:bg-gray-800 transition-all ${!url ? 'pointer-events-none opacity-50' : ''}`}
+      >
+        <FileText size={16} />
+        {t('downloadResume')}
+      </a>
+    </div>
+  )
 }
 
 export function ApplicationDetailModal({ show, application, onClose }: Props) {
@@ -168,20 +191,7 @@ export function ApplicationDetailModal({ show, application, onClose }: Props) {
           {/* Resume */}
           {application.resume_url && (
             <>
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('resume')}
-                </h3>
-                <a
-                  href={application.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-kinder-blue hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                >
-                  <FileText size={16} />
-                  {t('downloadResume')}
-                </a>
-              </div>
+              <ResumeLink path={application.resume_url} />
               <div className="border-t border-gray-100 dark:border-gray-800" />
             </>
           )}

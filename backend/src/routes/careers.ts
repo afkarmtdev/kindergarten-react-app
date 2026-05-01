@@ -42,7 +42,7 @@ const applicationSchema = z.object({
   applicant_name: z.string().min(1).max(200),
   email: z.string().email(),
   phone: z.string().min(1).max(50),
-  resume_url: z.string().url().optional().or(z.literal('')),
+  resume_url: z.string().min(1).max(500).optional().or(z.literal('')),
   cover_message: z.string().max(2000).optional().or(z.literal('')),
 })
 

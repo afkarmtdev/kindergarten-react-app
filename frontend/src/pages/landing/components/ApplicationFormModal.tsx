@@ -12,11 +12,7 @@ interface Props {
   onClose: () => void
 }
 
-const ACCEPTED_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-]
+const ACCEPTED_TYPES = ['application/pdf']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export function ApplicationFormModal({ show, posting, onClose }: Props) {
@@ -92,8 +88,7 @@ export function ApplicationFormModal({ show, posting, onClose }: Props) {
     setErrorMsg('')
     setUploading(true)
 
-    const ext = file.name.split('.').pop() || 'pdf'
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const path = `applications/${Date.now()}-${Math.random().toString(36).slice(2)}.pdf`
 
     const { error } = await supabase.storage.from('resumes').upload(path, file, { upsert: false })
 
@@ -103,20 +98,14 @@ export function ApplicationFormModal({ show, posting, onClose }: Props) {
       return
     }
 
-    const { data: urlData } = supabase.storage.from('resumes').getPublicUrl(path)
-
-    setResumeUrl(urlData.publicUrl)
+    setResumeUrl(path)
     setResumeFileName(file.name)
     setUploading(false)
   }
 
   const handleRemoveResume = () => {
-    // Clean up uploaded file from storage if we have a URL
     if (resumeUrl) {
-      const storedPath = resumeUrl.split('/resumes/')[1]
-      if (storedPath) {
-        supabase.storage.from('resumes').remove([storedPath])
-      }
+      supabase.storage.from('resumes').remove([resumeUrl])
     }
     setResumeUrl('')
     setResumeFileName('')
@@ -259,7 +248,7 @@ export function ApplicationFormModal({ show, posting, onClose }: Props) {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf,application/pdf"
                     className="hidden"
                     onChange={handleFileChange}
                   />
