@@ -65,7 +65,7 @@ export function CareersSection() {
   return (
     <section
       id="careers"
-      className="relative overflow-hidden bg-gray-50 dark:bg-[#0d0a1a] py-20 transition-colors duration-200"
+      className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 pt-20 transition-colors duration-200"
     >
       <StarField variant="b" className="hidden dark:block" />
       <div
@@ -166,11 +166,8 @@ export function CareersSection() {
         </div>
       </div>
 
-      <div className="mt-16 block dark:hidden">
-        <Wave fill="#ffffff" />
-      </div>
-      <div className="mt-16 hidden dark:block">
-        <Wave fill="#030712" />
+      <div className="mt-16">
+        <Wave fill="#6BCB77" />
       </div>
 
       {/* Job detail modal */}

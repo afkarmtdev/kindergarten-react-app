@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { CheckCircle } from 'lucide-react'
+import { Heart, Star } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
 import { Wave } from './Wave'
-import { StarField } from './StarField'
+import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
+import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 
 const CONFETTI_COLORS = ['#FF6B35', '#4D96FF', '#6BCB77', '#FFD93D', '#C77DFF', '#FF85A2']
 
@@ -85,24 +88,60 @@ export function InquiryForm() {
   const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5'
 
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-[#150f2a] py-24 transition-colors duration-200">
+    <section className="relative overflow-hidden bg-gradient-to-b from-kinder-pink to-pink-500 pt-24">
       <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
-      <StarField variant="a" className="hidden dark:block" />
+
+      {/* Floating decorative shapes */}
+      <div
+        className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
+        aria-hidden="true"
+      >
+        <Heart size={48} fill="white" stroke="white" />
+      </div>
+      <div
+        className="lp-float-alt absolute top-16 right-10 opacity-15 pointer-events-none"
+        style={{ animationDelay: '1.2s' }}
+        aria-hidden="true"
+      >
+        <DoodleStar size={44} color="white" />
+      </div>
+      <div
+        className="lp-float-slow absolute bottom-32 left-12 opacity-15 pointer-events-none"
+        style={{ animationDelay: '0.8s' }}
+        aria-hidden="true"
+      >
+        <DoodleFlower size={52} color="white" />
+      </div>
+      <div
+        className="lp-spin-slow absolute bottom-24 right-16 opacity-15 pointer-events-none"
+        aria-hidden="true"
+      >
+        <DoodleSpiral size={40} color="white" />
+      </div>
+      <div
+        className="lp-float absolute top-1/3 left-1/4 opacity-12 pointer-events-none"
+        style={{ animationDelay: '2s' }}
+        aria-hidden="true"
+      >
+        <Star size={28} fill="white" stroke="white" />
+      </div>
+
       <div
         ref={ref}
         className={`relative max-w-3xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
         <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent leading-tight">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
+            <Heart size={26} className="text-white" fill="white" />
+          </div>
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
             {t('inquiryTitle')}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg mt-2">
-            {t('inquirySubtitle')}
-          </p>
+          <p className="text-white/70 text-base sm:text-lg mt-3">{t('inquirySubtitle')}</p>
         </div>
 
         {view === 'thankYou' ? (
-          <div className="relative overflow-hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-3xl p-10 text-center">
+          <div className="relative overflow-hidden bg-white rounded-3xl p-10 text-center shadow-lg">
             {/* Confetti burst */}
             {CONFETTI_PARTICLES.map((p, i) => (
               <div
@@ -122,13 +161,13 @@ export function InquiryForm() {
               />
             ))}
 
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-800/40 rounded-full flex items-center justify-center mx-auto mb-5">
-              <CheckCircle size={32} className="text-green-500 dark:text-green-400" />
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle size={32} className="text-green-500" />
             </div>
-            <h3 className="font-extrabold text-gray-900 dark:text-white text-xl mb-2">
+            <h3 className="font-extrabold text-gray-900 text-xl mb-2">
               {t('inquiryThankYouTitle')}
             </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">{t('inquiryThankYouBody')}</p>
+            <p className="text-gray-500 mb-6">{t('inquiryThankYouBody')}</p>
             <button
               onClick={() => {
                 setView('form')
@@ -224,8 +263,11 @@ export function InquiryForm() {
           </form>
         )}
       </div>
-      <div className="mt-16">
-        <Wave fill="#6BCB77" />
+      <div className="mt-16 block dark:hidden">
+        <Wave fill="#FFF7ED" />
+      </div>
+      <div className="mt-16 hidden dark:block">
+        <Wave fill="#030712" />
       </div>
     </section>
   )
