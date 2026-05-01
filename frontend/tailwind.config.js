@@ -44,6 +44,7 @@ export default {
       fontFamily: {
         display: ['Nunito', 'sans-serif'],
         body: ['Nunito', 'sans-serif'],
+        fun: ['Fredoka', 'Nunito', 'sans-serif'],
       },
       borderRadius: {
         xl: '1rem',
