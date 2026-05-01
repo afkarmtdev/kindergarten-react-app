@@ -47,9 +47,11 @@ import { MobileCTABar } from './components/MobileCTABar'
 import { WhatsAppButton } from './components/WhatsAppButton'
 import { InquiryForm } from './components/InquiryForm'
 import { CoinFlipLogo } from '@/components/ui/CoinFlipLogo'
+import type { Announcement } from '@/types'
 import { CareersSection } from './components/CareersSection'
 import { LocationSection } from './components/LocationSection'
 import { LandingFooter } from './components/LandingFooter'
+import { NoticeModal } from './components/NoticeModal'
 import { StarField } from './components/StarField'
 import {
   KEYFRAMES,
@@ -78,6 +80,7 @@ export function LandingPage() {
   }, [])
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
+  const [selectedNotice, setSelectedNotice] = useState<Announcement | null>(null)
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
@@ -328,29 +331,45 @@ export function LandingPage() {
           {/* Logo */}
           <div className="flex items-center gap-2.5">
             <CoinFlipLogo
-              logoUrl={logoUrl}
-              frontClassName="w-10 h-10 flex items-center justify-center"
-              backClassName="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700"
+              frontClassName="w-10 h-10 bg-kinder-orange/10 dark:bg-kinder-orange/20 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-kinder-orange/30"
+              backClassName="w-10 h-10 flex items-center justify-center"
+              back={<BearLogo size={40} />}
               onFlip={handleNavFlip}
             >
-              <BearLogo size={40} />
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
+              ) : (
+                <span className="text-base font-extrabold text-kinder-orange">
+                  {schoolName
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w) => w[0]?.toUpperCase() ?? '')
+                    .join('')}
+                </span>
+              )}
             </CoinFlipLogo>
             <span
               className={`font-extrabold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
-                (navFlipped ? schoolName : APP_NAME).length > 30
+                (navFlipped ? APP_NAME : schoolName).length > 30
                   ? 'text-base'
-                  : (navFlipped ? schoolName : APP_NAME).length > 20
+                  : (navFlipped ? APP_NAME : schoolName).length > 20
                     ? 'text-lg'
                     : 'text-xl'
               } transition-all duration-300`}
-              title={navFlipped ? schoolName : APP_NAME}
+              title={navFlipped ? APP_NAME : schoolName}
             >
               {navFlipCount.current === 0 ? (
-                APP_NAME
+                schoolName
               ) : (
                 <TypedText
                   key={navFlipCount.current}
-                  text={navFlipped ? schoolName : APP_NAME}
+                  text={navFlipped ? APP_NAME : schoolName}
                   delay={200}
                   speed={50}
                 />
@@ -1062,9 +1081,11 @@ export function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {notices.slice(0, 6).map((notice, idx) => (
-                <div
+                <button
                   key={notice.id}
-                  className={`flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
+                  type="button"
+                  onClick={() => setSelectedNotice(notice)}
+                  className={`text-left flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-kinder-orange ${
                     notice.is_pinned
                       ? 'border-kinder-yellow dark:border-kinder-yellow'
                       : 'border-gray-100 dark:border-gray-700'
@@ -1123,7 +1144,7 @@ export function LandingPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -1441,6 +1462,9 @@ export function LandingPage() {
         onClose={() => setLightboxArtId(null)}
         onNavigate={setLightboxArtId}
       />
+
+      {/* ── Notice modal ── */}
+      <NoticeModal notice={selectedNotice} onClose={() => setSelectedNotice(null)} />
     </div>
   )
 }
