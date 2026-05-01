@@ -43,6 +43,7 @@ import { ArtworkLightbox } from '@/pages/art-wall/components/ArtworkLightbox'
 import { StatCounter } from './components/StatCounter'
 import { TypedText } from './components/TypedText'
 import { FeatureCard } from './components/FeatureCard'
+import { StickerBadge } from './components/StickerBadge'
 import { MobileCTABar } from './components/MobileCTABar'
 import { WhatsAppButton } from './components/WhatsAppButton'
 import { InquiryForm } from './components/InquiryForm'
@@ -661,12 +662,15 @@ export function LandingPage() {
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
             {/* Text column */}
             <div className="text-center lg:text-left">
-              <div className="lp-enter-0 inline-flex items-center gap-2 bg-kinder-orange/10 dark:bg-kinder-orange/20 border border-kinder-orange/30 text-kinder-orange px-5 py-2 rounded-full text-sm font-bold mb-8">
+              <div
+                className="lp-enter-0 inline-flex items-center gap-2 bg-kinder-yellow text-gray-900 border-2 border-white dark:border-gray-900 px-5 py-2 rounded-full font-fun text-sm font-bold shadow-md mb-8"
+                style={{ transform: 'rotate(-3deg)' }}
+              >
                 <Star size={13} fill="#FF6B35" stroke="#FF6B35" />
                 {t('heroTagline')}
               </div>
 
-              <h1 className="lp-enter-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
+              <h1 className="lp-enter-1 font-fun text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
                 <span className="block">{t('heroPart1')}</span>
                 <span className="relative inline-block text-kinder-orange mx-1">
                   <TypedText text={t('heroHighlight')} delay={800} speed={80} />
@@ -782,7 +786,7 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           STATS — kinder-orange bg, animated counters
       ════════════════════════════════════════════════════════ */}
-      <section className="bg-kinder-orange">
+      <section className="bg-gradient-to-b from-kinder-orange to-orange-600">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <StatCounter
@@ -798,7 +802,7 @@ export function LandingPage() {
         </div>
 
         <div className="block dark:hidden">
-          <Wave fill="#ffffff" variant="bumpy" />
+          <Wave fill="#FFF7ED" variant="bumpy" />
         </div>
         <div className="hidden dark:block">
           <Wave fill="#030712" variant="bumpy" />
@@ -806,13 +810,16 @@ export function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          FEATURES — white/dark bg, large icon cards
+          FEATURES — peach bg, large icon cards
       ════════════════════════════════════════════════════════ */}
-      <section id="programs" className="relative overflow-hidden bg-white dark:bg-gray-950 py-24">
+      <section
+        id="programs"
+        className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 py-24"
+      >
         <StarField variant="b" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
+            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
               {t('featuresTitle')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
@@ -829,6 +836,17 @@ export function LandingPage() {
                 titleKey={titleKey}
                 descKey={descKey}
                 expandedKey={expandedKey}
+                badge={
+                  idx === 0 ? (
+                    <StickerBadge color="bg-kinder-pink" textColor="text-white" rotate={8}>
+                      {t('badgePopular')}
+                    </StickerBadge>
+                  ) : idx === 3 ? (
+                    <StickerBadge color="bg-kinder-yellow" textColor="text-gray-900" rotate={-10}>
+                      {t('badgeLoved')}
+                    </StickerBadge>
+                  ) : undefined
+                }
                 className={featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}
                 style={featuresFadeIn.isVisible ? { animationDelay: `${idx * 100}ms` } : undefined}
               />
@@ -842,14 +860,14 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="gallery"
-        className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
+        className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 py-20 transition-colors duration-200"
       >
         <StarField variant="a" />
         <div
           ref={galleryFadeIn.ref}
           className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
@@ -960,6 +978,12 @@ export function LandingPage() {
             </div>
           </div>
         )}
+
+        {artWallItems.length === 0 && (
+          <div className="mt-16">
+            <Wave fill="#C77DFF" />
+          </div>
+        )}
       </section>
 
       {/* ════════════════════════════════════════════════════════
@@ -968,7 +992,7 @@ export function LandingPage() {
       {artWallItems.length > 0 && (
         <section
           ref={artWallHeadingRef}
-          className="relative overflow-hidden bg-amber-50 dark:bg-gray-950 py-16 md:py-24 transition-colors duration-200"
+          className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 pt-16 md:pt-24 transition-colors duration-200"
         >
           {/* Glimmering stars — dark mode only, outside the cork border */}
           <StarField variant="a" />
@@ -979,7 +1003,7 @@ export function LandingPage() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-kinder-yellow/20 dark:bg-kinder-yellow/10 mb-4">
               <Palette size={28} className="text-kinder-yellow" />
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-yellow to-kinder-green bg-clip-text text-transparent mb-4 leading-tight">
+            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-kinder-orange via-kinder-yellow to-kinder-green bg-clip-text text-transparent mb-4 leading-tight">
               {t('ourLittleArtists')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
@@ -1054,6 +1078,10 @@ export function LandingPage() {
               )}
             </div>
           </div>
+
+          <div className="mt-16">
+            <Wave fill="#C77DFF" />
+          </div>
         </section>
       )}
 
@@ -1062,23 +1090,51 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="notices"
-        className="relative overflow-hidden bg-gray-50 dark:bg-gray-900 py-20 transition-colors duration-200"
+        className="relative overflow-hidden bg-gradient-to-b from-kinder-purple to-purple-600 pt-24"
       >
-        <StarField variant="b" />
+        {/* Floating decorative shapes */}
+        <div
+          className="lp-float absolute top-8 left-8 opacity-20 pointer-events-none"
+          aria-hidden="true"
+        >
+          <Megaphone size={48} className="text-white" />
+        </div>
+        <div
+          className="lp-float-alt absolute top-16 right-12 opacity-15 pointer-events-none"
+          style={{ animationDelay: '1.2s' }}
+          aria-hidden="true"
+        >
+          <DoodleStar size={44} color="white" />
+        </div>
+        <div
+          className="lp-float-slow absolute bottom-24 left-16 opacity-15 pointer-events-none"
+          style={{ animationDelay: '0.8s' }}
+          aria-hidden="true"
+        >
+          <DoodleCloud size={56} color="white" />
+        </div>
+        <div
+          className="lp-spin-slow absolute bottom-32 right-20 opacity-15 pointer-events-none"
+          aria-hidden="true"
+        >
+          <DoodleSpiral size={40} color="white" />
+        </div>
+
         <div
           ref={noticesFadeIn.ref}
-          className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+          className={`relative max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
+            <Megaphone size={26} className="text-white" />
+          </div>
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
             {t('noticesTitle')}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
-            {t('noticesSubtitle')}
-          </p>
+          <p className="text-white/70 text-base sm:text-lg">{t('noticesSubtitle')}</p>
         </div>
 
         {notices.length > 0 ? (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {notices.slice(0, 6).map((notice, idx) => (
                 <button
@@ -1149,48 +1205,64 @@ export function LandingPage() {
             </div>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto px-4 sm:px-6">
-            <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-dashed border-amber-200 dark:border-amber-700 rounded-3xl p-10 text-center">
-              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-800/40 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                <Megaphone size={26} className="text-amber-400 dark:text-amber-500" />
+          <div className="relative max-w-2xl mx-auto px-4 sm:px-6">
+            <div className="bg-white/15 backdrop-blur-sm border-2 border-dashed border-white/30 rounded-3xl p-10 text-center">
+              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Megaphone size={26} className="text-white" />
               </div>
-              <h3 className="font-bold text-amber-800 dark:text-amber-300 text-lg mb-2">
-                {t('noticesEmptyTitle')}
-              </h3>
-              <p className="text-amber-600/80 dark:text-amber-400/70 text-sm leading-relaxed">
-                {t('noticesEmptySubtitle')}
-              </p>
+              <h3 className="font-bold text-white text-lg mb-2">{t('noticesEmptyTitle')}</h3>
+              <p className="text-white/70 text-sm leading-relaxed">{t('noticesEmptySubtitle')}</p>
             </div>
           </div>
         )}
 
-        {testimonials.length > 0 ? (
-          <div className="mt-16">
-            <Wave fill="#C77DFF" />
-          </div>
-        ) : (
-          <>
-            <div className="mt-16 block dark:hidden">
-              <Wave fill="#ffffff" />
-            </div>
-            <div className="mt-16 hidden dark:block">
-              <Wave fill="#030712" />
-            </div>
-          </>
-        )}
+        <div className="mt-16">
+          <Wave fill={testimonials.length > 0 ? '#4D96FF' : '#FF85A2'} />
+        </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════
           testimonials — kinder-purple bg, star ratings
       ════════════════════════════════════════════════════════ */}
       {testimonials.length > 0 && (
-        <section className="bg-kinder-purple py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <section className="relative overflow-hidden bg-gradient-to-b from-kinder-blue to-blue-600 pt-24">
+          {/* Floating decorative shapes */}
+          <div
+            className="lp-float absolute top-8 left-8 opacity-15 pointer-events-none"
+            aria-hidden="true"
+          >
+            <DoodleStar size={48} color="white" />
+          </div>
+          <div
+            className="lp-float-alt absolute top-20 right-12 opacity-15 pointer-events-none"
+            style={{ animationDelay: '1s' }}
+            aria-hidden="true"
+          >
+            <Heart size={42} fill="white" stroke="white" />
+          </div>
+          <div
+            className="lp-float-slow absolute bottom-32 left-16 opacity-15 pointer-events-none"
+            style={{ animationDelay: '0.6s' }}
+            aria-hidden="true"
+          >
+            <DoodleSpiral size={44} color="white" />
+          </div>
+          <div
+            className="lp-spin-slow absolute bottom-20 right-20 opacity-15 pointer-events-none"
+            aria-hidden="true"
+          >
+            <Star size={36} fill="white" stroke="white" />
+          </div>
+
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
             <div
               className={`text-center mb-14 ${testimonialsFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
               ref={testimonialsFadeIn.ref}
             >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
+                <Star size={26} className="text-white" fill="white" />
+              </div>
+              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
                 {t('testimonialsTitle')}
               </h2>
               <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
@@ -1289,11 +1361,8 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-8 block dark:hidden">
-            <Wave fill="#ffffff" />
-          </div>
-          <div className="mt-8 hidden dark:block">
-            <Wave fill="#030712" />
+          <div className="mt-16">
+            <Wave fill="#FF85A2" />
           </div>
         </section>
       )}
@@ -1305,7 +1374,10 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           CTA — kinder-green bg, pill buttons
       ════════════════════════════════════════════════════════ */}
-      <section id="contact" className="relative overflow-hidden bg-kinder-green py-24">
+      <section
+        id="contact"
+        className="relative overflow-hidden bg-gradient-to-b from-kinder-green to-green-600 pt-24"
+      >
         {/* Floating shapes — spread across full section width */}
         <div
           className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
@@ -1356,7 +1428,10 @@ export function LandingPage() {
         </div>
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
+            <Heart size={26} className="text-white" fill="white" />
+          </div>
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
             {t('ctaTitle')}
           </h2>
           <p className="text-white/80 text-lg sm:text-xl mb-10">{t('ctaSubtitle')}</p>
@@ -1371,7 +1446,10 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="mt-16">
+        <div className="mt-16 block dark:hidden">
+          <Wave fill="#342A22" />
+        </div>
+        <div className="mt-16 hidden dark:block">
           <Wave fill="#111827" />
         </div>
       </section>

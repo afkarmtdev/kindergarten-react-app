@@ -165,7 +165,7 @@ export const translations = {
     adminLogin: 'Admin Login',
 
     // Landing page — Hero
-    heroTagline: 'Enrolling for 2025–2026',
+    heroTagline: 'Enrolling for 2026',
     heroPart1: 'Where little minds',
     heroHighlight: 'grow big',
     heroPart2: 'ideas',
@@ -179,6 +179,10 @@ export const translations = {
     statsTeachersLabel: 'Qualified Staff',
     statsClassesLabel: 'Active Classes',
     statsRatingLabel: 'Star Rating',
+
+    // Landing page — Sticker badges
+    badgePopular: 'Popular',
+    badgeLoved: 'Loved',
 
     // Landing page — Features
     featuresTitle: 'Everything your child needs',
@@ -206,7 +210,7 @@ export const translations = {
     scheduleVisit: 'Schedule a Visit',
 
     // Landing page — Gallery
-    galleryTitle: `Life at ${APP_NAME}`,
+    galleryTitle: 'Little Moments, Big Smiles',
     gallerySubtitle: 'A peek into our colourful, joyful classrooms',
 
     // Student profile page
@@ -1096,7 +1100,7 @@ export const translations = {
     adminLogin: 'Log Masuk Admin',
 
     // Landing page — Hero
-    heroTagline: 'Pendaftaran untuk 2025–2026',
+    heroTagline: 'Pendaftaran untuk 2026',
     heroPart1: 'Di mana minda kecil',
     heroHighlight: 'tumbuh besar',
     heroPart2: 'dengan idea',
@@ -1110,6 +1114,10 @@ export const translations = {
     statsTeachersLabel: 'Kakitangan Bertauliah',
     statsClassesLabel: 'Kelas Aktif',
     statsRatingLabel: 'Penilaian Bintang',
+
+    // Landing page — Sticker badges
+    badgePopular: 'Popular',
+    badgeLoved: 'Disayangi',
 
     // Landing page — Features
     featuresTitle: 'Segala yang diperlukan anak anda',
@@ -1138,7 +1146,7 @@ export const translations = {
     scheduleVisit: 'Jadualkan Lawatan',
 
     // Landing page — Gallery
-    galleryTitle: `Kehidupan di ${APP_NAME}`,
+    galleryTitle: 'Detik Kecil, Senyuman Besar',
     gallerySubtitle: 'Sekilas pandang bilik darjah kami yang ceria',
 
     // Student profile page
