@@ -3,6 +3,8 @@
 -- Adds created_by, modified_at, modified_by, deleted_at, deleted_by to all tables
 -- ============================================================================
 
+BEGIN;
+
 -- ── Helper: reusable DO block to add audit columns if they don't exist ──────
 -- We use a DO block per table to keep it idempotent (safe to re-run).
 
@@ -166,3 +168,5 @@ CREATE INDEX IF NOT EXISTS idx_parent_students_deleted_at ON parent_students(del
 -- NOTE: Run this migration in Supabase SQL editor BEFORE deploying new code.
 -- All columns use IF NOT EXISTS — safe to re-run.
 -- ============================================================================
+
+COMMIT;

@@ -1,6 +1,8 @@
 -- Migration: Add status column to inquiries table
 -- Values: 'new' (default), 'contacted', 'enrolled', 'closed'
 
+BEGIN;
+
 ALTER TABLE inquiries
   ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'new'
     CHECK (status IN ('new', 'contacted', 'enrolled', 'closed'));
@@ -15,3 +17,5 @@ ALTER TABLE inquiries
 
 -- Index for filtering by status
 CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries (status);
+
+COMMIT;
