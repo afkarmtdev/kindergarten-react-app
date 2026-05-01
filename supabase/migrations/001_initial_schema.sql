@@ -1,3 +1,5 @@
+BEGIN;
+
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
@@ -385,7 +387,7 @@ create policy "Anyone can read visible art_wall" on art_wall for select to anon 
 create table if not exists parent_sessions (
   id           uuid primary key default uuid_generate_v4(),
   student_id   uuid not null references students(id) on delete cascade,
-  parent_id    uuid references parents(id) on delete cascade,
+  -- parent_id is added by 002_parents.sql once the parents table exists
   token_hash   text not null unique,
   device_id    text not null,
   device_label text,
@@ -475,3 +477,5 @@ create policy "Auth users can upload portfolio photos"  on storage.objects for i
 create policy "Auth users can update portfolio photos"  on storage.objects for update to authenticated using  (bucket_id = 'portfolio-photos');
 create policy "Auth users can delete portfolio photos"  on storage.objects for delete to authenticated using  (bucket_id = 'portfolio-photos');
 create policy "Anyone can read portfolio photos"        on storage.objects for select to anon, authenticated using (bucket_id = 'portfolio-photos');
+
+COMMIT;

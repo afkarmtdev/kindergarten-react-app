@@ -1,5 +1,7 @@
 -- 007: Medical Profiles + Incident Reports
 
+BEGIN;
+
 -- ─── Student Medical Profiles (1:1 per student) ────────────────────────────
 CREATE TABLE IF NOT EXISTS student_medical (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -66,3 +68,5 @@ ALTER TABLE incidents ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Authenticated users full access to incidents" ON incidents;
 CREATE POLICY "Authenticated users full access to incidents"
   ON incidents FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+COMMIT;
