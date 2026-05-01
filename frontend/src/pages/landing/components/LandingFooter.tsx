@@ -4,6 +4,7 @@ import { SecretArcade } from '@/components/landing/SecretArcade'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useT } from '@/hooks/useT'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
+import { APP_NAME } from '@/lib/version'
 import { StarField } from './StarField'
 
 export function LandingFooter() {
@@ -184,9 +185,14 @@ export function LandingFooter() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} {schoolName}. {t('footerTagline')}
-          </p>
+          <div className="flex flex-col items-center sm:items-start gap-1">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} {schoolName}. {t('footerTagline')}
+            </p>
+            <p className="text-gray-600 text-xs">
+              Powered by <span className="font-semibold text-gray-400">{APP_NAME}</span>
+            </p>
+          </div>
           <SecretArcade />
         </div>
       </div>

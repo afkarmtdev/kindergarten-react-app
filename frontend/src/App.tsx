@@ -441,7 +441,7 @@ export default function App() {
       </AuthProvider>
 
       <Toaster
-        position="top-right"
+        position="bottom-right"
         richColors
         duration={3000}
         toastOptions={{ className: 'font-sans text-sm' }}

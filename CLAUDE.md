@@ -384,7 +384,7 @@ All list endpoints return paginated responses:
 
 ## Toast Notifications
 
-- Library: `sonner` (installed in frontend). `<Toaster position="top-right" richColors duration={3000} />` lives in `App.tsx` outside the Router.
+- Library: `sonner` (installed in frontend). `<Toaster position="bottom-right" richColors duration={3000} />` lives in `App.tsx` outside the Router.
 - Every `useMutation` must have both `onSuccess` (with `toast.success`) and `onError` (with `toast.error`).
 - Toast messages are short English strings — not translated through `useT` (toasts are ephemeral, translation can be added later).
 - Pattern: `toast.success('Student updated')` / `toast.error('Failed to save student. Please try again.')`

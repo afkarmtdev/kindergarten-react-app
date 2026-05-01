@@ -1,38 +1,58 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface CoinFlipLogoProps {
-  /** URL of the school logo. Flip is disabled when null. */
-  logoUrl: string | null
   /** Front face content (e.g. bear mascot icon) */
   children: React.ReactNode
   /** Tailwind classes for the front face container (size, bg, rounding) */
   frontClassName: string
   /** Tailwind classes for the back face container (size, bg, rounding) */
   backClassName: string
+  /** URL of the school logo. When set, the back face renders this image. */
+  logoUrl?: string | null
+  /** Custom back-face content used when logoUrl is null. Falls back to children if also null. */
+  back?: React.ReactNode
   /** Called after each flip with the new flipped state */
   onFlip?: (flipped: boolean) => void
+  /** Auto-flip interval in ms. Set to 0 to disable. Default 0 (click-only). */
+  autoFlipMs?: number
 }
 
 export function CoinFlipLogo({
-  logoUrl,
   children,
   frontClassName,
   backClassName,
+  logoUrl,
+  back,
   onFlip,
+  autoFlipMs = 0,
 }: CoinFlipLogoProps) {
   const [flipped, setFlipped] = useState(false)
-  const canFlip = !!logoUrl
+  const [tick, setTick] = useState(0)
 
-  if (!canFlip) {
-    return <div className={frontClassName}>{children}</div>
-  }
+  const onFlipRef = useRef(onFlip)
+  useEffect(() => {
+    onFlipRef.current = onFlip
+  })
+
+  useEffect(() => {
+    if (autoFlipMs <= 0) return
+    const id = setInterval(() => {
+      setFlipped((f) => {
+        const next = !f
+        onFlipRef.current?.(next)
+        return next
+      })
+    }, autoFlipMs)
+    return () => clearInterval(id)
+  }, [autoFlipMs, tick])
 
   const toggle = () => {
     setFlipped((f) => {
       const next = !f
-      onFlip?.(next)
+      onFlipRef.current?.(next)
       return next
     })
+    setTick((t) => t + 1)
   }
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -40,6 +60,12 @@ export function CoinFlipLogo({
       toggle()
     }
   }
+
+  const backContent = logoUrl ? (
+    <img src={logoUrl} alt="School logo" className="w-full h-full object-cover" draggable={false} />
+  ) : (
+    (back ?? children)
+  )
 
   return (
     <div
@@ -64,17 +90,12 @@ export function CoinFlipLogo({
           {children}
         </div>
 
-        {/* Back — school logo */}
+        {/* Back — school logo or fallback */}
         <div
           className={`${backClassName} absolute inset-0`}
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
-          <img
-            src={logoUrl}
-            alt="School logo"
-            className="w-full h-full object-cover"
-            draggable={false}
-          />
+          {backContent}
         </div>
       </div>
     </div>
