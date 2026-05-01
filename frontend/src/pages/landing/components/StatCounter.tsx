@@ -50,7 +50,7 @@ export function StatCounter({
             <Icon size={24} className="text-white" strokeWidth={1.5} />
           </div>
         )}
-        <p className="text-5xl lg:text-6xl font-extrabold text-white leading-none mb-2">
+        <p className="font-fun text-5xl lg:text-6xl font-bold text-white leading-none mb-2">
           {count}
           {suffix}
         </p>
