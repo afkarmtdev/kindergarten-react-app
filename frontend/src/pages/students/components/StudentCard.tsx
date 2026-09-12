@@ -22,7 +22,7 @@ export function StudentCard({
     <>
       <Link
         to={`/admin/students/${student.id}`}
-        className={`block bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5${student.status !== 'active' ? ' opacity-70' : ''}`}
+        className={`block bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5${student.status !== 'active' ? ' opacity-70' : ''}`}
       >
         <div className="flex items-start gap-4">
           {student.photo_url ? (

@@ -115,7 +115,7 @@ export function IncidentsPage() {
             <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-gray-100">
               {t('incidentReports')}
             </h1>
             {total > 0 && (
@@ -180,7 +180,7 @@ export function IncidentsPage() {
 
       {/* Table */}
       <div
-        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-opacity ${
+        className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 overflow-hidden transition-opacity ${
           isFetching && !isLoading ? 'opacity-60' : 'opacity-100'
         }`}
       >

@@ -81,7 +81,7 @@ export function ParentsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-white">
             {t('parents')}
           </h1>
           {meta && (
@@ -104,7 +104,7 @@ export function ParentsPage() {
 
       {/* Table */}
       <div
-        className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-opacity duration-150 ${
+        className={`bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-opacity duration-150 ${
           isFetching && !isLoading ? 'opacity-60' : 'opacity-100'
         }`}
       >

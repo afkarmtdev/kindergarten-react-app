@@ -14,7 +14,23 @@ const WAVE_PATHS = {
 
 type WaveVariant = keyof typeof WAVE_PATHS
 
-export function Wave({ fill, variant = 'smooth' }: { fill: string; variant?: WaveVariant }) {
+/**
+ * Decorative section divider. The wave is painted in the colour of the NEXT section,
+ * so it sits at the bottom of a section and "bites" into it.
+ *
+ * Prefer `fillClassName` with Tailwind fill utilities (e.g. `fill-wash-sky`,
+ * `fill-white dark:fill-gray-950`) so the colour follows the light/dark tokens.
+ * `fill` remains for one-off literal colours.
+ */
+export function Wave({
+  fill,
+  fillClassName,
+  variant = 'smooth',
+}: {
+  fill?: string
+  fillClassName?: string
+  variant?: WaveVariant
+}) {
   return (
     <div style={{ lineHeight: 0, display: 'block' }}>
       <svg
@@ -23,7 +39,11 @@ export function Wave({ fill, variant = 'smooth' }: { fill: string; variant?: Wav
         preserveAspectRatio="none"
         style={{ display: 'block', width: '100%', height: '88px' }}
       >
-        <path d={WAVE_PATHS[variant]} fill={fill} />
+        <path
+          d={WAVE_PATHS[variant]}
+          fill={fillClassName ? undefined : fill}
+          className={fillClassName}
+        />
       </svg>
     </div>
   )

@@ -97,7 +97,7 @@ export function GalleryPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-gray-100">
             {t('gallery')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
@@ -138,7 +138,7 @@ export function GalleryPage() {
             {items.map((item: GalleryItem) => (
               <div
                 key={item.id}
-                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
+                className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
               >
                 {/* Photo thumbnail */}
                 <div className="relative w-full h-36 sm:h-44 bg-gray-100 dark:bg-gray-800">

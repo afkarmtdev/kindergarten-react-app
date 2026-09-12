@@ -116,9 +116,9 @@ export function DocumentNumberingSection({ documentType }: { documentType: strin
   const lastIsSerial = segments.length > 0 && segments[segments.length - 1].type === 'serial'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-6">
+    <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 p-6 space-y-6">
       <div>
-        <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">
+        <h2 className="text-base font-fun font-bold text-gray-900 dark:text-gray-100">
           {t('documentNumbering')}
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">

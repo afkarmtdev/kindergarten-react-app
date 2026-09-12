@@ -194,11 +194,11 @@ export function PortfolioReportPage() {
       </div>
 
       {/* Report card body */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden max-w-3xl mx-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden max-w-3xl mx-auto">
         {/* Header */}
         <div className="bg-kinder-orange p-6 text-white">
           <p className="text-sm font-medium opacity-80">{schoolName}</p>
-          <h1 className="text-xl font-bold mt-1">{t('studentProgressReport')}</h1>
+          <h1 className="text-xl font-fun font-bold mt-1">{t('studentProgressReport')}</h1>
           <p className="text-sm mt-1 opacity-80">
             {t('term')}: {term}
           </p>

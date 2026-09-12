@@ -1,16 +1,30 @@
 import { useState, useEffect, useRef } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
+/** Section wash used for the icon tile; wash/ink tokens switch with dark mode automatically. */
+export type StatTint = 'sky' | 'mint' | 'butter' | 'blush' | 'lavender' | 'peach'
+
+const TINT: Record<StatTint, { bg: string; icon: string }> = {
+  sky: { bg: 'bg-wash-sky', icon: 'text-ink-sky' },
+  mint: { bg: 'bg-wash-mint', icon: 'text-ink-mint' },
+  butter: { bg: 'bg-wash-butter', icon: 'text-ink-butter' },
+  blush: { bg: 'bg-wash-blush', icon: 'text-ink-blush' },
+  lavender: { bg: 'bg-wash-lavender', icon: 'text-ink-lavender' },
+  peach: { bg: 'bg-wash-peach', icon: 'text-ink-peach' },
+}
+
 export function StatCounter({
   target,
   suffix,
   label,
   icon: Icon,
+  tint = 'sky',
 }: {
   target: number
   suffix: string
   label: string
   icon?: LucideIcon
+  tint?: StatTint
 }) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
@@ -42,19 +56,25 @@ export function StatCounter({
     return () => observer.disconnect()
   }, [target])
 
+  const { bg, icon } = TINT[tint]
+
   return (
-    <div ref={ref} className="text-center px-2">
-      <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/15">
+    <div ref={ref} className="text-center px-1 sm:px-2">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl p-5 sm:p-6 border-2 border-gray-200 dark:border-gray-800 transition-colors duration-200">
         {Icon && (
-          <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-3">
-            <Icon size={24} className="text-white" strokeWidth={1.5} />
+          <div
+            className={`w-12 h-12 rounded-2xl ${bg} flex items-center justify-center mx-auto mb-3`}
+          >
+            <Icon size={24} className={icon} strokeWidth={2} />
           </div>
         )}
-        <p className="font-fun text-5xl lg:text-6xl font-bold text-white leading-none mb-2">
+        <p className="font-fun text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-none mb-2">
           {count}
           {suffix}
         </p>
-        <p className="text-white/70 font-bold text-xs uppercase tracking-widest">{label}</p>
+        <p className="text-gray-500 dark:text-gray-400 font-bold text-xs uppercase tracking-widest">
+          {label}
+        </p>
       </div>
     </div>
   )

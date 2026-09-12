@@ -105,7 +105,7 @@ export function TestimonialsPage() {
       {/* Page header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-white">
             {t('testimonials')}
           </h1>
           {meta && (

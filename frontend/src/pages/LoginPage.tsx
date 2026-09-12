@@ -50,12 +50,12 @@ export function LoginPage() {
         {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
       </button>
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 sm:p-10 border border-transparent dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 sm:p-10 border-2 border-transparent dark:border-gray-800">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-kinder-orange rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 dark:shadow-orange-900/30">
               <AdminBearIcon size={40} />
             </div>
-            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-fun font-bold text-gray-900 dark:text-gray-100">
               {APP_NAME} Admin
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Sign in to your portal</p>

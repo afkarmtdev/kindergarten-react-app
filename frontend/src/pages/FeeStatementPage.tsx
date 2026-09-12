@@ -118,7 +118,7 @@ export function FeeStatementPage() {
             ))}
           </div>
         ) : (
-          <div className="statement-print bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="statement-print bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 overflow-hidden">
             {/* Statement header */}
             <div className="p-6 border-b border-gray-200 dark:border-gray-800 text-center">
               {logoUrl && <img src={logoUrl} alt="" className="h-12 mx-auto mb-2 object-contain" />}

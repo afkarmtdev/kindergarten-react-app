@@ -33,7 +33,7 @@ export function StudentInfoCard({
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mb-6">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border-2 border-gray-200 dark:border-gray-800 mb-6">
         <div className="flex flex-col sm:flex-row items-start gap-5">
           {/* Avatar */}
           {s.photo_url ? (
@@ -51,7 +51,7 @@ export function StudentInfoCard({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-fun font-bold text-gray-900 dark:text-gray-100">
               {s.full_name}
             </h1>
             <div className="flex flex-wrap gap-2 mt-2">

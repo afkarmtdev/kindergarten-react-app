@@ -327,7 +327,7 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           NAVBAR — sticky, glass blur
       ════════════════════════════════════════════════════════ */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
+      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
@@ -356,7 +356,7 @@ export function LandingPage() {
               )}
             </CoinFlipLogo>
             <span
-              className={`font-extrabold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
+              className={`font-fun font-bold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
                 (navFlipped ? APP_NAME : schoolName).length > 30
                   ? 'text-base'
                   : (navFlipped ? APP_NAME : schoolName).length > 20
@@ -450,7 +450,7 @@ export function LandingPage() {
           className="absolute inset-0 lp-mesh-gradient block dark:hidden"
           style={{
             background:
-              'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 20%, #FFF1F2 40%, #FDF2F8 60%, #FFF7ED 80%, #FFFBEB 100%)',
+              'linear-gradient(135deg, #FFFAF5 0%, #FFF3E4 22%, #FFEEF2 45%, #EAF1FF 68%, #FFFAF5 85%, #F5EEFF 100%)',
           }}
           aria-hidden="true"
         />
@@ -780,33 +780,48 @@ export function LandingPage() {
           }}
         />
 
-        <Wave fill="#FF6B35" variant="peak" />
+        <Wave variant="scallop" fillClassName="fill-wash-sky" />
       </section>
 
       {/* ════════════════════════════════════════════════════════
           STATS — kinder-orange bg, animated counters
       ════════════════════════════════════════════════════════ */}
-      <section className="bg-gradient-to-b from-kinder-orange to-orange-600">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-wash-sky transition-colors duration-200">
+        <StarField variant="b" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <StatCounter
               target={500}
               suffix="+"
               label={t('statsStudentsLabel')}
               icon={GraduationCap}
+              tint="sky"
             />
-            <StatCounter target={50} suffix="+" label={t('statsTeachersLabel')} icon={Users} />
-            <StatCounter target={20} suffix="+" label={t('statsClassesLabel')} icon={School} />
-            <StatCounter target={5} suffix=" ★" label={t('statsRatingLabel')} icon={Award} />
+            <StatCounter
+              target={50}
+              suffix="+"
+              label={t('statsTeachersLabel')}
+              icon={Users}
+              tint="mint"
+            />
+            <StatCounter
+              target={20}
+              suffix="+"
+              label={t('statsClassesLabel')}
+              icon={School}
+              tint="butter"
+            />
+            <StatCounter
+              target={5}
+              suffix=" ★"
+              label={t('statsRatingLabel')}
+              icon={Award}
+              tint="blush"
+            />
           </div>
         </div>
 
-        <div className="block dark:hidden">
-          <Wave fill="#FFF7ED" variant="bumpy" />
-        </div>
-        <div className="hidden dark:block">
-          <Wave fill="#030712" variant="bumpy" />
-        </div>
+        <Wave variant="scallop" fillClassName="fill-white dark:fill-gray-950" />
       </section>
 
       {/* ════════════════════════════════════════════════════════
@@ -814,12 +829,17 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="programs"
-        className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 py-24"
+        className="relative overflow-hidden bg-white dark:bg-gray-950 py-24 transition-colors duration-200"
       >
         <StarField variant="b" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16">
-            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
+            <div className="mb-5">
+              <StickerBadge color="bg-kinder-purple" textColor="text-white" rotate={-3}>
+                {t('ourPrograms')}
+              </StickerBadge>
+            </div>
+            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
               {t('featuresTitle')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
@@ -827,7 +847,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6">
+          <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6 md:items-start">
             {FEATURES.map(({ icon, color, titleKey, descKey, expandedKey }, idx) => (
               <FeatureCard
                 key={titleKey}
@@ -860,14 +880,14 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="gallery"
-        className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 py-20 transition-colors duration-200"
+        className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
       >
         <StarField variant="a" />
         <div
           ref={galleryFadeIn.ref}
           className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
-          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent mb-4 leading-tight">
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
@@ -901,7 +921,7 @@ export function LandingPage() {
                     <div
                       key={item.id}
                       onClick={() => setLightboxIndex(idx)}
-                      className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer relative group/card"
+                      className="snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer relative group/card"
                     >
                       <img
                         src={item.photo_url}
@@ -920,7 +940,7 @@ export function LandingPage() {
                 : GALLERY_PLACEHOLDERS.map((p) => (
                     <div
                       key={p.id}
-                      className={`snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
+                      className={`snap-start w-56 sm:w-72 h-40 sm:h-52 rounded-2xl flex-shrink-0 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200`}
                     >
                       <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
                       <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
@@ -942,7 +962,7 @@ export function LandingPage() {
                 <div
                   key={item.id}
                   onClick={() => setLightboxIndex(idx)}
-                  className="break-inside-avoid rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer relative group/card"
+                  className="break-inside-avoid rounded-2xl overflow-hidden shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:-translate-y-1 hover:shadow-md transition-all duration-200 cursor-pointer relative group/card"
                 >
                   <img
                     src={item.photo_url}
@@ -967,7 +987,7 @@ export function LandingPage() {
               {GALLERY_PLACEHOLDERS.map((p) => (
                 <div
                   key={p.id}
-                  className={`rounded-2xl h-52 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border border-gray-100 dark:border-gray-800`}
+                  className={`rounded-2xl h-52 bg-gradient-to-br ${p.gradient} flex flex-col items-center justify-center gap-3 shadow-sm border-2 border-gray-200 dark:border-gray-800`}
                 >
                   <Camera size={32} className="text-gray-500/60 dark:text-gray-300/60" />
                   <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
@@ -981,7 +1001,7 @@ export function LandingPage() {
 
         {artWallItems.length === 0 && (
           <div className="mt-16">
-            <Wave fill="#C77DFF" />
+            <Wave variant="scallop" fillClassName="fill-wash-lavender" />
           </div>
         )}
       </section>
@@ -992,7 +1012,7 @@ export function LandingPage() {
       {artWallItems.length > 0 && (
         <section
           ref={artWallHeadingRef}
-          className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 pt-16 md:pt-24 transition-colors duration-200"
+          className="relative overflow-hidden bg-white dark:bg-gray-950 pt-16 md:pt-24 transition-colors duration-200"
         >
           {/* Glimmering stars — dark mode only, outside the cork border */}
           <StarField variant="a" />
@@ -1000,10 +1020,10 @@ export function LandingPage() {
             ref={artWallFadeIn.ref}
             className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center ${artWallFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
           >
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-kinder-yellow/20 dark:bg-kinder-yellow/10 mb-4">
-              <Palette size={28} className="text-kinder-yellow" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-wash-butter mb-4">
+              <Palette size={28} className="text-ink-butter" />
             </div>
-            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-kinder-orange via-kinder-yellow to-kinder-green bg-clip-text text-transparent mb-4 leading-tight">
+            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
               {t('ourLittleArtists')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
@@ -1080,7 +1100,7 @@ export function LandingPage() {
           </div>
 
           <div className="mt-16">
-            <Wave fill="#C77DFF" />
+            <Wave variant="scallop" fillClassName="fill-wash-lavender" />
           </div>
         </section>
       )}
@@ -1090,47 +1110,50 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="notices"
-        className="relative overflow-hidden bg-gradient-to-b from-kinder-purple to-purple-600 pt-24"
+        className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200"
       >
+        <StarField variant="a" />
         {/* Floating decorative shapes */}
         <div
-          className="lp-float absolute top-8 left-8 opacity-20 pointer-events-none"
+          className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none text-ink-lavender"
           aria-hidden="true"
         >
-          <Megaphone size={48} className="text-white" />
+          <Megaphone size={48} />
         </div>
         <div
-          className="lp-float-alt absolute top-16 right-12 opacity-15 pointer-events-none"
+          className="lp-float-alt absolute top-16 right-12 opacity-25 pointer-events-none"
           style={{ animationDelay: '1.2s' }}
           aria-hidden="true"
         >
-          <DoodleStar size={44} color="white" />
+          <DoodleStar size={44} color="#C77DFF" />
         </div>
         <div
-          className="lp-float-slow absolute bottom-24 left-16 opacity-15 pointer-events-none"
+          className="lp-float-slow absolute bottom-24 left-16 opacity-25 pointer-events-none"
           style={{ animationDelay: '0.8s' }}
           aria-hidden="true"
         >
-          <DoodleCloud size={56} color="white" />
+          <DoodleCloud size={56} color="#C77DFF" />
         </div>
         <div
-          className="lp-spin-slow absolute bottom-32 right-20 opacity-15 pointer-events-none"
+          className="lp-spin-slow absolute bottom-32 right-20 opacity-25 pointer-events-none"
           aria-hidden="true"
         >
-          <DoodleSpiral size={40} color="white" />
+          <DoodleSpiral size={40} color="#C77DFF" />
         </div>
 
         <div
           ref={noticesFadeIn.ref}
           className={`relative max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
-            <Megaphone size={26} className="text-white" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
+            <Megaphone size={26} className="text-ink-lavender" />
           </div>
-          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('noticesTitle')}
           </h2>
-          <p className="text-white/70 text-base sm:text-lg">{t('noticesSubtitle')}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
+            {t('noticesSubtitle')}
+          </p>
         </div>
 
         {notices.length > 0 ? (
@@ -1141,10 +1164,10 @@ export function LandingPage() {
                   key={notice.id}
                   type="button"
                   onClick={() => setSelectedNotice(notice)}
-                  className={`text-left flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-kinder-orange ${
+                  className={`text-left flex flex-col bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-kinder-orange ${
                     notice.is_pinned
                       ? 'border-kinder-yellow dark:border-kinder-yellow'
-                      : 'border-gray-100 dark:border-gray-700'
+                      : 'border-gray-200 dark:border-gray-800'
                   } ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
                   style={noticesFadeIn.isVisible ? { animationDelay: `${idx * 80}ms` } : undefined}
                 >
@@ -1206,18 +1229,25 @@ export function LandingPage() {
           </div>
         ) : (
           <div className="relative max-w-2xl mx-auto px-4 sm:px-6">
-            <div className="bg-white/15 backdrop-blur-sm border-2 border-dashed border-white/30 rounded-3xl p-10 text-center">
-              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                <Megaphone size={26} className="text-white" />
+            <div className="bg-white/70 dark:bg-gray-900/60 border-2 border-dashed border-ink-lavender/40 rounded-3xl p-10 text-center">
+              <div className="w-14 h-14 bg-white dark:bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Megaphone size={26} className="text-ink-lavender" />
               </div>
-              <h3 className="font-bold text-white text-lg mb-2">{t('noticesEmptyTitle')}</h3>
-              <p className="text-white/70 text-sm leading-relaxed">{t('noticesEmptySubtitle')}</p>
+              <h3 className="font-fun font-bold text-gray-900 dark:text-white text-lg mb-2">
+                {t('noticesEmptyTitle')}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                {t('noticesEmptySubtitle')}
+              </p>
             </div>
           </div>
         )}
 
         <div className="mt-16">
-          <Wave fill={testimonials.length > 0 ? '#4D96FF' : '#FF85A2'} />
+          <Wave
+            variant="scallop"
+            fillClassName={testimonials.length > 0 ? 'fill-wash-sky' : 'fill-wash-blush'}
+          />
         </div>
       </section>
 
@@ -1225,33 +1255,34 @@ export function LandingPage() {
           testimonials — kinder-purple bg, star ratings
       ════════════════════════════════════════════════════════ */}
       {testimonials.length > 0 && (
-        <section className="relative overflow-hidden bg-gradient-to-b from-kinder-blue to-blue-600 pt-24">
+        <section className="relative overflow-hidden bg-wash-sky pt-24 transition-colors duration-200">
+          <StarField variant="b" />
           {/* Floating decorative shapes */}
           <div
-            className="lp-float absolute top-8 left-8 opacity-15 pointer-events-none"
+            className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none"
             aria-hidden="true"
           >
-            <DoodleStar size={48} color="white" />
+            <DoodleStar size={48} color="#4D96FF" />
           </div>
           <div
-            className="lp-float-alt absolute top-20 right-12 opacity-15 pointer-events-none"
+            className="lp-float-alt absolute top-20 right-12 opacity-25 pointer-events-none"
             style={{ animationDelay: '1s' }}
             aria-hidden="true"
           >
-            <Heart size={42} fill="white" stroke="white" />
+            <Heart size={42} fill="#FF85A2" stroke="#FF85A2" />
           </div>
           <div
-            className="lp-float-slow absolute bottom-32 left-16 opacity-15 pointer-events-none"
+            className="lp-float-slow absolute bottom-32 left-16 opacity-25 pointer-events-none"
             style={{ animationDelay: '0.6s' }}
             aria-hidden="true"
           >
-            <DoodleSpiral size={44} color="white" />
+            <DoodleSpiral size={44} color="#4D96FF" />
           </div>
           <div
-            className="lp-spin-slow absolute bottom-20 right-20 opacity-15 pointer-events-none"
+            className="lp-spin-slow absolute bottom-20 right-20 opacity-25 pointer-events-none"
             aria-hidden="true"
           >
-            <Star size={36} fill="white" stroke="white" />
+            <Star size={36} fill="#FFD93D" stroke="#FFD93D" />
           </div>
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
@@ -1259,13 +1290,15 @@ export function LandingPage() {
               className={`text-center mb-14 ${testimonialsFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
               ref={testimonialsFadeIn.ref}
             >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
-                <Star size={26} className="text-white" fill="white" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
+                <Star size={26} className="text-kinder-yellow" fill="#FFD93D" />
               </div>
-              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 {t('testimonialsTitle')}
               </h2>
-              <p className="text-white/70 text-base sm:text-lg">{t('testimonialsSubtitle')}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
+                {t('testimonialsSubtitle')}
+              </p>
             </div>
 
             <div
@@ -1275,18 +1308,18 @@ export function LandingPage() {
             >
               <div className="relative">
                 {testimonials.length >= 3 && (
-                  <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/5 border border-white/[0.08] rounded-3xl" />
+                  <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/40 dark:bg-gray-900/40 border-2 border-gray-200/60 dark:border-gray-800/60 rounded-3xl" />
                 )}
                 {testimonials.length >= 2 && (
-                  <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/10 border border-white/[0.12] rounded-3xl" />
+                  <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/70 dark:bg-gray-900/70 border-2 border-gray-200 dark:border-gray-800 rounded-3xl" />
                 )}
 
                 <div
-                  className={`relative z-10 bg-white/20 backdrop-blur-sm border border-white/25 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
+                  className={`relative z-10 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
                 >
                   {/* Decorative quote mark */}
                   <div
-                    className="absolute top-4 right-6 text-white/10 text-8xl sm:text-9xl font-serif leading-none pointer-events-none select-none"
+                    className="absolute top-4 right-6 text-ink-sky/10 text-8xl sm:text-9xl font-serif leading-none pointer-events-none select-none"
                     aria-hidden="true"
                   >
                     &ldquo;
@@ -1296,28 +1329,28 @@ export function LandingPage() {
                       <Star key={i} size={16} fill="#FFD93D" stroke="#FFD93D" />
                     ))}
                   </div>
-                  <p className="text-white/90 leading-relaxed mb-6 italic text-lg">
+                  <p className="text-gray-700 dark:text-gray-200 leading-relaxed mb-6 italic text-lg">
                     &ldquo;{(testimonials[displayIndex] ?? testimonials[0]).quote}&rdquo;
                   </p>
-                  <div className="border-t border-white/20 pt-4 flex items-center gap-3">
+                  <div className="border-t border-gray-200 dark:border-gray-800 pt-4 flex items-center gap-3">
                     {(testimonials[displayIndex] ?? testimonials[0]).avatar_url ? (
                       <img
                         src={(testimonials[displayIndex] ?? testimonials[0]).avatar_url!}
                         alt={(testimonials[displayIndex] ?? testimonials[0]).parent_name}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-white/30 flex-shrink-0"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-800 flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-wash-sky flex items-center justify-center text-ink-sky font-fun font-bold text-sm flex-shrink-0">
                         {(testimonials[displayIndex] ?? testimonials[0]).parent_name
                           .charAt(0)
                           .toUpperCase()}
                       </div>
                     )}
                     <div>
-                      <p className="font-extrabold text-white">
+                      <p className="font-extrabold text-gray-900 dark:text-white">
                         {(testimonials[displayIndex] ?? testimonials[0]).parent_name}
                       </p>
-                      <p className="text-white/60 text-sm mt-0.5">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
                         {(testimonials[displayIndex] ?? testimonials[0]).parent_role}
                       </p>
                     </div>
@@ -1332,7 +1365,7 @@ export function LandingPage() {
                       <button
                         key={i}
                         onClick={() => setActiveTestimonial(i)}
-                        className="relative w-10 h-2.5 bg-white/20 rounded-full overflow-hidden"
+                        className="relative w-10 h-2.5 bg-ink-sky/20 rounded-full overflow-hidden"
                       >
                         <div
                           key={displayIndex}
@@ -1341,7 +1374,7 @@ export function LandingPage() {
                             top: 0,
                             left: 0,
                             bottom: 0,
-                            backgroundColor: 'rgba(255,255,255,0.75)',
+                            backgroundColor: 'rgb(var(--ink-sky))',
                             borderRadius: '9999px',
                             animation: 'lp-progress 4s linear both',
                             animationPlayState: isPaused ? 'paused' : 'running',
@@ -1352,7 +1385,7 @@ export function LandingPage() {
                       <button
                         key={i}
                         onClick={() => setActiveTestimonial(i)}
-                        className="w-2.5 h-2.5 bg-white/30 hover:bg-white/60 rounded-full transition-colors duration-300"
+                        className="w-2.5 h-2.5 bg-ink-sky/30 hover:bg-ink-sky/60 rounded-full transition-colors duration-300"
                       />
                     )
                   )}
@@ -1362,7 +1395,7 @@ export function LandingPage() {
           </div>
 
           <div className="mt-16">
-            <Wave fill="#FF85A2" />
+            <Wave variant="scallop" fillClassName="fill-wash-blush" />
           </div>
         </section>
       )}
@@ -1376,83 +1409,102 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="contact"
-        className="relative overflow-hidden bg-gradient-to-b from-kinder-green to-green-600 pt-24"
+        className="relative overflow-hidden bg-wash-mint pt-24 transition-colors duration-200"
       >
+        <StarField variant="a" />
         {/* Floating shapes — spread across full section width */}
         <div
           className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
           aria-hidden="true"
         >
-          <Star size={52} fill="white" stroke="white" />
+          <Star size={52} fill="#FFD93D" stroke="#FFD93D" />
         </div>
         <div
           className="lp-float-alt absolute bottom-20 left-12 opacity-15 pointer-events-none"
           style={{ animationDelay: '1.2s' }}
           aria-hidden="true"
         >
-          <Heart size={38} fill="white" stroke="white" />
+          <Heart size={38} fill="#FF85A2" stroke="#FF85A2" />
         </div>
         <div
           className="lp-spin-slow absolute top-12 right-8 opacity-15 pointer-events-none"
           aria-hidden="true"
         >
-          <DoodleStar size={48} color="white" />
+          <DoodleStar size={48} color="#6BCB77" />
         </div>
         <div
           className="lp-float absolute bottom-16 right-16 opacity-20 pointer-events-none"
           style={{ animationDelay: '2s' }}
           aria-hidden="true"
         >
-          <DoodleFlower size={44} color="white" />
+          <DoodleFlower size={44} color="#6BCB77" />
         </div>
         <div
           className="lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
           style={{ animationDelay: '0.8s' }}
           aria-hidden="true"
         >
-          <DoodleCloud size={52} color="white" />
+          <DoodleCloud size={52} color="#4D96FF" />
         </div>
         <div
           className="lp-float-alt absolute top-6 left-1/2 opacity-12 pointer-events-none"
           style={{ animationDelay: '3s', opacity: 0.12 }}
           aria-hidden="true"
         >
-          <DoodleSpiral size={36} color="white" />
+          <DoodleSpiral size={36} color="#C77DFF" />
         </div>
         <div
           className="lp-float absolute top-1/3 right-1/4 opacity-15 pointer-events-none"
           style={{ animationDelay: '1.6s' }}
           aria-hidden="true"
         >
-          <DoodleSun size={46} color="white" />
+          <DoodleSun size={46} color="#FFD93D" />
         </div>
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
-            <Heart size={26} className="text-white" fill="white" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
+            <Heart size={26} className="text-kinder-pink" fill="#FF85A2" />
           </div>
-          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('ctaTitle')}
           </h2>
-          <p className="text-white/80 text-lg sm:text-xl mb-10">{t('ctaSubtitle')}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-lg sm:text-xl mb-10">
+            {t('ctaSubtitle')}
+          </p>
 
           <div className="flex flex-wrap gap-4 justify-center">
             <a
               href={schoolEmail ? `mailto:${schoolEmail}` : '#contact'}
-              className="bg-white text-kinder-green px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200"
+              className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:bg-orange-600 transition-all duration-200"
             >
               {t('scheduleVisit')}
             </a>
           </div>
         </div>
 
-        <div className="mt-16 block dark:hidden">
-          <Wave fill="#342A22" />
-        </div>
-        <div className="mt-16 hidden dark:block">
-          <Wave fill="#111827" />
+        <div className="mt-16">
+          <Wave variant="scallop" fillClassName="fill-kinder-pink" />
         </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════
+          PROMISE STRIP — the poster's "safe · caring · nurturing" band
+      ════════════════════════════════════════════════════════ */}
+      <div className="bg-kinder-pink text-white py-5 px-4">
+        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-fun font-semibold text-lg sm:text-2xl text-center">
+          <Heart size={20} fill="white" stroke="white" aria-hidden="true" />
+          <span>{t('stripSafe')}</span>
+          <span className="opacity-70" aria-hidden="true">
+            ·
+          </span>
+          <span>{t('stripCaring')}</span>
+          <span className="opacity-70" aria-hidden="true">
+            ·
+          </span>
+          <span>{t('stripNurturing')}</span>
+          <Heart size={20} fill="white" stroke="white" aria-hidden="true" />
+        </div>
+      </div>
 
       <LocationSection />
 
