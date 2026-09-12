@@ -94,7 +94,7 @@ export function FeePlansPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-gray-100">
             {t('feePlans')}
           </h1>
           {data && (
@@ -121,7 +121,7 @@ export function FeePlansPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 animate-pulse h-36"
+              className="bg-white dark:bg-gray-900 rounded-3xl p-5 border-2 border-gray-200 dark:border-gray-800 animate-pulse h-36"
             />
           ))}
         </div>
@@ -137,7 +137,7 @@ export function FeePlansPage() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col gap-3"
+              className="bg-white dark:bg-gray-900 rounded-3xl p-5 shadow-sm border-2 border-gray-200 dark:border-gray-800 flex flex-col gap-3"
             >
               {/* Type badge + amount */}
               <div className="flex items-start justify-between gap-2">

@@ -1,22 +1,15 @@
 import { Users } from 'lucide-react'
 
+// Warm Storybook: each brand colour maps to a section wash + matching ink stroke.
+// wash-*/ink-* tokens switch automatically between light pastel and dark nebula tint,
+// so no dark: variants are needed here.
 const TINT: Record<string, { bg: string; icon: string }> = {
-  'bg-kinder-blue': {
-    bg: 'bg-kinder-blue/10 dark:bg-kinder-blue/15',
-    icon: 'text-kinder-blue',
-  },
-  'bg-kinder-purple': {
-    bg: 'bg-kinder-purple/10 dark:bg-kinder-purple/15',
-    icon: 'text-kinder-purple',
-  },
-  'bg-kinder-green': {
-    bg: 'bg-kinder-green/10 dark:bg-kinder-green/15',
-    icon: 'text-kinder-green',
-  },
-  'bg-kinder-orange': {
-    bg: 'bg-kinder-orange/10 dark:bg-kinder-orange/15',
-    icon: 'text-kinder-orange',
-  },
+  'bg-kinder-blue': { bg: 'bg-wash-sky', icon: 'text-ink-sky' },
+  'bg-kinder-purple': { bg: 'bg-wash-lavender', icon: 'text-ink-lavender' },
+  'bg-kinder-green': { bg: 'bg-wash-mint', icon: 'text-ink-mint' },
+  'bg-kinder-orange': { bg: 'bg-wash-peach', icon: 'text-ink-peach' },
+  'bg-kinder-yellow': { bg: 'bg-wash-butter', icon: 'text-ink-butter' },
+  'bg-kinder-pink': { bg: 'bg-wash-blush', icon: 'text-ink-blush' },
 }
 
 export function StatCard({
@@ -36,17 +29,17 @@ export function StatCard({
   const fullLabel = sub ? `${label} ${sub}` : label
 
   return (
-    <div className="flex items-center gap-3 md:gap-4 bg-white dark:bg-gray-900 rounded-2xl p-4 md:p-5 border border-gray-200 dark:border-gray-800">
+    <div className="flex items-center gap-3 md:gap-4 bg-white dark:bg-gray-900 rounded-3xl p-4 md:p-5 border-2 border-gray-200 dark:border-gray-800">
       <div
-        className={`w-9 h-9 md:w-10 md:h-10 ${tint.bg} rounded-xl flex items-center justify-center flex-shrink-0`}
+        className={`w-11 h-11 md:w-12 md:h-12 ${tint.bg} rounded-2xl flex items-center justify-center flex-shrink-0`}
       >
-        <Icon className={tint.icon} size={18} />
+        <Icon className={tint.icon} size={22} strokeWidth={2.2} />
       </div>
       <div className="min-w-0" title={fullLabel}>
-        <p className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight">
+        <p className="font-fun font-bold text-2xl md:text-3xl text-gray-900 dark:text-white leading-none">
           {value}
         </p>
-        <p className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
+        <p className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400 font-bold truncate mt-1.5">
           {label}
           {sub && <span className="text-gray-400 dark:text-gray-500 ml-1">{sub}</span>}
         </p>

@@ -31,8 +31,8 @@ export function FeeCollectionChart({
   const gridStroke = isDark ? '#374151' : '#e5e7eb'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-      <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-5">
+    <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-800">
+      <h2 className="font-fun font-semibold text-lg text-gray-900 dark:text-white mb-5">
         {t('feeCollectionTrend')}
       </h2>
 

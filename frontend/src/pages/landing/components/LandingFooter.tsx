@@ -15,7 +15,7 @@ export function LandingFooter() {
   const hasSocial = facebookUrl || instagramUrl
 
   return (
-    <footer className="relative overflow-hidden bg-gray-900 py-12 sm:py-16 pb-32 sm:pb-16 lg:pb-16 font-display">
+    <footer className="relative overflow-hidden bg-gray-900 dark:bg-gray-950 py-12 sm:py-16 pb-32 sm:pb-16 lg:pb-16 font-display">
       <StarField className="" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
@@ -31,14 +31,14 @@ export function LandingFooter() {
               ) : (
                 <BearLogo size={32} />
               )}
-              <span className="font-extrabold text-white text-lg">{schoolName}</span>
+              <span className="font-fun font-bold text-white text-lg">{schoolName}</span>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">{t('heroSubtitle')}</p>
+            <p className="text-gray-300 text-sm leading-relaxed">{t('heroSubtitle')}</p>
           </div>
 
           {/* Column 2 — Quick Links */}
           <div>
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
               {t('footerQuickLinks')}
             </h4>
             <ul className="space-y-2.5">
@@ -52,7 +52,7 @@ export function LandingFooter() {
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="text-gray-400 text-sm hover:text-white transition-colors"
+                    className="text-gray-300 text-sm hover:text-kinder-yellow transition-colors"
                   >
                     {link.label}
                   </a>
@@ -61,7 +61,7 @@ export function LandingFooter() {
               <li>
                 <a
                   href="/portal/login"
-                  className="text-gray-400 text-sm hover:text-white transition-colors"
+                  className="text-gray-300 text-sm hover:text-kinder-yellow transition-colors"
                 >
                   {t('portalLogin')}
                 </a>
@@ -72,7 +72,7 @@ export function LandingFooter() {
           {/* Column 3 — Contact */}
           {hasContact && (
             <div>
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
                 {t('footerContactUs')}
               </h4>
               <div className="space-y-2.5">
@@ -81,24 +81,27 @@ export function LandingFooter() {
                     href={`https://www.google.com/maps/search/${encodeURIComponent(address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-start gap-2 text-gray-400 text-sm hover:text-white transition-colors"
+                    className="flex items-start gap-2 text-gray-300 text-sm hover:text-kinder-yellow transition-colors"
                   >
                     <MapPin size={14} className="mt-0.5 flex-shrink-0 text-kinder-orange" />
                     <span>{address}</span>
                   </a>
                 )}
                 {phone && (
-                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                  <div className="flex items-center gap-2 text-gray-300 text-sm">
                     <Phone size={14} className="flex-shrink-0 text-kinder-orange" />
-                    <a href={`tel:${phone}`} className="hover:text-white transition-colors">
+                    <a href={`tel:${phone}`} className="hover:text-kinder-yellow transition-colors">
                       {phone}
                     </a>
                   </div>
                 )}
                 {email && (
-                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                  <div className="flex items-center gap-2 text-gray-300 text-sm">
                     <Mail size={14} className="flex-shrink-0 text-kinder-orange" />
-                    <a href={`mailto:${email}`} className="hover:text-white transition-colors">
+                    <a
+                      href={`mailto:${email}`}
+                      className="hover:text-kinder-yellow transition-colors"
+                    >
                       {email}
                     </a>
                   </div>
@@ -111,14 +114,14 @@ export function LandingFooter() {
           <div>
             {operatingHours && (
               <div className="mb-6">
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
                   {t('footerHours')}
                 </h4>
                 <div className="space-y-1.5">
                   {formatOperatingHours(operatingHours).map(({ label, time, isClosed }) => (
                     <div key={label} className="flex items-center gap-2 text-sm">
                       <Clock size={12} className="flex-shrink-0 text-kinder-orange" />
-                      <span className={isClosed ? 'text-gray-600' : 'text-gray-400'}>
+                      <span className={isClosed ? 'text-gray-500' : 'text-gray-300'}>
                         <span className="font-medium text-gray-300 w-14 inline-block text-xs">
                           {label}
                         </span>
@@ -132,7 +135,7 @@ export function LandingFooter() {
 
             {hasSocial && (
               <div>
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
                   {t('footerFollowUs')}
                 </h4>
                 <div className="flex items-center gap-2">
@@ -141,7 +144,7 @@ export function LandingFooter() {
                       href={facebookUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                      className="w-8 h-8 rounded-xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-300 hover:text-kinder-yellow transition-all"
                     >
                       <svg
                         width="16"
@@ -159,7 +162,7 @@ export function LandingFooter() {
                       href={instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                      className="w-8 h-8 rounded-xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-300 hover:text-kinder-yellow transition-all"
                     >
                       <svg
                         width="16"
@@ -186,11 +189,11 @@ export function LandingFooter() {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex flex-col items-center sm:items-start gap-1">
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-400 text-sm">
               © {new Date().getFullYear()} {schoolName}. {t('footerTagline')}
             </p>
-            <p className="text-gray-600 text-xs">
-              Powered by <span className="font-semibold text-gray-400">{APP_NAME}</span>
+            <p className="text-gray-500 text-xs">
+              Powered by <span className="font-semibold text-gray-300">{APP_NAME}</span>
             </p>
           </div>
           <SecretArcade />

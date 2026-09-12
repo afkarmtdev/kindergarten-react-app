@@ -65,7 +65,7 @@ export function CareersSection() {
   return (
     <section
       id="careers"
-      className="relative overflow-hidden bg-orange-50 dark:bg-gray-950 pt-20 transition-colors duration-200"
+      className="relative overflow-hidden bg-white dark:bg-gray-950 pt-20 transition-colors duration-200"
     >
       <StarField variant="b" className="hidden dark:block" />
       <div
@@ -78,10 +78,10 @@ export function CareersSection() {
             <Briefcase size={14} />
             {t('careers')}
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-kinder-orange via-kinder-pink to-kinder-purple bg-clip-text text-transparent leading-tight">
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
             {t('weAreHiring')}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg mt-3 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-3 max-w-2xl mx-auto">
             {t('careersSubtitle')}
           </p>
         </div>
@@ -93,7 +93,7 @@ export function CareersSection() {
             return (
               <div
                 key={posting.id}
-                className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                className="bg-white dark:bg-gray-900 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-200 hover:-translate-y-0.5"
               >
                 {/* Type badge */}
                 <div className="flex items-center gap-2 mb-3">
@@ -105,7 +105,7 @@ export function CareersSection() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="font-fun text-lg font-bold text-gray-900 dark:text-white mb-2">
                   {posting.title}
                 </h3>
 
@@ -148,14 +148,14 @@ export function CareersSection() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setDetailPosting(posting)}
-                    className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                    className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-full border-2 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                   >
                     {t('viewDetails')}
                     <ChevronRight size={14} />
                   </button>
                   <button
                     onClick={() => handleApply(posting)}
-                    className="flex-1 bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
+                    className="flex-1 bg-kinder-orange text-white px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
                   >
                     {t('applyNow')}
                   </button>
@@ -167,7 +167,7 @@ export function CareersSection() {
       </div>
 
       <div className="mt-16">
-        <Wave fill="#6BCB77" />
+        <Wave variant="scallop" fillClassName="fill-wash-mint" />
       </div>
 
       {/* Job detail modal */}
@@ -177,7 +177,7 @@ export function CareersSection() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setDetailPosting(null)}
           />
-          <div className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
+          <div className="relative bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-200 dark:border-gray-800 shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
             {/* Header */}
             <div className="sticky top-0 bg-white dark:bg-gray-900 rounded-t-3xl border-b border-gray-200 dark:border-gray-800 p-6 pb-4 z-10">
               <div className="flex items-start justify-between gap-4">
@@ -195,7 +195,7 @@ export function CareersSection() {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <h3 className="font-fun text-xl font-bold text-gray-900 dark:text-white">
                     {detailPosting.title}
                   </h3>
                 </div>
@@ -267,7 +267,7 @@ export function CareersSection() {
                   setDetailPosting(null)
                   handleApply(posting)
                 }}
-                className="w-full bg-kinder-orange text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
+                className="w-full bg-kinder-orange text-white px-5 py-3 rounded-full font-semibold text-sm hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
               >
                 {t('applyNow')}
               </button>

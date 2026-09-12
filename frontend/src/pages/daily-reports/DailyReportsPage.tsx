@@ -96,7 +96,7 @@ export function DailyReportsPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div className="flex items-center gap-3">
           <ClipboardList className="w-6 h-6 text-kinder-orange" />
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-white">
             {t('dailyReports')}
           </h1>
         </div>
@@ -135,7 +135,7 @@ export function DailyReportsPage() {
 
       {/* Table */}
       <div
-        className={`bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-opacity ${isFetching ? 'opacity-70' : ''}`}
+        className={`bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-opacity ${isFetching ? 'opacity-70' : ''}`}
       >
         {isLoading ? (
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
