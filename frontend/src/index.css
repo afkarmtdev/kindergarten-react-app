@@ -6,32 +6,58 @@
 @layer base {
   /* ── Warm beige light mode / cool gray dark mode via CSS vars ── */
   :root {
-    --color-white: 255 250 245;       /* #FFFAF5 — soft warm white */
-    --color-gray-50: 253 246 240;     /* #FDF6F0 — warm cream */
-    --color-gray-100: 248 238 228;    /* #F8EEE4 — light beige */
-    --color-gray-200: 236 222 208;    /* #ECDED0 — warm border */
-    --color-gray-300: 218 200 182;    /* #DAC8B6 — warm muted */
-    --color-gray-400: 178 160 142;    /* #B2A08E — warm placeholder */
-    --color-gray-500: 148 130 114;    /* #948272 — warm secondary text */
-    --color-gray-600: 120 104 90;     /* #78685A — warm body text */
-    --color-gray-700: 98 84 72;       /* #625448 — warm strong text */
-    --color-gray-800: 72 60 50;       /* #483C32 — warm heading */
-    --color-gray-900: 52 42 34;       /* #342A22 — warm darkest */
-    --color-gray-950: 30 24 18;       /* #1E1812 — near-black warm */
+    --color-white: 255 250 245; /* #FFFAF5 — soft warm white */
+    --color-gray-50: 253 246 240; /* #FDF6F0 — warm cream */
+    --color-gray-100: 248 238 228; /* #F8EEE4 — light beige */
+    --color-gray-200: 236 222 208; /* #ECDED0 — warm border */
+    --color-gray-300: 218 200 182; /* #DAC8B6 — warm muted */
+    --color-gray-400: 178 160 142; /* #B2A08E — warm placeholder */
+    --color-gray-500: 148 130 114; /* #948272 — warm secondary text */
+    --color-gray-600: 120 104 90; /* #78685A — warm body text */
+    --color-gray-700: 98 84 72; /* #625448 — warm strong text */
+    --color-gray-800: 72 60 50; /* #483C32 — warm heading */
+    --color-gray-900: 52 42 34; /* #342A22 — warm darkest */
+    --color-gray-950: 30 24 18; /* #1E1812 — near-black warm */
+
+    /* ── Warm Storybook section washes (light = pastel, dark = nebula tint of same hue) ── */
+    --wash-sky: 227 238 255; /* #E3EEFF */
+    --wash-mint: 228 245 231; /* #E4F5E7 */
+    --wash-butter: 255 246 214; /* #FFF6D6 */
+    --wash-blush: 255 230 236; /* #FFE6EC */
+    --wash-lavender: 241 228 255; /* #F1E4FF */
+    --wash-peach: 255 233 223; /* #FFE9DF */
+    --ink-sky: 47 111 214; /* #2F6FD6 */
+    --ink-mint: 62 157 76; /* #3E9D4C */
+    --ink-butter: 217 164 0; /* #D9A400 */
+    --ink-blush: 224 86 122; /* #E0567A */
+    --ink-lavender: 155 79 224; /* #9B4FE0 */
+    --ink-peach: 232 93 34; /* #E85D22 */
   }
   html.dark {
-    --color-white: 255 255 255;       /* #FFFFFF — pure white (overridden by dark:bg-*) */
-    --color-gray-50: 249 250 251;     /* #F9FAFB — original Tailwind */
-    --color-gray-100: 243 244 246;    /* #F3F4F6 */
-    --color-gray-200: 229 231 235;    /* #E5E7EB */
-    --color-gray-300: 209 213 219;    /* #D1D5DB */
-    --color-gray-400: 156 163 175;    /* #9CA3AF */
-    --color-gray-500: 107 114 128;    /* #6B7280 */
-    --color-gray-600: 75 85 99;       /* #4B5563 */
-    --color-gray-700: 55 65 81;       /* #374151 */
-    --color-gray-800: 31 41 55;       /* #1F2937 */
-    --color-gray-900: 17 24 39;       /* #111827 */
-    --color-gray-950: 3 7 18;         /* #030712 */
+    --wash-sky: 22 35 63; /* #16233F */
+    --wash-mint: 16 41 29; /* #10291D */
+    --wash-butter: 51 42 18; /* #332A12 */
+    --wash-blush: 58 27 42; /* #3A1B2A */
+    --wash-lavender: 42 31 69; /* #2A1F45 */
+    --wash-peach: 58 34 22; /* #3A2216 */
+    --ink-sky: 126 179 255; /* #7EB3FF */
+    --ink-mint: 126 216 138; /* #7ED88A */
+    --ink-butter: 255 217 61; /* #FFD93D */
+    --ink-blush: 255 156 181; /* #FF9CB5 */
+    --ink-lavender: 211 164 255; /* #D3A4FF */
+    --ink-peach: 255 138 91; /* #FF8A5B */
+    --color-white: 255 255 255; /* #FFFFFF — pure white (overridden by dark:bg-*) */
+    --color-gray-50: 249 250 251; /* #F9FAFB — original Tailwind */
+    --color-gray-100: 243 244 246; /* #F3F4F6 */
+    --color-gray-200: 229 231 235; /* #E5E7EB */
+    --color-gray-300: 209 213 219; /* #D1D5DB */
+    --color-gray-400: 156 163 175; /* #9CA3AF */
+    --color-gray-500: 107 114 128; /* #6B7280 */
+    --color-gray-600: 75 85 99; /* #4B5563 */
+    --color-gray-700: 55 65 81; /* #374151 */
+    --color-gray-800: 31 41 55; /* #1F2937 */
+    --color-gray-900: 17 24 39; /* #111827 */
+    --color-gray-950: 3 7 18; /* #030712 */
   }
 
   * {
@@ -70,14 +96,14 @@
     width: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #FDF6F0;
+    background: #fdf6f0;
   }
   ::-webkit-scrollbar-thumb {
-    background: #ECDED0;
+    background: #ecded0;
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #DAC8B6;
+    background: #dac8b6;
   }
 }
 
@@ -106,54 +132,125 @@
 
 /* Floating doodles — used by landing page + portal */
 @keyframes lp-float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50%       { transform: translateY(-18px) rotate(6deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(6deg);
+  }
 }
 @keyframes lp-float-alt {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33%      { transform: translateY(-12px) rotate(-8deg); }
-  66%      { transform: translateY(-6px)  rotate(4deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-12px) rotate(-8deg);
+  }
+  66% {
+    transform: translateY(-6px) rotate(4deg);
+  }
 }
 @keyframes lp-float-slow {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50%      { transform: translateY(-26px) scale(1.06); }
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-26px) scale(1.06);
+  }
 }
-.lp-float        { animation: lp-float      4s   ease-in-out infinite; }
-.lp-float-alt    { animation: lp-float-alt  5.5s ease-in-out infinite; }
-.lp-float-slow   { animation: lp-float-slow 7s   ease-in-out infinite; }
+.lp-float {
+  animation: lp-float 4s ease-in-out infinite;
+}
+.lp-float-alt {
+  animation: lp-float-alt 5.5s ease-in-out infinite;
+}
+.lp-float-slow {
+  animation: lp-float-slow 7s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  .lp-float, .lp-float-alt, .lp-float-slow { animation: none; }
+  .lp-float,
+  .lp-float-alt,
+  .lp-float-slow {
+    animation: none;
+  }
 }
 
 /* Sparkle twinkle — used by StarField in landing page + portal */
 @keyframes lp-twinkle {
-  0%, 100% { opacity: 0.12; transform: scale(0.8); }
-  50%       { opacity: 0.70; transform: scale(1.2); }
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
 }
 @keyframes lp-twinkle-slow {
-  0%, 100% { opacity: 0.08; transform: scale(0.85); }
-  50%       { opacity: 0.50; transform: scale(1.15); }
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.15);
+  }
 }
-.lp-twinkle      { animation: lp-twinkle      2.4s ease-in-out infinite; }
-.lp-twinkle-slow { animation: lp-twinkle-slow 4.2s ease-in-out infinite; }
+.lp-twinkle {
+  animation: lp-twinkle 2.4s ease-in-out infinite;
+}
+.lp-twinkle-slow {
+  animation: lp-twinkle-slow 4.2s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  .lp-twinkle, .lp-twinkle-slow { animation: none; opacity: 0.30; }
+  .lp-twinkle,
+  .lp-twinkle-slow {
+    animation: none;
+    opacity: 0.3;
+  }
 }
 
 /* Bottom sheet slide up */
 @keyframes slide-up {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
-.animate-slide-up { animation: slide-up 0.25s ease-out; }
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
 
 @keyframes rainbow-char {
-  0%   { color: hsl(0,   100%, 60%); }
-  14%  { color: hsl(30,  100%, 55%); }
-  28%  { color: hsl(60,  100%, 50%); }
-  42%  { color: hsl(120, 100%, 45%); }
-  57%  { color: hsl(180, 100%, 45%); }
-  71%  { color: hsl(240, 100%, 65%); }
-  85%  { color: hsl(300, 100%, 60%); }
-  100% { color: hsl(360, 100%, 60%); }
+  0% {
+    color: hsl(0, 100%, 60%);
+  }
+  14% {
+    color: hsl(30, 100%, 55%);
+  }
+  28% {
+    color: hsl(60, 100%, 50%);
+  }
+  42% {
+    color: hsl(120, 100%, 45%);
+  }
+  57% {
+    color: hsl(180, 100%, 45%);
+  }
+  71% {
+    color: hsl(240, 100%, 65%);
+  }
+  85% {
+    color: hsl(300, 100%, 60%);
+  }
+  100% {
+    color: hsl(360, 100%, 60%);
+  }
 }
