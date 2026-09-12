@@ -42,14 +42,14 @@ export function SettingsPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
-      <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-8">
+      <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-gray-100 mb-8">
         {t('settingsPage')}
       </h1>
 
       {/* Mobile: drill-down hub */}
       <div className="lg:hidden">
         {mobileSection === null ? (
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+          <div className="rounded-3xl border-2 border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
             {NAV_SECTIONS.map((section, sectionIdx) => (
               <div
                 key={section.labelKey}

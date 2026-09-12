@@ -1,0 +1,123 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Warm Storybook" },
+    { "id": "page-2", "name": "Other directions" }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Landing · light",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 2400,
+      "page": "page-1"
+    },
+    {
+      "file": "DarkLanding.dc.html",
+      "title": "Landing · dark",
+      "x": 1400,
+      "y": 0,
+      "w": 1280,
+      "h": 2400,
+      "page": "page-1"
+    },
+    {
+      "file": "AdminDashboard.dc.html",
+      "title": "Admin dashboard · light",
+      "x": 0,
+      "y": 2600,
+      "w": 1440,
+      "h": 1120,
+      "page": "page-1"
+    },
+    {
+      "file": "DarkAdmin.dc.html",
+      "title": "Admin dashboard · dark",
+      "x": 1560,
+      "y": 2600,
+      "w": 1440,
+      "h": 1120,
+      "page": "page-1"
+    },
+    {
+      "file": "PortalHome.dc.html",
+      "title": "Parent portal · light",
+      "x": 3200,
+      "y": 2600,
+      "w": 390,
+      "h": 1020,
+      "page": "page-1"
+    },
+    {
+      "file": "DarkPortal.dc.html",
+      "title": "Parent portal · dark",
+      "x": 3700,
+      "y": 2600,
+      "w": 390,
+      "h": 1020,
+      "page": "page-1"
+    },
+    {
+      "file": "PosterPop.dc.html",
+      "title": "A · Poster Pop",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 2400,
+      "page": "page-2"
+    },
+    {
+      "file": "BoobaSoft.dc.html",
+      "title": "C · Booba Soft",
+      "x": 1400,
+      "y": 0,
+      "w": 1280,
+      "h": 2400,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-landing",
+      "x": 0,
+      "y": -190,
+      "w": 560,
+      "page": "page-1",
+      "text": "Landing page (direction B, chosen)\nLight: Booba's airy structure and scalloped edges with the poster's warmth at about 70%. Fredoka + Nunito, kinder-* brights for accents and stickers, pastel washes of the same hues for section grounds."
+    },
+    {
+      "id": "note-dark",
+      "x": 1400,
+      "y": -230,
+      "w": 600,
+      "page": "page-1",
+      "text": "Dark mode: the galaxy stays\nSame layout, same components, same brights. The swap is only in the grounds: cream becomes gray-950, cards gray-900 with gray-800 borders, and each pastel wash becomes a deep nebula tint of the same hue (sky #16233F, mint #10291D, butter #332A12, blush #3A1B2A). The mesh gradient, purple/teal/pink glows, stars, and a shooting star live behind the hero and inside sky-tinted bands. Stickers keep their bright fills and pick up a gray-900 border, exactly as StickerBadge does today."
+    },
+    {
+      "id": "note-admin",
+      "x": 0,
+      "y": 2420,
+      "w": 600,
+      "page": "page-1",
+      "text": "Admin dashboard\nSame structure as today's dashboard (stats, fee summary, two charts, three panels), restyled: Fredoka for page headings and big numbers, pastel icon tiles per kinder hue, a sky-tinted welcome banner with one sticker and doodle, 2px warm-cream borders. In dark mode the galaxy is confined to the welcome banner so the working area stays calm.\nNumbers and names here are sample data."
+    },
+    {
+      "id": "note-portal",
+      "x": 3200,
+      "y": 2340,
+      "w": 460,
+      "page": "page-1",
+      "text": "Parent portal home (phone)\nKeeps the real hub layout: child switcher header, greeting card, eight cards with live badges, plus a one-line 'today' strip so a parent sees check-in and mood without tapping. Dark mode keeps the faint star field across the page and turns the greeting card into a night-sky card with a moon.\nNumbers and names are sample data."
+    },
+    {
+      "id": "note-others",
+      "x": 0,
+      "y": -170,
+      "w": 560,
+      "page": "page-2",
+      "text": "Unchosen directions, kept for reference.\nA · Poster Pop: the flyer as a website, saturated primaries and ink outlines.\nC · Booba Soft: sand and dusty-blue, Capriola headings, single apricot accent."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

@@ -143,7 +143,7 @@ export function StudentProfilePage() {
       </div>
 
       {studentLoading ? (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 animate-pulse">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border-2 border-gray-200 dark:border-gray-800 animate-pulse">
           <div className="flex items-center gap-5">
             <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-2xl flex-shrink-0" />
             <div className="flex-1 space-y-3">
@@ -168,7 +168,7 @@ export function StudentProfilePage() {
           <StudentIncidents studentId={s.id} />
 
           {/* Portfolio section */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mt-6">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-200 dark:border-gray-800 shadow-sm mt-6">
             {/* Row 1 — title + primary action */}
             <div className="flex items-center justify-between px-5 pt-4 pb-3">
               <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export function StudentProfilePage() {
                 </Link>
               )}
             </div>
-            <div className="overflow-hidden rounded-b-2xl">
+            <div className="overflow-hidden rounded-b-3xl">
               {portfolioEntries.length === 0 ? (
                 <div className="py-8 text-center text-gray-400 dark:text-gray-600 text-sm">
                   {t('noEntries')} for {portfolioTerm}
@@ -254,12 +254,14 @@ export function StudentProfilePage() {
           <PortalAccessCard linkedParent={linkedParent} onManage={() => setPortalModalOpen(true)} />
 
           {/* Timeline */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 mt-6">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border-2 border-gray-200 dark:border-gray-800 mt-6">
             <div className="flex items-center gap-2 mb-5">
               <div className="w-8 h-8 bg-kinder-blue rounded-xl flex items-center justify-center shrink-0">
                 <Clock size={16} className="text-white" />
               </div>
-              <h2 className="font-bold text-gray-900 dark:text-gray-100">{t('timeline')}</h2>
+              <h2 className="font-fun font-bold text-gray-900 dark:text-gray-100">
+                {t('timeline')}
+              </h2>
             </div>
             <StudentTimeline studentId={id!} />
           </div>

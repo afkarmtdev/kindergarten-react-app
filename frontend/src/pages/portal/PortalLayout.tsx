@@ -77,7 +77,7 @@ export default function PortalLayout() {
   const firstName = selectedChild?.full_name?.split(' ')[0]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50/60 via-white to-blue-50/50 dark:bg-none dark:bg-gray-950 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-gray-950 flex flex-col relative overflow-hidden">
       {/* Decorative overlays */}
       <StarField variant="a" className="hidden dark:block" />
       <PortalFloatingIcons />
@@ -111,7 +111,7 @@ export default function PortalLayout() {
               <ChildAvatar photoUrl={selectedChild?.photo_url} name={selectedChild?.full_name} />
               <div className="text-left">
                 <div className="flex items-center gap-1">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                  <p className="text-sm font-extrabold text-gray-900 dark:text-white leading-tight">
                     {selectedChild?.full_name}
                   </p>
                   <ChevronDown className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
@@ -125,7 +125,7 @@ export default function PortalLayout() {
             <>
               <ChildAvatar photoUrl={selectedChild?.photo_url} name={selectedChild?.full_name} />
               <div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                <p className="text-sm font-extrabold text-gray-900 dark:text-white leading-tight">
                   {selectedChild?.full_name}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">

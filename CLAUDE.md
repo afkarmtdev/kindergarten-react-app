@@ -329,11 +329,17 @@ All list endpoints return paginated responses:
 
 ## Design System
 
-- Font: Nunito (Google Fonts)
-- Colors: `kinder-orange` (#FF6B35), `kinder-blue` (#4D96FF), `kinder-green` (#6BCB77), `kinder-yellow` (#FFD93D), `kinder-purple` (#C77DFF), `kinder-pink` (#FF85A2)
+**Warm Storybook** is the visual language (adopted September 2026). Full reference, token table, and the design canvas link live in `docs/design/warm-storybook/README.md`.
+
+- Fonts: Nunito for body and labels; **Fredoka (`font-fun`) for page titles, section headings, and big numbers**. Page `<h1>`: `font-fun font-bold text-2xl md:text-3xl`.
+- Brand brights: `kinder-orange` (#FF6B35), `kinder-blue` (#4D96FF), `kinder-green` (#6BCB77), `kinder-yellow` (#FFD93D), `kinder-purple` (#C77DFF), `kinder-pink` (#FF85A2). Use them for buttons, stickers, icon strokes, and chart series only — never as full section backgrounds.
+- **Section washes** (`bg-wash-sky|mint|butter|blush|lavender|peach`) with matching **ink** text colours (`text-ink-*`): CSS-var driven, pastel in light and a deep nebula tint of the same hue in dark, so they need no `dark:` variant. Icon tiles are `rounded-2xl` with a wash background and the matching ink icon; map blue→sky, purple→lavender, green→mint, orange→peach, yellow→butter, pink→blush.
 - Border radius: heavy use of `rounded-2xl`, `rounded-3xl`
-- Cards: `bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800`
-- Primary action buttons: `bg-kinder-orange text-white px-5 py-2.5 rounded-xl font-semibold`
+- Cards: `bg-white dark:bg-gray-900 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-800` (no drop shadow except floating chips)
+- Primary action buttons: `bg-kinder-orange text-white px-5 py-2.5 rounded-full font-extrabold`; secondary: white pill with `border-2 border-gray-200 dark:border-gray-800`
+- Sticker badges: `StickerBadge` (`pages/landing/components/StickerBadge.tsx`) — bright fill, Fredoka uppercase, white border (gray-900 in dark), slight rotation. At most one per section.
+- Landing page section joins use `<Wave variant="scallop" fillClassName="fill-<next section colour>" />` — the wave is painted in the NEXT section's colour. Prefer `fillClassName` (Tailwind `fill-*` utilities follow the tokens) over literal `fill`.
+- **Dark mode keeps the starry galaxy**: mesh gradient + purple/teal/pink glows + `StarField` behind the landing hero and inside sky-tinted bands; faint stars across the portal; inside the admin welcome banner only.
 - Skeleton animation: CSS `animate-shimmer` defined in `index.css` using `bg-[length:200%_100%]`
 - All components are fully dark-mode aware using Tailwind `dark:` variants
 - **Light mode border rule**: always use `border-gray-200` (not `border-gray-100`) for card/container/divider borders in light mode — `gray-100` is near-invisible on white/gray-50 backgrounds. Same applies to `divide-gray-200`, `border-t/b/r/l-gray-200`. Dark mode keeps `dark:border-gray-800` unchanged. For row dividers inside white cards use `border-gray-100` (one step lighter is fine since the card itself already has `gray-200`). For icon colors at rest, use `text-gray-400` minimum — never `text-gray-300`.

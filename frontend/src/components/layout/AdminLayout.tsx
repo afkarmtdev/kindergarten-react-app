@@ -124,18 +124,20 @@ export function AdminLayout() {
     },
   ]
 
+  // Warm Storybook: active item sits on the peach wash (wash/ink tokens already
+  // flip between light pastel and dark nebula tint, so no dark: variant needed).
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+    `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm transition-all ${
       isActive
-        ? 'bg-kinder-orange text-white shadow-sm'
-        : 'text-gray-600 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-kinder-orange dark:hover:text-kinder-orange'
+        ? 'bg-wash-peach text-ink-peach font-extrabold'
+        : 'text-gray-700 dark:text-gray-300 font-bold hover:bg-wash-peach hover:text-ink-peach'
     }`
 
   const collapsedNavLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center justify-center w-10 h-10 rounded-xl transition-all ${
+    `flex items-center justify-center w-10 h-10 rounded-2xl transition-all ${
       isActive
-        ? 'bg-kinder-orange text-white shadow-sm'
-        : 'text-gray-600 dark:text-gray-400 hover:bg-orange-50 dark:hover:bg-gray-800 hover:text-kinder-orange dark:hover:text-kinder-orange'
+        ? 'bg-wash-peach text-ink-peach font-extrabold'
+        : 'text-gray-700 dark:text-gray-300 hover:bg-wash-peach hover:text-ink-peach'
     }`
 
   const SidebarInner = ({
@@ -162,7 +164,9 @@ export function AdminLayout() {
           <div className="flex items-center gap-3">
             <AdminBearLogo logoUrl={logoUrl} />
             <div>
-              <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</h1>
+              <h1 className="font-fun font-bold text-gray-900 dark:text-white text-base leading-tight">
+                {APP_NAME}
+              </h1>
               <div className="flex items-center gap-1.5">
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('adminPortal')}</p>
                 <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600">
@@ -210,7 +214,7 @@ export function AdminLayout() {
             className={collapsed ? 'space-y-1 flex flex-col items-center' : 'space-y-1'}
           >
             {!collapsed && section.label && (
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest px-4 pb-1 pt-1">
+              <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-4 pb-1 pt-1">
                 {section.label}
               </p>
             )}
@@ -423,7 +427,9 @@ export function AdminLayout() {
             >
               <AdminBearIcon size={22} />
             </CoinFlipLogo>
-            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">{APP_NAME}</span>
+            <span className="font-fun font-bold text-gray-900 dark:text-white text-base">
+              {APP_NAME}
+            </span>
           </div>
           <button
             onClick={() => setPaletteOpen(true)}

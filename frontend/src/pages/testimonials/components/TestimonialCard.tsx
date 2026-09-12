@@ -24,7 +24,7 @@ export function TestimonialCard({
     .toUpperCase()
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 flex flex-col gap-4">
       {/* Quote */}
       <p className="text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed line-clamp-3">
         &ldquo;{t_.quote}&rdquo;

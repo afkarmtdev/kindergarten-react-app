@@ -84,46 +84,46 @@ export function InquiryForm() {
   }
 
   const inputCls =
-    'w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-kinder-orange focus:ring-1 focus:ring-kinder-orange text-sm transition-colors'
+    'w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-kinder-orange focus:ring-1 focus:ring-kinder-orange text-sm transition-colors'
   const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5'
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-kinder-pink to-pink-500 pt-24">
+    <section className="relative overflow-hidden bg-wash-blush pt-24 transition-colors duration-200">
       <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
 
       {/* Floating decorative shapes */}
       <div
-        className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
+        className="lp-float absolute top-8 left-6 text-ink-blush opacity-25 pointer-events-none"
         aria-hidden="true"
       >
-        <Heart size={48} fill="white" stroke="white" />
+        <Heart size={48} fill="currentColor" stroke="currentColor" />
       </div>
       <div
-        className="lp-float-alt absolute top-16 right-10 opacity-15 pointer-events-none"
+        className="lp-float-alt absolute top-16 right-10 text-ink-blush opacity-25 pointer-events-none"
         style={{ animationDelay: '1.2s' }}
         aria-hidden="true"
       >
-        <DoodleStar size={44} color="white" />
+        <DoodleStar size={44} color="currentColor" />
       </div>
       <div
-        className="lp-float-slow absolute bottom-32 left-12 opacity-15 pointer-events-none"
+        className="lp-float-slow absolute bottom-32 left-12 text-ink-blush opacity-25 pointer-events-none"
         style={{ animationDelay: '0.8s' }}
         aria-hidden="true"
       >
-        <DoodleFlower size={52} color="white" />
+        <DoodleFlower size={52} color="currentColor" />
       </div>
       <div
-        className="lp-spin-slow absolute bottom-24 right-16 opacity-15 pointer-events-none"
+        className="lp-spin-slow absolute bottom-24 right-16 text-ink-blush opacity-25 pointer-events-none"
         aria-hidden="true"
       >
-        <DoodleSpiral size={40} color="white" />
+        <DoodleSpiral size={40} color="currentColor" />
       </div>
       <div
-        className="lp-float absolute top-1/3 left-1/4 opacity-12 pointer-events-none"
+        className="lp-float absolute top-1/3 left-1/4 text-ink-blush opacity-25 pointer-events-none"
         style={{ animationDelay: '2s' }}
         aria-hidden="true"
       >
-        <Star size={28} fill="white" stroke="white" />
+        <Star size={28} fill="currentColor" stroke="currentColor" />
       </div>
 
       <div
@@ -131,17 +131,19 @@ export function InquiryForm() {
         className={`relative max-w-3xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm mb-4">
-            <Heart size={26} className="text-white" fill="white" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
+            <Heart size={26} className="text-ink-blush" fill="currentColor" />
           </div>
-          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
             {t('inquiryTitle')}
           </h2>
-          <p className="text-white/70 text-base sm:text-lg mt-3">{t('inquirySubtitle')}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-3">
+            {t('inquirySubtitle')}
+          </p>
         </div>
 
         {view === 'thankYou' ? (
-          <div className="relative overflow-hidden bg-white rounded-3xl p-10 text-center shadow-lg">
+          <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-3xl p-10 text-center border-2 border-gray-200 dark:border-gray-800">
             {/* Confetti burst */}
             {CONFETTI_PARTICLES.map((p, i) => (
               <div
@@ -161,13 +163,13 @@ export function InquiryForm() {
               />
             ))}
 
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-              <CheckCircle size={32} className="text-green-500" />
+            <div className="w-16 h-16 bg-wash-mint rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle size={32} className="text-ink-mint" />
             </div>
-            <h3 className="font-extrabold text-gray-900 text-xl mb-2">
+            <h3 className="font-fun font-bold text-gray-900 dark:text-white text-xl mb-2">
               {t('inquiryThankYouTitle')}
             </h3>
-            <p className="text-gray-500 mb-6">{t('inquiryThankYouBody')}</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{t('inquiryThankYouBody')}</p>
             <button
               onClick={() => {
                 setView('form')
@@ -181,7 +183,7 @@ export function InquiryForm() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-10 border border-gray-200 dark:border-gray-800 shadow-sm"
+            className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-10 border-2 border-gray-200 dark:border-gray-800"
           >
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               <div>
@@ -255,7 +257,7 @@ export function InquiryForm() {
               <button
                 type="submit"
                 disabled={mutation.isPending}
-                className="bg-kinder-orange text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed w-full md:w-auto"
+                className="bg-kinder-orange text-white px-8 py-3 rounded-full font-bold hover:bg-orange-600 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed w-full md:w-auto"
               >
                 {mutation.isPending ? t('inquirySubmitting') : t('inquirySubmit')}
               </button>
@@ -263,11 +265,8 @@ export function InquiryForm() {
           </form>
         )}
       </div>
-      <div className="mt-16 block dark:hidden">
-        <Wave fill="#FFF7ED" />
-      </div>
-      <div className="mt-16 hidden dark:block">
-        <Wave fill="#030712" />
+      <div className="mt-16">
+        <Wave variant="scallop" fillClassName="fill-white dark:fill-gray-950" />
       </div>
     </section>
   )

@@ -25,6 +25,24 @@ export default {
           purple: '#C77DFF',
           pink: '#FF85A2',
         },
+        /* Warm Storybook section washes — pastel in light, nebula tint in dark (CSS vars in index.css).
+           Usage: bg-wash-sky / text-ink-sky. See docs/design/warm-storybook/README.md */
+        wash: {
+          sky: 'rgb(var(--wash-sky) / <alpha-value>)',
+          mint: 'rgb(var(--wash-mint) / <alpha-value>)',
+          butter: 'rgb(var(--wash-butter) / <alpha-value>)',
+          blush: 'rgb(var(--wash-blush) / <alpha-value>)',
+          lavender: 'rgb(var(--wash-lavender) / <alpha-value>)',
+          peach: 'rgb(var(--wash-peach) / <alpha-value>)',
+        },
+        ink: {
+          sky: 'rgb(var(--ink-sky) / <alpha-value>)',
+          mint: 'rgb(var(--ink-mint) / <alpha-value>)',
+          butter: 'rgb(var(--ink-butter) / <alpha-value>)',
+          blush: 'rgb(var(--ink-blush) / <alpha-value>)',
+          lavender: 'rgb(var(--ink-lavender) / <alpha-value>)',
+          peach: 'rgb(var(--ink-peach) / <alpha-value>)',
+        },
         /* Gray + white driven by CSS vars — warm beige in light, cool gray in dark */
         white: 'rgb(var(--color-white) / <alpha-value>)',
         gray: {

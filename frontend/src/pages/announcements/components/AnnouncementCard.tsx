@@ -20,7 +20,7 @@ export function AnnouncementCard({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 ${
+      className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5 ${
         a.is_pinned
           ? 'border-kinder-yellow dark:border-kinder-yellow'
           : 'border-gray-200 dark:border-gray-800'

@@ -148,7 +148,7 @@ export function FeesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-gray-100">
             {t('fees')}
           </h1>
           {data && (
@@ -247,7 +247,7 @@ export function FeesPage() {
 
       {/* Table */}
       <div
-        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+        className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 overflow-hidden transition-opacity ${isFetching ? 'opacity-60' : ''}`}
       >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

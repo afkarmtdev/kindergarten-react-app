@@ -107,7 +107,7 @@ export function ClassesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl md:text-3xl font-fun font-bold text-gray-900 dark:text-gray-100">
             {t('classes')}
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">
@@ -164,7 +164,7 @@ export function ClassesPage() {
               return (
                 <div
                   key={cls.id}
-                  className={`bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5${cls.status === 'graduated' ? ' opacity-60' : ''}`}
+                  className={`bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5${cls.status === 'graduated' ? ' opacity-60' : ''}`}
                 >
                   <div className="flex items-start justify-between mb-5">
                     <div

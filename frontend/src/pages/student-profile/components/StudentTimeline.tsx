@@ -30,7 +30,7 @@ const EVENT_CONFIG: Record<
   attendance: {
     icon: CalendarCheck,
     labelKey: 'attendance',
-    bg: 'bg-green-100/70 dark:bg-gray-800/50',
+    bg: 'bg-wash-mint',
     text: 'text-green-700 dark:text-green-400',
     border: 'border-l-kinder-green',
     iconBg: 'bg-kinder-green',
@@ -38,7 +38,7 @@ const EVENT_CONFIG: Record<
   portfolio: {
     icon: BookOpen,
     labelKey: 'portfolio',
-    bg: 'bg-purple-100/70 dark:bg-gray-800/50',
+    bg: 'bg-wash-lavender',
     text: 'text-purple-700 dark:text-purple-400',
     border: 'border-l-kinder-purple',
     iconBg: 'bg-kinder-purple',
@@ -46,7 +46,7 @@ const EVENT_CONFIG: Record<
   artwork: {
     icon: Palette,
     labelKey: 'artWall',
-    bg: 'bg-pink-100/70 dark:bg-gray-800/50',
+    bg: 'bg-wash-blush',
     text: 'text-pink-700 dark:text-pink-400',
     border: 'border-l-kinder-pink',
     iconBg: 'bg-kinder-pink',
@@ -54,7 +54,7 @@ const EVENT_CONFIG: Record<
   fee_payment: {
     icon: Wallet,
     labelKey: 'fees',
-    bg: 'bg-orange-100/70 dark:bg-gray-800/50',
+    bg: 'bg-wash-peach',
     text: 'text-orange-700 dark:text-orange-400',
     border: 'border-l-kinder-orange',
     iconBg: 'bg-kinder-orange',
@@ -62,7 +62,7 @@ const EVENT_CONFIG: Record<
   report_card: {
     icon: Award,
     labelKey: 'portfolio',
-    bg: 'bg-blue-100/70 dark:bg-gray-800/50',
+    bg: 'bg-wash-sky',
     text: 'text-blue-700 dark:text-blue-400',
     border: 'border-l-kinder-blue',
     iconBg: 'bg-kinder-blue',
@@ -70,7 +70,7 @@ const EVENT_CONFIG: Record<
   daily_report: {
     icon: ClipboardList,
     labelKey: 'dailyReports',
-    bg: 'bg-yellow-100/70 dark:bg-gray-800/50',
+    bg: 'bg-wash-butter',
     text: 'text-yellow-700 dark:text-yellow-400',
     border: 'border-l-kinder-yellow',
     iconBg: 'bg-kinder-yellow',

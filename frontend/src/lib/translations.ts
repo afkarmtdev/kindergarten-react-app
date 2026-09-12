@@ -173,6 +173,9 @@ export const translations = {
       'A warm, loving kindergarten where curiosity is celebrated, friendships are formed, and every child discovers the joy of learning.',
     bookTour: 'Book a Tour',
     ourPrograms: 'Our Programs',
+    stripSafe: 'A safe',
+    stripCaring: 'Caring',
+    stripNurturing: 'Nurturing environment',
 
     // Landing page — Stats
     statsStudentsLabel: 'Happy Students',
@@ -316,6 +319,14 @@ export const translations = {
     noBirthdaysToday: 'No birthdays today',
     noBirthdaysSub: 'Check back tomorrow!',
     andMoreBirthdays: 'and {n} more today',
+
+    // Dashboard welcome banner
+    greetingMorning: 'Good morning, {name}',
+    greetingAfternoon: 'Good afternoon, {name}',
+    greetingEvening: 'Good evening, {name}',
+    admin: 'Admin',
+    childrenInToday: '{present} of {total} children are in today',
+    birthdayBadge: 'Birthday',
 
     // Settings page
     settingsPage: 'Settings',
@@ -717,6 +728,15 @@ export const translations = {
 
     // Device management
     myDevices: 'My Devices',
+
+    // Portal home — today strip
+    todayStrip_present: 'Checked in today',
+    todayStrip_absent: 'Marked absent today',
+    todayStrip_late: 'Arrived late today',
+    todayStrip_excused: 'Excused today',
+    noAttendanceYetToday: 'Not checked in yet',
+    todayStripMoodLine: '{mood} mood',
+    todayStripMealsLine: 'ate {meals} of meals',
     activeDevices: 'Active Devices',
     thisDevice: 'This device',
     deviceLimitReached: 'Device limit reached',
@@ -1108,6 +1128,9 @@ export const translations = {
       'Tadika yang mesra dan penuh kasih sayang di mana rasa ingin tahu dirai, persahabatan terbentuk, dan setiap kanak-kanak menemui kegembiraan pembelajaran.',
     bookTour: 'Tempah Lawatan',
     ourPrograms: 'Program Kami',
+    stripSafe: 'Selamat',
+    stripCaring: 'Prihatin',
+    stripNurturing: 'Persekitaran yang mengasuh',
 
     // Landing page — Stats
     statsStudentsLabel: 'Pelajar Gembira',
@@ -1252,6 +1275,14 @@ export const translations = {
     noBirthdaysToday: 'Tiada hari jadi hari ini',
     noBirthdaysSub: 'Semak semula esok!',
     andMoreBirthdays: 'dan {n} lagi hari ini',
+
+    // Dashboard welcome banner
+    greetingMorning: 'Selamat pagi, {name}',
+    greetingAfternoon: 'Selamat petang, {name}',
+    greetingEvening: 'Selamat malam, {name}',
+    admin: 'Admin',
+    childrenInToday: '{present} daripada {total} kanak-kanak hadir hari ini',
+    birthdayBadge: 'Hari Jadi',
 
     // Settings page
     settingsPage: 'Tetapan',
@@ -1654,6 +1685,15 @@ export const translations = {
 
     // Device management
     myDevices: 'Peranti Saya',
+
+    // Portal home — today strip
+    todayStrip_present: 'Sudah hadir hari ini',
+    todayStrip_absent: 'Tidak hadir hari ini',
+    todayStrip_late: 'Tiba lewat hari ini',
+    todayStrip_excused: 'Dikecualikan hari ini',
+    noAttendanceYetToday: 'Belum direkodkan hari ini',
+    todayStripMoodLine: 'Mood {mood}',
+    todayStripMealsLine: 'makan {meals}',
     activeDevices: 'Peranti Aktif',
     thisDevice: 'Peranti ini',
     deviceLimitReached: 'Had peranti dicapai',
