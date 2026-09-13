@@ -228,10 +228,16 @@ export const schoolInfoApi = {
   get: () =>
     api.get('/school-info').then((r) => r.data as { data: import('@/types').SchoolInfo | null }),
   update: (data: unknown) => api.put('/school-info', data).then((r) => r.data),
+  updateLanding: (patch: Partial<import('@/types').LandingContent>) =>
+    api
+      .put('/school-info/landing', patch)
+      .then((r) => r.data as { data: import('@/types').SchoolInfo }),
   getPublic: () =>
     publicApi
       .get('/public/school-info')
       .then((r) => r.data as { data: import('@/types').SchoolInfo | null }),
+  getPublicStats: () =>
+    publicApi.get('/public/stats').then((r) => r.data as { data: import('@/types').PublicStats }),
 }
 
 export const inquiriesApi = {
