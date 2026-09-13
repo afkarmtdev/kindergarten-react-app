@@ -176,24 +176,25 @@ export function AboutSection({
       id="about"
       className="relative overflow-hidden bg-wash-butter dark:bg-wash-ocean pt-24 transition-colors duration-200"
     >
-      {/* Animal doodle — md+ only so it never sits on text */}
+      {/* Animal doodle — shown at every width; the cloud below yields to it on phones */}
       <div
-        className="hidden md:block lp-float absolute top-12 right-8 opacity-25 pointer-events-none"
+        className="lp-float absolute top-12 right-8 opacity-25 pointer-events-none"
         aria-hidden="true"
       >
         <DoodleOwl size={380} color="#C77DFF" />
       </div>
       {/* A few shapes at the edges, one per chapter side */}
-      <FloatingDoodle position="top-8 left-1/4" animation="alt" delay={0.4}>
+      <FloatingDoodle position="top-8 left-1/4" animation="alt" delay={0.4} mdUp>
         <DoodleCloud size={208} color="#4D96FF" />
       </FloatingDoodle>
-      <FloatingDoodle position="top-1/2 left-1/4" animation="alt" delay={2.6}>
+      <FloatingDoodle position="top-1/2 left-1/4" animation="alt" delay={2.6} mdUp>
         <DoodleSpiral size={160} color="#C77DFF" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-1/4 right-1/4" animation="float" delay={1.9}>
         <DoodleStar size={120} color="#4D96FF" />
       </FloatingDoodle>
-      <FloatingDoodle position="bottom-32 left-1/3" animation="alt" delay={0.9}>
+      {/* Below lg the principal photo is centred, so the zigzag hugs the left edge there */}
+      <FloatingDoodle position="bottom-32 -left-12 lg:left-1/3" animation="alt" delay={0.9}>
         <DoodleZigzag size={160} color="#FF85A2" />
       </FloatingDoodle>
 

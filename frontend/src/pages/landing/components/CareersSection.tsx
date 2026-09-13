@@ -79,7 +79,7 @@ export function CareersSection() {
         <Star size={208} fill="#FFD93D" stroke="#FFD93D" />
       </div>
       <div
-        className="lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
+        className="hidden md:block lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
         style={{ animationDelay: '0.8s' }}
         aria-hidden="true"
       >

@@ -411,7 +411,7 @@ export const translations = {
     settingsPrincipalPhoto: 'Principal photo',
     settingsPrincipalNameHint: 'The principal name comes from General settings.',
     settingsStoryPhotos: 'Photos (up to 3)',
-    settingsStatsDesc: 'The numbers strip under the hero. Tiles left at 0 are not shown.',
+    settingsStatsDesc: 'The numbers strip after Meet the Team. Tiles left at 0 are not shown.',
     settingsStatsMode: 'Where do the numbers come from?',
     settingsStatsModeLive: 'Live from your records',
     settingsStatsModeLiveHint:
@@ -460,6 +460,9 @@ export const translations = {
     inquiryBadge: 'Join Our Family',
     careersBadge: 'Join Our Team',
     locationBadge: 'Our Location',
+    statsBadge: 'Our Little Family',
+    statsTitle: 'Small school, big hearts',
+    statsSubtitle: 'A few numbers that say a lot about life at {school}',
     teamTitle: 'Meet the team',
     teamSubtitle: 'The caring adults your child will see every day',
 
@@ -1452,7 +1455,7 @@ export const translations = {
     settingsPrincipalPhoto: 'Gambar pengetua',
     settingsPrincipalNameHint: 'Nama pengetua diambil daripada tetapan Umum.',
     settingsStoryPhotos: 'Gambar (sehingga 3)',
-    settingsStatsDesc: 'Jalur angka di bawah tajuk utama. Petak bernilai 0 tidak dipaparkan.',
+    settingsStatsDesc: 'Jalur angka selepas bahagian pasukan. Petak bernilai 0 tidak dipaparkan.',
     settingsStatsMode: 'Dari mana angka ini datang?',
     settingsStatsModeLive: 'Langsung daripada rekod anda',
     settingsStatsModeLiveHint:
@@ -1502,6 +1505,9 @@ export const translations = {
     inquiryBadge: 'Sertai Keluarga Kami',
     careersBadge: 'Sertai Pasukan Kami',
     locationBadge: 'Lokasi Kami',
+    statsBadge: 'Keluarga Kecil Kami',
+    statsTitle: 'Sekolah kecil, hati besar',
+    statsSubtitle: 'Beberapa angka yang banyak bercerita tentang kehidupan di {school}',
     teamTitle: 'Kenali pasukan kami',
     teamSubtitle: 'Orang dewasa penyayang yang akan ditemui anak anda setiap hari',
 

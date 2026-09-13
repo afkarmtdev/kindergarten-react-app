@@ -71,7 +71,7 @@ export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
       <FloatingDoodle position="top-10 left-8" animation="spin">
         <DoodleStar size={160} color="#FF6B35" />
       </FloatingDoodle>
-      <FloatingDoodle position="top-1/3 right-1/4" animation="float" delay={1.3}>
+      <FloatingDoodle position="top-1/3 right-1/4" animation="float" delay={1.3} mdUp>
         <DoodleFlower size={176} color="#6BCB77" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-32 right-1/4" animation="float" delay={0.3}>

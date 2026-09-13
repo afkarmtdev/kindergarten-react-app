@@ -27,9 +27,9 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { key: 'website-hero', labelKey: 'settingsNavHero' },
       { key: 'website-story', labelKey: 'settingsNavStory' },
-      { key: 'website-stats', labelKey: 'settingsNavStats' },
       { key: 'website-programmes', labelKey: 'settingsNavProgrammes' },
       { key: 'website-team', labelKey: 'settingsNavTeam' },
+      { key: 'website-stats', labelKey: 'settingsNavStats' },
     ],
   },
   {
