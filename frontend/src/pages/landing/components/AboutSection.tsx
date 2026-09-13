@@ -3,6 +3,7 @@ import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { StickerBadge } from './StickerBadge'
 import { Wave } from './Wave'
+import { DoodleGiraffe } from '@/components/landing/doodles/DoodleGiraffe'
 
 export interface AboutSectionProps {
   schoolName: string
@@ -58,6 +59,13 @@ export function AboutSection({
         aria-hidden="true"
       >
         <Sparkles size={44} className="text-ink-butter" />
+      </div>
+      <div
+        className="lp-float-slow absolute bottom-24 left-6 opacity-25 pointer-events-none"
+        style={{ animationDelay: '1.2s' }}
+        aria-hidden="true"
+      >
+        <DoodleGiraffe size={150} color="#FF6B35" />
       </div>
 
       <div
