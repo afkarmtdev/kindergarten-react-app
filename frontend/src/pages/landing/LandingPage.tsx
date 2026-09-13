@@ -645,14 +645,11 @@ export function LandingPage() {
           className="relative overflow-hidden bg-white dark:bg-gray-950 pt-24 transition-colors duration-200"
         >
           <StarField variant="b" />
-          <div
-            className="hidden md:block lp-float-slow absolute top-10 left-6 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
+          <FloatingDoodle position="top-10 left-6" animation="slow" shrinkFrom="top-left">
             <DoodleElephant size={380} color="#4D96FF" />
-          </div>
+          </FloatingDoodle>
           {/* A few shapes at the edges */}
-          <FloatingDoodle position="top-12 right-1/4" animation="alt" delay={0.5}>
+          <FloatingDoodle position="top-12 right-1/4" animation="alt" delay={0.5} mdUp>
             <DoodleCloud size={208} color="#4D96FF" />
           </FloatingDoodle>
           <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.8}>
@@ -782,21 +779,22 @@ export function LandingPage() {
         >
           <Megaphone size={176} strokeWidth={1.25} />
         </div>
-        <div
-          className="hidden md:block absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none"
-          aria-hidden="true"
+        {/* Phones: top-right beside the heading, since the cards below are opaque */}
+        <FloatingDoodle
+          position="top-6 -right-6 md:top-1/2 md:right-6 md:-translate-y-1/2"
+          animation="slow"
+          delay={2}
+          shrinkFrom="top-right"
         >
-          <div className="lp-float-slow opacity-25" style={{ animationDelay: '2s' }}>
-            <DoodleDino size={360} color="#C77DFF" />
-          </div>
-        </div>
+          <DoodleDino size={360} color="#C77DFF" />
+        </FloatingDoodle>
         <FloatingDoodle position="top-1/4 left-1/4" animation="spin" mdUp>
           <DoodleSun size={160} color="#FF6B35" />
         </FloatingDoodle>
         <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={2.5}>
           <DoodleCircle size={112} color="#4D96FF" />
         </FloatingDoodle>
-        <FloatingDoodle position="bottom-1/4 left-1/2" animation="alt" delay={0.3}>
+        <FloatingDoodle position="bottom-1/4 left-1/2" animation="alt" delay={0.3} mdUp>
           <DoodleZigzag size={152} color="#C77DFF" />
         </FloatingDoodle>
 
@@ -922,12 +920,9 @@ export function LandingPage() {
       {content.stats.show && (
         <section className="relative overflow-hidden bg-wash-peach transition-colors duration-200">
           <StarField variant="b" />
-          <div
-            className="hidden md:block lp-float-slow absolute top-6 left-8 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
+          <FloatingDoodle position="top-6 left-8" animation="slow" shrinkFrom="top-left">
             <DoodleCat size={300} color="#FF6B35" />
-          </div>
+          </FloatingDoodle>
           <FloatingDoodle position="top-8 right-1/4" animation="alt" delay={0.8}>
             <DoodleHeart size={120} color="#FF85A2" />
           </FloatingDoodle>
@@ -983,14 +978,15 @@ export function LandingPage() {
         className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
       >
         <StarField variant="a" />
-        <div
-          className="hidden md:block lp-float-alt absolute top-8 right-10 opacity-25 pointer-events-none"
-          style={{ animationDelay: '0.6s' }}
-          aria-hidden="true"
+        <FloatingDoodle
+          position="top-8 right-10"
+          animation="alt"
+          delay={0.6}
+          shrinkFrom="top-right"
         >
           <DoodleWhale size={400} color="#4D96FF" />
-        </div>
-        <FloatingDoodle position="top-6 left-1/4" animation="spin">
+        </FloatingDoodle>
+        <FloatingDoodle position="top-6 left-1/4" animation="spin" mdUp>
           <DoodleStar size={144} color="#FFD93D" />
         </FloatingDoodle>
         <FloatingDoodle position="bottom-1/4 left-1/4" animation="float" delay={1.9} mdUp>
@@ -1143,13 +1139,10 @@ export function LandingPage() {
         >
           {/* Glimmering stars — dark mode only, outside the cork border */}
           <StarField variant="a" />
-          <div
-            className="hidden md:block lp-float absolute top-10 left-8 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
+          <FloatingDoodle position="top-10 left-8" animation="float" shrinkFrom="top-left">
             <DoodleTurtle size={380} color="#6BCB77" />
-          </div>
-          <FloatingDoodle position="top-6 left-1/3" animation="spin">
+          </FloatingDoodle>
+          <FloatingDoodle position="top-6 left-1/3" animation="spin" mdUp>
             <DoodleStar size={128} color="#C77DFF" />
           </FloatingDoodle>
           <FloatingDoodle position="top-28 right-1/4" animation="slow" delay={2.0} mdUp>

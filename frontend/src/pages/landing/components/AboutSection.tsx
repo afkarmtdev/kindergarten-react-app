@@ -176,13 +176,10 @@ export function AboutSection({
       id="about"
       className="relative overflow-hidden bg-wash-butter dark:bg-wash-ocean pt-24 transition-colors duration-200"
     >
-      {/* Animal doodle — shown at every width; the cloud below yields to it on phones */}
-      <div
-        className="lp-float absolute top-12 right-8 opacity-25 pointer-events-none"
-        aria-hidden="true"
-      >
+      {/* Animal doodle — shrunk on phones like every other section's animal */}
+      <FloatingDoodle position="top-12 right-8" animation="float" shrinkFrom="top-right">
         <DoodleOwl size={380} color="#C77DFF" />
-      </div>
+      </FloatingDoodle>
       {/* A few shapes at the edges, one per chapter side */}
       <FloatingDoodle position="top-8 left-1/4" animation="alt" delay={0.4} mdUp>
         <DoodleCloud size={208} color="#4D96FF" />
