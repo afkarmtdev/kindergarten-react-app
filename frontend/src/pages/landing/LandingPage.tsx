@@ -62,6 +62,10 @@ import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
 import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
+import { DoodleDino } from '@/components/landing/doodles/DoodleDino'
+import { DoodleGiraffe } from '@/components/landing/doodles/DoodleGiraffe'
+import { DoodleElephant } from '@/components/landing/doodles/DoodleElephant'
+import { DoodleWhale } from '@/components/landing/doodles/DoodleWhale'
 
 const STAT_LABEL_KEYS = {
   students: 'statsStudentsLabel',
@@ -503,6 +507,25 @@ export function LandingPage() {
           </div>
         </div>
 
+        {/* Animal doodles — lg+ only so they never crowd the phone hero */}
+        <div
+          className="hidden lg:block lp-parallax-slow absolute bottom-28 left-[22%] pointer-events-none"
+          aria-hidden="true"
+        >
+          <div className="lp-float-slow opacity-50" style={{ animationDelay: '0.8s' }}>
+            <DoodleDino size={130} color="#6BCB77" />
+          </div>
+        </div>
+
+        <div
+          className="hidden lg:block lp-parallax-medium absolute top-[38%] right-[30%] pointer-events-none"
+          aria-hidden="true"
+        >
+          <div className="lp-float-alt opacity-45" style={{ animationDelay: '2.4s' }}>
+            <DoodleGiraffe size={140} color="#FF6B35" />
+          </div>
+        </div>
+
         <div
           className="lp-parallax-slow absolute top-1/2 left-16 pointer-events-none"
           aria-hidden="true"
@@ -712,6 +735,19 @@ export function LandingPage() {
           className="relative overflow-hidden bg-white dark:bg-gray-950 py-24 transition-colors duration-200"
         >
           <StarField variant="b" />
+          <div
+            className="lp-float-slow absolute top-10 left-6 opacity-25 pointer-events-none"
+            aria-hidden="true"
+          >
+            <DoodleElephant size={120} color="#4D96FF" />
+          </div>
+          <div
+            className="lp-float absolute bottom-12 right-8 opacity-25 pointer-events-none"
+            style={{ animationDelay: '1.4s' }}
+            aria-hidden="true"
+          >
+            <DoodleDino size={110} color="#C77DFF" />
+          </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-16">
               <div className="mb-5">
@@ -772,6 +808,13 @@ export function LandingPage() {
         className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
       >
         <StarField variant="a" />
+        <div
+          className="lp-float-alt absolute top-8 right-10 opacity-25 pointer-events-none"
+          style={{ animationDelay: '0.6s' }}
+          aria-hidden="true"
+        >
+          <DoodleWhale size={130} color="#4D96FF" />
+        </div>
         <div
           ref={galleryFadeIn.ref}
           className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
