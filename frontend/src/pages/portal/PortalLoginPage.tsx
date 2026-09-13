@@ -6,7 +6,8 @@ import { useT } from '../../hooks/useT'
 import { useSettingsStore } from '../../store/settingsStore'
 import { APP_NAME, APP_VERSION } from '../../lib/version'
 import { usePageTitle } from '../../hooks/usePageTitle'
-import { PortalBearFamily, PortalBearCub } from '../../components/portal/PortalBearFamily'
+import { PortalBearFamily } from '../../components/portal/PortalBearFamily'
+import { PortalBearCub } from '../../components/portal/PortalBearCub'
 
 export default function PortalLoginPage() {
   usePageTitle('Parent Portal')

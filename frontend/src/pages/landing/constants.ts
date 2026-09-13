@@ -81,21 +81,37 @@ export const KEYFRAMES = `
   }
   .lp-fade-up { animation: lp-fade-up 0.6s ease both; }
 
-  @keyframes lp-mesh-gradient {
-    0%   { background-position: 0% 50%; }
-    25%  { background-position: 50% 0%; }
-    50%  { background-position: 100% 50%; }
-    75%  { background-position: 50% 100%; }
-    100% { background-position: 0% 50%; }
-  }
+  /* Hero mesh gradient. The gradient lives on a ::before layer that is moved
+     with a transform (compositor only) instead of animating background-position,
+     which repainted the whole hero every frame and helped get the page evicted
+     on iPhones. Phones and reduced-motion users get the full gradient, static.
+     Drifts only while .lp-mesh-gradient-run is set (hero near the viewport).
+     Offsets are -p/2 of the 200% layer, i.e. the old background-position
+     keyframes at background-size 200%. */
   .lp-mesh-gradient {
-    background-size: 400% 400%;
-    animation: lp-mesh-gradient 15s ease infinite;
+    overflow: hidden;
   }
-  @media (prefers-reduced-motion: reduce) {
-    .lp-mesh-gradient {
-      animation: none;
-      background-size: 100% 100%;
+  .lp-mesh-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--lp-mesh);
+  }
+  @keyframes lp-mesh-gradient {
+    0%   { transform: translate3d(0, -25%, 0); }
+    25%  { transform: translate3d(-25%, 0, 0); }
+    50%  { transform: translate3d(-50%, -25%, 0); }
+    75%  { transform: translate3d(-25%, -50%, 0); }
+    100% { transform: translate3d(0, -25%, 0); }
+  }
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .lp-mesh-gradient-run::before {
+      width: 200%;
+      height: 200%;
+      animation: lp-mesh-gradient 15s ease infinite;
     }
   }
 
