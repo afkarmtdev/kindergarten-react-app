@@ -9,6 +9,7 @@ import { useT } from '@/hooks/useT'
 import { useDiscardGuard } from '@/hooks/useDiscardGuard'
 import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import { DiscardDialog } from '@/components/ui/DiscardDialog'
+import { ImageCropDialog } from '@/components/ui/ImageCropDialog'
 import type { GalleryItem } from '@/types'
 
 interface GalleryModalProps {
@@ -75,10 +76,15 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
     markDirty()
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const [cropFile, setCropFile] = useState<File | null>(null)
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) setCropFile(file)
+  }
+
+  const uploadPhoto = async (file: File) => {
     setUploadError('')
     setUploading(true)
 
@@ -280,6 +286,15 @@ export function GalleryModal({ open, onClose, item }: GalleryModalProps) {
           </div>
         </form>
       </div>
+      <ImageCropDialog
+        file={cropFile}
+        shape="landscape"
+        onCancel={() => setCropFile(null)}
+        onConfirm={(f) => {
+          setCropFile(null)
+          void uploadPhoto(f)
+        }}
+      />
       <DiscardDialog show={showConfirm} onConfirm={confirmDiscard} onCancel={cancelDiscard} />
     </div>
   )

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Trash2, ImageIcon } from 'lucide-react'
+import { Pencil, Trash2, ImageIcon, ZoomIn } from 'lucide-react'
 import { DeleteDialog } from '@/components/ui/DeleteDialog'
 import { getRotation, getPushpinColor } from '../constants'
 import type { ArtWallItem } from '@/types'
@@ -150,13 +150,20 @@ export function ArtworkCard({
             style={{ padding: pol.frame }}
             onClick={onView ? () => onView(item) : undefined}
           >
-            <div className="relative overflow-hidden aspect-square">
+            <div className="group/photo relative overflow-hidden aspect-square">
               {item.photo_url ? (
-                <img
-                  src={item.photo_url}
-                  alt={item.caption ?? 'Artwork'}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={item.photo_url}
+                    alt={item.caption ?? 'Artwork'}
+                    className={`w-full h-full object-cover ${onView ? 'transition-transform duration-300 group-hover/photo:scale-110' : ''}`}
+                  />
+                  {onView && (
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/photo:opacity-100 transition-opacity duration-200">
+                      <ZoomIn size={pol.actionIcon + 12} className="text-white drop-shadow" />
+                    </span>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                   <ImageIcon size={24} className="text-gray-400" />
@@ -231,13 +238,23 @@ export function ArtworkCard({
               !item.is_visible ? 'opacity-50' : ''
             }`}
           >
-            <div className="rounded-xl overflow-hidden mx-2 aspect-square">
+            <div
+              className={`group/photo relative rounded-xl overflow-hidden mx-2 aspect-square ${onView ? 'cursor-pointer' : ''}`}
+              onClick={onView ? () => onView(item) : undefined}
+            >
               {item.photo_url ? (
-                <img
-                  src={item.photo_url}
-                  alt={item.caption ?? 'Artwork'}
-                  className="w-full h-full object-cover rounded-xl"
-                />
+                <>
+                  <img
+                    src={item.photo_url}
+                    alt={item.caption ?? 'Artwork'}
+                    className={`w-full h-full object-cover rounded-xl ${onView ? 'transition-transform duration-300 group-hover/photo:scale-110' : ''}`}
+                  />
+                  {onView && (
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/photo:opacity-100 transition-opacity duration-200 rounded-xl">
+                      <ZoomIn size={28} className="text-white drop-shadow" />
+                    </span>
+                  )}
+                </>
               ) : (
                 <div className="aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center rounded-xl">
                   <ImageIcon size={32} className="text-gray-300 dark:text-gray-600" />
