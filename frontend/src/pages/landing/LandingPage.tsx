@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -26,11 +26,12 @@ import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
+import { useInViewport } from '@/hooks/useInViewport'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { galleryApi, announcementsApi, testimonialsApi, artWallApi, careersApi } from '@/lib/api'
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { useLandingContent } from '@/hooks/useLandingContent'
-import { BearLogo } from '@/components/landing/bear/BaseBearMascot'
+import { StickerBear } from '@/components/ui/StickerBear'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
@@ -92,6 +93,11 @@ export function LandingPage() {
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
   const { logoUrl, schoolName } = useSchoolInfo({ public: true })
+  // Hero background effects (mesh drift, shooting stars, floating shapes) only
+  // run while the hero is near the viewport — see useInViewport.
+  const heroRef = useRef<HTMLElement>(null)
+  const heroInView = useInViewport(heroRef)
+  const heroAnim = (cls: string) => (heroInView ? cls : undefined)
   const content = useLandingContent()
   usePageTitle(undefined, schoolName)
   const [showTop, setShowTop] = useState(false)
@@ -242,22 +248,14 @@ export function LandingPage() {
           {/* Logo */}
           <div className="flex items-center gap-2.5">
             <CoinFlipLogo
-              frontClassName={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border ${
+              logoUrl={logoUrl}
+              frontClassName="w-12 h-12 flex items-center justify-center"
+              backClassName={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border ${
                 logoUrl
                   ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   : 'bg-kinder-orange/10 dark:bg-kinder-orange/20 border-kinder-orange/30'
               }`}
-              backClassName="w-12 h-12 flex items-center justify-center"
-              back={<BearLogo size={44} />}
-            >
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt=""
-                  className="w-full h-full object-contain"
-                  draggable={false}
-                />
-              ) : (
+              back={
                 <span className="text-base font-extrabold text-kinder-orange">
                   {schoolName
                     .split(/\s+/)
@@ -266,7 +264,9 @@ export function LandingPage() {
                     .map((w) => w[0]?.toUpperCase() ?? '')
                     .join('')}
                 </span>
-              )}
+              }
+            >
+              <StickerBear size={40} />
             </CoinFlipLogo>
             <span
               className={`font-fun font-bold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
@@ -348,23 +348,31 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           HERO — gradient bg, floating shapes, big heading
       ════════════════════════════════════════════════════════ */}
-      <section id={content.about.show ? 'home' : 'about'} className="relative overflow-hidden">
+      <section
+        ref={heroRef}
+        id={content.about.show ? 'home' : 'about'}
+        className="relative overflow-hidden"
+      >
         {/* Mesh gradient background — light mode */}
         <div
-          className="absolute inset-0 lp-mesh-gradient block dark:hidden"
-          style={{
-            background:
-              'linear-gradient(135deg, #FFFAF5 0%, #FFF3E4 22%, #FFEEF2 45%, #EAF1FF 68%, #FFFAF5 85%, #F5EEFF 100%)',
-          }}
+          className={`absolute inset-0 lp-mesh-gradient block dark:hidden ${heroAnim('lp-mesh-gradient-run') ?? ''}`}
+          style={
+            {
+              '--lp-mesh':
+                'linear-gradient(135deg, #FFFAF5 0%, #FFF3E4 22%, #FFEEF2 45%, #EAF1FF 68%, #FFFAF5 85%, #F5EEFF 100%)',
+            } as CSSProperties
+          }
           aria-hidden="true"
         />
         {/* Mesh gradient background — dark mode */}
         <div
-          className="absolute inset-0 lp-mesh-gradient hidden dark:block"
-          style={{
-            background:
-              'linear-gradient(135deg, #030712 0%, #111827 25%, #1e1b4b 50%, #0f172a 75%, #030712 100%)',
-          }}
+          className={`absolute inset-0 lp-mesh-gradient hidden dark:block ${heroAnim('lp-mesh-gradient-run') ?? ''}`}
+          style={
+            {
+              '--lp-mesh':
+                'linear-gradient(135deg, #030712 0%, #111827 25%, #1e1b4b 50%, #0f172a 75%, #030712 100%)',
+            } as CSSProperties
+          }
           aria-hidden="true"
         />
 
@@ -440,8 +448,9 @@ export function LandingPage() {
 
         {/* ── Shooting stars — dark mode only; fire every ~13s at staggered times ── */}
         <div
-          className="absolute pointer-events-none hidden dark:block lp-shooting-star"
+          className={`absolute pointer-events-none hidden dark:block ${heroAnim('lp-shooting-star') ?? ''}`}
           style={{
+            opacity: 0,
             top: '12%',
             right: '22%',
             width: 110,
@@ -453,8 +462,9 @@ export function LandingPage() {
           aria-hidden="true"
         />
         <div
-          className="absolute pointer-events-none hidden dark:block lp-shooting-star"
+          className={`absolute pointer-events-none hidden dark:block ${heroAnim('lp-shooting-star') ?? ''}`}
           style={{
+            opacity: 0,
             top: '28%',
             right: '48%',
             width: 80,
@@ -477,7 +487,7 @@ export function LandingPage() {
           className="hidden md:block lp-parallax-fast absolute top-16 left-6 pointer-events-none"
           aria-hidden="true"
         >
-          <div className="lp-float opacity-60">
+          <div className={heroAnim('lp-float')} style={{ opacity: 0.6 }}>
             <DoodleStar size={208} color="#FFD93D" />
           </div>
         </div>
@@ -486,7 +496,7 @@ export function LandingPage() {
           className="lp-parallax-medium absolute top-20 right-10 pointer-events-none"
           aria-hidden="true"
         >
-          <div className="lp-float-alt opacity-50" style={{ animationDelay: '1s' }}>
+          <div className={heroAnim('lp-float-alt')} style={{ opacity: 0.5, animationDelay: '-1s' }}>
             <DoodleCloud size={224} color="#4D96FF" />
           </div>
         </div>
@@ -497,7 +507,10 @@ export function LandingPage() {
           className="hidden lg:block lp-parallax-medium absolute bottom-8 left-[37%] pointer-events-none"
           aria-hidden="true"
         >
-          <div className="lp-float-alt opacity-45" style={{ animationDelay: '2.4s' }}>
+          <div
+            className={heroAnim('lp-float-alt')}
+            style={{ opacity: 0.45, animationDelay: '-2.4s' }}
+          >
             <DoodleMonkey size={360} color="#C77DFF" />
           </div>
         </div>
@@ -506,7 +519,7 @@ export function LandingPage() {
           className="lp-parallax-slow absolute top-1/2 left-16 pointer-events-none"
           aria-hidden="true"
         >
-          <div className="lp-float-alt opacity-40" style={{ animationDelay: '2s' }}>
+          <div className={heroAnim('lp-float-alt')} style={{ opacity: 0.4, animationDelay: '-2s' }}>
             <DoodleSpiral size={176} color="#C77DFF" />
           </div>
         </div>
@@ -515,7 +528,10 @@ export function LandingPage() {
           className="lp-parallax-slow absolute top-1/2 right-6 pointer-events-none"
           aria-hidden="true"
         >
-          <div className="lp-float-slow opacity-45" style={{ animationDelay: '1.2s' }}>
+          <div
+            className={heroAnim('lp-float-slow')}
+            style={{ opacity: 0.45, animationDelay: '-1.2s' }}
+          >
             <Heart size={128} fill="#FF85A2" stroke="#FF85A2" />
           </div>
         </div>
@@ -730,12 +746,9 @@ export function LandingPage() {
           <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.1}>
             <DoodleZigzag size={144} color="#4D96FF" />
           </FloatingDoodle>
-          <div
-            className="lp-spin-slow absolute bottom-20 right-20 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
+          <FloatingDoodle position="bottom-20 right-20" animation="spin" opacity={0.25}>
             <Star size={36} fill="#FFD93D" stroke="#FFD93D" />
-          </div>
+          </FloatingDoodle>
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
             <div
@@ -773,12 +786,9 @@ export function LandingPage() {
       >
         <StarField variant="a" />
         {/* Floating decorative shapes */}
-        <div
-          className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none text-ink-lavender"
-          aria-hidden="true"
-        >
+        <FloatingDoodle position="top-8 left-8 text-ink-lavender" opacity={0.25}>
           <Megaphone size={176} strokeWidth={1.25} />
-        </div>
+        </FloatingDoodle>
         {/* Phones: top-right beside the heading, since the cards below are opaque */}
         <FloatingDoodle
           position="top-6 -right-6 md:top-1/2 md:right-6 md:-translate-y-1/2"
@@ -835,6 +845,8 @@ export function LandingPage() {
                       <img
                         src={notice.image_url}
                         alt={notice.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           ;(e.target as HTMLImageElement).parentElement!.className =
@@ -1043,6 +1055,8 @@ export function LandingPage() {
                       <img
                         src={item.photo_url}
                         alt={item.caption ?? 'Gallery photo'}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-110"
                       />
                       <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
@@ -1087,6 +1101,8 @@ export function LandingPage() {
                   <img
                     src={item.photo_url}
                     alt={item.caption ?? 'Gallery photo'}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-auto object-cover transition-transform duration-300 group-hover/card:scale-110"
                   />
                   <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">

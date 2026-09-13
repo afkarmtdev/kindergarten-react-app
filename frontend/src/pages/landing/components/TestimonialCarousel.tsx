@@ -22,6 +22,8 @@ function Avatar({ item }: { item: Testimonial }) {
       <img
         src={item.avatar_url}
         alt={item.parent_name}
+        loading="lazy"
+        decoding="async"
         className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-800 flex-shrink-0"
       />
     )

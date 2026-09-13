@@ -7,6 +7,7 @@ import { careersApi } from '@/lib/api'
 import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
 import { StarField } from './StarField'
+import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
 import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
 import { ApplicationFormModal } from './ApplicationFormModal'
@@ -72,26 +73,15 @@ export function CareersSection() {
     >
       <StarField variant="a" />
       {/* Floating shapes — spread across full section width */}
-      <div
-        className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
-        aria-hidden="true"
-      >
+      <FloatingDoodle position="top-8 left-6" opacity={0.2}>
         <Star size={208} fill="#FFD93D" stroke="#FFD93D" />
-      </div>
-      <div
-        className="hidden md:block lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
-        style={{ animationDelay: '0.8s' }}
-        aria-hidden="true"
-      >
+      </FloatingDoodle>
+      <FloatingDoodle position="top-1/2 left-1/4" animation="slow" delay={0.8} opacity={0.1} mdUp>
         <DoodleCloud size={208} color="#4D96FF" />
-      </div>
-      <div
-        className="lp-float absolute top-1/3 right-1/4 opacity-15 pointer-events-none"
-        style={{ animationDelay: '1.6s' }}
-        aria-hidden="true"
-      >
+      </FloatingDoodle>
+      <FloatingDoodle position="top-1/3 right-1/4" delay={1.6} opacity={0.15}>
         <DoodleSun size={184} color="#FFD93D" />
-      </div>
+      </FloatingDoodle>
       <div
         ref={ref}
         className={`relative max-w-6xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}

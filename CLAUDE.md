@@ -215,6 +215,7 @@ kindergarten-app/
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
+│       │   │   ├── StickerBear.tsx    # THE mascot — sticker teddy SVG (same drawing as the .cursor-bear cursor); props size, eyeState, mood smile|grin, bowColor, tilt, outline, lashes
 │       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
@@ -236,7 +237,7 @@ kindergarten-app/
 │       │   │   ├── MoodPicker.tsx         # 4-button mood selector (happy/okay/tired/upset) with lucide icons
 │       │   │   ├── PortfolioEntryModal.tsx      # Add/Edit portfolio entry — domain, observation, photo, term, date
 │       │   │   ├── GeneratePortalAccessModal.tsx # Generate access code + set PIN for parent portal; copy-to-clipboard
-│       │   │   ├── AdminBearIcon.tsx      # Pixel-art SVG bear (viewBox 24×26); eyeState?: 'open'|'half'|'closed'
+│       │   │   ├── AdminBearIcon.tsx      # Thin wrapper: StickerBear with a blue bow (sits on the orange tile); eyeState?: 'open'|'half'|'closed'
 │       │   │   ├── AdminBearSpeechBubble.tsx  # Admin-only bubble; variant: 'sleeping'|'waking'|'hidden'; sleeping animates z/z/Z
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
 │       │   ├── landing/
@@ -245,6 +246,8 @@ kindergarten-app/
 │       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,Circle,Zigzag,Triangle}.tsx  # Shapes, ~100–240px on the landing page
 │       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox}.tsx  # Animals, ~300–480px, hidden below md
 │       │   ├── portal/
+│       │   │   ├── PortalBearFamily.tsx      # Portal login hero — papa (blue bow) + grinning cub + mama (pink bow, lashes), three StickerBears
+│       │   │   ├── PortalBearCub.tsx         # Small upright StickerBear for portal header menu + footer
 │       │   │   └── PortalProtectedRoute.tsx  # Redirects to /portal/login if no parent token
 │       │   └── layout/
 │       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet; uses AdminBearLogo (desktop) + AdminBearIcon (mobile)
@@ -258,6 +261,7 @@ kindergarten-app/
 │       │   ├── useLandingContent.ts # Resolves landing_content for the current lang with fallbacks → hero strings, about, stats tiles, feature cards, team
 │       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team)
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
+│       │   ├── useInViewport.ts  # Shared IntersectionObserver → true while an element is near the viewport; gates decorative infinite animations
 │       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
 │       │   ├── api.ts             # Axios instance + all admin APIs; portalApi (separate instance with portal_token interceptor) + portalAuthApi + portalDataApi
@@ -365,7 +369,8 @@ All list endpoints return paginated responses:
 - Cards: `bg-white dark:bg-gray-900 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-800` (no drop shadow except floating chips)
 - Primary action buttons: `bg-kinder-orange text-white px-5 py-2.5 rounded-full font-extrabold`; secondary: white pill with `border-2 border-gray-200 dark:border-gray-800`
 - Sticker badges: `StickerBadge` (`pages/landing/components/StickerBadge.tsx`) — bright fill, Fredoka uppercase, white border (gray-900 in dark), slight rotation. At most one per section.
-- Landing page section joins use `<Wave variant="scallop" fillClassName="fill-<next section colour>" />` — the wave is painted in the NEXT section's colour. Prefer `fillClassName` (Tailwind `fill-*` utilities follow the tokens) over literal `fill`.
+- Landing page section joins use `<Wave variant="scallop" fillClassName="fill-<next section colour>" />` — the wave is painted in the NEXT section's colour. Prefer `fillClassName` (Tailwind `fill-*` utilities follow the tokens) over literal `fill`. The wrapper carries the `lp-wave` class and a rule in `index.css` (`section:has(.lp-wave) + *`) pulls the next block up 1px so fractional device pixels on phones never show a hairline between wave and band. The scallop variant draws 6 bumps below `md` and 18 from `md` up so phones do not get a row of spikes.
+- **Infinite decorative animations must be gated on visibility**: every element that runs an infinite CSS animation (floating doodles, star fields, hero mesh drift, shooting stars) only carries its animation class while `useInViewport(ref)` is true. Each running animation holds its own GPU layer even when scrolled far off screen, and iOS Safari evicts and silently reloads the page once too many pile up. `FloatingDoodle` and `StarField` already do this — wrap new decorative animation in them rather than adding raw `lp-float`/`lp-twinkle` classes. Never animate `background-position` on large elements (full repaint every frame); move a `::before` layer with `transform` instead, as the hero mesh gradient does.
 - **Dark mode keeps the starry galaxy**: mesh gradient + purple/teal/pink glows + `StarField` behind the landing hero and inside sky-tinted bands; faint stars across the portal; inside the admin welcome banner only.
 - Skeleton animation: CSS `animate-shimmer` defined in `index.css` using `bg-[length:200%_100%]`
 - All components are fully dark-mode aware using Tailwind `dark:` variants
@@ -785,6 +790,10 @@ Printable finance documents — invoices, overdue notices, enrollment letters, c
 - [ ] Multi-tenant (SaaS) — add `schools` table + `school_id` FK on every resource table (row-level isolation); tenant resolved from subdomain or path (`schoolA.kindercare.app`); auth scoped per school; storage paths `bucket/{school_id}/...`; RLS rewritten to scope all queries by `school_id`. See Option A (data-driven) approach.
 - [ ] Per-school landing page — current LandingPage is already data-driven; add `hero_title`, `hero_subtitle`, `cta_text`, `primary_color` to `school_info`/`school_branding`; scope public API calls by school slug. Phase 2: curated theme variants (`LandingTheme = 'default' | 'minimal' | 'modern'`) — each a different section layout using the same data.
 - [ ] Plan-based feature gating — `plan` (`'free'|'basic'|'pro'`) + `plan_expires_at` columns on `schools` table. Backend: `PLAN_LIMITS` config (free: 20 students / 1 class / no exports; basic: unlimited / all core; pro: + custom landing + custom domain). Enforce at creation routes (count + reject), export routes (403), auth middleware (expiry check). Frontend: disabled buttons with upgrade tooltip, usage counter on dashboard ("18/20 students"), expiry banner at 7 days. Payment collection manual at first (bank transfer / ToyyibPay link, admin updates `plan_expires_at`); automate with ToyyibPay/Billplz webhooks at ~30+ schools.
+
+## Mascot (Sticker Teddy)
+
+`components/ui/StickerBear.tsx` is the one drawing of the mascot: the same round sticker teddy used as the landing-page cursor (`.cursor-bear` in `index.css`). Every bear in the app renders it — admin sidebar/login/404 (`AdminBearIcon`, blue bow), landing navbar (front face of the flip logo; school logo is the back) + footer, portal family + cub, and `public/favicon.svg` (PWA PNGs are regenerated from it with `bunx pwa-assets-generator --preset minimal-2023 public/favicon.svg` from `frontend/`). Never draw a second bear; add a prop to `StickerBear` instead. The full-body pixel bear in `components/landing/bear/BaseBearMascot.tsx` is unused and kept only for a future full-body mascot.
 
 ## Admin Bear (Sidebar Easter Egg)
 

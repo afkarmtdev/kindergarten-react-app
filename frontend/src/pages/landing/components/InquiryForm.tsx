@@ -6,6 +6,7 @@ import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
 import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
+import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
@@ -102,32 +103,34 @@ export function InquiryForm({
       <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
 
       {/* Floating decorative shapes */}
-      <div
-        className="lp-float absolute top-8 left-6 text-ink-blush opacity-25 pointer-events-none"
-        aria-hidden="true"
-      >
+      <FloatingDoodle position="top-8 left-6 text-ink-blush" opacity={0.25}>
         <Heart size={192} fill="currentColor" stroke="currentColor" />
-      </div>
-      <div
-        className="lp-float-alt absolute top-16 right-10 text-ink-blush opacity-25 pointer-events-none"
-        style={{ animationDelay: '1.2s' }}
-        aria-hidden="true"
+      </FloatingDoodle>
+      <FloatingDoodle
+        position="top-16 right-10 text-ink-blush"
+        animation="alt"
+        delay={1.2}
+        opacity={0.25}
       >
         <DoodleStar size={176} color="currentColor" />
-      </div>
-      <div
-        className="hidden md:block lp-float-slow absolute bottom-32 left-12 text-ink-blush opacity-25 pointer-events-none"
-        style={{ animationDelay: '0.8s' }}
-        aria-hidden="true"
+      </FloatingDoodle>
+      <FloatingDoodle
+        position="bottom-32 left-12 text-ink-blush"
+        animation="slow"
+        delay={0.8}
+        opacity={0.25}
+        mdUp
       >
         <DoodleFlower size={208} color="currentColor" />
-      </div>
-      <div
-        className="hidden md:block lp-spin-slow absolute bottom-24 right-16 text-ink-blush opacity-25 pointer-events-none"
-        aria-hidden="true"
+      </FloatingDoodle>
+      <FloatingDoodle
+        position="bottom-24 right-16 text-ink-blush"
+        animation="spin"
+        opacity={0.25}
+        mdUp
       >
         <DoodleSpiral size={160} color="currentColor" />
-      </div>
+      </FloatingDoodle>
 
       <div
         ref={ref}
