@@ -141,7 +141,7 @@ export function LandingPage() {
 
   // Section chain below the hero: each closing wave is painted in the NEXT
   // visible section's colour, so work out the order once here.
-  // Order: hero → story → programmes → testimonials → notices → numbers → team
+  // Order: hero → story → programmes → testimonials → notices → team → numbers
   //        → gallery → artists → enquiry → careers → promise strip
   const WHITE_FILL = 'fill-white dark:fill-gray-950'
   const hasTestimonials = testimonials.length > 0
@@ -150,8 +150,8 @@ export function LandingPage() {
   const afterHeroFill = content.about.show
     ? 'fill-wash-butter dark:fill-wash-ocean'
     : afterAboutFill
-  const afterStatsFill = content.team.show ? 'fill-wash-lavender' : WHITE_FILL
-  const afterNoticesFill = content.stats.show ? 'fill-wash-peach' : afterStatsFill
+  const afterTeamFill = content.stats.show ? 'fill-wash-peach' : WHITE_FILL
+  const afterNoticesFill = content.team.show ? 'fill-wash-lavender' : afterTeamFill
   const afterInquiryFill = hasCareers ? 'fill-wash-mint' : 'fill-kinder-pink'
   // The hero's mesh gradient (galaxy in dark) meets the next band as a hard seam,
   // so melt the bottom of the hero into whatever colour that next band is.
@@ -646,7 +646,7 @@ export function LandingPage() {
         >
           <StarField variant="b" />
           <div
-            className="lp-float-slow absolute top-10 left-6 opacity-25 pointer-events-none"
+            className="hidden md:block lp-float-slow absolute top-10 left-6 opacity-25 pointer-events-none"
             aria-hidden="true"
           >
             <DoodleElephant size={380} color="#4D96FF" />
@@ -658,7 +658,7 @@ export function LandingPage() {
           <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.8}>
             <DoodleZigzag size={152} color="#6BCB77" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-1/3 right-1/4" animation="float" delay={0.9}>
+          <FloatingDoodle position="bottom-1/3 right-1/4" animation="float" delay={0.9} mdUp>
             <DoodleFlower size={168} color="#FF85A2" />
           </FloatingDoodle>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
@@ -727,7 +727,7 @@ export function LandingPage() {
           <FloatingDoodle position="top-10 left-1/3" animation="spin">
             <DoodleStar size={128} color="#FF6B35" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-1/4 right-1/4" animation="alt" delay={0.7}>
+          <FloatingDoodle position="top-1/4 right-1/4" animation="alt" delay={0.7} mdUp>
             <DoodleCloud size={200} color="#C77DFF" />
           </FloatingDoodle>
           <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.1}>
@@ -790,7 +790,7 @@ export function LandingPage() {
             <DoodleDino size={360} color="#C77DFF" />
           </div>
         </div>
-        <FloatingDoodle position="top-1/4 left-1/4" animation="spin">
+        <FloatingDoodle position="top-1/4 left-1/4" animation="spin" mdUp>
           <DoodleSun size={160} color="#FF6B35" />
         </FloatingDoodle>
         <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={2.5}>
@@ -910,6 +910,13 @@ export function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
+          MEET THE TEAM — school-written (Settings > Website > Team)
+      ════════════════════════════════════════════════════════ */}
+      {content.team.show && (
+        <TeamSection members={content.team.members} waveFillClassName={afterTeamFill} />
+      )}
+
+      {/* ════════════════════════════════════════════════════════
           STATS — the school's own numbers (Settings > Website > Numbers)
       ════════════════════════════════════════════════════════ */}
       {content.stats.show && (
@@ -928,6 +935,19 @@ export function LandingPage() {
             <DoodleSpiral size={136} color="#FFD93D" />
           </FloatingDoodle>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+            <div className="text-center mb-10 sm:mb-14">
+              <div className="mb-5">
+                <StickerBadge color="bg-kinder-yellow" textColor="text-gray-900" rotate={-3}>
+                  {t('statsBadge')}
+                </StickerBadge>
+              </div>
+              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+                {t('statsTitle')}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto mt-4">
+                {t('statsSubtitle', { school: schoolName })}
+              </p>
+            </div>
             <div
               className={`grid gap-4 sm:gap-8 md:gap-12 ${
                 content.stats.tiles.length === 1
@@ -951,15 +971,8 @@ export function LandingPage() {
             </div>
           </div>
 
-          <Wave variant="scallop" fillClassName={afterStatsFill} />
+          <Wave variant="scallop" fillClassName={WHITE_FILL} />
         </section>
-      )}
-
-      {/* ════════════════════════════════════════════════════════
-          MEET THE TEAM — school-written (Settings > Website > Team)
-      ════════════════════════════════════════════════════════ */}
-      {content.team.show && (
-        <TeamSection members={content.team.members} waveFillClassName={WHITE_FILL} />
       )}
 
       {/* ════════════════════════════════════════════════════════
@@ -971,7 +984,7 @@ export function LandingPage() {
       >
         <StarField variant="a" />
         <div
-          className="lp-float-alt absolute top-8 right-10 opacity-25 pointer-events-none"
+          className="hidden md:block lp-float-alt absolute top-8 right-10 opacity-25 pointer-events-none"
           style={{ animationDelay: '0.6s' }}
           aria-hidden="true"
         >
@@ -980,7 +993,7 @@ export function LandingPage() {
         <FloatingDoodle position="top-6 left-1/4" animation="spin">
           <DoodleStar size={144} color="#FFD93D" />
         </FloatingDoodle>
-        <FloatingDoodle position="bottom-1/4 left-1/4" animation="float" delay={1.9}>
+        <FloatingDoodle position="bottom-1/4 left-1/4" animation="float" delay={1.9} mdUp>
           <DoodleFlower size={160} color="#FF85A2" />
         </FloatingDoodle>
         <FloatingDoodle position="bottom-10 right-1/4" animation="spin">
@@ -1139,7 +1152,7 @@ export function LandingPage() {
           <FloatingDoodle position="top-6 left-1/3" animation="spin">
             <DoodleStar size={128} color="#C77DFF" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-28 right-1/4" animation="slow" delay={2.0}>
+          <FloatingDoodle position="top-28 right-1/4" animation="slow" delay={2.0} mdUp>
             <DoodleCloud size={184} color="#4D96FF" />
           </FloatingDoodle>
           <FloatingDoodle position="top-40 right-12" animation="alt" delay={1.0}>
