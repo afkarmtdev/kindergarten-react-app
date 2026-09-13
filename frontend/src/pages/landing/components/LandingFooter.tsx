@@ -42,7 +42,7 @@ export function LandingFooter() {
                 <img
                   src={logoUrl}
                   alt=""
-                  className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+                  className="w-10 h-10 rounded-lg object-contain bg-white p-0.5 flex-shrink-0"
                 />
               ) : (
                 <BearLogo size={32} />

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { CheckCircle } from 'lucide-react'
-import { Heart, Star } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
@@ -96,34 +96,27 @@ export function InquiryForm() {
         className="lp-float absolute top-8 left-6 text-ink-blush opacity-25 pointer-events-none"
         aria-hidden="true"
       >
-        <Heart size={48} fill="currentColor" stroke="currentColor" />
+        <Heart size={192} fill="currentColor" stroke="currentColor" />
       </div>
       <div
         className="lp-float-alt absolute top-16 right-10 text-ink-blush opacity-25 pointer-events-none"
         style={{ animationDelay: '1.2s' }}
         aria-hidden="true"
       >
-        <DoodleStar size={44} color="currentColor" />
+        <DoodleStar size={176} color="currentColor" />
       </div>
       <div
         className="lp-float-slow absolute bottom-32 left-12 text-ink-blush opacity-25 pointer-events-none"
         style={{ animationDelay: '0.8s' }}
         aria-hidden="true"
       >
-        <DoodleFlower size={52} color="currentColor" />
+        <DoodleFlower size={208} color="currentColor" />
       </div>
       <div
         className="lp-spin-slow absolute bottom-24 right-16 text-ink-blush opacity-25 pointer-events-none"
         aria-hidden="true"
       >
-        <DoodleSpiral size={40} color="currentColor" />
-      </div>
-      <div
-        className="lp-float absolute top-1/3 left-1/4 text-ink-blush opacity-25 pointer-events-none"
-        style={{ animationDelay: '2s' }}
-        aria-hidden="true"
-      >
-        <Star size={28} fill="currentColor" stroke="currentColor" />
+        <DoodleSpiral size={160} color="currentColor" />
       </div>
 
       <div

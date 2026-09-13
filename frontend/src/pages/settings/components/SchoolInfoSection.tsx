@@ -6,6 +6,7 @@ import { schoolInfoApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
+import { ImageCropDialog } from '@/components/ui/ImageCropDialog'
 import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import type { DayKey, OperatingHours } from '@/types'
 
@@ -50,6 +51,7 @@ export function SchoolInfoSection() {
   })
   const [isDirty, setIsDirty] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [cropFile, setCropFile] = useState<File | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const { data, isLoading } = useQuery({
@@ -121,10 +123,13 @@ export function SchoolInfoSection() {
       })
   }
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    e.target.value = ''
+    if (file) setCropFile(file)
+  }
 
+  const uploadLogo = async (file: File) => {
     setUploading(true)
     try {
       const compressed = await compressImage(file, 400, 0.9)
@@ -217,7 +222,7 @@ export function SchoolInfoSection() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleLogoUpload}
+                onChange={handleLogoSelect}
               />
             </div>
           </div>
@@ -328,6 +333,21 @@ export function SchoolInfoSection() {
               placeholder={t('settingsWhatsappPlaceholder')}
               className={inputCls()}
             />
+          </div>
+
+          {/* Google Maps Embed URL */}
+          <div>
+            <label className={labelCls}>{t('settingsGoogleMaps')}</label>
+            <input
+              type="text"
+              value={form.google_maps_embed_url}
+              onChange={(e) => set('google_maps_embed_url', e.target.value)}
+              placeholder="https://www.google.com/maps/embed?pb=..."
+              className={inputCls()}
+            />
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              {t('settingsGoogleMapsHelper')}
+            </p>
           </div>
 
           {/* Operating Hours — per-day grid */}
@@ -442,6 +462,15 @@ export function SchoolInfoSection() {
       )}
 
       {/* Save */}
+      <ImageCropDialog
+        file={cropFile}
+        shape="square"
+        onCancel={() => setCropFile(null)}
+        onConfirm={(f) => {
+          setCropFile(null)
+          void uploadLogo(f)
+        }}
+      />
       <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button
           onClick={() => mutation.mutate()}

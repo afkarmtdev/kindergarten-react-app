@@ -62,7 +62,12 @@ export function CoinFlipLogo({
   }
 
   const backContent = logoUrl ? (
-    <img src={logoUrl} alt="School logo" className="w-full h-full object-cover" draggable={false} />
+    <img
+      src={logoUrl}
+      alt="School logo"
+      className="w-full h-full object-contain"
+      draggable={false}
+    />
   ) : (
     (back ?? children)
   )

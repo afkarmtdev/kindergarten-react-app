@@ -44,6 +44,16 @@ export const KEYFRAMES = `
   .lp-enter-2      { animation: lp-entrance   0.8s ease 0.36s   both; }
   .lp-card-exit    { animation: lp-card-exit  0.15s ease        forwards; }
   .lp-card-enter   { animation: lp-card-enter 0.18s ease        both; }
+  @keyframes lp-card-exit-back {
+    from { opacity: 1; transform: translateX(0px) scale(1); }
+    to   { opacity: 0; transform: translateX(40px) scale(0.96); }
+  }
+  @keyframes lp-card-enter-back {
+    from { opacity: 0; transform: translateX(-40px) scale(0.96); }
+    to   { opacity: 1; transform: translateX(0px) scale(1); }
+  }
+  .lp-card-exit-back  { animation: lp-card-exit-back  0.15s ease forwards; }
+  .lp-card-enter-back { animation: lp-card-enter-back 0.18s ease both; }
   @keyframes lp-pin-in {
     from { opacity: 0; transform: translateY(24px) scale(0.92); }
     to   { opacity: 1; transform: translateY(0)    scale(1); }

@@ -3,6 +3,7 @@ import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Star,
+  ZoomIn,
   Heart,
   Sun,
   Moon,
@@ -51,6 +52,7 @@ import { NoticeModal } from './components/NoticeModal'
 import { StarField } from './components/StarField'
 import { AboutSection } from './components/AboutSection'
 import { TeamSection } from './components/TeamSection'
+import { TestimonialCarousel } from './components/TestimonialCarousel'
 import {
   KEYFRAMES,
   NOTICE_CATEGORY_COLORS,
@@ -66,6 +68,12 @@ import { DoodleDino } from '@/components/landing/doodles/DoodleDino'
 import { DoodleMonkey } from '@/components/landing/doodles/DoodleMonkey'
 import { DoodleElephant } from '@/components/landing/doodles/DoodleElephant'
 import { DoodleWhale } from '@/components/landing/doodles/DoodleWhale'
+import { DoodleCat } from '@/components/landing/doodles/DoodleCat'
+import { DoodleTurtle } from '@/components/landing/doodles/DoodleTurtle'
+import { DoodleHeart } from '@/components/landing/doodles/DoodleHeart'
+import { DoodleCircle } from '@/components/landing/doodles/DoodleCircle'
+import { DoodleZigzag } from '@/components/landing/doodles/DoodleZigzag'
+import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 
 const STAT_LABEL_KEYS = {
   students: 'statsStudentsLabel',
@@ -95,23 +103,29 @@ export function LandingPage() {
   const afterHeroFill = content.stats.show
     ? 'fill-wash-sky'
     : content.about.show
-      ? 'fill-wash-butter'
+      ? 'fill-wash-butter dark:fill-wash-ocean'
       : content.team.show
         ? 'fill-wash-lavender'
         : WHITE_FILL
   const afterStatsFill = content.about.show
-    ? 'fill-wash-butter'
+    ? 'fill-wash-butter dark:fill-wash-ocean'
     : content.team.show
       ? 'fill-wash-lavender'
       : WHITE_FILL
   const afterAboutFill = content.team.show ? 'fill-wash-lavender' : WHITE_FILL
+  // Dark mode only: the hero's galaxy gradient ends in near-black, so without a
+  // fade the scallop into the next band reads as a hard seam. Melt the bottom of
+  // the hero into whatever colour that next band is.
+  const afterHeroFade = content.stats.show
+    ? 'via-wash-sky to-wash-sky'
+    : content.about.show
+      ? 'via-wash-ocean to-wash-ocean'
+      : content.team.show
+        ? 'via-wash-lavender to-wash-lavender'
+        : 'via-gray-950 to-gray-950'
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
   const [selectedNotice, setSelectedNotice] = useState<Announcement | null>(null)
-  const [activeTestimonial, setActiveTestimonial] = useState(0)
-  const [displayIndex, setDisplayIndex] = useState(0)
-  const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
-  const [isPaused, setIsPaused] = useState(false)
 
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const artWallHeadingRef = useRef<HTMLElement>(null)
@@ -210,26 +224,8 @@ export function LandingPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [lightboxIndex, galleryItems.length])
 
-  useEffect(() => {
-    if (isPaused || testimonials.length === 0) return
-    const timer = setInterval(() => {
-      setActiveTestimonial((i) => (i + 1) % testimonials.length)
-    }, 4000)
-    return () => clearInterval(timer)
-  }, [isPaused, activeTestimonial, testimonials.length])
-
-  // Slide out → swap content → slide in
-  useEffect(() => {
-    setCardAnim('exit')
-    const swap = setTimeout(() => {
-      setDisplayIndex(activeTestimonial)
-      setCardAnim('enter')
-    }, 150)
-    return () => clearTimeout(swap)
-  }, [activeTestimonial])
-
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 font-display overflow-x-hidden transition-colors duration-200">
+    <div className="cursor-bear min-h-screen bg-white dark:bg-gray-950 font-display overflow-x-hidden transition-colors duration-200">
       {/* Inject keyframe CSS */}
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES }} />
 
@@ -241,15 +237,19 @@ export function LandingPage() {
           {/* Logo */}
           <div className="flex items-center gap-2.5">
             <CoinFlipLogo
-              frontClassName="w-10 h-10 bg-kinder-orange/10 dark:bg-kinder-orange/20 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-kinder-orange/30"
-              backClassName="w-10 h-10 flex items-center justify-center"
-              back={<BearLogo size={40} />}
+              frontClassName={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border ${
+                logoUrl
+                  ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                  : 'bg-kinder-orange/10 dark:bg-kinder-orange/20 border-kinder-orange/30'
+              }`}
+              backClassName="w-12 h-12 flex items-center justify-center"
+              back={<BearLogo size={44} />}
             >
               {logoUrl ? (
                 <img
                   src={logoUrl}
                   alt=""
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   draggable={false}
                 />
               ) : (
@@ -461,13 +461,19 @@ export function LandingPage() {
           aria-hidden="true"
         />
 
+        {/* ── Bottom fade — dark mode only; blends the galaxy into the next band ── */}
+        <div
+          className={`absolute inset-x-0 bottom-0 h-72 pointer-events-none hidden dark:block bg-gradient-to-b from-transparent ${afterHeroFade}`}
+          aria-hidden="true"
+        />
+
         {/* ── Floating decorative shapes (with parallax outer wrapper) ── */}
         <div
           className="lp-parallax-fast absolute top-16 left-6 pointer-events-none"
           aria-hidden="true"
         >
           <div className="lp-float opacity-60">
-            <DoodleStar size={52} color="#FFD93D" />
+            <DoodleStar size={208} color="#FFD93D" />
           </div>
         </div>
 
@@ -476,53 +482,18 @@ export function LandingPage() {
           aria-hidden="true"
         >
           <div className="lp-float-alt opacity-50" style={{ animationDelay: '1s' }}>
-            <DoodleCloud size={56} color="#4D96FF" />
-          </div>
-        </div>
-
-        <div
-          className="lp-parallax-slow absolute top-1/3 left-10 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-float opacity-55" style={{ animationDelay: '0.5s' }}>
-            <Heart size={44} fill="#FF85A2" stroke="#FF85A2" />
-          </div>
-        </div>
-
-        <div
-          className="lp-parallax-fast absolute top-24 left-1/3 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-spin-slow opacity-45">
-            <Star size={30} fill="#FF6B35" stroke="#FF6B35" />
-          </div>
-        </div>
-
-        <div
-          className="lp-parallax-medium absolute bottom-36 right-14 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-float-slow opacity-40">
-            <DoodleFlower size={60} color="#6BCB77" />
+            <DoodleCloud size={224} color="#4D96FF" />
           </div>
         </div>
 
         {/* Animal doodles — lg+ only so they never crowd the phone hero */}
-        <div
-          className="hidden lg:block lp-parallax-slow absolute bottom-6 left-[5%] pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-float-slow opacity-50" style={{ animationDelay: '0.8s' }}>
-            <DoodleDino size={130} color="#6BCB77" />
-          </div>
-        </div>
 
         <div
           className="hidden lg:block lp-parallax-medium absolute bottom-8 left-[37%] pointer-events-none"
           aria-hidden="true"
         >
           <div className="lp-float-alt opacity-45" style={{ animationDelay: '2.4s' }}>
-            <DoodleMonkey size={130} color="#C77DFF" />
+            <DoodleMonkey size={360} color="#C77DFF" />
           </div>
         </div>
 
@@ -531,27 +502,7 @@ export function LandingPage() {
           aria-hidden="true"
         >
           <div className="lp-float-alt opacity-40" style={{ animationDelay: '2s' }}>
-            <DoodleSpiral size={44} color="#C77DFF" />
-          </div>
-        </div>
-
-        <div
-          className="lp-parallax-fast absolute top-1/3 right-20 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-float opacity-35" style={{ animationDelay: '1.5s' }}>
-            <svg width="48" height="48" viewBox="0 0 48 48">
-              <polygon points="24,2 46,44 2,44" fill="#FF6B35" />
-            </svg>
-          </div>
-        </div>
-
-        <div
-          className="lp-parallax-medium absolute bottom-40 right-1/3 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-float-alt opacity-60" style={{ animationDelay: '0.8s' }}>
-            <Star size={24} fill="#FFD93D" stroke="#FFD93D" />
+            <DoodleSpiral size={176} color="#C77DFF" />
           </div>
         </div>
 
@@ -560,7 +511,7 @@ export function LandingPage() {
           aria-hidden="true"
         >
           <div className="lp-float-slow opacity-45" style={{ animationDelay: '1.2s' }}>
-            <Heart size={32} fill="#FF85A2" stroke="#FF85A2" />
+            <Heart size={128} fill="#FF85A2" stroke="#FF85A2" />
           </div>
         </div>
 
@@ -674,6 +625,18 @@ export function LandingPage() {
       {content.stats.show && (
         <section className="relative overflow-hidden bg-wash-sky transition-colors duration-200">
           <StarField variant="b" />
+          <div
+            className="hidden md:block lp-float-slow absolute top-6 left-8 opacity-25 pointer-events-none"
+            aria-hidden="true"
+          >
+            <DoodleCat size={300} color="#4D96FF" />
+          </div>
+          <FloatingDoodle position="top-8 right-1/4" animation="alt" delay={0.8}>
+            <DoodleHeart size={120} color="#FF85A2" />
+          </FloatingDoodle>
+          <FloatingDoodle position="bottom-6 left-1/4" animation="float" delay={2.2}>
+            <DoodleSpiral size={136} color="#4D96FF" />
+          </FloatingDoodle>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
             <div
               className={`grid gap-4 sm:gap-8 md:gap-12 ${
@@ -739,16 +702,19 @@ export function LandingPage() {
             className="lp-float-slow absolute top-10 left-6 opacity-25 pointer-events-none"
             aria-hidden="true"
           >
-            <DoodleElephant size={120} color="#4D96FF" />
+            <DoodleElephant size={380} color="#4D96FF" />
           </div>
-          <div
-            className="lp-float absolute bottom-12 right-8 opacity-25 pointer-events-none"
-            style={{ animationDelay: '1.4s' }}
-            aria-hidden="true"
-          >
-            <DoodleDino size={110} color="#C77DFF" />
-          </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {/* A few shapes at the edges */}
+          <FloatingDoodle position="top-12 right-1/4" animation="alt" delay={0.5}>
+            <DoodleCloud size={208} color="#4D96FF" />
+          </FloatingDoodle>
+          <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.8}>
+            <DoodleZigzag size={152} color="#6BCB77" />
+          </FloatingDoodle>
+          <FloatingDoodle position="bottom-1/3 right-1/4" animation="float" delay={0.9}>
+            <DoodleFlower size={168} color="#FF85A2" />
+          </FloatingDoodle>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-16">
               <div className="mb-5">
                 <StickerBadge color="bg-kinder-purple" textColor="text-white" rotate={-3}>
@@ -813,11 +779,20 @@ export function LandingPage() {
           style={{ animationDelay: '0.6s' }}
           aria-hidden="true"
         >
-          <DoodleWhale size={130} color="#4D96FF" />
+          <DoodleWhale size={400} color="#4D96FF" />
         </div>
+        <FloatingDoodle position="top-6 left-1/4" animation="spin">
+          <DoodleStar size={144} color="#FFD93D" />
+        </FloatingDoodle>
+        <FloatingDoodle position="bottom-1/4 left-1/4" animation="float" delay={1.9}>
+          <DoodleFlower size={160} color="#FF85A2" />
+        </FloatingDoodle>
+        <FloatingDoodle position="bottom-10 right-1/4" animation="spin">
+          <DoodleCircle size={112} color="#FF6B35" />
+        </FloatingDoodle>
         <div
           ref={galleryFadeIn.ref}
-          className={`max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+          className={`relative max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('galleryTitle')}
@@ -858,8 +833,11 @@ export function LandingPage() {
                       <img
                         src={item.photo_url}
                         alt={item.caption ?? 'Gallery photo'}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-110"
                       />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
+                        <ZoomIn size={32} className="text-white drop-shadow" />
+                      </span>
                       {item.caption && (
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2.5 pt-8 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
                           <p className="text-white text-xs font-semibold line-clamp-2">
@@ -886,7 +864,7 @@ export function LandingPage() {
 
         {/* Desktop: masonry grid */}
         {galleryItems.length > 0 && (
-          <div className="hidden lg:block max-w-7xl mx-auto px-6">
+          <div className="hidden lg:block relative max-w-7xl mx-auto px-6">
             <div
               className={`${galleryItems.length < 6 ? 'columns-2' : 'columns-3'} gap-4 space-y-4`}
             >
@@ -899,8 +877,11 @@ export function LandingPage() {
                   <img
                     src={item.photo_url}
                     alt={item.caption ?? 'Gallery photo'}
-                    className="w-full h-auto object-cover"
+                    className="w-full h-auto object-cover transition-transform duration-300 group-hover/card:scale-110"
                   />
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
+                    <ZoomIn size={32} className="text-white drop-shadow" />
+                  </span>
                   {item.caption && (
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 pb-2.5 pt-8 opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
                       <p className="text-white text-xs font-semibold line-clamp-2">
@@ -914,7 +895,7 @@ export function LandingPage() {
           </div>
         )}
         {galleryItems.length === 0 && (
-          <div className="hidden lg:block max-w-7xl mx-auto px-6">
+          <div className="hidden lg:block relative max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-3 gap-4">
               {GALLERY_PLACEHOLDERS.map((p) => (
                 <div
@@ -949,8 +930,23 @@ export function LandingPage() {
           {/* Glimmering stars — dark mode only, outside the cork border */}
           <StarField variant="a" />
           <div
+            className="hidden md:block lp-float absolute top-10 left-8 opacity-25 pointer-events-none"
+            aria-hidden="true"
+          >
+            <DoodleTurtle size={380} color="#6BCB77" />
+          </div>
+          <FloatingDoodle position="top-6 left-1/3" animation="spin">
+            <DoodleStar size={128} color="#C77DFF" />
+          </FloatingDoodle>
+          <FloatingDoodle position="top-28 right-1/4" animation="slow" delay={2.0}>
+            <DoodleCloud size={184} color="#4D96FF" />
+          </FloatingDoodle>
+          <FloatingDoodle position="top-40 right-12" animation="alt" delay={1.0}>
+            <DoodleZigzag size={144} color="#FF6B35" />
+          </FloatingDoodle>
+          <div
             ref={artWallFadeIn.ref}
-            className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center ${artWallFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+            className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center ${artWallFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
           >
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-wash-butter mb-4">
               <Palette size={28} className="text-ink-butter" />
@@ -964,7 +960,7 @@ export function LandingPage() {
           </div>
 
           {/* Artwork board — framed cork board with border, matching admin page */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div
               className="bg-amber-100/80 dark:bg-amber-950/40 rounded-3xl p-6 md:p-8 border border-amber-300/60 dark:border-amber-800/30"
               style={darkMode ? CORK_STYLE_DARK : CORK_STYLE}
@@ -1050,28 +1046,25 @@ export function LandingPage() {
           className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none text-ink-lavender"
           aria-hidden="true"
         >
-          <Megaphone size={48} />
+          <Megaphone size={176} strokeWidth={1.25} />
         </div>
         <div
-          className="lp-float-alt absolute top-16 right-12 opacity-25 pointer-events-none"
-          style={{ animationDelay: '1.2s' }}
+          className="hidden md:block absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none"
           aria-hidden="true"
         >
-          <DoodleStar size={44} color="#C77DFF" />
+          <div className="lp-float-slow opacity-25" style={{ animationDelay: '2s' }}>
+            <DoodleDino size={360} color="#C77DFF" />
+          </div>
         </div>
-        <div
-          className="lp-float-slow absolute bottom-24 left-16 opacity-25 pointer-events-none"
-          style={{ animationDelay: '0.8s' }}
-          aria-hidden="true"
-        >
-          <DoodleCloud size={56} color="#C77DFF" />
-        </div>
-        <div
-          className="lp-spin-slow absolute bottom-32 right-20 opacity-25 pointer-events-none"
-          aria-hidden="true"
-        >
-          <DoodleSpiral size={40} color="#C77DFF" />
-        </div>
+        <FloatingDoodle position="top-1/4 left-1/4" animation="spin">
+          <DoodleSun size={160} color="#FF6B35" />
+        </FloatingDoodle>
+        <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={2.5}>
+          <DoodleCircle size={112} color="#4D96FF" />
+        </FloatingDoodle>
+        <FloatingDoodle position="bottom-1/4 left-1/2" animation="alt" delay={0.3}>
+          <DoodleZigzag size={152} color="#C77DFF" />
+        </FloatingDoodle>
 
         <div
           ref={noticesFadeIn.ref}
@@ -1190,26 +1183,15 @@ export function LandingPage() {
         <section className="relative overflow-hidden bg-wash-sky pt-24 transition-colors duration-200">
           <StarField variant="b" />
           {/* Floating decorative shapes */}
-          <div
-            className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
-            <DoodleStar size={48} color="#4D96FF" />
-          </div>
-          <div
-            className="lp-float-alt absolute top-20 right-12 opacity-25 pointer-events-none"
-            style={{ animationDelay: '1s' }}
-            aria-hidden="true"
-          >
-            <Heart size={42} fill="#FF85A2" stroke="#FF85A2" />
-          </div>
-          <div
-            className="lp-float-slow absolute bottom-32 left-16 opacity-25 pointer-events-none"
-            style={{ animationDelay: '0.6s' }}
-            aria-hidden="true"
-          >
-            <DoodleSpiral size={44} color="#4D96FF" />
-          </div>
+          <FloatingDoodle position="top-10 left-1/3" animation="spin">
+            <DoodleStar size={128} color="#FF6B35" />
+          </FloatingDoodle>
+          <FloatingDoodle position="top-1/4 right-1/4" animation="alt" delay={0.7}>
+            <DoodleCloud size={200} color="#C77DFF" />
+          </FloatingDoodle>
+          <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.1}>
+            <DoodleZigzag size={144} color="#4D96FF" />
+          </FloatingDoodle>
           <div
             className="lp-spin-slow absolute bottom-20 right-20 opacity-25 pointer-events-none"
             aria-hidden="true"
@@ -1233,97 +1215,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div
-              className="max-w-2xl mx-auto"
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
-            >
-              <div className="relative">
-                {testimonials.length >= 3 && (
-                  <div className="absolute inset-0 translate-x-12 translate-y-3 bg-white/40 dark:bg-gray-900/40 border-2 border-gray-200/60 dark:border-gray-800/60 rounded-3xl" />
-                )}
-                {testimonials.length >= 2 && (
-                  <div className="absolute inset-0 translate-x-6 translate-y-1.5 bg-white/70 dark:bg-gray-900/70 border-2 border-gray-200 dark:border-gray-800 rounded-3xl" />
-                )}
-
-                <div
-                  className={`relative z-10 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-3xl p-8 sm:p-10 ${cardAnim === 'exit' ? 'lp-card-exit' : 'lp-card-enter'}`}
-                >
-                  {/* Decorative quote mark */}
-                  <div
-                    className="absolute top-4 right-6 text-ink-sky/10 text-8xl sm:text-9xl font-serif leading-none pointer-events-none select-none"
-                    aria-hidden="true"
-                  >
-                    &ldquo;
-                  </div>
-                  <div className="flex gap-1 mb-5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={16} fill="#FFD93D" stroke="#FFD93D" />
-                    ))}
-                  </div>
-                  <p className="text-gray-700 dark:text-gray-200 leading-relaxed mb-6 italic text-lg">
-                    &ldquo;{(testimonials[displayIndex] ?? testimonials[0]).quote}&rdquo;
-                  </p>
-                  <div className="border-t border-gray-200 dark:border-gray-800 pt-4 flex items-center gap-3">
-                    {(testimonials[displayIndex] ?? testimonials[0]).avatar_url ? (
-                      <img
-                        src={(testimonials[displayIndex] ?? testimonials[0]).avatar_url!}
-                        alt={(testimonials[displayIndex] ?? testimonials[0]).parent_name}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-800 flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-wash-sky flex items-center justify-center text-ink-sky font-fun font-bold text-sm flex-shrink-0">
-                        {(testimonials[displayIndex] ?? testimonials[0]).parent_name
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-extrabold text-gray-900 dark:text-white">
-                        {(testimonials[displayIndex] ?? testimonials[0]).parent_name}
-                      </p>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
-                        {(testimonials[displayIndex] ?? testimonials[0]).parent_role}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {testimonials.length > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
-                  {testimonials.map((_, i) =>
-                    i === activeTestimonial ? (
-                      <button
-                        key={i}
-                        onClick={() => setActiveTestimonial(i)}
-                        className="relative w-10 h-2.5 bg-ink-sky/20 rounded-full overflow-hidden"
-                      >
-                        <div
-                          key={displayIndex}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            bottom: 0,
-                            backgroundColor: 'rgb(var(--ink-sky))',
-                            borderRadius: '9999px',
-                            animation: 'lp-progress 4s linear both',
-                            animationPlayState: isPaused ? 'paused' : 'running',
-                          }}
-                        />
-                      </button>
-                    ) : (
-                      <button
-                        key={i}
-                        onClick={() => setActiveTestimonial(i)}
-                        className="w-2.5 h-2.5 bg-ink-sky/30 hover:bg-ink-sky/60 rounded-full transition-colors duration-300"
-                      />
-                    )
-                  )}
-                </div>
-              )}
-            </div>
+            <TestimonialCarousel testimonials={testimonials} />
           </div>
 
           <div className="mt-16">
@@ -1349,48 +1241,21 @@ export function LandingPage() {
           className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
           aria-hidden="true"
         >
-          <Star size={52} fill="#FFD93D" stroke="#FFD93D" />
-        </div>
-        <div
-          className="lp-float-alt absolute bottom-20 left-12 opacity-15 pointer-events-none"
-          style={{ animationDelay: '1.2s' }}
-          aria-hidden="true"
-        >
-          <Heart size={38} fill="#FF85A2" stroke="#FF85A2" />
-        </div>
-        <div
-          className="lp-spin-slow absolute top-12 right-8 opacity-15 pointer-events-none"
-          aria-hidden="true"
-        >
-          <DoodleStar size={48} color="#6BCB77" />
-        </div>
-        <div
-          className="lp-float absolute bottom-16 right-16 opacity-20 pointer-events-none"
-          style={{ animationDelay: '2s' }}
-          aria-hidden="true"
-        >
-          <DoodleFlower size={44} color="#6BCB77" />
+          <Star size={208} fill="#FFD93D" stroke="#FFD93D" />
         </div>
         <div
           className="lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
           style={{ animationDelay: '0.8s' }}
           aria-hidden="true"
         >
-          <DoodleCloud size={52} color="#4D96FF" />
-        </div>
-        <div
-          className="lp-float-alt absolute top-6 left-1/2 opacity-12 pointer-events-none"
-          style={{ animationDelay: '3s', opacity: 0.12 }}
-          aria-hidden="true"
-        >
-          <DoodleSpiral size={36} color="#C77DFF" />
+          <DoodleCloud size={208} color="#4D96FF" />
         </div>
         <div
           className="lp-float absolute top-1/3 right-1/4 opacity-15 pointer-events-none"
           style={{ animationDelay: '1.6s' }}
           aria-hidden="true"
         >
-          <DoodleSun size={46} color="#FFD93D" />
+          <DoodleSun size={184} color="#FFD93D" />
         </div>
 
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">

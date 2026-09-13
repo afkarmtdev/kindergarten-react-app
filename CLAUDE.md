@@ -113,9 +113,11 @@ kindergarten-app/
 │       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours
 │       │   │       ├── LandingFooter.tsx   # Contact grid + hours + social links + copyright
 │       │   │       ├── InquiryForm.tsx     # Public enrollment enquiry form (rate-limited)
-│       │   │       ├── AboutSection.tsx    # "Our Story" — founded year, story, approach, principal message + photos (school-written)
+│       │   │       ├── AboutSection.tsx    # "Our Story" — up to 3 chapters (opened, how we teach, principal) along a dotted path + photos (school-written)
+│       │   │       ├── StoryChapter.tsx    # One stop on the Our Story path: icon tile, label, title, body; photo on the opposite side, alternating by index
 │       │   │       ├── TeamSection.tsx     # "Meet the team" — member cards with photo/name/role (school-written)
-│       │   │       └── LandingArtCard.tsx  # Art wall grid preview card
+│       │   │       ├── LandingArtCard.tsx  # Art wall grid preview card
+│       │   │       └── TestimonialCarousel.tsx # Auto-advancing carousel; prev/next peek cards + arrow buttons + progress dots
 │       │   ├── dashboard/
 │       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays + charts
 │       │   │   └── components/
@@ -216,7 +218,8 @@ kindergarten-app/
 │       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
-│       │   │   └── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
+│       │   │   ├── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
+│       │   │   └── ImageCropDialog.tsx # Crop step (react-easy-crop) shown between picking a photo and uploading; shape = square|round|landscape|banner
 │       │   ├── admin/
 │       │   │   ├── StudentModal.tsx       # Add/Edit student form — full validation, dark mode, i18n
 │       │   │   ├── ClassModal.tsx         # Add/Edit classroom form — full validation, dark mode, i18n
@@ -236,6 +239,11 @@ kindergarten-app/
 │       │   │   ├── AdminBearIcon.tsx      # Pixel-art SVG bear (viewBox 24×26); eyeState?: 'open'|'half'|'closed'
 │       │   │   ├── AdminBearSpeechBubble.tsx  # Admin-only bubble; variant: 'sleeping'|'waking'|'hidden'; sleeping animates z/z/Z
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
+│       │   ├── landing/
+│       │   │   └── doodles/            # Hand-drawn SVG line-art (stroke 2, fill none) — Doodle<Shape>/<Animal> with size + color props
+│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin, delay, opacity, mdUp
+│       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,Circle,Zigzag,Triangle}.tsx  # Shapes, ~100–240px on the landing page
+│       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox}.tsx  # Animals, ~300–480px, hidden below md
 │       │   ├── portal/
 │       │   │   └── PortalProtectedRoute.tsx  # Redirects to /portal/login if no parent token
 │       │   └── layout/
@@ -258,6 +266,7 @@ kindergarten-app/
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
 │       │   ├── landingContent.ts  # DEFAULT_LANDING_CONTENT, mergeLandingContent(), pickText(), resolveStats(), FEATURE_META — tested
 │       │   ├── uploadSchoolMedia.ts # Uploads principal/about/team photos to school-logo bucket under a folder prefix
+│       │   ├── cropImage.ts       # CROP_SHAPES (aspect per display shape), cropImageFile() canvas crop → JPEG — tested
 │       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
 │       └── types/
 │           └── index.ts       # Student, AttendanceRecord, ClassRoom, GalleryItem, Announcement, FeeRecord, FeePlan, DailyReport, PortfolioEntry, PortfolioReport, ArtWallItem, Parent, Inquiry, AuditFields, SchoolInfo + finance report types
@@ -351,7 +360,7 @@ All list endpoints return paginated responses:
 
 - Fonts: Nunito for body and labels; **Fredoka (`font-fun`) for page titles, section headings, and big numbers**. Page `<h1>`: `font-fun font-bold text-2xl md:text-3xl`.
 - Brand brights: `kinder-orange` (#FF6B35), `kinder-blue` (#4D96FF), `kinder-green` (#6BCB77), `kinder-yellow` (#FFD93D), `kinder-purple` (#C77DFF), `kinder-pink` (#FF85A2). Use them for buttons, stickers, icon strokes, and chart series only — never as full section backgrounds.
-- **Section washes** (`bg-wash-sky|mint|butter|blush|lavender|peach`) with matching **ink** text colours (`text-ink-*`): CSS-var driven, pastel in light and a deep nebula tint of the same hue in dark, so they need no `dark:` variant. Icon tiles are `rounded-2xl` with a wash background and the matching ink icon; map blue→sky, purple→lavender, green→mint, orange→peach, yellow→butter, pink→blush.
+- **Section washes** (`bg-wash-sky|mint|butter|blush|lavender|peach|ocean`) with matching **ink** text colours (`text-ink-*`): CSS-var driven, pastel in light and a deep nebula tint of the same hue in dark, so they need no `dark:` variant. Icon tiles are `rounded-2xl` with a wash background and the matching ink icon; map blue→sky, purple→lavender, green→mint, orange→peach, yellow→butter, pink→blush.
 - Border radius: heavy use of `rounded-2xl`, `rounded-3xl`
 - Cards: `bg-white dark:bg-gray-900 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-800` (no drop shadow except floating chips)
 - Primary action buttons: `bg-kinder-orange text-white px-5 py-2.5 rounded-full font-extrabold`; secondary: white pill with `border-2 border-gray-200 dark:border-gray-800`
@@ -410,6 +419,7 @@ All list endpoints return paginated responses:
 
 - Library: `sonner` (installed in frontend). `<Toaster position="bottom-right" richColors duration={3000} />` lives in `App.tsx` outside the Router.
 - Every `useMutation` must have both `onSuccess` (with `toast.success`) and `onError` (with `toast.error`).
+- **Photo uploads always crop first**: the file input handler only stores the picked file in `cropFile` state (and resets `e.target.value`); `<ImageCropDialog file={cropFile} shape=... onConfirm={uploadPhoto} />` renders inside the modal wrapper next to `DiscardDialog`, and the existing upload code runs on the cropped JPEG. Pick `shape` from how the photo is displayed: `square` for rounded-2xl tiles (student, logo, story, artwork), `round` for rounded-full avatars (principal, team, testimonials), `landscape` (4:3) for gallery cards, `banner` (16:9) for announcement banners.
 - Toast messages are short English strings — not translated through `useT` (toasts are ephemeral, translation can be added later).
 - Pattern: `toast.success('Student updated')` / `toast.error('Failed to save student. Please try again.')`
 

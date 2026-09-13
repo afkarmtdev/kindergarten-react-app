@@ -82,6 +82,7 @@ export function WebsiteStorySection() {
             value={value.principal_photo_url}
             onChange={(principal_photo_url) => update({ principal_photo_url })}
             folder="principal"
+            shape="circle"
             onUploadingChange={setUploading}
           />
         </div>
