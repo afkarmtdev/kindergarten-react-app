@@ -9,7 +9,7 @@ Releases the current feature branch: bumps the version, commits, pushes, merges 
 ## Step 0 — Preflight
 
 1. Run `git status --short` and `git branch --show-current`.
-2. The current branch must be a feature branch (`feat/*`, `fix/*`, `chore/*`). If it is `develop` or `main`, stop and ask which branch to release.
+2. The current branch must be a feature branch (`feat/*`, `fix/*`, `chore/*`). If it is `develop` or `main` **with uncommitted changes**, carry them to the most recent feature branch with `git checkout <feature-branch>` (uncommitted work follows the checkout) and continue from there. If it is `develop` or `main` with a clean tree, stop and ask which branch to release.
 3. Note whether there are uncommitted changes. If the tree is clean AND the branch has no commits ahead of `origin/develop`, say there is nothing to release and stop.
 4. Read the current version from `frontend/public/version.json`.
 
@@ -77,7 +77,7 @@ Show `git log --oneline -3` and confirm all three pushes with their `old..new` r
 - New storage bucket mentioned in CLAUDE.md or a migration → "create bucket X (public) in the dashboard"
 - New env vars added to the zod schema in `backend/src/index.ts` → "set X in production env"
 
-Finish on `main` unless the user asked to stay on the feature branch.
+**Finish by checking the feature branch back out** (`git checkout <feature-branch>`). Work that continues after a release must land there, not on `main`; twice already edits were made on `main` because the flow ended there.
 
 ## Gotchas
 
