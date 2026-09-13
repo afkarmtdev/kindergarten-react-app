@@ -116,14 +116,14 @@ export function InquiryForm({
         <DoodleStar size={176} color="currentColor" />
       </div>
       <div
-        className="lp-float-slow absolute bottom-32 left-12 text-ink-blush opacity-25 pointer-events-none"
+        className="hidden md:block lp-float-slow absolute bottom-32 left-12 text-ink-blush opacity-25 pointer-events-none"
         style={{ animationDelay: '0.8s' }}
         aria-hidden="true"
       >
         <DoodleFlower size={208} color="currentColor" />
       </div>
       <div
-        className="lp-spin-slow absolute bottom-24 right-16 text-ink-blush opacity-25 pointer-events-none"
+        className="hidden md:block lp-spin-slow absolute bottom-24 right-16 text-ink-blush opacity-25 pointer-events-none"
         aria-hidden="true"
       >
         <DoodleSpiral size={160} color="currentColor" />
