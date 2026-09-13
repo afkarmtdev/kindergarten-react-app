@@ -63,7 +63,7 @@ import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 import { DoodleDino } from '@/components/landing/doodles/DoodleDino'
-import { DoodleGiraffe } from '@/components/landing/doodles/DoodleGiraffe'
+import { DoodleMonkey } from '@/components/landing/doodles/DoodleMonkey'
 import { DoodleElephant } from '@/components/landing/doodles/DoodleElephant'
 import { DoodleWhale } from '@/components/landing/doodles/DoodleWhale'
 
@@ -509,7 +509,7 @@ export function LandingPage() {
 
         {/* Animal doodles — lg+ only so they never crowd the phone hero */}
         <div
-          className="hidden lg:block lp-parallax-slow absolute bottom-28 left-[22%] pointer-events-none"
+          className="hidden lg:block lp-parallax-slow absolute bottom-6 left-[5%] pointer-events-none"
           aria-hidden="true"
         >
           <div className="lp-float-slow opacity-50" style={{ animationDelay: '0.8s' }}>
@@ -518,11 +518,11 @@ export function LandingPage() {
         </div>
 
         <div
-          className="hidden lg:block lp-parallax-medium absolute top-[38%] right-[30%] pointer-events-none"
+          className="hidden lg:block lp-parallax-medium absolute bottom-8 left-[37%] pointer-events-none"
           aria-hidden="true"
         >
           <div className="lp-float-alt opacity-45" style={{ animationDelay: '2.4s' }}>
-            <DoodleGiraffe size={140} color="#FF6B35" />
+            <DoodleMonkey size={130} color="#C77DFF" />
           </div>
         </div>
 
