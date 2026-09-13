@@ -20,7 +20,6 @@ import {
   Users,
   School,
   Award,
-  Palette,
   ChevronDown,
 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
@@ -28,7 +27,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useFadeIn } from '@/hooks/useFadeIn'
-import { galleryApi, announcementsApi, testimonialsApi, artWallApi } from '@/lib/api'
+import { galleryApi, announcementsApi, testimonialsApi, artWallApi, careersApi } from '@/lib/api'
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { useLandingContent } from '@/hooks/useLandingContent'
 import { BearLogo } from '@/components/landing/bear/BaseBearMascot'
@@ -92,37 +91,11 @@ const STAT_TINTS = { students: 'sky', staff: 'mint', classes: 'butter', rating: 
 export function LandingPage() {
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
-  const { email: schoolEmail, logoUrl, schoolName } = useSchoolInfo({ public: true })
+  const { logoUrl, schoolName } = useSchoolInfo({ public: true })
   const content = useLandingContent()
   usePageTitle(undefined, schoolName)
   const [showTop, setShowTop] = useState(false)
 
-  // Section chain below the hero: each closing wave is painted in the NEXT
-  // visible section's colour, so work out the order once here.
-  const WHITE_FILL = 'fill-white dark:fill-gray-950'
-  const afterHeroFill = content.stats.show
-    ? 'fill-wash-sky'
-    : content.about.show
-      ? 'fill-wash-butter dark:fill-wash-ocean'
-      : content.team.show
-        ? 'fill-wash-lavender'
-        : WHITE_FILL
-  const afterStatsFill = content.about.show
-    ? 'fill-wash-butter dark:fill-wash-ocean'
-    : content.team.show
-      ? 'fill-wash-lavender'
-      : WHITE_FILL
-  const afterAboutFill = content.team.show ? 'fill-wash-lavender' : WHITE_FILL
-  // Dark mode only: the hero's galaxy gradient ends in near-black, so without a
-  // fade the scallop into the next band reads as a hard seam. Melt the bottom of
-  // the hero into whatever colour that next band is.
-  const afterHeroFade = content.stats.show
-    ? 'via-wash-sky to-wash-sky'
-    : content.about.show
-      ? 'via-wash-ocean to-wash-ocean'
-      : content.team.show
-        ? 'via-wash-lavender to-wash-lavender'
-        : 'via-gray-950 to-gray-950'
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
   const [selectedNotice, setSelectedNotice] = useState<Announcement | null>(null)
@@ -158,6 +131,38 @@ export function LandingPage() {
     staleTime: ONE_HOUR,
   })
   const testimonials = testimonialsData?.data ?? []
+
+  const { data: careersData } = useQuery({
+    queryKey: ['careers-public'],
+    queryFn: () => careersApi.getPublicPostings(),
+    staleTime: ONE_HOUR,
+  })
+  const hasCareers = (careersData?.data ?? []).length > 0
+
+  // Section chain below the hero: each closing wave is painted in the NEXT
+  // visible section's colour, so work out the order once here.
+  // Order: hero → story → programmes → testimonials → notices → numbers → team
+  //        → gallery → artists → enquiry → careers → promise strip
+  const WHITE_FILL = 'fill-white dark:fill-gray-950'
+  const hasTestimonials = testimonials.length > 0
+  const afterFeaturesFill = hasTestimonials ? 'fill-wash-sky' : 'fill-wash-lavender'
+  const afterAboutFill = content.features.show ? WHITE_FILL : afterFeaturesFill
+  const afterHeroFill = content.about.show
+    ? 'fill-wash-butter dark:fill-wash-ocean'
+    : afterAboutFill
+  const afterStatsFill = content.team.show ? 'fill-wash-lavender' : WHITE_FILL
+  const afterNoticesFill = content.stats.show ? 'fill-wash-peach' : afterStatsFill
+  const afterInquiryFill = hasCareers ? 'fill-wash-mint' : 'fill-kinder-pink'
+  // The hero's mesh gradient (galaxy in dark) meets the next band as a hard seam,
+  // so melt the bottom of the hero into whatever colour that next band is.
+  // A short fade that starts around the monkey doodle's feet, in both modes.
+  const afterHeroFade = content.about.show
+    ? 'to-wash-butter dark:to-wash-ocean'
+    : content.features.show
+      ? 'to-white dark:to-gray-950'
+      : hasTestimonials
+        ? 'to-wash-sky'
+        : 'to-wash-lavender'
 
   const {
     data: artWallInfiniteData,
@@ -461,9 +466,9 @@ export function LandingPage() {
           aria-hidden="true"
         />
 
-        {/* ── Bottom fade — dark mode only; blends the galaxy into the next band ── */}
+        {/* ── Bottom fade — blends the hero into the next band ── */}
         <div
-          className={`absolute inset-x-0 bottom-0 h-72 pointer-events-none hidden dark:block bg-gradient-to-b from-transparent ${afterHeroFade}`}
+          className={`absolute inset-x-0 bottom-0 h-32 pointer-events-none bg-gradient-to-b from-transparent ${afterHeroFade}`}
           aria-hidden="true"
         />
 
@@ -518,11 +523,6 @@ export function LandingPage() {
         <div
           className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 dark:opacity-10 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #FF6B35, transparent 70%)' }}
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-15 dark:opacity-10 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #4D96FF, transparent 70%)' }}
           aria-hidden="true"
         />
 
@@ -620,52 +620,6 @@ export function LandingPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════
-          STATS — the school's own numbers (Settings > Website > Numbers)
-      ════════════════════════════════════════════════════════ */}
-      {content.stats.show && (
-        <section className="relative overflow-hidden bg-wash-sky transition-colors duration-200">
-          <StarField variant="b" />
-          <div
-            className="hidden md:block lp-float-slow absolute top-6 left-8 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
-            <DoodleCat size={300} color="#4D96FF" />
-          </div>
-          <FloatingDoodle position="top-8 right-1/4" animation="alt" delay={0.8}>
-            <DoodleHeart size={120} color="#FF85A2" />
-          </FloatingDoodle>
-          <FloatingDoodle position="bottom-6 left-1/4" animation="float" delay={2.2}>
-            <DoodleSpiral size={136} color="#4D96FF" />
-          </FloatingDoodle>
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-            <div
-              className={`grid gap-4 sm:gap-8 md:gap-12 ${
-                content.stats.tiles.length === 1
-                  ? 'grid-cols-1 max-w-xs mx-auto'
-                  : content.stats.tiles.length === 3
-                    ? 'grid-cols-1 sm:grid-cols-3'
-                    : 'grid-cols-2 md:grid-cols-4'
-              }`}
-            >
-              {content.stats.tiles.map((tile) => (
-                <StatCounter
-                  key={tile.key}
-                  target={tile.value}
-                  suffix={tile.suffix}
-                  decimals={tile.decimals}
-                  label={t(STAT_LABEL_KEYS[tile.key])}
-                  icon={STAT_ICONS[tile.key]}
-                  tint={STAT_TINTS[tile.key]}
-                />
-              ))}
-            </div>
-          </div>
-
-          <Wave variant="scallop" fillClassName={afterStatsFill} />
-        </section>
-      )}
-
-      {/* ════════════════════════════════════════════════════════
           OUR STORY — school-written (Settings > Website > Our Story)
       ════════════════════════════════════════════════════════ */}
       {content.about.show && (
@@ -683,19 +637,12 @@ export function LandingPage() {
       )}
 
       {/* ════════════════════════════════════════════════════════
-          MEET THE TEAM — school-written (Settings > Website > Team)
-      ════════════════════════════════════════════════════════ */}
-      {content.team.show && (
-        <TeamSection members={content.team.members} waveFillClassName={WHITE_FILL} />
-      )}
-
-      {/* ════════════════════════════════════════════════════════
           FEATURES — programme cards the school picked
       ════════════════════════════════════════════════════════ */}
       {content.features.show && (
         <section
           id="programs"
-          className="relative overflow-hidden bg-white dark:bg-gray-950 py-24 transition-colors duration-200"
+          className="relative overflow-hidden bg-white dark:bg-gray-950 pt-24 transition-colors duration-200"
         >
           <StarField variant="b" />
           <div
@@ -763,7 +710,256 @@ export function LandingPage() {
               )}
             </div>
           </div>
+
+          <div className="mt-16">
+            <Wave variant="scallop" fillClassName={afterFeaturesFill} />
+          </div>
         </section>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+          TESTIMONIALS — what parents say
+      ════════════════════════════════════════════════════════ */}
+      {testimonials.length > 0 && (
+        <section className="relative overflow-hidden bg-wash-sky pt-24 transition-colors duration-200">
+          <StarField variant="b" />
+          {/* Floating decorative shapes */}
+          <FloatingDoodle position="top-10 left-1/3" animation="spin">
+            <DoodleStar size={128} color="#FF6B35" />
+          </FloatingDoodle>
+          <FloatingDoodle position="top-1/4 right-1/4" animation="alt" delay={0.7}>
+            <DoodleCloud size={200} color="#C77DFF" />
+          </FloatingDoodle>
+          <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.1}>
+            <DoodleZigzag size={144} color="#4D96FF" />
+          </FloatingDoodle>
+          <div
+            className="lp-spin-slow absolute bottom-20 right-20 opacity-25 pointer-events-none"
+            aria-hidden="true"
+          >
+            <Star size={36} fill="#FFD93D" stroke="#FFD93D" />
+          </div>
+
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+            <div
+              className={`text-center mb-14 ${testimonialsFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+              ref={testimonialsFadeIn.ref}
+            >
+              <div className="mb-5">
+                <StickerBadge color="bg-kinder-yellow" textColor="text-gray-900" rotate={4}>
+                  {t('testimonialsBadge')}
+                </StickerBadge>
+              </div>
+              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('testimonialsTitle')}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
+                {t('testimonialsSubtitle', { school: schoolName })}
+              </p>
+            </div>
+
+            <TestimonialCarousel testimonials={testimonials} />
+          </div>
+
+          <div className="mt-16">
+            <Wave variant="scallop" fillClassName="fill-wash-lavender" />
+          </div>
+        </section>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+          NOTICES
+      ════════════════════════════════════════════════════════ */}
+      <section
+        id="notices"
+        className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200"
+      >
+        <StarField variant="a" />
+        {/* Floating decorative shapes */}
+        <div
+          className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none text-ink-lavender"
+          aria-hidden="true"
+        >
+          <Megaphone size={176} strokeWidth={1.25} />
+        </div>
+        <div
+          className="hidden md:block absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none"
+          aria-hidden="true"
+        >
+          <div className="lp-float-slow opacity-25" style={{ animationDelay: '2s' }}>
+            <DoodleDino size={360} color="#C77DFF" />
+          </div>
+        </div>
+        <FloatingDoodle position="top-1/4 left-1/4" animation="spin">
+          <DoodleSun size={160} color="#FF6B35" />
+        </FloatingDoodle>
+        <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={2.5}>
+          <DoodleCircle size={112} color="#4D96FF" />
+        </FloatingDoodle>
+        <FloatingDoodle position="bottom-1/4 left-1/2" animation="alt" delay={0.3}>
+          <DoodleZigzag size={152} color="#C77DFF" />
+        </FloatingDoodle>
+
+        <div
+          ref={noticesFadeIn.ref}
+          className={`relative max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+        >
+          <div className="mb-5">
+            <StickerBadge color="bg-kinder-purple" textColor="text-white" rotate={-3}>
+              {t('noticesBadge')}
+            </StickerBadge>
+          </div>
+          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+            {t('noticesTitle')}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
+            {t('noticesSubtitle', { school: schoolName })}
+          </p>
+        </div>
+
+        {notices.length > 0 ? (
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {notices.slice(0, 6).map((notice, idx) => (
+                <button
+                  key={notice.id}
+                  type="button"
+                  onClick={() => setSelectedNotice(notice)}
+                  className={`text-left flex flex-col bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-kinder-orange ${
+                    notice.is_pinned
+                      ? 'border-kinder-yellow dark:border-kinder-yellow'
+                      : 'border-gray-200 dark:border-gray-800'
+                  } ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
+                  style={noticesFadeIn.isVisible ? { animationDelay: `${idx * 80}ms` } : undefined}
+                >
+                  {notice.image_url ? (
+                    <div className="h-36 overflow-hidden">
+                      <img
+                        src={notice.image_url}
+                        alt={notice.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).parentElement!.className =
+                            `h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`
+                          ;(e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`}
+                    />
+                  )}
+
+                  <div className="p-5 flex flex-col flex-1">
+                    <div className="flex gap-1.5 flex-wrap mb-3">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${NOTICE_CATEGORY_COLORS[notice.category]}`}
+                      >
+                        {notice.category.charAt(0).toUpperCase() + notice.category.slice(1)}
+                      </span>
+                      {notice.is_pinned && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-kinder-yellow/20 text-yellow-700 dark:text-yellow-500 flex items-center gap-1">
+                          <Pin size={10} />
+                          {t('pinnedBadge')}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug mb-1.5 line-clamp-2">
+                      {notice.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed">
+                      {notice.body}
+                    </p>
+
+                    {notice.expires_at && (
+                      <div className="flex items-center gap-1 mt-auto pt-3 text-xs text-gray-400 dark:text-gray-500">
+                        <Calendar size={11} />
+                        {new Date(notice.expires_at).toLocaleDateString('en-MY', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="relative max-w-2xl mx-auto px-4 sm:px-6">
+            <div className="bg-white/70 dark:bg-gray-900/60 border-2 border-dashed border-ink-lavender/40 rounded-3xl p-10 text-center">
+              <div className="w-14 h-14 bg-white dark:bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Megaphone size={26} className="text-ink-lavender" />
+              </div>
+              <h3 className="font-fun font-bold text-gray-900 dark:text-white text-lg mb-2">
+                {t('noticesEmptyTitle')}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                {t('noticesEmptySubtitle')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-16">
+          <Wave variant="scallop" fillClassName={afterNoticesFill} />
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          STATS — the school's own numbers (Settings > Website > Numbers)
+      ════════════════════════════════════════════════════════ */}
+      {content.stats.show && (
+        <section className="relative overflow-hidden bg-wash-peach transition-colors duration-200">
+          <StarField variant="b" />
+          <div
+            className="hidden md:block lp-float-slow absolute top-6 left-8 opacity-25 pointer-events-none"
+            aria-hidden="true"
+          >
+            <DoodleCat size={300} color="#FF6B35" />
+          </div>
+          <FloatingDoodle position="top-8 right-1/4" animation="alt" delay={0.8}>
+            <DoodleHeart size={120} color="#FF85A2" />
+          </FloatingDoodle>
+          <FloatingDoodle position="bottom-6 left-1/4" animation="float" delay={2.2}>
+            <DoodleSpiral size={136} color="#FFD93D" />
+          </FloatingDoodle>
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+            <div
+              className={`grid gap-4 sm:gap-8 md:gap-12 ${
+                content.stats.tiles.length === 1
+                  ? 'grid-cols-1 max-w-xs mx-auto'
+                  : content.stats.tiles.length === 3
+                    ? 'grid-cols-1 sm:grid-cols-3'
+                    : 'grid-cols-2 md:grid-cols-4'
+              }`}
+            >
+              {content.stats.tiles.map((tile) => (
+                <StatCounter
+                  key={tile.key}
+                  target={tile.value}
+                  suffix={tile.suffix}
+                  decimals={tile.decimals}
+                  label={t(STAT_LABEL_KEYS[tile.key])}
+                  icon={STAT_ICONS[tile.key]}
+                  tint={STAT_TINTS[tile.key]}
+                />
+              ))}
+            </div>
+          </div>
+
+          <Wave variant="scallop" fillClassName={afterStatsFill} />
+        </section>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+          MEET THE TEAM — school-written (Settings > Website > Team)
+      ════════════════════════════════════════════════════════ */}
+      {content.team.show && (
+        <TeamSection members={content.team.members} waveFillClassName={WHITE_FILL} />
       )}
 
       {/* ════════════════════════════════════════════════════════
@@ -794,6 +990,11 @@ export function LandingPage() {
           ref={galleryFadeIn.ref}
           className={`relative max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${galleryFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
         >
+          <div className="mb-5">
+            <StickerBadge color="bg-kinder-blue" textColor="text-white" rotate={3}>
+              {t('galleryBadge')}
+            </StickerBadge>
+          </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('galleryTitle')}
           </h2>
@@ -914,7 +1115,7 @@ export function LandingPage() {
 
         {artWallItems.length === 0 && (
           <div className="mt-16">
-            <Wave variant="scallop" fillClassName="fill-wash-lavender" />
+            <Wave variant="scallop" fillClassName="fill-wash-blush" />
           </div>
         )}
       </section>
@@ -948,8 +1149,10 @@ export function LandingPage() {
             ref={artWallFadeIn.ref}
             className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center ${artWallFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
           >
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-wash-butter mb-4">
-              <Palette size={28} className="text-ink-butter" />
+            <div className="mb-5">
+              <StickerBadge color="bg-kinder-pink" textColor="text-white" rotate={-4}>
+                {t('artWallBadge')}
+              </StickerBadge>
             </div>
             <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
               {t('ourLittleArtists')}
@@ -1028,261 +1231,14 @@ export function LandingPage() {
           </div>
 
           <div className="mt-16">
-            <Wave variant="scallop" fillClassName="fill-wash-lavender" />
-          </div>
-        </section>
-      )}
-
-      {/* ════════════════════════════════════════════════════════
-          NOTICES
-      ════════════════════════════════════════════════════════ */}
-      <section
-        id="notices"
-        className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200"
-      >
-        <StarField variant="a" />
-        {/* Floating decorative shapes */}
-        <div
-          className="lp-float absolute top-8 left-8 opacity-25 pointer-events-none text-ink-lavender"
-          aria-hidden="true"
-        >
-          <Megaphone size={176} strokeWidth={1.25} />
-        </div>
-        <div
-          className="hidden md:block absolute top-1/2 right-6 -translate-y-1/2 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="lp-float-slow opacity-25" style={{ animationDelay: '2s' }}>
-            <DoodleDino size={360} color="#C77DFF" />
-          </div>
-        </div>
-        <FloatingDoodle position="top-1/4 left-1/4" animation="spin">
-          <DoodleSun size={160} color="#FF6B35" />
-        </FloatingDoodle>
-        <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={2.5}>
-          <DoodleCircle size={112} color="#4D96FF" />
-        </FloatingDoodle>
-        <FloatingDoodle position="bottom-1/4 left-1/2" animation="alt" delay={0.3}>
-          <DoodleZigzag size={152} color="#C77DFF" />
-        </FloatingDoodle>
-
-        <div
-          ref={noticesFadeIn.ref}
-          className={`relative max-w-7xl mx-auto px-4 sm:px-6 mb-10 text-center ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
-        >
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
-            <Megaphone size={26} className="text-ink-lavender" />
-          </div>
-          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-            {t('noticesTitle')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
-            {t('noticesSubtitle', { school: schoolName })}
-          </p>
-        </div>
-
-        {notices.length > 0 ? (
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {notices.slice(0, 6).map((notice, idx) => (
-                <button
-                  key={notice.id}
-                  type="button"
-                  onClick={() => setSelectedNotice(notice)}
-                  className={`text-left flex flex-col bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-kinder-orange ${
-                    notice.is_pinned
-                      ? 'border-kinder-yellow dark:border-kinder-yellow'
-                      : 'border-gray-200 dark:border-gray-800'
-                  } ${noticesFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
-                  style={noticesFadeIn.isVisible ? { animationDelay: `${idx * 80}ms` } : undefined}
-                >
-                  {notice.image_url ? (
-                    <div className="h-36 overflow-hidden">
-                      <img
-                        src={notice.image_url}
-                        alt={notice.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).parentElement!.className =
-                            `h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`
-                          ;(e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className={`h-36 bg-gradient-to-br ${NOTICE_CATEGORY_GRADIENTS[notice.category]}`}
-                    />
-                  )}
-
-                  <div className="p-5 flex flex-col flex-1">
-                    <div className="flex gap-1.5 flex-wrap mb-3">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${NOTICE_CATEGORY_COLORS[notice.category]}`}
-                      >
-                        {notice.category.charAt(0).toUpperCase() + notice.category.slice(1)}
-                      </span>
-                      {notice.is_pinned && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-kinder-yellow/20 text-yellow-700 dark:text-yellow-500 flex items-center gap-1">
-                          <Pin size={10} />
-                          {t('pinnedBadge')}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-snug mb-1.5 line-clamp-2">
-                      {notice.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed">
-                      {notice.body}
-                    </p>
-
-                    {notice.expires_at && (
-                      <div className="flex items-center gap-1 mt-auto pt-3 text-xs text-gray-400 dark:text-gray-500">
-                        <Calendar size={11} />
-                        {new Date(notice.expires_at).toLocaleDateString('en-MY', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="relative max-w-2xl mx-auto px-4 sm:px-6">
-            <div className="bg-white/70 dark:bg-gray-900/60 border-2 border-dashed border-ink-lavender/40 rounded-3xl p-10 text-center">
-              <div className="w-14 h-14 bg-white dark:bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                <Megaphone size={26} className="text-ink-lavender" />
-              </div>
-              <h3 className="font-fun font-bold text-gray-900 dark:text-white text-lg mb-2">
-                {t('noticesEmptyTitle')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                {t('noticesEmptySubtitle')}
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-16">
-          <Wave
-            variant="scallop"
-            fillClassName={testimonials.length > 0 ? 'fill-wash-sky' : 'fill-wash-blush'}
-          />
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════
-          testimonials — kinder-purple bg, star ratings
-      ════════════════════════════════════════════════════════ */}
-      {testimonials.length > 0 && (
-        <section className="relative overflow-hidden bg-wash-sky pt-24 transition-colors duration-200">
-          <StarField variant="b" />
-          {/* Floating decorative shapes */}
-          <FloatingDoodle position="top-10 left-1/3" animation="spin">
-            <DoodleStar size={128} color="#FF6B35" />
-          </FloatingDoodle>
-          <FloatingDoodle position="top-1/4 right-1/4" animation="alt" delay={0.7}>
-            <DoodleCloud size={200} color="#C77DFF" />
-          </FloatingDoodle>
-          <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.1}>
-            <DoodleZigzag size={144} color="#4D96FF" />
-          </FloatingDoodle>
-          <div
-            className="lp-spin-slow absolute bottom-20 right-20 opacity-25 pointer-events-none"
-            aria-hidden="true"
-          >
-            <Star size={36} fill="#FFD93D" stroke="#FFD93D" />
-          </div>
-
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-            <div
-              className={`text-center mb-14 ${testimonialsFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
-              ref={testimonialsFadeIn.ref}
-            >
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
-                <Star size={26} className="text-kinder-yellow" fill="#FFD93D" />
-              </div>
-              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('testimonialsTitle')}
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
-                {t('testimonialsSubtitle', { school: schoolName })}
-              </p>
-            </div>
-
-            <TestimonialCarousel testimonials={testimonials} />
-          </div>
-
-          <div className="mt-16">
             <Wave variant="scallop" fillClassName="fill-wash-blush" />
           </div>
         </section>
       )}
 
-      <InquiryForm />
+      <InquiryForm waveFillClassName={afterInquiryFill} />
 
       <CareersSection />
-
-      {/* ════════════════════════════════════════════════════════
-          CTA — kinder-green bg, pill buttons
-      ════════════════════════════════════════════════════════ */}
-      <section
-        id="contact"
-        className="relative overflow-hidden bg-wash-mint pt-24 transition-colors duration-200"
-      >
-        <StarField variant="a" />
-        {/* Floating shapes — spread across full section width */}
-        <div
-          className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
-          aria-hidden="true"
-        >
-          <Star size={208} fill="#FFD93D" stroke="#FFD93D" />
-        </div>
-        <div
-          className="lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
-          style={{ animationDelay: '0.8s' }}
-          aria-hidden="true"
-        >
-          <DoodleCloud size={208} color="#4D96FF" />
-        </div>
-        <div
-          className="lp-float absolute top-1/3 right-1/4 opacity-15 pointer-events-none"
-          style={{ animationDelay: '1.6s' }}
-          aria-hidden="true"
-        >
-          <DoodleSun size={184} color="#FFD93D" />
-        </div>
-
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
-            <Heart size={26} className="text-kinder-pink" fill="#FF85A2" />
-          </div>
-          <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-            {t('ctaTitle')}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-lg sm:text-xl mb-10">
-            {t('ctaSubtitle', { school: schoolName })}
-          </p>
-
-          <div className="flex flex-wrap gap-4 justify-center">
-            <a
-              href={schoolEmail ? `mailto:${schoolEmail}` : '#contact'}
-              className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:bg-orange-600 transition-all duration-200"
-            >
-              {t('scheduleVisit')}
-            </a>
-          </div>
-        </div>
-
-        <div className="mt-16">
-          <Wave variant="scallop" fillClassName="fill-kinder-pink" />
-        </div>
-      </section>
 
       {/* ════════════════════════════════════════════════════════
           PROMISE STRIP — the poster's "safe · caring · nurturing" band

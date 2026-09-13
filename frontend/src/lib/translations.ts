@@ -210,8 +210,6 @@ export const translations = {
     testimonialsSubtitle: 'Hear from our happy {school} families',
 
     // Landing page — CTA
-    ctaTitle: 'Ready to join our family?',
-    ctaSubtitle: 'Schedule a visit and see why parents love {school}.',
     scheduleVisit: 'Schedule a Visit',
 
     // Landing page — Gallery
@@ -455,6 +453,13 @@ export const translations = {
     principalMessageLabel: 'A word from our principal',
     principalLabel: 'Principal',
     teamBadge: 'Our People',
+    testimonialsBadge: 'Our Families',
+    noticesBadge: 'Our Notices',
+    galleryBadge: 'Our Moments',
+    artWallBadge: 'Our Art Wall',
+    inquiryBadge: 'Join Our Family',
+    careersBadge: 'Join Our Team',
+    locationBadge: 'Our Location',
     teamTitle: 'Meet the team',
     teamSubtitle: 'The caring adults your child will see every day',
 
@@ -1246,8 +1251,6 @@ export const translations = {
     testimonialsSubtitle: 'Dengar dari keluarga {school} yang gembira',
 
     // Landing page — CTA
-    ctaTitle: 'Bersedia untuk menyertai keluarga kami?',
-    ctaSubtitle: 'Jadualkan lawatan dan lihat mengapa ibu bapa menyukai {school}.',
     scheduleVisit: 'Jadualkan Lawatan',
 
     // Landing page — Gallery
@@ -1492,6 +1495,13 @@ export const translations = {
     principalMessageLabel: 'Pesanan daripada pengetua kami',
     principalLabel: 'Pengetua',
     teamBadge: 'Warga Kami',
+    testimonialsBadge: 'Keluarga Kami',
+    noticesBadge: 'Notis Kami',
+    galleryBadge: 'Detik Kami',
+    artWallBadge: 'Dinding Seni Kami',
+    inquiryBadge: 'Sertai Keluarga Kami',
+    careersBadge: 'Sertai Pasukan Kami',
+    locationBadge: 'Lokasi Kami',
     teamTitle: 'Kenali pasukan kami',
     teamSubtitle: 'Orang dewasa penyayang yang akan ditemui anak anda setiap hari',
 

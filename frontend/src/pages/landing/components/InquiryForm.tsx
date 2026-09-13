@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { CheckCircle } from 'lucide-react'
-import { Heart } from 'lucide-react'
+import { CheckCircle, Heart } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
 import { Wave } from './Wave'
+import { StickerBadge } from './StickerBadge'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
@@ -46,7 +46,14 @@ const CONFETTI_CSS = `
   }
 `
 
-export function InquiryForm() {
+interface InquiryFormProps {
+  /** Colour of the next section — the closing wave is painted in it. */
+  waveFillClassName?: string
+}
+
+export function InquiryForm({
+  waveFillClassName = 'fill-white dark:fill-gray-950',
+}: InquiryFormProps) {
   const t = useT()
   const { ref, isVisible } = useFadeIn()
   const [view, setView] = useState<'form' | 'thankYou'>('form')
@@ -88,7 +95,10 @@ export function InquiryForm() {
   const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5'
 
   return (
-    <section className="relative overflow-hidden bg-wash-blush pt-24 transition-colors duration-200">
+    <section
+      id="contact"
+      className="relative overflow-hidden bg-wash-blush pt-24 transition-colors duration-200"
+    >
       <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
 
       {/* Floating decorative shapes */}
@@ -124,8 +134,10 @@ export function InquiryForm() {
         className={`relative max-w-3xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 mb-4">
-            <Heart size={26} className="text-ink-blush" fill="currentColor" />
+          <div className="mb-5">
+            <StickerBadge color="bg-kinder-orange" textColor="text-white" rotate={3}>
+              {t('inquiryBadge')}
+            </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
             {t('inquiryTitle')}
@@ -259,7 +271,7 @@ export function InquiryForm() {
         )}
       </div>
       <div className="mt-16">
-        <Wave variant="scallop" fillClassName="fill-white dark:fill-gray-950" />
+        <Wave variant="scallop" fillClassName={waveFillClassName} />
       </div>
     </section>
   )

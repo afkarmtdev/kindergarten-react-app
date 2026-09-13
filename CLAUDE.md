@@ -104,7 +104,7 @@ kindergarten-app/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
 │       ├── pages/
 │       │   ├── landing/
-│       │   │   ├── LandingPage.tsx  # Public marketing page (hero, stats, features, gallery+lightbox, art wall, notices, testimonials, CTA)
+│       │   │   ├── LandingPage.tsx  # Public marketing page — order: hero, our story, programmes, testimonials, notices, numbers, team, gallery+lightbox, art wall, enquiry form (#contact), careers (mint band), promise strip, location, footer
 │       │   │   ├── constants.ts     # FEATURES, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
 │       │   │   └── components/
 │       │   │       ├── Wave.tsx            # SVG decorative wave divider
