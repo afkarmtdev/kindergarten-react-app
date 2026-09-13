@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Briefcase, MapPin, Banknote, X, ChevronRight } from 'lucide-react'
+import { MapPin, Banknote, X, ChevronRight, Star } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { careersApi } from '@/lib/api'
 import { Wave } from './Wave'
+import { StickerBadge } from './StickerBadge'
 import { StarField } from './StarField'
+import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
+import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
 import { ApplicationFormModal } from './ApplicationFormModal'
 import type { JobPosting, JobType } from '@/types'
 
@@ -65,18 +68,40 @@ export function CareersSection() {
   return (
     <section
       id="careers"
-      className="relative overflow-hidden bg-white dark:bg-gray-950 pt-20 transition-colors duration-200"
+      className="relative overflow-hidden bg-wash-mint pt-24 transition-colors duration-200"
     >
-      <StarField variant="b" className="hidden dark:block" />
+      <StarField variant="a" />
+      {/* Floating shapes — spread across full section width */}
+      <div
+        className="lp-float absolute top-8 left-6 opacity-20 pointer-events-none"
+        aria-hidden="true"
+      >
+        <Star size={208} fill="#FFD93D" stroke="#FFD93D" />
+      </div>
+      <div
+        className="lp-float-slow absolute top-1/2 left-1/4 opacity-10 pointer-events-none"
+        style={{ animationDelay: '0.8s' }}
+        aria-hidden="true"
+      >
+        <DoodleCloud size={208} color="#4D96FF" />
+      </div>
+      <div
+        className="lp-float absolute top-1/3 right-1/4 opacity-15 pointer-events-none"
+        style={{ animationDelay: '1.6s' }}
+        aria-hidden="true"
+      >
+        <DoodleSun size={184} color="#FFD93D" />
+      </div>
       <div
         ref={ref}
         className={`relative max-w-6xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
         {/* Heading */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-kinder-orange/10 dark:bg-kinder-orange/20 text-kinder-orange px-4 py-1.5 rounded-full text-sm font-bold mb-4">
-            <Briefcase size={14} />
-            {t('careers')}
+          <div className="mb-5">
+            <StickerBadge color="bg-kinder-green" textColor="text-white" rotate={-3}>
+              {t('careersBadge')}
+            </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
             {t('weAreHiring')}
@@ -167,7 +192,7 @@ export function CareersSection() {
       </div>
 
       <div className="mt-16">
-        <Wave variant="scallop" fillClassName="fill-wash-mint" />
+        <Wave variant="scallop" fillClassName="fill-kinder-pink" />
       </div>
 
       {/* Job detail modal */}

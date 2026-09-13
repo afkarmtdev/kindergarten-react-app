@@ -63,6 +63,18 @@ export const KEYFRAMES = `
     from { width: 0%; }
     to   { width: 100%; }
   }
+  /* Testimonial "Show more" — quote wrapper tweens its height, label pops in */
+  .lp-collapse { transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes lp-pop {
+    0%   { opacity: 0; transform: translateY(4px) scale(0.85); }
+    60%  { opacity: 1; transform: translateY(-1px) scale(1.06); }
+    100% { opacity: 1; transform: translateY(0)    scale(1); }
+  }
+  .lp-pop { animation: lp-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-collapse { transition: none; }
+    .lp-pop { animation: none; }
+  }
   @keyframes lp-fade-up {
     from { opacity: 0; transform: translateY(20px) scale(0.95); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
