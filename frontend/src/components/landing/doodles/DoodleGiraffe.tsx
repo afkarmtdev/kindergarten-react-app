@@ -1,4 +1,4 @@
-/** Tall giraffe with ossicones and spots. Same line-art style as the other doodles. */
+/** Giraffe with a sideways muzzle, ear, mane and spots, neck angled. Same line-art style as the other doodles. */
 export function DoodleGiraffe({
   size = 48,
   color = '#FFD93D',
@@ -10,9 +10,9 @@ export function DoodleGiraffe({
 }) {
   return (
     <svg
-      width={size * (40 / 56)}
+      width={size * (48 / 56)}
       height={size}
-      viewBox="0 0 40 56"
+      viewBox="0 0 48 56"
       fill="none"
       stroke={color}
       strokeWidth="2"
@@ -21,32 +21,39 @@ export function DoodleGiraffe({
       className={className}
       aria-hidden="true"
     >
-      {/* ossicones */}
-      <path d="M11 6 V2" />
-      <path d="M17 6 V2" />
-      <circle cx="11" cy="1.5" r="1.2" fill={color} stroke="none" />
-      <circle cx="17" cy="1.5" r="1.2" fill={color} stroke="none" />
-      {/* head */}
-      <path d="M8 10 C8 6 20 6 20 10 C21 14 17 16 13 16 C10 16 8 13 8 10 Z" />
-      <circle cx="11.5" cy="10" r="1" fill={color} stroke="none" />
-      {/* ear */}
-      <path d="M20 9 l4 -2 l-1 4" />
-      {/* neck */}
-      <path d="M12 16 C12 24 14 31 17 37" />
-      <path d="M18 15 C19 22 22 29 25 35" />
+      {/* ossicones with knobs */}
+      <path d="M16 7 V3.5" />
+      <path d="M20 7 V3.5" />
+      <circle cx="16" cy="2.5" r="1.4" fill={color} stroke="none" />
+      <circle cx="20" cy="2.5" r="1.4" fill={color} stroke="none" />
+      {/* head: wide muzzle facing left */}
+      <path d="M4 12 C4 9 8 7 13 7 C18 7 22 9 22 12 C22 15 18 17 13 17 C8 17 4 15 4 12 Z" />
+      <circle cx="6.5" cy="12" r="0.9" fill={color} stroke="none" />
+      <circle cx="16" cy="10.5" r="1.1" fill={color} stroke="none" />
+      <path d="M5 14.5 h5" />
+      {/* ear, out to the back */}
+      <path d="M22 9 l5 -3 l-2 5" />
+      {/* neck, angled back and down */}
+      <path d="M22 11 C28 16 32 26 34 36" />
+      <path d="M20 17 C24 22 27 30 28 37" />
+      {/* mane */}
+      <path d="M25 13.5 l2.5 -2" />
+      <path d="M28 18.5 l2.5 -2" />
+      <path d="M30.5 24.5 l2.5 -2" />
+      <path d="M32.5 30.5 l2.5 -2" />
       {/* body */}
-      <path d="M17 37 C20 33 30 33 34 37 C37 40 36 46 32 48 C28 50 20 49 18 46 C16 43 15 40 17 37 Z" />
+      <path d="M28 37 C30 33 40 33 44 37 C47 40 46 46 42 48 C38 50 30 49 28 46 C26 43 26 40 28 37 Z" />
       {/* legs */}
-      <path d="M21 49 V55" />
-      <path d="M26 50 V55" />
       <path d="M31 49 V55" />
+      <path d="M36 50 V55" />
+      <path d="M41 49 V55" />
       {/* tail */}
-      <path d="M35 40 l4 3" />
+      <path d="M45 40 l3 4" />
       {/* spots */}
-      <circle cx="15" cy="23" r="1.6" fill={color} stroke="none" />
-      <circle cx="20" cy="29" r="1.6" fill={color} stroke="none" />
-      <circle cx="24" cy="41" r="2" fill={color} stroke="none" />
-      <circle cx="30" cy="44" r="1.6" fill={color} stroke="none" />
+      <circle cx="26.5" cy="24" r="1.6" fill={color} stroke="none" />
+      <circle cx="30" cy="31" r="1.6" fill={color} stroke="none" />
+      <circle cx="34" cy="42" r="2" fill={color} stroke="none" />
+      <circle cx="40" cy="45" r="1.6" fill={color} stroke="none" />
     </svg>
   )
 }
