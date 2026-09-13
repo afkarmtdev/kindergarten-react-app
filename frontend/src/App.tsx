@@ -10,6 +10,7 @@ import PortalProtectedRoute from '@/components/portal/PortalProtectedRoute'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { CuteLoader } from '@/components/ui/Skeletons'
+import { UpdateBanner } from '@/components/ui/UpdateBanner'
 // Public pages stay eager — they are the first routes users hit
 import { LandingPage } from '@/pages/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -446,6 +447,8 @@ export default function App() {
         duration={3000}
         toastOptions={{ className: 'font-sans text-sm' }}
       />
+      {/* New-build banner — one instance for every page, public and private */}
+      <UpdateBanner />
       {/* Devtools only in development */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
