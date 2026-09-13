@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'KinderCare',
@@ -44,6 +44,12 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Prompt mode: the new worker waits until the UpdateBanner sends SKIP_WAITING, then claims
+        // open tabs so the register helper's 'controlling' event fires and reloads the page.
+        clientsClaim: true,
+        // Only the admin and portal apps get the precached offline shell. Public pages (landing,
+        // careers) always fetch index.html from the network so visitors never see a stale build.
+        navigateFallbackAllowlist: [/^\/admin/, /^\/portal/],
         runtimeCaching: [
           {
             // Never cache version.json — always fetch from network so update detection works

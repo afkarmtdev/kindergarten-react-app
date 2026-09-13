@@ -36,8 +36,6 @@ import { AdminBearIcon } from '@/components/admin/AdminBearIcon'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useT } from '@/hooks/useT'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
-import { useVersionCheck } from '@/hooks/useVersionCheck'
-import { UpdateBanner } from '@/components/ui/UpdateBanner'
 
 export function AdminLayout() {
   const { user, logout } = useAuth()
@@ -53,7 +51,6 @@ export function AdminLayout() {
       return false
     }
   })
-  const { updateAvailable } = useVersionCheck()
   const { logoUrl } = useSchoolInfo()
 
   const toggleCollapsed = useCallback(() => {
@@ -379,7 +376,6 @@ export function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 font-display transition-colors duration-200">
-      <UpdateBanner visible={updateAvailable} />
       {/* Desktop sidebar — hidden on mobile */}
       <aside
         className={`hidden lg:flex bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col shadow-sm transition-all duration-200 ${

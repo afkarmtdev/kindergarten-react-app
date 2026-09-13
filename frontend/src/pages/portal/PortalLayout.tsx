@@ -9,8 +9,6 @@ import { PortalBearCub } from '../../components/portal/PortalBearCub'
 import { StarField } from '../landing/components/StarField'
 import { PortalFloatingIcons } from '../../components/portal/PortalFloatingIcons'
 import { ChildSwitcherSheet } from '../../components/portal/ChildSwitcherSheet'
-import { useVersionCheck } from '../../hooks/useVersionCheck'
-import { UpdateBanner } from '../../components/ui/UpdateBanner'
 
 // ── Temporary toggle for comparing child-switcher UX ──
 // 'header' = Option 1 (tap header name), 'pill' = Option 4 (floating pill)
@@ -42,7 +40,6 @@ export default function PortalLayout() {
   const t = useT()
   const isHome = location.pathname === '/portal'
   const { darkMode, toggleDark, lang, setLang } = useSettingsStore()
-  const { updateAvailable } = useVersionCheck()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
@@ -81,7 +78,6 @@ export default function PortalLayout() {
       {/* Decorative overlays */}
       <StarField variant="a" className="hidden dark:block" />
       <PortalFloatingIcons />
-      <UpdateBanner visible={updateAvailable} />
       {isOffline && (
         <div className="bg-gray-700 text-white text-xs font-semibold text-center py-2 px-4 flex items-center justify-center gap-2">
           <WifiOff className="w-3.5 h-3.5" />
