@@ -474,7 +474,7 @@ export function LandingPage() {
 
         {/* ── Floating decorative shapes (with parallax outer wrapper) ── */}
         <div
-          className="lp-parallax-fast absolute top-16 left-6 pointer-events-none"
+          className="hidden md:block lp-parallax-fast absolute top-16 left-6 pointer-events-none"
           aria-hidden="true"
         >
           <div className="lp-float opacity-60">
@@ -1280,7 +1280,7 @@ export function LandingPage() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Scroll to top"
-        className={`fixed bottom-[4.5rem] right-4 sm:bottom-8 sm:right-8 lg:bottom-4 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+        className={`fixed bottom-[4.5rem] right-4 sm:right-8 lg:bottom-4 z-50 w-12 h-12 rounded-full bg-kinder-orange text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
           showTop
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-4 pointer-events-none'
