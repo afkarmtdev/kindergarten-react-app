@@ -784,6 +784,7 @@ Full implementation details — eye states, idle machine timing, critical timer 
 
 - **Git commit messages — short and concise**: one-line subject only, no lengthy description body, no `Co-Authored-By` trailer. Match the style of recent commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:` prefix + brief subject).
 
+- **Releasing**: use `/deploy` (`.claude/commands/deploy.md`) — bumps the version, commits, pushes the feature branch, merges into `develop`, then `develop` into `main`, and lists manual follow-ups (migrations, seeds, buckets, env vars).
 - **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled into JS) AND `frontend/public/version.json` (served live, never cached). Vite forbids importing from `public/` as a JS module, so they cannot share a source — bump both manually. `useVersionCheck` fetches `/version.json` (`cache: 'no-store'`) and compares against the bundled `APP_VERSION` — mismatch shows the `UpdateBanner` prompting a hard reload.
 
 - **One component, one purpose, one file** — every React component goes in its own `.tsx` file with a single exported component. Never define multiple exported components in one file.
