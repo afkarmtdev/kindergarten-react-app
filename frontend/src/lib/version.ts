@@ -11,3 +11,13 @@ export const APP_VERSION = '1.11.0-alpha1'
  * Change this once to rebrand the entire application.
  */
 export const APP_NAME = 'KinderCare'
+
+/**
+ * Vendor credit shown in the landing footer ("Powered by").
+ * `url` is optional; when null the credit renders as plain text.
+ */
+export const VENDOR = {
+  name: 'Bunga Raya Code Sdn Bhd',
+  url: null as string | null,
+  mark: '/images/brc-mark.png',
+}

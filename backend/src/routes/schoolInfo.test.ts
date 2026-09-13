@@ -182,3 +182,70 @@ describe('PUT / — upsert school info', () => {
     expect(res.status).toBe(500)
   })
 })
+
+// ── PUT /landing — patch landing content ────────────────────────────────────
+
+describe('PUT /landing — patch landing content', () => {
+  const headers = { 'Content-Type': 'application/json' }
+
+  test('merges the patch into stored landing_content', async () => {
+    setMockResponse('school_info', {
+      data: {
+        id: '1',
+        ...VALID_SCHOOL_INFO,
+        landing_content: { hero: { tagline: { en: 'Old', ms: '' } } },
+      },
+      error: null,
+    })
+
+    const res = await schoolInfo.request('/landing', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ stats: { mode: 'live', staff: 12, rating: 4.8 } }),
+    })
+    expect(res.status).toBe(200)
+  })
+
+  test('strips HTML from hero copy', async () => {
+    setMockResponse('school_info', {
+      data: { id: '1', ...VALID_SCHOOL_INFO, landing_content: null },
+      error: null,
+    })
+
+    const res = await schoolInfo.request('/landing', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ hero: { tagline: { en: '<b>Enrol</b>', ms: '' } } }),
+    })
+    expect(res.status).toBe(200)
+  })
+
+  test('rejects invalid feature keys', async () => {
+    const res = await schoolInfo.request('/landing', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ features: { enabled: ['robotics'] } }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('rejects a rating above 5', async () => {
+    const res = await schoolInfo.request('/landing', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ stats: { rating: 9 } }),
+    })
+    expect(res.status).toBe(400)
+  })
+
+  test('returns 409 when school info has not been saved yet', async () => {
+    setMockResponse('school_info', { data: null, error: { message: 'not found' } })
+
+    const res = await schoolInfo.request('/landing', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ about: { enabled: true } }),
+    })
+    expect(res.status).toBe(409)
+  })
+})

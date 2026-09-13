@@ -84,7 +84,7 @@ kindergarten-app/
 │       │   ├── dailyReports.ts      # GET/?date&class_id, PUT/:studentId/:date (upsert), DELETE/:id
 │       │   ├── portfolioEntries.ts  # CRUD + GET /:studentId/report/:term (entries + report row)
 │       │   ├── portfolioReports.ts  # PUT /:studentId/:term — upsert teacher/principal comments
-│       │   └── schoolInfo.ts        # GET/PUT /api/school-info — school branding, contact, hours
+│       │   └── schoolInfo.ts        # GET/PUT /api/school-info — school branding, contact, hours; PUT /landing patches landing_content (schema in lib/landingContent.ts)
 │       ├── middleware/
 │       │   ├── auth.ts        # Validates Supabase JWT, sets c.set('user', user)
 │       │   └── parentAuth.ts  # Validates portal Bearer token via parent_sessions table, sets c.set('parentId') + c.set('parentChildIds')
@@ -92,6 +92,7 @@ kindergarten-app/
 │       │   ├── audit.ts       # Audit trail helpers: auditCreate, auditUpdate, auditDelete, auditUpsert, getActor
 │       │   ├── logger.ts      # pino instance (pino-pretty in dev, JSON in prod)
 │       │   ├── sanitise.ts    # stripHtml(str) + sanitiseStrings(obj) — applied before all inserts
+│       │   ├── landingContent.ts # Zod schema + sanitiser + merge for school_info.landing_content — tested independently
 │       │   └── fees.ts        # Pure functions: deriveStatus(), monthRange() — tested independently
 │       ├── db/
 │       │   └── supabase.ts    # Supabase service-role client
@@ -112,6 +113,8 @@ kindergarten-app/
 │       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours
 │       │   │       ├── LandingFooter.tsx   # Contact grid + hours + social links + copyright
 │       │   │       ├── InquiryForm.tsx     # Public enrollment enquiry form (rate-limited)
+│       │   │       ├── AboutSection.tsx    # "Our Story" — founded year, story, approach, principal message + photos (school-written)
+│       │   │       ├── TeamSection.tsx     # "Meet the team" — member cards with photo/name/role (school-written)
 │       │   │       └── LandingArtCard.tsx  # Art wall grid preview card
 │       │   ├── dashboard/
 │       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays + charts
@@ -160,7 +163,16 @@ kindergarten-app/
 │       │   │   └── components/
 │       │   │       ├── DocumentNumberingSection.tsx  # Segment builder + preview + save
 │       │   │       ├── SchoolInfoSection.tsx         # Logo upload, school name, address, phone, email
-│       │   │       └── AppearanceSection.tsx         # Dark mode toggle + EN/BM language picker
+│       │   │       ├── AppearanceSection.tsx         # Dark mode toggle + EN/BM language picker
+│       │   │       ├── WebsiteHeroSection.tsx        # Website > Hero Copy — bilingual tagline/headline/subtitle + live preview
+│       │   │       ├── WebsiteStorySection.tsx       # Website > Our Story — toggle, founded year, story, approach, principal message/photo, 3 photos
+│       │   │       ├── WebsiteStatsSection.tsx       # Website > Numbers — live/manual/hidden mode + values
+│       │   │       ├── WebsiteProgrammesSection.tsx  # Website > Programmes — pick + order the 6 built-in feature cards
+│       │   │       ├── WebsiteTeamSection.tsx        # Website > Team — member list with photo/name/bilingual role
+│       │   │       ├── WebsiteSectionCard.tsx        # Shared card chrome for Website panels (heading, loading, save bar, "save General first" notice)
+│       │   │       ├── BilingualField.tsx            # One label, EN + BM inputs (text or textarea)
+│       │   │       ├── ToggleSwitch.tsx              # Pill switch row with label
+│       │   │       └── PhotoUploadTile.tsx           # Dashed upload tile → school-logo bucket via lib/uploadSchoolMedia.ts
 │       │   ├── testimonials/
 │       │   │   ├── TestimonialsPage.tsx # Grid, 9/page, search, add/edit modal wired
 │       │   │   └── components/
@@ -234,7 +246,9 @@ kindergarten-app/
 │       │   ├── useParentAuth.tsx # ParentAuthContext: parent, children, selectedChild, token, login(), logout(), selectChild()
 │       │   ├── useT.ts           # Translation hook: const t = useT(); t('key', { vars })
 │       │   ├── usePageTitle.ts   # Sets document.title — usePageTitle('Dashboard') → "Dashboard — KinderCare"
-│       │   ├── useSchoolInfo.ts  # Fetches school_info; useSchoolInfo({ public: true }) for unauthenticated contexts
+│       │   ├── useSchoolInfo.ts  # Fetches school_info; useSchoolInfo({ public: true }) for unauthenticated contexts; exposes merged landingContent
+│       │   ├── useLandingContent.ts # Resolves landing_content for the current lang with fallbacks → hero strings, about, stats tiles, feature cards, team
+│       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team)
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
 │       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
@@ -242,6 +256,8 @@ kindergarten-app/
 │       │   ├── supabaseClient.ts  # Supabase browser client (anon key) — used for Storage uploads only
 │       │   ├── translations.ts    # Full EN/MS translation map (~160 keys)
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
+│       │   ├── landingContent.ts  # DEFAULT_LANDING_CONTENT, mergeLandingContent(), pickText(), resolveStats(), FEATURE_META — tested
+│       │   ├── uploadSchoolMedia.ts # Uploads principal/about/team photos to school-logo bucket under a folder prefix
 │       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
 │       └── types/
 │           └── index.ts       # Student, AttendanceRecord, ClassRoom, GalleryItem, Announcement, FeeRecord, FeePlan, DailyReport, PortfolioEntry, PortfolioReport, ArtWallItem, Parent, Inquiry, AuditFields, SchoolInfo + finance report types
@@ -261,7 +277,8 @@ kindergarten-app/
 │   └── seeds/
 │       ├── students.sql                  # Sample student data
 │       ├── art_wall.sql                  # Sample art wall data
-│       └── art_wall_2.sql               # Additional art wall data
+│       ├── art_wall_2.sql               # Additional art wall data
+│       └── landing_content.sql           # Fills school_info.landing_content (hero, story, stats, features, team) — run after school_info.sql
 ```
 
 ## Database Schema
@@ -299,8 +316,9 @@ parent_sessions    (id, parent_id→parents, token_hash UNIQUE, device_id, devic
                    RLS: authenticated only; NO soft-delete (sessions are ephemeral, hard delete on logout/revoke)
 inquiries          (id, parent_name, child_name, child_age, phone, message, status[new|contacted|enrolled|closed], created_at, modified_at, modified_by, deleted_at, deleted_by)
                    Public INSERT (rate-limited); authenticated SELECT + PUT status
-school_info        (id, school_name, address, phone, email, logo_url, principal_name, registration_number, whatsapp_number, operating_hours jsonb, google_maps_embed_url, facebook_url, instagram_url, updated_at, created_by, modified_by)
+school_info        (id, school_name, address, phone, email, logo_url, principal_name, registration_number, whatsapp_number, operating_hours jsonb, google_maps_embed_url, facebook_url, instagram_url, landing_content jsonb, updated_at, created_by, modified_by)
                    Single-row config; no soft-delete
+                   landing_content = { hero, about, stats, features, team } — see LandingContent in packages/types; validated by backend/src/lib/landingContent.ts
 daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at, +audit)
                    UNIQUE(student_id, report_date); RLS: authenticated only
 portfolio_entries  (id, student_id→students, domain[physical|cognitive|language|social_emotional|creative], observation, photo_url, term, recorded_by, entry_date, created_at, +audit)
@@ -463,6 +481,7 @@ This project runs on the **free tier**. Key limits:
   - `artwork-photos` — art wall artwork uploads (ArtWallModal); compressed before upload
   - `portfolio-photos` — portfolio entry photo uploads (PortfolioEntryModal)
   - `resumes` — job application resume uploads (ApplicationFormModal); PDF/DOC/DOCX, 5 MB limit; anon upload + authenticated read/delete
+  - `school-logo` — school logo (SchoolInfoSection) AND landing identity photos under folder prefixes `principal/`, `about/`, `team/` (Settings > Website via `lib/uploadSchoolMedia.ts`); one bucket so no extra setup is needed
 
 ## Environment Variables
 

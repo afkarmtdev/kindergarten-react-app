@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -29,13 +29,8 @@ import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { galleryApi, announcementsApi, testimonialsApi, artWallApi } from '@/lib/api'
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
-import { APP_NAME } from '@/lib/version'
-import {
-  BaseBearMascot,
-  BearLogo,
-  type BearMascotHandle,
-} from '@/components/landing/bear/BaseBearMascot'
-import { BearToggle } from '@/components/landing/bear/BearToggle'
+import { useLandingContent } from '@/hooks/useLandingContent'
+import { BearLogo } from '@/components/landing/bear/BaseBearMascot'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
@@ -54,9 +49,10 @@ import { LocationSection } from './components/LocationSection'
 import { LandingFooter } from './components/LandingFooter'
 import { NoticeModal } from './components/NoticeModal'
 import { StarField } from './components/StarField'
+import { AboutSection } from './components/AboutSection'
+import { TeamSection } from './components/TeamSection'
 import {
   KEYFRAMES,
-  FEATURES,
   NOTICE_CATEGORY_COLORS,
   NOTICE_CATEGORY_GRADIENTS,
   GALLERY_PLACEHOLDERS,
@@ -67,18 +63,44 @@ import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 
+const STAT_LABEL_KEYS = {
+  students: 'statsStudentsLabel',
+  staff: 'statsTeachersLabel',
+  classes: 'statsClassesLabel',
+  rating: 'statsRatingLabel',
+} as const
+const STAT_ICONS = {
+  students: GraduationCap,
+  staff: Users,
+  classes: School,
+  rating: Award,
+} as const
+const STAT_TINTS = { students: 'sky', staff: 'mint', classes: 'butter', rating: 'blush' } as const
+
 export function LandingPage() {
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
   const { email: schoolEmail, logoUrl, schoolName } = useSchoolInfo({ public: true })
+  const content = useLandingContent()
   usePageTitle(undefined, schoolName)
   const [showTop, setShowTop] = useState(false)
-  const [navFlipped, setNavFlipped] = useState(false)
-  const navFlipCount = useRef(0)
-  const handleNavFlip = useCallback((flipped: boolean) => {
-    navFlipCount.current++
-    setNavFlipped(flipped)
-  }, [])
+
+  // Section chain below the hero: each closing wave is painted in the NEXT
+  // visible section's colour, so work out the order once here.
+  const WHITE_FILL = 'fill-white dark:fill-gray-950'
+  const afterHeroFill = content.stats.show
+    ? 'fill-wash-sky'
+    : content.about.show
+      ? 'fill-wash-butter'
+      : content.team.show
+        ? 'fill-wash-lavender'
+        : WHITE_FILL
+  const afterStatsFill = content.about.show
+    ? 'fill-wash-butter'
+    : content.team.show
+      ? 'fill-wash-lavender'
+      : WHITE_FILL
+  const afterAboutFill = content.team.show ? 'fill-wash-lavender' : WHITE_FILL
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
   const [selectedNotice, setSelectedNotice] = useState<Announcement | null>(null)
@@ -86,24 +108,9 @@ export function LandingPage() {
   const [displayIndex, setDisplayIndex] = useState(0)
   const [cardAnim, setCardAnim] = useState<'enter' | 'exit'>('enter')
   const [isPaused, setIsPaused] = useState(false)
-  const [bearVisible, setBearVisible] = useState(
-    () => localStorage.getItem('bear-visible') !== 'false'
-  )
 
   const galleryScrollRef = useRef<HTMLDivElement>(null)
   const artWallHeadingRef = useRef<HTMLElement>(null)
-
-  // Bear bounce
-  const heroRef = useRef<HTMLElement>(null)
-  const bearBounceRef = useRef<HTMLDivElement>(null)
-  const bearMascotRef = useRef<BearMascotHandle>(null)
-  const bearRotateRef = useRef<HTMLDivElement>(null)
-  const bearPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const bearVelRef = useRef<{ vx: number; vy: number }>({ vx: -90, vy: -65 })
-  const bearPausedRef = useRef(false)
-  const bearRafRef = useRef<number | null>(null)
-  const bearRotRef = useRef(0)
-  const heroDimsRef = useRef({ w: 0, h: 0 })
 
   const featuresFadeIn = useFadeIn()
   const galleryFadeIn = useFadeIn()
@@ -217,108 +224,6 @@ export function LandingPage() {
     return () => clearTimeout(swap)
   }, [activeTestimonial])
 
-  // Bear DVD bounce
-  useEffect(() => {
-    if (!bearVisible) return
-    const heroEl = heroRef.current
-    const bearEl = bearBounceRef.current
-    const rotEl = bearRotateRef.current
-    if (!heroEl || !bearEl || !rotEl) return
-
-    const heroRect = heroEl.getBoundingClientRect()
-    if (heroRect.width === 0) return
-
-    const BEAR_W = 120
-    const BEAR_H = 140
-    const PAD = 15
-    const MIN_X = PAD
-    const MIN_Y = PAD
-    const ROT_SPEED = 45
-
-    heroDimsRef.current = { w: heroRect.width, h: heroRect.height }
-
-    const mxX = () => heroDimsRef.current.w - BEAR_W - PAD
-    const mxY = () => heroDimsRef.current.h - BEAR_H - PAD
-
-    bearPosRef.current = {
-      x: Math.max(MIN_X, Math.min(heroRect.width * 0.5, mxX())),
-      y: Math.max(MIN_Y, Math.min(heroRect.height * 0.5, mxY())),
-    }
-    bearMascotRef.current?.setFlip(true)
-    bearEl.style.left = `${bearPosRef.current.x}px`
-    bearEl.style.top = `${bearPosRef.current.y}px`
-
-    let lastTime: number | null = null
-    let rafId: number
-
-    const tick = (now: number) => {
-      rafId = requestAnimationFrame(tick)
-      bearRafRef.current = rafId
-
-      const delta = lastTime !== null ? Math.min(now - lastTime, 50) : 16
-      lastTime = now
-      const dt = delta / 1000
-
-      if (bearPausedRef.current) {
-        bearRotRef.current *= 0.82
-        if (Math.abs(bearRotRef.current) < 0.3) bearRotRef.current = 0
-        rotEl.style.transform = `rotate(${bearRotRef.current}deg)`
-        lastTime = null
-        return
-      }
-
-      bearRotRef.current += ROT_SPEED * dt
-      rotEl.style.transform = `rotate(${bearRotRef.current}deg)`
-
-      let { x, y } = bearPosRef.current
-      let { vx, vy } = bearVelRef.current
-
-      x += vx * dt
-      y += vy * dt
-
-      const maxXv = mxX()
-      const maxYv = mxY()
-
-      if (x <= MIN_X) {
-        x = MIN_X
-        vx = Math.abs(vx)
-        bearMascotRef.current?.setFlip(false)
-      } else if (x >= maxXv) {
-        x = maxXv
-        vx = -Math.abs(vx)
-        bearMascotRef.current?.setFlip(true)
-      }
-      if (y <= MIN_Y) {
-        y = MIN_Y
-        vy = Math.abs(vy)
-      } else if (y >= maxYv) {
-        y = maxYv
-        vy = -Math.abs(vy)
-      }
-
-      bearPosRef.current = { x, y }
-      bearVelRef.current = { vx, vy }
-      bearEl.style.left = `${x}px`
-      bearEl.style.top = `${y}px`
-    }
-
-    rafId = requestAnimationFrame(tick)
-    bearRafRef.current = rafId
-
-    const ro = new ResizeObserver(() => {
-      const r = heroEl.getBoundingClientRect()
-      heroDimsRef.current = { w: r.width, h: r.height }
-      bearPosRef.current.x = Math.max(MIN_X, Math.min(bearPosRef.current.x, mxX()))
-      bearPosRef.current.y = Math.max(MIN_Y, Math.min(bearPosRef.current.y, mxY()))
-    })
-    ro.observe(heroEl)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-      ro.disconnect()
-    }
-  }, [bearVisible])
-
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 font-display overflow-x-hidden transition-colors duration-200">
       {/* Inject keyframe CSS */}
@@ -335,7 +240,6 @@ export function LandingPage() {
               frontClassName="w-10 h-10 bg-kinder-orange/10 dark:bg-kinder-orange/20 rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-kinder-orange/30"
               backClassName="w-10 h-10 flex items-center justify-center"
               back={<BearLogo size={40} />}
-              onFlip={handleNavFlip}
             >
               {logoUrl ? (
                 <img
@@ -357,24 +261,15 @@ export function LandingPage() {
             </CoinFlipLogo>
             <span
               className={`font-fun font-bold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
-                (navFlipped ? APP_NAME : schoolName).length > 30
+                schoolName.length > 30
                   ? 'text-base'
-                  : (navFlipped ? APP_NAME : schoolName).length > 20
+                  : schoolName.length > 20
                     ? 'text-lg'
                     : 'text-xl'
               } transition-all duration-300`}
-              title={navFlipped ? APP_NAME : schoolName}
+              title={schoolName}
             >
-              {navFlipCount.current === 0 ? (
-                schoolName
-              ) : (
-                <TypedText
-                  key={navFlipCount.current}
-                  text={navFlipped ? APP_NAME : schoolName}
-                  delay={200}
-                  speed={50}
-                />
-              )}
+              {schoolName}
             </span>
           </div>
 
@@ -444,7 +339,7 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           HERO — gradient bg, floating shapes, big heading
       ════════════════════════════════════════════════════════ */}
-      <section id="about" ref={heroRef} className="relative overflow-hidden">
+      <section id={content.about.show ? 'home' : 'about'} className="relative overflow-hidden">
         {/* Mesh gradient background — light mode */}
         <div
           className="absolute inset-0 lp-mesh-gradient block dark:hidden"
@@ -667,13 +562,18 @@ export function LandingPage() {
                 style={{ transform: 'rotate(-3deg)' }}
               >
                 <Star size={13} fill="#FF6B35" stroke="#FF6B35" />
-                {t('heroTagline')}
+                {content.hero.tagline}
               </div>
 
               <h1 className="lp-enter-1 font-fun text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
-                <span className="block">{t('heroPart1')}</span>
+                <span className="block">{content.hero.headlineStart}</span>
                 <span className="relative inline-block text-kinder-orange mx-1">
-                  <TypedText text={t('heroHighlight')} delay={800} speed={80} />
+                  <TypedText
+                    key={content.hero.headlineHighlight}
+                    text={content.hero.headlineHighlight}
+                    delay={800}
+                    speed={80}
+                  />
                   <svg
                     className="absolute -bottom-2 left-0 w-full"
                     viewBox="0 0 200 14"
@@ -690,11 +590,11 @@ export function LandingPage() {
                     />
                   </svg>
                 </span>
-                <span className="block xl:inline"> {t('heroPart2')}</span>
+                <span className="block xl:inline"> {content.hero.headlineEnd}</span>
               </h1>
 
               <p className="lp-enter-2 text-gray-500 dark:text-gray-400 text-lg md:text-xl max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-10">
-                {t('heroSubtitle')}
+                {content.hero.subtitle}
               </p>
 
               <div className="lp-enter-2 relative z-30 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16">
@@ -742,138 +642,127 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Bear mascot — direct child of section so position:absolute uses section as containing block */}
-        {bearVisible && (
-          <div
-            ref={bearBounceRef}
-            className="hidden lg:block absolute z-20 lp-enter-2"
-            style={{ left: 0, top: 0 }}
-            onMouseEnter={() => {
-              bearPausedRef.current = true
-              const r = bearRotRef.current
-              bearRotRef.current = (((r % 360) + 540) % 360) - 180
-            }}
-            onMouseLeave={() => {
-              bearPausedRef.current = false
-            }}
-          >
+        <Wave variant="scallop" fillClassName={afterHeroFill} />
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          STATS — the school's own numbers (Settings > Website > Numbers)
+      ════════════════════════════════════════════════════════ */}
+      {content.stats.show && (
+        <section className="relative overflow-hidden bg-wash-sky transition-colors duration-200">
+          <StarField variant="b" />
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
             <div
-              style={{
-                display: 'inline-block',
-                filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.18))',
-              }}
+              className={`grid gap-4 sm:gap-8 md:gap-12 ${
+                content.stats.tiles.length === 1
+                  ? 'grid-cols-1 max-w-xs mx-auto'
+                  : content.stats.tiles.length === 3
+                    ? 'grid-cols-1 sm:grid-cols-3'
+                    : 'grid-cols-2 md:grid-cols-4'
+              }`}
             >
-              <div ref={bearRotateRef}>
-                <BaseBearMascot ref={bearMascotRef} />
-              </div>
+              {content.stats.tiles.map((tile) => (
+                <StatCounter
+                  key={tile.key}
+                  target={tile.value}
+                  suffix={tile.suffix}
+                  decimals={tile.decimals}
+                  label={t(STAT_LABEL_KEYS[tile.key])}
+                  icon={STAT_ICONS[tile.key]}
+                  tint={STAT_TINTS[tile.key]}
+                />
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Bear toggle — subtle pill button, bottom-right of hero, only on lg+ */}
-        <BearToggle
-          visible={bearVisible}
-          onToggle={() => {
-            const next = !bearVisible
-            setBearVisible(next)
-            localStorage.setItem('bear-visible', String(next))
-          }}
+          <Wave variant="scallop" fillClassName={afterStatsFill} />
+        </section>
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+          OUR STORY — school-written (Settings > Website > Our Story)
+      ════════════════════════════════════════════════════════ */}
+      {content.about.show && (
+        <AboutSection
+          schoolName={schoolName}
+          foundedYear={content.about.foundedYear}
+          story={content.about.story}
+          approach={content.about.approach}
+          principalName={content.about.principalName}
+          principalMessage={content.about.principalMessage}
+          principalPhotoUrl={content.about.principalPhotoUrl}
+          photoUrls={content.about.photoUrls}
+          waveFillClassName={afterAboutFill}
         />
-
-        <Wave variant="scallop" fillClassName="fill-wash-sky" />
-      </section>
+      )}
 
       {/* ════════════════════════════════════════════════════════
-          STATS — kinder-orange bg, animated counters
+          MEET THE TEAM — school-written (Settings > Website > Team)
       ════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-wash-sky transition-colors duration-200">
-        <StarField variant="b" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
-            <StatCounter
-              target={500}
-              suffix="+"
-              label={t('statsStudentsLabel')}
-              icon={GraduationCap}
-              tint="sky"
-            />
-            <StatCounter
-              target={50}
-              suffix="+"
-              label={t('statsTeachersLabel')}
-              icon={Users}
-              tint="mint"
-            />
-            <StatCounter
-              target={20}
-              suffix="+"
-              label={t('statsClassesLabel')}
-              icon={School}
-              tint="butter"
-            />
-            <StatCounter
-              target={5}
-              suffix=" ★"
-              label={t('statsRatingLabel')}
-              icon={Award}
-              tint="blush"
-            />
-          </div>
-        </div>
-
-        <Wave variant="scallop" fillClassName="fill-white dark:fill-gray-950" />
-      </section>
+      {content.team.show && (
+        <TeamSection members={content.team.members} waveFillClassName={WHITE_FILL} />
+      )}
 
       {/* ════════════════════════════════════════════════════════
-          FEATURES — peach bg, large icon cards
+          FEATURES — programme cards the school picked
       ════════════════════════════════════════════════════════ */}
-      <section
-        id="programs"
-        className="relative overflow-hidden bg-white dark:bg-gray-950 py-24 transition-colors duration-200"
-      >
-        <StarField variant="b" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <div className="mb-5">
-              <StickerBadge color="bg-kinder-purple" textColor="text-white" rotate={-3}>
-                {t('ourPrograms')}
-              </StickerBadge>
+      {content.features.show && (
+        <section
+          id="programs"
+          className="relative overflow-hidden bg-white dark:bg-gray-950 py-24 transition-colors duration-200"
+        >
+          <StarField variant="b" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-16">
+              <div className="mb-5">
+                <StickerBadge color="bg-kinder-purple" textColor="text-white" rotate={-3}>
+                  {t('ourPrograms')}
+                </StickerBadge>
+              </div>
+              <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                {t('featuresTitle')}
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
+                {t('featuresSubtitle')}
+              </p>
             </div>
-            <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-              {t('featuresTitle')}
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
-              {t('featuresSubtitle')}
-            </p>
-          </div>
 
-          <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6 md:items-start">
-            {FEATURES.map(({ icon, color, titleKey, descKey, expandedKey }, idx) => (
-              <FeatureCard
-                key={titleKey}
-                icon={icon}
-                color={color}
-                titleKey={titleKey}
-                descKey={descKey}
-                expandedKey={expandedKey}
-                badge={
-                  idx === 0 ? (
-                    <StickerBadge color="bg-kinder-pink" textColor="text-white" rotate={8}>
-                      {t('badgePopular')}
-                    </StickerBadge>
-                  ) : idx === 3 ? (
-                    <StickerBadge color="bg-kinder-yellow" textColor="text-gray-900" rotate={-10}>
-                      {t('badgeLoved')}
-                    </StickerBadge>
-                  ) : undefined
-                }
-                className={featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}
-                style={featuresFadeIn.isVisible ? { animationDelay: `${idx * 100}ms` } : undefined}
-              />
-            ))}
+            <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6 md:items-start">
+              {content.features.cards.map(
+                ({ key, icon, color, titleKey, descKey, expandedKey }, idx) => (
+                  <FeatureCard
+                    key={key}
+                    icon={icon}
+                    color={color}
+                    titleKey={titleKey}
+                    descKey={descKey}
+                    expandedKey={expandedKey}
+                    badge={
+                      idx === 0 ? (
+                        <StickerBadge color="bg-kinder-pink" textColor="text-white" rotate={8}>
+                          {t('badgePopular')}
+                        </StickerBadge>
+                      ) : idx === 3 ? (
+                        <StickerBadge
+                          color="bg-kinder-yellow"
+                          textColor="text-gray-900"
+                          rotate={-10}
+                        >
+                          {t('badgeLoved')}
+                        </StickerBadge>
+                      ) : undefined
+                    }
+                    className={featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}
+                    style={
+                      featuresFadeIn.isVisible ? { animationDelay: `${idx * 100}ms` } : undefined
+                    }
+                  />
+                )
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ════════════════════════════════════════════════════════
           GALLERY — horizontal scroll strip
@@ -1152,7 +1041,7 @@ export function LandingPage() {
             {t('noticesTitle')}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
-            {t('noticesSubtitle')}
+            {t('noticesSubtitle', { school: schoolName })}
           </p>
         </div>
 
@@ -1297,7 +1186,7 @@ export function LandingPage() {
                 {t('testimonialsTitle')}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
-                {t('testimonialsSubtitle')}
+                {t('testimonialsSubtitle', { school: schoolName })}
               </p>
             </div>
 
@@ -1469,7 +1358,7 @@ export function LandingPage() {
             {t('ctaTitle')}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-lg sm:text-xl mb-10">
-            {t('ctaSubtitle')}
+            {t('ctaSubtitle', { school: schoolName })}
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center">

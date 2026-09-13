@@ -224,6 +224,75 @@ export interface SchoolInfo {
   instagram_url: string
   principal_name: string
   registration_number: string
+  landing_content: LandingContent | null
+}
+
+// ─── Landing Page Content ─────────────────────────────────────────────────────
+// School-editable identity for the public landing page. Every text field is
+// bilingual; a blank string means "fall back to the built-in default copy".
+
+export interface BilingualText {
+  en: string
+  ms: string
+}
+
+export interface LandingHero {
+  tagline: BilingualText
+  headline_start: BilingualText
+  headline_highlight: BilingualText
+  headline_end: BilingualText
+  subtitle: BilingualText
+}
+
+export interface LandingAbout {
+  enabled: boolean
+  founded_year: number | null
+  story: BilingualText
+  approach: BilingualText
+  principal_message: BilingualText
+  principal_photo_url: string | null
+  photo_urls: string[]
+}
+
+export type LandingStatsMode = 'live' | 'manual' | 'hidden'
+
+export interface LandingStats {
+  mode: LandingStatsMode
+  students: number
+  staff: number
+  classes: number
+  rating: number
+}
+
+export type LandingFeatureKey = 'learn' | 'safe' | 'arts' | 'play' | 'outdoor' | 'class'
+
+export interface LandingFeatures {
+  enabled: LandingFeatureKey[]
+}
+
+export interface TeamMember {
+  id: string
+  name: string
+  role: BilingualText
+  photo_url: string | null
+}
+
+export interface LandingTeam {
+  enabled: boolean
+  members: TeamMember[]
+}
+
+export interface LandingContent {
+  hero: LandingHero
+  about: LandingAbout
+  stats: LandingStats
+  features: LandingFeatures
+  team: LandingTeam
+}
+
+export interface PublicStats {
+  students: number
+  classes: number
 }
 
 // ─── Finance Document Report Types ────────────────────────────────────────────
