@@ -1,6 +1,9 @@
 // StarField — twinkling 4-pointed sparkle overlay for dark sections.
 // Parent must have position:relative + overflow:hidden.
 // Uses lp-twinkle / lp-twinkle-slow CSS classes from constants.ts KEYFRAMES.
+// Stars only twinkle while the field is near the viewport (see useInViewport).
+import { useRef } from 'react'
+import { useInViewport } from '@/hooks/useInViewport'
 
 type Star = { top: string; left: string; size: number; cls: string; delay: string; rot: number }
 
@@ -52,9 +55,15 @@ export function StarField({
   variant?: 'a' | 'b'
   className?: string
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInViewport(ref)
   const stars = variant === 'b' ? STARS_B : STARS_A
   return (
-    <div className={`absolute inset-0 pointer-events-none ${className}`} aria-hidden="true">
+    <div
+      ref={ref}
+      className={`absolute inset-0 pointer-events-none ${className}`}
+      aria-hidden="true"
+    >
       {stars.map(({ top, left, size, cls, delay, rot }, i) => (
         <div
           key={i}
@@ -67,7 +76,7 @@ export function StarField({
             transform: `rotate(${rot}deg)`,
           }}
         >
-          <div className={cls} style={{ animationDelay: delay }}>
+          <div className={inView ? cls : undefined} style={{ animationDelay: `-${delay}` }}>
             <svg viewBox="-1 -1 2 2" width={size} height={size}>
               <path
                 d="M0,-1 L0.10,-0.10 L1,0 L0.10,0.10 L0,1 L-0.10,0.10 L-1,0 L-0.10,-0.10 Z"

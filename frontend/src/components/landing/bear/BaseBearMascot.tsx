@@ -1,5 +1,6 @@
-// ─── Base Bear Mascot + Bear Logo ────────────────────────────────────────────
-// Minecraft pixel-art style bear components used on the LandingPage.
+// ─── Base Bear Mascot ────────────────────────────────────────────────────────
+// Full-body pixel-art bear (currently unused). The face-only mascot everywhere else
+// is the sticker teddy in components/ui/StickerBear.tsx.
 //
 // For seasonal variants (Christmas, summer, etc.) create a NEW component in
 // this folder (e.g. BearMascotChristmas.tsx) that copies this SVG and layers
@@ -356,36 +357,3 @@ export const BaseBearMascot = forwardRef<
     </>
   )
 })
-
-// ─── Bear Logo — pixel-art face, used in navbar + footer ─────────────────────
-export function BearLogo({ size = 40 }: { size?: number }) {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      width={size}
-      height={size}
-      aria-hidden="true"
-      shapeRendering="crispEdges"
-      style={{ flexShrink: 0, imageRendering: 'pixelated' }}
-    >
-      {/* Outer ears */}
-      <rect x="1" y="0" width="3" height="3" fill="#4A2A0E" />
-      <rect x="12" y="0" width="3" height="3" fill="#4A2A0E" />
-      {/* Inner ears — pink, kept above y=2 so head doesn't cover them */}
-      <rect x="2" y="0" width="2" height="2" fill="#FFB3C6" />
-      <rect x="12" y="0" width="2" height="2" fill="#FFB3C6" />
-      {/* Head */}
-      <rect x="1" y="2" width="14" height="12" fill="#7B5230" />
-      {/* Face */}
-      <rect x="4" y="5" width="8" height="6" fill="#C8956B" />
-      {/* Cheeks — lighter pink */}
-      <rect x="4" y="8" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
-      <rect x="10" y="8" width="2" height="1" fill="#FFB3C6" opacity="0.7" />
-      {/* Eyes */}
-      <rect x="4" y="5" width="2" height="2" fill="#1A1A1A" />
-      <rect x="10" y="5" width="2" height="2" fill="#1A1A1A" />
-      {/* Nose */}
-      <rect x="6" y="8" width="4" height="2" fill="#1A1A1A" />
-    </svg>
-  )
-}

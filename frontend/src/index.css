@@ -310,3 +310,12 @@
       20 24,
     pointer !important;
 }
+
+/* A section that ends in a <Wave> hands its seam to whatever follows it: the next
+   block is pulled up 1px so the two overlap. On phones the section edge often lands
+   on a fractional device pixel, and without the overlap both the wave and the next
+   band get an anti-aliased half-covered row there, which shows as a hairline of
+   page background between them. */
+section:has(.lp-wave) + * {
+  margin-top: -1px;
+}

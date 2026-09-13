@@ -1,5 +1,5 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
-import { BearLogo } from '@/components/landing/bear/BaseBearMascot'
+import { StickerBear } from '@/components/ui/StickerBear'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useT } from '@/hooks/useT'
@@ -42,10 +42,12 @@ export function LandingFooter() {
                 <img
                   src={logoUrl}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="w-10 h-10 rounded-lg object-contain bg-white p-0.5 flex-shrink-0"
                 />
               ) : (
-                <BearLogo size={32} />
+                <StickerBear size={32} />
               )}
               <span className="font-fun font-bold text-white text-lg">{schoolName}</span>
             </div>

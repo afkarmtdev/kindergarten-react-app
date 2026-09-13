@@ -6,20 +6,21 @@ The AdminBear is a 3-file system. Each file has a single responsibility — neve
 
 ## File Map
 
-| File | Path | Role |
-|---|---|---|
-| `AdminBearIcon.tsx` | `components/admin/` | Standalone pixel-art SVG. No state, no animation. |
-| `AdminBearLogo.tsx` | `components/admin/` | Idle doze easter egg. Wraps Icon + Bubble with 4-state machine. |
-| `AdminBearSpeechBubble.tsx` | `components/admin/` | Admin-only speech bubble. Renders zzz or wake message. |
+| File                        | Path                | Role                                                                                    |
+| --------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
+| `AdminBearIcon.tsx`         | `components/admin/` | Thin wrapper around `components/ui/StickerBear.tsx` (blue bow). No state, no animation. |
+| `AdminBearLogo.tsx`         | `components/admin/` | Idle doze easter egg. Wraps Icon + Bubble with 4-state machine.                         |
+| `AdminBearSpeechBubble.tsx` | `components/admin/` | Admin-only speech bubble. Renders zzz or wake message.                                  |
 
 ## AdminBearIcon
 
-- ViewBox: `24×26` — ears+head rows 0–18, blazer+tie rows 18–26
-- Colors: dark navy blazer `#1E2B4A`, blue tie `#4D96FF`
-- Prop `eyeState?: 'open' | 'half' | 'closed'`:
-  - `open` → eye rect `3×3`, `y=8`
-  - `half` → eye rect `3×2` droopy, `y=9`
-  - `closed` → eye rect `3×1` thin line, `y=10`
+- Renders `<StickerBear size eyeState bowColor={BEAR_BOW_BLUE} />` — the drawing lives in `components/ui/StickerBear.tsx` (viewBox `32×32`, round sticker teddy, same shapes as the `.cursor-bear` cursor in `index.css`). Change the face there, never here.
+- Blue bow (`#4D96FF`) because the admin bear always sits on a kinder-orange tile; every other bear uses the default orange bow.
+- Prop `eyeState?: 'open' | 'half' | 'closed'` (type `BearEyeState` from StickerBear):
+  - `open` → round eyes, `r=1.4`
+  - `half` → flattened ellipses `ry=0.8` (droopy)
+  - `closed` → gentle downward arcs (relaxed lids)
+- StickerBear also has `mood="grin"` (happy arc eyes + tongue, the hover cursor) — not used by the admin bear.
 - Used in: AdminBearLogo (desktop sidebar), AdminLayout mobile top bar, LoginPage
 
 ## AdminBearLogo — 4-State Idle Machine
@@ -28,12 +29,12 @@ The AdminBear is a 3-file system. Each file has a single responsibility — neve
 active → (90s idle) → sleepy → (180s total idle) → asleep → (any activity) → waking → (400ms) → active
 ```
 
-| State | Eyes | Animation | Notes |
-|---|---|---|---|
-| `active` | `open` | none | resets on any document activity |
-| `sleepy` | `half` | gentle 3s sway ±2.5deg | triggered at 90s idle |
-| `asleep` | `closed` | deep 4s nod ±5–7deg | zzz bubble visible |
-| `waking` | `open` | 0.4s shake | 400ms, then wake message shows for 2s |
+| State    | Eyes     | Animation              | Notes                                 |
+| -------- | -------- | ---------------------- | ------------------------------------- |
+| `active` | `open`   | none                   | resets on any document activity       |
+| `sleepy` | `half`   | gentle 3s sway ±2.5deg | triggered at 90s idle                 |
+| `asleep` | `closed` | deep 4s nod ±5–7deg    | zzz bubble visible                    |
+| `waking` | `open`   | 0.4s shake             | 400ms, then wake message shows for 2s |
 
 Activity events on `document`: `mousemove`, `mousedown`, `keydown`, `click`, `scroll`, `touchstart` — debounced 200ms.
 
@@ -52,6 +53,7 @@ Only clear `wakeMsgTimerRef` in **Effect 1's unmount cleanup** (component teardo
 Props: `variant: 'sleeping' | 'waking' | 'hidden'`, `message?: string`
 
 **Positioning:**
+
 - `absolute top-full left-0 mt-1` — below the orange square, anchored to its left edge
 - Bear sits at the top of the sidebar, so `bottom-full` goes off-screen — always use `top-full`
 
@@ -63,10 +65,10 @@ Always: `pointer-events-none z-10` — floats above nav items, never blocks clic
 
 ## Mobile vs Desktop Rule
 
-| Context | Component | Idle Logic | Bubble |
-|---|---|---|---|
-| Desktop sidebar | `AdminBearLogo` | Yes (4-state machine) | Yes |
-| Mobile top bar | `AdminBearIcon` only | No | No |
+| Context         | Component            | Idle Logic            | Bubble |
+| --------------- | -------------------- | --------------------- | ------ |
+| Desktop sidebar | `AdminBearLogo`      | Yes (4-state machine) | Yes    |
+| Mobile top bar  | `AdminBearIcon` only | No                    | No     |
 
 Never add idle logic or bubble to the mobile icon.
 
