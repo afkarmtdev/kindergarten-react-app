@@ -23,6 +23,9 @@ New section-wash tokens (light -> dark), same hue in both modes:
 | blush    | `#FFE6EC` | `#3A1B2A` | `#E0567A` -> `#FF9CB5`    |
 | lavender | `#F1E4FF` | `#2A1F45` | `#9B4FE0` -> `#D3A4FF`    |
 | peach    | `#FFE9DF` | `#3A2216` | `#E85D22` -> `#FF8A5B`    |
+| ocean    | `#DEF4F6` | `#20303A` | `#1E8A96` -> `#5ED6E0`    |
+
+Exception: the landing Our Story section is butter in light but `dark:bg-wash-ocean` in dark, because butter's dark tint reads as mud behind long copy; its lead-in waves carry the same `dark:fill-wash-ocean`.
 
 Grounds: page `#FFFAF5` -> `gray-950`, cards `#FFFFFF` -> `gray-900`, borders `#ECDED0` -> `gray-800`, ink `#342A22` -> `gray-50`. These already exist as the warm-gray CSS variables in `frontend/src/index.css`.
 

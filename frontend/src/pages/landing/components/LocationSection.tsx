@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, ExternalLink } from 'lucide-react'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
@@ -7,12 +7,20 @@ import { Wave } from './Wave'
 
 export function LocationSection() {
   const t = useT()
-  const { address, phone, email, operatingHours } = useSchoolInfo({
+  const { address, phone, email, operatingHours, googleMapsEmbedUrl } = useSchoolInfo({
     public: true,
   })
   const { ref, isVisible } = useFadeIn()
 
-  const hasContent = address || phone || email || operatingHours
+  // Only the official "Share > Embed a map" src is allowed into the iframe.
+  const mapEmbedUrl = googleMapsEmbedUrl.startsWith('https://www.google.com/maps/embed')
+    ? googleMapsEmbedUrl
+    : ''
+  const mapsSearchUrl = address
+    ? `https://www.google.com/maps/search/${encodeURIComponent(address)}`
+    : ''
+
+  const hasContent = address || phone || email || operatingHours || mapEmbedUrl
   if (!hasContent) return null
 
   return (
@@ -104,6 +112,32 @@ export function LocationSection() {
             </div>
           )}
         </div>
+
+        {/* Map — Google Maps embed in a rounded frame, with a shortcut to open the full app */}
+        {mapEmbedUrl && (
+          <div className="relative mt-6 md:mt-8 rounded-3xl border-2 border-gray-200 dark:border-gray-800 overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <iframe
+              src={mapEmbedUrl}
+              title={t('locationTitle')}
+              className="block w-full h-72 sm:h-80 md:h-96"
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            {mapsSearchUrl && (
+              <a
+                href={mapsSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-4 right-4 inline-flex items-center gap-2 bg-kinder-orange text-white px-4 py-2 rounded-full font-extrabold text-sm shadow-lg shadow-kinder-orange/30 hover:bg-orange-500 transition-colors"
+              >
+                <ExternalLink size={16} strokeWidth={2.5} />
+                {t('openInMaps')}
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-16">

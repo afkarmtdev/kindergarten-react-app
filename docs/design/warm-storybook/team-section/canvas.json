@@ -1,0 +1,79 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Photo wall (chosen)" },
+    { "id": "page-2", "name": "Other drafts" }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "B · Photo wall",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 1240,
+      "page": "page-1"
+    },
+    {
+      "file": "StorybookCards.dc.html",
+      "title": "A · Storybook cards",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 1120,
+      "page": "page-2"
+    },
+    {
+      "file": "ByClassroom.dc.html",
+      "title": "C · By classroom",
+      "x": 1400,
+      "y": 0,
+      "w": 1280,
+      "h": 1080,
+      "page": "page-2"
+    },
+    {
+      "file": "NameTags.dc.html",
+      "title": "D · Name tags",
+      "x": 2800,
+      "y": 0,
+      "w": 1280,
+      "h": 800,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-b",
+      "x": 0,
+      "y": -220,
+      "w": 560,
+      "page": "page-1",
+      "text": "B · Photo wall (chosen)\nPolaroid prints taped to the lavender wall, staggered and slightly rotated, echoing the Art Wall cork board. Built into TeamSection.tsx: initials in a wash tint stand in when a member has no photo."
+    },
+    {
+      "id": "note-a",
+      "x": 0,
+      "y": -220,
+      "w": 560,
+      "page": "page-2",
+      "text": "A · Storybook cards\nThree columns so six people fill two even rows. Blob-masked photos, a class sticker chip on each card.\nTradeoff: designed around photos; with initials only, the blob looks emptier than a circle."
+    },
+    {
+      "id": "note-c",
+      "x": 1400,
+      "y": -220,
+      "w": 560,
+      "page": "page-2",
+      "text": "C · By classroom\nOne panel per class with the age tile, then the teacher; specialists and assistants in a wide row.\nTradeoff: needs a class field on each team member in Settings > Website > Team."
+    },
+    {
+      "id": "note-d",
+      "x": 2800,
+      "y": -220,
+      "w": 560,
+      "page": "page-2",
+      "text": "D · Name tags\nStaff badges hanging from a dashed string, one row, each on a lanyard in its class colour.\nTradeoff: one row holds about six; beyond that it wraps or scrolls."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

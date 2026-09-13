@@ -34,6 +34,7 @@ export default {
           blush: 'rgb(var(--wash-blush) / <alpha-value>)',
           lavender: 'rgb(var(--wash-lavender) / <alpha-value>)',
           peach: 'rgb(var(--wash-peach) / <alpha-value>)',
+          ocean: 'rgb(var(--wash-ocean) / <alpha-value>)',
         },
         ink: {
           sky: 'rgb(var(--ink-sky) / <alpha-value>)',
@@ -42,6 +43,7 @@ export default {
           blush: 'rgb(var(--ink-blush) / <alpha-value>)',
           lavender: 'rgb(var(--ink-lavender) / <alpha-value>)',
           peach: 'rgb(var(--ink-peach) / <alpha-value>)',
+          ocean: 'rgb(var(--ink-ocean) / <alpha-value>)',
         },
         /* Gray + white driven by CSS vars — warm beige in light, cool gray in dark */
         white: 'rgb(var(--color-white) / <alpha-value>)',

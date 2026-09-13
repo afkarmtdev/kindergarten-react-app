@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { useT } from '@/hooks/useT'
+import { ImageCropDialog } from '@/components/ui/ImageCropDialog'
 import { uploadSchoolMedia } from '@/lib/uploadSchoolMedia'
 import type { SchoolMediaFolder } from '@/lib/uploadSchoolMedia'
 
@@ -26,15 +27,20 @@ export function PhotoUploadTile({
   const t = useT()
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [cropFile, setCropFile] = useState<File | null>(null)
 
   const setBusy = (busy: boolean) => {
     setUploading(busy)
     onUploadingChange?.(busy)
   }
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    e.target.value = ''
+    if (file) setCropFile(file)
+  }
+
+  const uploadFile = async (file: File) => {
     setBusy(true)
     try {
       onChange(await uploadSchoolMedia(file, folder))
@@ -42,7 +48,6 @@ export function PhotoUploadTile({
       toast.error('Photo upload failed. Please try again.')
     } finally {
       setBusy(false)
-      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
@@ -84,6 +89,15 @@ export function PhotoUploadTile({
         </button>
       )}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <ImageCropDialog
+        file={cropFile}
+        shape={shape === 'circle' ? 'round' : 'square'}
+        onCancel={() => setCropFile(null)}
+        onConfirm={(f) => {
+          setCropFile(null)
+          void uploadFile(f)
+        }}
+      />
     </div>
   )
 }

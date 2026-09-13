@@ -26,12 +26,14 @@
     --wash-blush: 255 230 236; /* #FFE6EC */
     --wash-lavender: 241 228 255; /* #F1E4FF */
     --wash-peach: 255 233 223; /* #FFE9DF */
+    --wash-ocean: 222 244 246; /* #DEF4F6 */
     --ink-sky: 47 111 214; /* #2F6FD6 */
     --ink-mint: 62 157 76; /* #3E9D4C */
     --ink-butter: 217 164 0; /* #D9A400 */
     --ink-blush: 224 86 122; /* #E0567A */
     --ink-lavender: 155 79 224; /* #9B4FE0 */
     --ink-peach: 232 93 34; /* #E85D22 */
+    --ink-ocean: 30 138 150; /* #1E8A96 */
   }
   html.dark {
     --wash-sky: 22 35 63; /* #16233F */
@@ -40,12 +42,14 @@
     --wash-blush: 58 27 42; /* #3A1B2A */
     --wash-lavender: 42 31 69; /* #2A1F45 */
     --wash-peach: 58 34 22; /* #3A2216 */
+    --wash-ocean: 32 48 58; /* #20303A */
     --ink-sky: 126 179 255; /* #7EB3FF */
     --ink-mint: 126 216 138; /* #7ED88A */
     --ink-butter: 255 217 61; /* #FFD93D */
     --ink-blush: 255 156 181; /* #FF9CB5 */
     --ink-lavender: 211 164 255; /* #D3A4FF */
     --ink-peach: 255 138 91; /* #FF8A5B */
+    --ink-ocean: 94 214 224; /* #5ED6E0 */
     --color-white: 255 255 255; /* #FFFFFF — pure white (overridden by dark:bg-*) */
     --color-gray-50: 249 250 251; /* #F9FAFB — original Tailwind */
     --color-gray-100: 243 244 246; /* #F3F4F6 */
@@ -282,4 +286,27 @@
   100% {
     color: hsl(360, 100%, 60%);
   }
+}
+
+/* Landing page bear cursor: sticker teddy with a white die-cut edge and an orange bow, 40px, hotspot on the nose. Tilts and grins over anything clickable. */
+.cursor-bear,
+.cursor-bear * {
+  cursor:
+    url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2240%22%20height%3D%2240%22%3E%3Cg%20transform%3D%22rotate%28-8%2016%2016%29%22%3E%3Ccircle%20cx%3D%227.5%22%20cy%3D%228.5%22%20r%3D%225.8%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%2224.5%22%20cy%3D%228.5%22%20r%3D%225.8%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2217%22%20r%3D%2212.3%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpolygon%20points%3D%229%2C25.5%2015%2C28%209%2C30.5%22%20fill%3D%22%23FF6B35%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpolygon%20points%3D%2223%2C25.5%2017%2C28%2023%2C30.5%22%20fill%3D%22%23FF6B35%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%227.5%22%20cy%3D%228.5%22%20r%3D%224%22%20fill%3D%22%23A86B3C%22%2F%3E%3Ccircle%20cx%3D%2224.5%22%20cy%3D%228.5%22%20r%3D%224%22%20fill%3D%22%23A86B3C%22%2F%3E%3Ccircle%20cx%3D%227.5%22%20cy%3D%228.5%22%20r%3D%222%22%20fill%3D%22%23E8A87C%22%2F%3E%3Ccircle%20cx%3D%2224.5%22%20cy%3D%228.5%22%20r%3D%222%22%20fill%3D%22%23E8A87C%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2217%22%20r%3D%2210.5%22%20fill%3D%22%23C68B59%22%2F%3E%3Cpolygon%20points%3D%229%2C25.5%2015%2C28%209%2C30.5%22%20fill%3D%22%23FF6B35%22%2F%3E%3Cpolygon%20points%3D%2223%2C25.5%2017%2C28%2023%2C30.5%22%20fill%3D%22%23FF6B35%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2228%22%20r%3D%221.7%22%20fill%3D%22%23FF6B35%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2220.5%22%20rx%3D%225%22%20ry%3D%223.6%22%20fill%3D%22%23F3D3B0%22%2F%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2219.5%22%20r%3D%221.6%22%20fill%3D%22%23FF85A2%22%20opacity%3D%220.6%22%2F%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2219.5%22%20r%3D%221.6%22%20fill%3D%22%23FF85A2%22%20opacity%3D%220.6%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2215.5%22%20r%3D%221.4%22%20fill%3D%22%232B1B10%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2215.5%22%20r%3D%221.4%22%20fill%3D%22%232B1B10%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2219%22%20rx%3D%221.9%22%20ry%3D%221.3%22%20fill%3D%22%232B1B10%22%2F%3E%3Cpath%20d%3D%22M14.2%2021.6q1.8%201.4%203.6%200%22%20fill%3D%22none%22%20stroke%3D%22%232B1B10%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')
+      20 24,
+    auto !important;
+}
+.cursor-bear a,
+.cursor-bear button,
+.cursor-bear [role='button'],
+.cursor-bear summary,
+.cursor-bear .cursor-pointer,
+.cursor-bear a *,
+.cursor-bear button *,
+.cursor-bear [role='button'] *,
+.cursor-bear .cursor-pointer * {
+  cursor:
+    url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%20width%3D%2240%22%20height%3D%2240%22%3E%3Cg%20transform%3D%22rotate%288%2016%2016%29%22%3E%3Ccircle%20cx%3D%227.5%22%20cy%3D%228.5%22%20r%3D%225.8%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%2224.5%22%20cy%3D%228.5%22%20r%3D%225.8%22%20fill%3D%22%23ffffff%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2217%22%20r%3D%2212.3%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpolygon%20points%3D%229%2C25.5%2015%2C28%209%2C30.5%22%20fill%3D%22%23FF6B35%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpolygon%20points%3D%2223%2C25.5%2017%2C28%2023%2C30.5%22%20fill%3D%22%23FF6B35%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%227.5%22%20cy%3D%228.5%22%20r%3D%224%22%20fill%3D%22%23A86B3C%22%2F%3E%3Ccircle%20cx%3D%2224.5%22%20cy%3D%228.5%22%20r%3D%224%22%20fill%3D%22%23A86B3C%22%2F%3E%3Ccircle%20cx%3D%227.5%22%20cy%3D%228.5%22%20r%3D%222%22%20fill%3D%22%23E8A87C%22%2F%3E%3Ccircle%20cx%3D%2224.5%22%20cy%3D%228.5%22%20r%3D%222%22%20fill%3D%22%23E8A87C%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2217%22%20r%3D%2210.5%22%20fill%3D%22%23C68B59%22%2F%3E%3Cpolygon%20points%3D%229%2C25.5%2015%2C28%209%2C30.5%22%20fill%3D%22%23FF6B35%22%2F%3E%3Cpolygon%20points%3D%2223%2C25.5%2017%2C28%2023%2C30.5%22%20fill%3D%22%23FF6B35%22%2F%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2228%22%20r%3D%221.7%22%20fill%3D%22%23FF6B35%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2220.5%22%20rx%3D%225%22%20ry%3D%223.6%22%20fill%3D%22%23F3D3B0%22%2F%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2219.5%22%20r%3D%221.6%22%20fill%3D%22%23FF85A2%22%20opacity%3D%220.6%22%2F%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2219.5%22%20r%3D%221.6%22%20fill%3D%22%23FF85A2%22%20opacity%3D%220.6%22%2F%3E%3Cpath%20d%3D%22M10.6%2016q1.4-2.2%202.8%200M18.6%2016q1.4-2.2%202.8%200%22%20fill%3D%22none%22%20stroke%3D%22%232B1B10%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2222.8%22%20rx%3D%221.4%22%20ry%3D%220.9%22%20fill%3D%22%23FF85A2%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2219%22%20rx%3D%221.9%22%20ry%3D%221.3%22%20fill%3D%22%232B1B10%22%2F%3E%3Cpath%20d%3D%22M14.2%2021.6q1.8%201.4%203.6%200%22%20fill%3D%22none%22%20stroke%3D%22%232B1B10%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')
+      20 24,
+    pointer !important;
 }

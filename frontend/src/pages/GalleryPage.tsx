@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, Camera, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
+import { Plus, Camera, Pencil, Trash2, Eye, EyeOff, ZoomIn } from 'lucide-react'
 import { galleryApi } from '@/lib/api'
 import { useGalleryStore } from '@/store/galleryStore'
 import { Pagination } from '@/components/ui/Pagination'
@@ -9,6 +9,7 @@ import { SearchBar } from '@/components/ui/SearchBar'
 import { ClassCardSkeleton, EmptyState } from '@/components/ui/Skeletons'
 import { GalleryModal } from '@/components/admin/GalleryModal'
 import { DeleteDialog } from '@/components/ui/DeleteDialog'
+import { PhotoLightbox } from '@/pages/landing/components/PhotoLightbox'
 import { useT } from '@/hooks/useT'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import type { GalleryItem } from '@/types'
@@ -24,6 +25,7 @@ export function GalleryPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null)
   const [deletingItem, setDeletingItem] = useState<GalleryItem | null>(null)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['gallery', { page, search }],
@@ -135,7 +137,7 @@ export function GalleryPage() {
           />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {items.map((item: GalleryItem) => (
+            {items.map((item: GalleryItem, idx: number) => (
               <div
                 key={item.id}
                 className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border-2 border-gray-200 dark:border-gray-800 hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
@@ -143,11 +145,21 @@ export function GalleryPage() {
                 {/* Photo thumbnail */}
                 <div className="relative w-full h-36 sm:h-44 bg-gray-100 dark:bg-gray-800">
                   {item.photo_url ? (
-                    <img
-                      src={item.photo_url}
-                      alt={item.caption ?? 'Gallery photo'}
-                      className="w-full h-full object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIndex(idx)}
+                      aria-label={t('viewPhoto')}
+                      className="group/photo relative block w-full h-full overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-kinder-orange/50"
+                    >
+                      <img
+                        src={item.photo_url}
+                        alt={item.caption ?? 'Gallery photo'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover/photo:scale-110"
+                      />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/photo:opacity-100 transition-opacity duration-200">
+                        <ZoomIn size={32} className="text-white drop-shadow" />
+                      </span>
+                    </button>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Camera size={32} className="text-gray-300 dark:text-gray-600" />
@@ -210,6 +222,12 @@ export function GalleryPage() {
 
       {/* Modal */}
       <GalleryModal open={modalOpen} onClose={closeModal} item={editingItem} />
+      <PhotoLightbox
+        urls={items.map((item: GalleryItem) => item.photo_url)}
+        index={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onNavigate={setLightboxIndex}
+      />
       <DeleteDialog
         show={!!deletingItem}
         itemName={deletingItem?.caption || undefined}
