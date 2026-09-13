@@ -4,6 +4,7 @@ import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
 import { Wave } from './Wave'
+import { StickerBadge } from './StickerBadge'
 
 export function LocationSection() {
   const t = useT()
@@ -33,6 +34,11 @@ export function LocationSection() {
         className={`relative max-w-7xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
       >
         <div className="text-center mb-12">
+          <div className="mb-5">
+            <StickerBadge color="bg-kinder-blue" textColor="text-white" rotate={4}>
+              {t('locationBadge')}
+            </StickerBadge>
+          </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {t('locationTitle')}
           </h2>

@@ -61,8 +61,8 @@ export function LandingFooter() {
               {[
                 { href: '#about', label: t('about') },
                 { href: '#programs', label: t('ourPrograms') },
-                { href: '#gallery', label: t('galleryTitle') },
                 { href: '#notices', label: t('noticesTitle') },
+                { href: '#gallery', label: t('galleryTitle') },
                 { href: '#contact', label: t('contact') },
               ].map((link) => (
                 <li key={link.href}>
