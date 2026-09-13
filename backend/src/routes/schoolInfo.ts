@@ -1,5 +1,6 @@
 // ─── School Info ──────────────────────────────────────────────────────────────
 // Single-row config table. GET fetches it; PUT upserts it.
+// PUT /landing patches only the landing_content jsonb (school's website copy).
 
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
@@ -7,6 +8,12 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings, stripHtml } from '../lib/sanitise'
 import { auditCreate, getActor } from '../lib/audit'
+import { logger } from '../lib/logger'
+import {
+  landingContentPatchSchema,
+  sanitiseLandingPatch,
+  mergeLandingContent,
+} from '../lib/landingContent'
 
 const schoolInfo = new Hono()
 
@@ -94,7 +101,10 @@ schoolInfo.put('/', zValidator('json', schoolInfoSchema), async (c) => {
       .eq('id', existing.id)
       .select()
       .single()
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to update school info')
+      return c.json({ error: 'Failed to save school info' }, 500)
+    }
     return c.json({ data })
   }
 
@@ -103,8 +113,43 @@ schoolInfo.put('/', zValidator('json', schoolInfoSchema), async (c) => {
     .insert({ ...body, ...auditCreate(c) })
     .select()
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create school info')
+    return c.json({ error: 'Failed to save school info' }, 500)
+  }
   return c.json({ data }, 201)
+})
+
+// ── PUT /api/school-info/landing ──────────────────────────────────────────────
+// Patches one or more landing_content sections. Requires the school_info row
+// to exist already (General settings must be saved first).
+schoolInfo.put('/landing', zValidator('json', landingContentPatchSchema), async (c) => {
+  const patch = sanitiseLandingPatch(c.req.valid('json'))
+
+  const { data: existing, error: fetchError } = await supabase
+    .from('school_info')
+    .select('id, landing_content')
+    .limit(1)
+    .single()
+
+  if (fetchError || !existing) {
+    return c.json({ error: 'Save the school details in General settings first' }, 409)
+  }
+
+  const landing_content = mergeLandingContent(existing.landing_content, patch)
+
+  const { data, error } = await supabase
+    .from('school_info')
+    .update({ landing_content, updated_at: new Date().toISOString(), modified_by: getActor(c) })
+    .eq('id', existing.id)
+    .select()
+    .single()
+
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update landing content')
+    return c.json({ error: 'Failed to save website content' }, 500)
+  }
+  return c.json({ data })
 })
 
 export default schoolInfo

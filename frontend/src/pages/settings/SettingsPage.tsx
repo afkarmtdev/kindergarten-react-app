@@ -6,6 +6,11 @@ import type { TranslationKey } from '@/lib/translations'
 import { SchoolInfoSection } from './components/SchoolInfoSection'
 import { DocumentNumberingSection } from './components/DocumentNumberingSection'
 import { AppearanceSection } from './components/AppearanceSection'
+import { WebsiteHeroSection } from './components/WebsiteHeroSection'
+import { WebsiteStorySection } from './components/WebsiteStorySection'
+import { WebsiteStatsSection } from './components/WebsiteStatsSection'
+import { WebsiteProgrammesSection } from './components/WebsiteProgrammesSection'
+import { WebsiteTeamSection } from './components/WebsiteTeamSection'
 
 type NavSection = {
   labelKey: TranslationKey
@@ -16,6 +21,16 @@ const NAV_SECTIONS: NavSection[] = [
   {
     labelKey: 'settingsSchoolInfo',
     items: [{ key: 'school-info', labelKey: 'settingsNavSchoolInfo' }],
+  },
+  {
+    labelKey: 'settingsWebsite',
+    items: [
+      { key: 'website-hero', labelKey: 'settingsNavHero' },
+      { key: 'website-story', labelKey: 'settingsNavStory' },
+      { key: 'website-stats', labelKey: 'settingsNavStats' },
+      { key: 'website-programmes', labelKey: 'settingsNavProgrammes' },
+      { key: 'website-team', labelKey: 'settingsNavTeam' },
+    ],
   },
   {
     labelKey: 'settingsDocumentNumbering',
@@ -29,6 +44,11 @@ const NAV_SECTIONS: NavSection[] = [
 
 function renderContent(key: string) {
   if (key === 'school-info') return <SchoolInfoSection />
+  if (key === 'website-hero') return <WebsiteHeroSection />
+  if (key === 'website-story') return <WebsiteStorySection />
+  if (key === 'website-stats') return <WebsiteStatsSection />
+  if (key === 'website-programmes') return <WebsiteProgrammesSection />
+  if (key === 'website-team') return <WebsiteTeamSection />
   if (key === 'receipt') return <DocumentNumberingSection documentType="receipt" />
   if (key === 'theme') return <AppearanceSection />
   return null

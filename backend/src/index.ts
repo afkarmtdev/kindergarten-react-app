@@ -130,9 +130,40 @@ app.get('/api/public/announcements', async (c) => {
 
 // Public school info — no auth required (LandingPage visitors)
 app.get('/api/public/school-info', async (c) => {
-  const { data, error } = await supabase.from('school_info').select('*').limit(1).single()
+  const { data, error } = await supabase
+    .from('school_info')
+    .select(
+      'id, school_name, address, phone, email, logo_url, whatsapp_number, operating_hours, google_maps_embed_url, facebook_url, instagram_url, principal_name, registration_number, landing_content, updated_at'
+    )
+    .limit(1)
+    .single()
   if (error) return c.json({ data: null }, 200)
   return c.json({ data })
+})
+
+// Public live stats — active student + class counts for the landing page stats strip
+app.get('/api/public/stats', async (c) => {
+  const [students, classes] = await Promise.all([
+    supabase
+      .from('students')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .is('deleted_at', null),
+    supabase
+      .from('classrooms')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .is('deleted_at', null),
+  ])
+  if (students.error || classes.error) {
+    logger.error(
+      { error: students.error?.message ?? classes.error?.message },
+      'Failed to count public stats'
+    )
+    return c.json({ error: 'Failed to load stats' }, 500)
+  }
+  c.header('Cache-Control', 'public, max-age=300')
+  return c.json({ data: { students: students.count ?? 0, classes: classes.count ?? 0 } })
 })
 
 // Public art wall — visible items only, paginated (LandingPage visitors)

@@ -1,4 +1,3 @@
-import { BookOpen, Shield, Music, Palette, Sun, Users } from 'lucide-react'
 import type { Announcement } from '@/types'
 
 export const KEYFRAMES = `
@@ -124,51 +123,6 @@ export const KEYFRAMES = `
     .lp-shooting-star { display: none; }
   }
 `
-
-export const FEATURES = [
-  {
-    icon: BookOpen,
-    color: 'bg-kinder-blue',
-    titleKey: 'featureLearnTitle',
-    descKey: 'featureLearnDesc',
-    expandedKey: 'featureLearnExpanded',
-  },
-  {
-    icon: Shield,
-    color: 'bg-kinder-pink',
-    titleKey: 'featureSafeTitle',
-    descKey: 'featureSafeDesc',
-    expandedKey: 'featureSafeExpanded',
-  },
-  {
-    icon: Music,
-    color: 'bg-kinder-purple',
-    titleKey: 'featureArtsTitle',
-    descKey: 'featureArtsDesc',
-    expandedKey: 'featureArtsExpanded',
-  },
-  {
-    icon: Palette,
-    color: 'bg-kinder-green',
-    titleKey: 'featurePlayTitle',
-    descKey: 'featurePlayDesc',
-    expandedKey: 'featurePlayExpanded',
-  },
-  {
-    icon: Sun,
-    color: 'bg-kinder-yellow',
-    titleKey: 'featureOutdoorTitle',
-    descKey: 'featureOutdoorDesc',
-    expandedKey: 'featureOutdoorExpanded',
-  },
-  {
-    icon: Users,
-    color: 'bg-kinder-orange',
-    titleKey: 'featureClassTitle',
-    descKey: 'featureClassDesc',
-    expandedKey: 'featureClassExpanded',
-  },
-] as const
 
 export const NOTICE_CATEGORY_COLORS: Record<Announcement['category'], string> = {
   general: 'bg-kinder-blue/10 text-kinder-blue',

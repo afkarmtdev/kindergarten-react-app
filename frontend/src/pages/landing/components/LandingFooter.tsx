@@ -4,7 +4,7 @@ import { SecretArcade } from '@/components/landing/SecretArcade'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useT } from '@/hooks/useT'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
-import { APP_NAME } from '@/lib/version'
+import { VENDOR } from '@/lib/version'
 import { StarField } from './StarField'
 
 export function LandingFooter() {
@@ -12,6 +12,22 @@ export function LandingFooter() {
   const { schoolName, address, phone, email, operatingHours, facebookUrl, instagramUrl, logoUrl } =
     useSchoolInfo({ public: true })
   const hasContact = address || phone || email
+
+  // Vendor credit: mark + name. Blooms on hover via .group on the parent line.
+  const vendorCredit = (
+    <>
+      <img
+        src={VENDOR.mark}
+        alt=""
+        width={20}
+        height={19}
+        loading="lazy"
+        decoding="async"
+        className="vendor-mark h-[18px] w-auto"
+      />
+      <span className="font-semibold">{VENDOR.name}</span>
+    </>
+  )
   const hasSocial = facebookUrl || instagramUrl
 
   return (
@@ -192,8 +208,20 @@ export function LandingFooter() {
             <p className="text-gray-400 text-sm">
               © {new Date().getFullYear()} {schoolName}. {t('footerTagline')}
             </p>
-            <p className="text-gray-500 text-xs">
-              Powered by <span className="font-semibold text-gray-300">{APP_NAME}</span>
+            <p className="group flex items-center gap-1.5 text-gray-500 text-xs">
+              <span>Powered by</span>
+              {VENDOR.url ? (
+                <a
+                  href={VENDOR.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-gray-300 hover:text-white transition-colors"
+                >
+                  {vendorCredit}
+                </a>
+              ) : (
+                <span className="flex items-center gap-1.5 text-gray-300">{vendorCredit}</span>
+              )}
             </p>
           </div>
           <SecretArcade />

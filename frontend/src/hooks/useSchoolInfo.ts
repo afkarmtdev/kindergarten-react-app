@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { schoolInfoApi } from '@/lib/api'
 import { APP_NAME } from '@/lib/version'
+import { mergeLandingContent } from '@/lib/landingContent'
 import type { OperatingHours, SchoolInfo } from '@/types'
 
 function isOperatingHours(val: unknown): val is OperatingHours {
@@ -29,9 +31,12 @@ export function useSchoolInfo(options?: { public?: boolean }) {
   })
 
   const info: SchoolInfo | null = data?.data ?? null
+  const landingContent = useMemo(() => mergeLandingContent(info?.landing_content), [info])
 
   return {
+    isLoaded: data !== undefined,
     schoolName: info?.school_name || APP_NAME,
+    landingContent,
     address: info?.address ?? '',
     phone: info?.phone ?? '',
     email: info?.email ?? '',

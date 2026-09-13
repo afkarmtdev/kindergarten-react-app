@@ -178,6 +178,35 @@
   }
 }
 
+/* Vendor mark bloom — footer "Powered by" credit; the whole line is a hover group.
+   Hover-capable pointers only, so touch devices never trigger it by scrolling. */
+@keyframes lp-bloom {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  45% {
+    transform: scale(1.45) rotate(-18deg);
+  }
+  100% {
+    transform: scale(1.2) rotate(0deg);
+  }
+}
+.vendor-mark {
+  transform-origin: center;
+  transition: transform 300ms ease;
+}
+@media (hover: hover) {
+  .group:hover .vendor-mark {
+    transform: scale(1.2);
+    animation: lp-bloom 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .vendor-mark {
+    animation: none;
+  }
+}
+
 /* Sparkle twinkle — used by StarField in landing page + portal */
 @keyframes lp-twinkle {
   0%,

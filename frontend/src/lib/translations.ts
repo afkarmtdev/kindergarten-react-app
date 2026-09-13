@@ -1,5 +1,3 @@
-import { APP_NAME } from './version'
-
 export const translations = {
   en: {
     // Nav
@@ -205,11 +203,11 @@ export const translations = {
 
     // Landing page — Testimonials
     testimonialsTitle: 'What parents say',
-    testimonialsSubtitle: `Hear from our happy ${APP_NAME} families`,
+    testimonialsSubtitle: 'Hear from our happy {school} families',
 
     // Landing page — CTA
     ctaTitle: 'Ready to join our family?',
-    ctaSubtitle: `Schedule a visit and see why parents love ${APP_NAME}.`,
+    ctaSubtitle: 'Schedule a visit and see why parents love {school}.',
     scheduleVisit: 'Schedule a Visit',
 
     // Landing page — Gallery
@@ -294,7 +292,7 @@ export const translations = {
 
     // Landing page — Notices
     noticesTitle: 'School Notices',
-    noticesSubtitle: `Stay up to date with the latest news and announcements from ${APP_NAME}`,
+    noticesSubtitle: 'Stay up to date with the latest news and announcements from {school}',
     noticesEmptyTitle: 'All quiet for now!',
     noticesEmptySubtitle:
       'Check back soon for school news, upcoming events, and important updates.',
@@ -380,6 +378,70 @@ export const translations = {
     settingsLogoUpload: 'Upload Logo',
     settingsLogoChange: 'Change Logo',
     settingsSchoolInfoSaved: 'School info saved',
+
+    // Settings — Website (landing page identity)
+    settingsWebsite: 'Website',
+    settingsNavHero: 'Hero Copy',
+    settingsNavStory: 'Our Story',
+    settingsNavStats: 'Numbers',
+    settingsNavProgrammes: 'Programmes',
+    settingsNavTeam: 'Team',
+    settingsWebsiteSaved: 'Website content saved',
+    settingsWebsiteNeedsGeneral: 'Save your school details under General first.',
+    settingsShowSection: 'Show this section on the website',
+    settingsEnglishField: 'English',
+    settingsMalayField: 'Bahasa Melayu',
+    settingsBlankKeepsDefault: 'Leave blank to keep the default text.',
+    settingsHeroDesc:
+      'The first thing a visitor reads. Say it in your own words; blank fields keep the built-in copy.',
+    settingsHeroTagline: 'Tagline pill',
+    settingsHeroHeadlineStart: 'Headline (start)',
+    settingsHeroHeadlineHighlight: 'Headline (highlighted words)',
+    settingsHeroHeadlineEnd: 'Headline (end)',
+    settingsHeroSubtitle: 'Subtitle',
+    settingsHeroPreview: 'Preview',
+    settingsStoryDesc:
+      'Tell parents who you are: your story, how you teach, and a word from the principal.',
+    settingsFoundedYear: 'Founded year',
+    settingsStoryText: 'Our story',
+    settingsApproachText: 'How we teach',
+    settingsPrincipalMessage: 'Message from the principal',
+    settingsPrincipalPhoto: 'Principal photo',
+    settingsPrincipalNameHint: 'The principal name comes from General settings.',
+    settingsStoryPhotos: 'Photos (up to 3)',
+    settingsStatsDesc: 'The numbers strip under the hero. Tiles left at 0 are not shown.',
+    settingsStatsMode: 'Where do the numbers come from?',
+    settingsStatsModeLive: 'Live from your records',
+    settingsStatsModeLiveHint:
+      'Active students and classes are counted automatically. Staff and rating are still entered here.',
+    settingsStatsModeManual: 'Enter them myself',
+    settingsStatsModeHidden: 'Hide the numbers strip',
+    settingsStatsStudents: 'Students',
+    settingsStatsStaff: 'Staff',
+    settingsStatsClasses: 'Classes',
+    settingsStatsRating: 'Rating (out of 5)',
+    settingsStatsLiveValue: 'Live count: {n}',
+    settingsProgrammesDesc:
+      'Pick the programme cards that describe your school and put them in the order you want.',
+    settingsProgrammesNone: 'No cards selected. The programmes section will be hidden.',
+    settingsMoveUp: 'Move up',
+    settingsMoveDown: 'Move down',
+    settingsTeamDesc: 'Introduce the adults parents will meet: teachers, assistants, anyone.',
+    settingsAddMember: 'Add person',
+    settingsMemberName: 'Name',
+    settingsMemberRole: 'Role',
+    settingsNoMembers: 'No team members yet.',
+
+    // Landing page — Our Story + Team
+    aboutBadge: 'Our Story',
+    aboutTitle: 'Get to know {school}',
+    aboutFoundedIn: 'Est. {year}',
+    aboutApproachLabel: 'How we teach',
+    principalMessageLabel: 'A word from our principal',
+    principalLabel: 'Principal',
+    teamBadge: 'Our People',
+    teamTitle: 'Meet the team',
+    teamSubtitle: 'The caring adults your child will see every day',
 
     // Fee Plans
     feePlans: 'Fee Plans',
@@ -1161,11 +1223,11 @@ export const translations = {
 
     // Landing page — Testimonials
     testimonialsTitle: 'Apa kata ibu bapa',
-    testimonialsSubtitle: `Dengar dari keluarga ${APP_NAME} yang gembira`,
+    testimonialsSubtitle: 'Dengar dari keluarga {school} yang gembira',
 
     // Landing page — CTA
     ctaTitle: 'Bersedia untuk menyertai keluarga kami?',
-    ctaSubtitle: `Jadualkan lawatan dan lihat mengapa ibu bapa menyukai ${APP_NAME}.`,
+    ctaSubtitle: 'Jadualkan lawatan dan lihat mengapa ibu bapa menyukai {school}.',
     scheduleVisit: 'Jadualkan Lawatan',
 
     // Landing page — Gallery
@@ -1250,7 +1312,7 @@ export const translations = {
 
     // Landing page — Notices
     noticesTitle: 'Notis Sekolah',
-    noticesSubtitle: `Ikuti berita dan pengumuman terkini daripada ${APP_NAME}`,
+    noticesSubtitle: 'Ikuti berita dan pengumuman terkini daripada {school}',
     noticesEmptyTitle: 'Tiada pengumuman buat masa ini!',
     noticesEmptySubtitle:
       'Semak semula tidak lama lagi untuk berita sekolah, acara akan datang, dan kemas kini penting.',
@@ -1336,6 +1398,71 @@ export const translations = {
     settingsLogoUpload: 'Muat Naik Logo',
     settingsLogoChange: 'Tukar Logo',
     settingsSchoolInfoSaved: 'Info sekolah disimpan',
+
+    // Settings — Website (landing page identity)
+    settingsWebsite: 'Laman Web',
+    settingsNavHero: 'Teks Utama',
+    settingsNavStory: 'Kisah Kami',
+    settingsNavStats: 'Angka',
+    settingsNavProgrammes: 'Program',
+    settingsNavTeam: 'Pasukan',
+    settingsWebsiteSaved: 'Kandungan laman web disimpan',
+    settingsWebsiteNeedsGeneral: 'Simpan butiran sekolah di bahagian Umum dahulu.',
+    settingsShowSection: 'Paparkan bahagian ini di laman web',
+    settingsEnglishField: 'Bahasa Inggeris',
+    settingsMalayField: 'Bahasa Melayu',
+    settingsBlankKeepsDefault: 'Biarkan kosong untuk mengekalkan teks lalai.',
+    settingsHeroDesc:
+      'Perkara pertama yang dibaca pelawat. Tulis dengan kata-kata anda sendiri; medan kosong mengekalkan teks asal.',
+    settingsHeroTagline: 'Pil tagline',
+    settingsHeroHeadlineStart: 'Tajuk (permulaan)',
+    settingsHeroHeadlineHighlight: 'Tajuk (perkataan ditonjolkan)',
+    settingsHeroHeadlineEnd: 'Tajuk (penghujung)',
+    settingsHeroSubtitle: 'Subtajuk',
+    settingsHeroPreview: 'Pratonton',
+    settingsStoryDesc:
+      'Ceritakan siapa anda kepada ibu bapa: kisah anda, cara anda mengajar, dan pesanan pengetua.',
+    settingsFoundedYear: 'Tahun ditubuhkan',
+    settingsStoryText: 'Kisah kami',
+    settingsApproachText: 'Cara kami mengajar',
+    settingsPrincipalMessage: 'Pesanan daripada pengetua',
+    settingsPrincipalPhoto: 'Gambar pengetua',
+    settingsPrincipalNameHint: 'Nama pengetua diambil daripada tetapan Umum.',
+    settingsStoryPhotos: 'Gambar (sehingga 3)',
+    settingsStatsDesc: 'Jalur angka di bawah tajuk utama. Petak bernilai 0 tidak dipaparkan.',
+    settingsStatsMode: 'Dari mana angka ini datang?',
+    settingsStatsModeLive: 'Langsung daripada rekod anda',
+    settingsStatsModeLiveHint:
+      'Pelajar dan kelas aktif dikira secara automatik. Kakitangan dan penilaian masih dimasukkan di sini.',
+    settingsStatsModeManual: 'Masukkan sendiri',
+    settingsStatsModeHidden: 'Sembunyikan jalur angka',
+    settingsStatsStudents: 'Pelajar',
+    settingsStatsStaff: 'Kakitangan',
+    settingsStatsClasses: 'Kelas',
+    settingsStatsRating: 'Penilaian (daripada 5)',
+    settingsStatsLiveValue: 'Kiraan langsung: {n}',
+    settingsProgrammesDesc:
+      'Pilih kad program yang menggambarkan sekolah anda dan susun mengikut urutan yang anda mahu.',
+    settingsProgrammesNone: 'Tiada kad dipilih. Bahagian program akan disembunyikan.',
+    settingsMoveUp: 'Naik',
+    settingsMoveDown: 'Turun',
+    settingsTeamDesc:
+      'Perkenalkan orang dewasa yang akan ditemui ibu bapa: guru, pembantu, sesiapa sahaja.',
+    settingsAddMember: 'Tambah orang',
+    settingsMemberName: 'Nama',
+    settingsMemberRole: 'Peranan',
+    settingsNoMembers: 'Belum ada ahli pasukan.',
+
+    // Landing page — Our Story + Team
+    aboutBadge: 'Kisah Kami',
+    aboutTitle: 'Kenali {school}',
+    aboutFoundedIn: 'Ditubuhkan {year}',
+    aboutApproachLabel: 'Cara kami mengajar',
+    principalMessageLabel: 'Pesanan daripada pengetua kami',
+    principalLabel: 'Pengetua',
+    teamBadge: 'Warga Kami',
+    teamTitle: 'Kenali pasukan kami',
+    teamSubtitle: 'Orang dewasa penyayang yang akan ditemui anak anda setiap hari',
 
     // Fee Plans
     feePlans: 'Pelan Fi',
