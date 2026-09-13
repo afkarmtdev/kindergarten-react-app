@@ -14,7 +14,7 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       title={t('whatsAppChat')}
-      className="fixed bottom-4 left-4 sm:bottom-8 sm:left-8 z-50 group"
+      className="fixed bottom-[4.5rem] left-4 sm:left-8 lg:bottom-8 z-50 group"
     >
       <div className="w-14 h-14 rounded-full bg-[#25D366] text-white shadow-lg flex items-center justify-center hover:-translate-y-1 hover:shadow-xl transition-all duration-200">
         <MessageCircle size={26} strokeWidth={2} />
