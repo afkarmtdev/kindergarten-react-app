@@ -60,15 +60,17 @@ export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
 
   return (
     <section className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200">
-      <div
-        className="hidden md:block lp-float-slow absolute bottom-36 left-8 opacity-25 pointer-events-none"
-        style={{ animationDelay: '1.8s' }}
-        aria-hidden="true"
+      {/* Phones: top-left beside the heading, since the member cards are opaque */}
+      <FloatingDoodle
+        position="top-6 -left-6 md:top-auto md:bottom-36 md:left-8"
+        animation="slow"
+        delay={1.8}
+        shrinkFrom="top-left"
       >
         <DoodlePenguin size={380} color="#4D96FF" />
-      </div>
+      </FloatingDoodle>
       {/* A few shapes at the edges */}
-      <FloatingDoodle position="top-10 left-8" animation="spin">
+      <FloatingDoodle position="top-10 left-8" animation="spin" mdUp>
         <DoodleStar size={160} color="#FF6B35" />
       </FloatingDoodle>
       <FloatingDoodle position="top-1/3 right-1/4" animation="float" delay={1.3} mdUp>
