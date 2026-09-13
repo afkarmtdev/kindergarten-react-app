@@ -3,6 +3,7 @@ import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { StickerBadge } from './StickerBadge'
 import { Wave } from './Wave'
+import { DoodleBunny } from '@/components/landing/doodles/DoodleBunny'
 import type { ResolvedTeamMember } from '@/hooks/useLandingContent'
 
 export interface TeamSectionProps {
@@ -35,6 +36,13 @@ export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
 
   return (
     <section className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200">
+      <div
+        className="lp-float absolute top-10 right-8 opacity-25 pointer-events-none"
+        style={{ animationDelay: '0.9s' }}
+        aria-hidden="true"
+      >
+        <DoodleBunny size={120} color="#C77DFF" />
+      </div>
       <div
         ref={fadeIn.ref}
         className={`relative max-w-6xl mx-auto px-4 sm:px-6 ${fadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}`}
