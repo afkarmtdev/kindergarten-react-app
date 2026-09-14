@@ -10,9 +10,19 @@
 //   tilt      degrees, -8 by default like the cursor; 0 for perfectly upright
 //   outline   white die-cut edge; pass false only on white backgrounds
 //   lashes    two small eyelashes per eye (mama bear in the portal family)
+//   gaze      where the pupils look, x/y in -1..1 (open eyes only); 0,0 is
+//             straight ahead. The login pages use it to follow the caret.
 
 export type BearEyeState = 'open' | 'half' | 'closed'
 export type BearMood = 'smile' | 'grin'
+export interface BearGaze {
+  x: number
+  y: number
+}
+
+// How far (in viewBox units) a pupil may slide from centre at gaze 1.
+const GAZE_RANGE = 1.1
+const clampGaze = (n: number) => Math.max(-1, Math.min(1, n))
 
 const FUR = '#C68B59'
 const EAR = '#A86B3C'
@@ -36,6 +46,7 @@ interface StickerBearProps {
   outline?: boolean
   outlineColor?: string
   lashes?: boolean
+  gaze?: BearGaze
   className?: string
 }
 
@@ -48,9 +59,12 @@ export function StickerBear({
   outline = true,
   outlineColor = '#ffffff',
   lashes = false,
+  gaze,
   className,
 }: StickerBearProps) {
   const happy = mood === 'grin'
+  const gazeX = clampGaze(gaze?.x ?? 0) * GAZE_RANGE
+  const gazeY = clampGaze(gaze?.y ?? 0) * GAZE_RANGE
 
   return (
     <svg
@@ -135,10 +149,15 @@ export function StickerBear({
             <ellipse cx="20" cy="16" rx="1.4" ry="0.8" fill={INK} />
           </>
         ) : (
-          <>
+          <g
+            style={{
+              transform: `translate(${gazeX}px, ${gazeY}px)`,
+              transition: 'transform 160ms ease-out',
+            }}
+          >
             <circle cx="12" cy="15.5" r="1.4" fill={INK} />
             <circle cx="20" cy="15.5" r="1.4" fill={INK} />
-          </>
+          </g>
         )}
         {lashes && (
           <path
