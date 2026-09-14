@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 
+// Types `text` character by character. The full text is always rendered
+// invisibly underneath so the element takes its final width from the first
+// paint: the surrounding line never reflows while typing. Reflowing the h1
+// while its entrance transform animation is still running makes iOS Safari
+// paint the old and new glyph positions on top of each other (ghost text).
 export function TypedText({
   text,
   className = '',
@@ -47,15 +52,20 @@ export function TypedText({
     }
   }, [text, speed, delay])
 
+  const cursorClass = 'inline-block w-[3px] h-[0.85em] ml-0.5 align-middle'
+
   return (
-    <span className={className}>
-      {displayed}
-      {showCursor && (
-        <span
-          className="inline-block w-[3px] h-[0.85em] bg-kinder-orange ml-0.5 align-middle animate-pulse"
-          aria-hidden="true"
-        />
-      )}
+    <span className={`relative inline-block ${className}`}>
+      <span className="invisible" aria-hidden="true">
+        {text}
+        <span className={cursorClass} />
+      </span>
+      <span className="absolute inset-0">
+        {displayed}
+        {showCursor && (
+          <span className={`${cursorClass} bg-kinder-orange animate-pulse`} aria-hidden="true" />
+        )}
+      </span>
     </span>
   )
 }
