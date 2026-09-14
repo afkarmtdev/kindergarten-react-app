@@ -32,6 +32,7 @@ import { galleryApi, announcementsApi, testimonialsApi, artWallApi, careersApi }
 import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { useLandingContent } from '@/hooks/useLandingContent'
 import { useFontsReady } from '@/hooks/useFontsReady'
+import { useSettledOrTimeout } from '@/hooks/useSettledOrTimeout'
 import { StickerBear } from '@/components/ui/StickerBear'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
@@ -102,7 +103,11 @@ export function LandingPage() {
   const content = useLandingContent()
   usePageTitle(undefined, schoolName)
   const [showTop, setShowTop] = useState(false)
+  // Hold the hero entrance until fonts AND the school's copy are in. Either
+  // arriving mid-animation reflows the h1, which iOS Safari paints as ghost text.
   const fontsReady = useFontsReady()
+  const contentReady = useSettledOrTimeout(content.isLoaded)
+  const heroReady = fontsReady && contentReady
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [lightboxArtId, setLightboxArtId] = useState<string | null>(null)
@@ -546,7 +551,7 @@ export function LandingPage() {
 
         {/* ── Hero content ── */}
         <div
-          className={`relative max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6 ${fontsReady ? '' : 'lp-fonts-pending'}`}
+          className={`relative max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-6 ${heroReady ? '' : 'lp-fonts-pending'}`}
         >
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
             {/* Text column */}
