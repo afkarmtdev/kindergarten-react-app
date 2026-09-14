@@ -242,9 +242,9 @@ kindergarten-app/
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
 │       │   ├── landing/
 │       │   │   └── doodles/            # Hand-drawn SVG line-art (stroke 2, fill none) — Doodle<Shape>/<Animal> with size + color props
-│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin, delay, opacity, mdUp
-│       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,Circle,Zigzag,Triangle}.tsx  # Shapes, ~100–240px on the landing page
-│       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox}.tsx  # Animals, ~300–480px, hidden below md
+│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin, delay, opacity, mdUp, shrinkFrom, flip; adds .doodle-live while in view so a child's own CSS animation (train wheels/smoke) can gate on it
+│       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,Circle,Zigzag,Triangle}.tsx  # Shapes, ~100–240px on the landing page; always outlined, never filled
+│       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox,Ladybird,Train}.tsx  # Animals + toy train, ~300–480px, shrunk below md; side-view ones face left — pass `flip` to FloatingDoodle when placed at a left edge
 │       │   ├── portal/
 │       │   │   ├── PortalBearFamily.tsx      # Portal login hero — papa (blue bow) + grinning cub + mama (pink bow, lashes), three StickerBears
 │       │   │   ├── PortalBearCub.tsx         # Small upright StickerBear for portal header menu + footer

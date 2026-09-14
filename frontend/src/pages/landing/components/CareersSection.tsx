@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Banknote, X, ChevronRight, Star } from 'lucide-react'
+import { MapPin, Banknote, X, ChevronRight } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { careersApi } from '@/lib/api'
@@ -9,6 +9,8 @@ import { StickerBadge } from './StickerBadge'
 import { StarField } from './StarField'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
+import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleTrain } from '@/components/landing/doodles/DoodleTrain'
 import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
 import { ApplicationFormModal } from './ApplicationFormModal'
 import type { JobPosting, JobType } from '@/types'
@@ -72,14 +74,19 @@ export function CareersSection() {
       className="relative overflow-hidden bg-wash-mint pt-24 transition-colors duration-200"
     >
       <StarField variant="a" />
-      {/* Floating shapes — spread across full section width */}
-      <FloatingDoodle position="top-8 left-6" opacity={0.2}>
-        <Star size={208} fill="#FFD93D" stroke="#FFD93D" />
+      {/* Toy train — top-left, mirrored to chug into the page; shrinks on phones.
+          No drift: it sits on its rails and animates its own wheels and smoke. */}
+      <FloatingDoodle position="top-10 left-8" animation="none" shrinkFrom="top-left" flip>
+        <DoodleTrain size={440} color="#FF6B35" />
       </FloatingDoodle>
-      <FloatingDoodle position="top-1/2 left-1/4" animation="slow" delay={0.8} opacity={0.1} mdUp>
+      {/* Floating shapes — spread across full section width */}
+      <FloatingDoodle position="top-8 right-6" animation="spin" mdUp>
+        <DoodleStar size={208} color="#FFD93D" />
+      </FloatingDoodle>
+      <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={0.8} mdUp>
         <DoodleCloud size={208} color="#4D96FF" />
       </FloatingDoodle>
-      <FloatingDoodle position="top-1/3 right-1/4" delay={1.6} opacity={0.15}>
+      <FloatingDoodle position="top-1/3 left-1/4" delay={1.6} mdUp>
         <DoodleSun size={184} color="#FFD93D" />
       </FloatingDoodle>
       <div

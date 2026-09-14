@@ -5,6 +5,11 @@ import { useFadeIn } from '@/hooks/useFadeIn'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
 import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
+import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { DoodleBunny } from '@/components/landing/doodles/DoodleBunny'
+import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
+import { DoodleCircle } from '@/components/landing/doodles/DoodleCircle'
 
 export function LocationSection() {
   const t = useT()
@@ -29,6 +34,20 @@ export function LocationSection() {
       id="location"
       className="relative overflow-hidden bg-wash-sky pt-20 transition-colors duration-200"
     >
+      {/* Floating shapes — bunny tucked at the top-right corner, shrinks on phones */}
+      <FloatingDoodle position="top-8 right-8" animation="slow" shrinkFrom="top-right">
+        <DoodleBunny size={340} color="#FF85A2" />
+      </FloatingDoodle>
+      <FloatingDoodle position="top-12 left-8" animation="spin" mdUp>
+        <DoodleStar size={128} color="#FFD93D" />
+      </FloatingDoodle>
+      <FloatingDoodle position="top-40 left-1/4" animation="alt" delay={1.4} mdUp>
+        <DoodleCloud size={184} color="#4D96FF" />
+      </FloatingDoodle>
+      <FloatingDoodle position="bottom-32 left-10" animation="float" delay={0.7}>
+        <DoodleCircle size={112} color="#6BCB77" />
+      </FloatingDoodle>
+
       <div
         ref={ref}
         className={`relative max-w-7xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}
