@@ -215,7 +215,7 @@ kindergarten-app/
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
-│       │   │   ├── StickerBear.tsx    # THE mascot — sticker teddy SVG (same drawing as the .cursor-bear cursor); props size, eyeState, mood smile|grin, bowColor, tilt, outline, lashes
+│       │   │   ├── StickerBear.tsx    # THE mascot — sticker teddy SVG (same drawing as the .cursor-bear cursor); props size, eyeState, mood smile|grin, bowColor, tilt, outline, lashes, gaze (pupil offset, login pages), cap nightcap (starry sleeping cap, admin bear in dark mode)
 │       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware

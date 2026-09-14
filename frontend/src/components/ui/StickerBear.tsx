@@ -12,6 +12,10 @@
 //   lashes    two small eyelashes per eye (mama bear in the portal family)
 //   gaze      where the pupils look, x/y in -1..1 (open eyes only); 0,0 is
 //             straight ahead. The login pages use it to follow the caret.
+//   cap       'nightcap' draws a floppy sleeping cap with two sparkles on it
+//             (admin bear in dark mode). It settles in with the bear-cap-settle
+//             animation from index.css whenever it mounts.
+//   capColor  cap fill; defaults to the bow colour so it matches the tile.
 
 export type BearEyeState = 'open' | 'half' | 'closed'
 export type BearMood = 'smile' | 'grin'
@@ -19,6 +23,7 @@ export interface BearGaze {
   x: number
   y: number
 }
+export type BearCap = 'none' | 'nightcap'
 
 // How far (in viewBox units) a pupil may slide from centre at gaze 1.
 const GAZE_RANGE = 1.1
@@ -37,6 +42,20 @@ export const BEAR_BOW_PINK = '#FF85A2'
 const BOW_LEFT = '9,25.5 15,28 9,30.5'
 const BOW_RIGHT = '23,25.5 17,28 23,30.5'
 
+// Nightcap: cone rises from the brim, folds over to the right, pompom at the
+// tip. The brim follows the top of the head so the ears poke out either side.
+const CAP_CONE =
+  'M7.5 9.6 C9.5 4.5 13 1.2 17 1.4 C21 1.6 24 2.4 28.2 3.2 C25 5.2 22.5 5.6 20.4 6 C22.5 7.4 24 8.6 24.5 9.6 Z'
+const CAP_BRIM = 'M6.5 10.4 Q16 7.2 25.5 10.4 L25.5 12.4 Q16 9.2 6.5 12.4 Z'
+const CAP_POM = { cx: 28.4, cy: 3.2, r: 2.3 }
+const CAP_STAR = '#FFD93D'
+
+// Four-point sparkle centred on (x, y) with radius r.
+function sparklePath(x: number, y: number, r: number) {
+  return `M${x} ${y - r} Q${x} ${y} ${x + r} ${y} Q${x} ${y} ${x} ${y + r} Q${x} ${y} ${x - r} ${y} Q${x} ${y} ${x} ${y - r} Z`
+}
+const CAP_SPARKLES = [sparklePath(13.6, 5.6, 1.3), sparklePath(19.2, 3.6, 0.95)]
+
 interface StickerBearProps {
   size?: number
   eyeState?: BearEyeState
@@ -47,6 +66,8 @@ interface StickerBearProps {
   outlineColor?: string
   lashes?: boolean
   gaze?: BearGaze
+  cap?: BearCap
+  capColor?: string
   className?: string
 }
 
@@ -60,9 +81,12 @@ export function StickerBear({
   outlineColor = '#ffffff',
   lashes = false,
   gaze,
+  cap = 'none',
+  capColor,
   className,
 }: StickerBearProps) {
   const happy = mood === 'grin'
+  const capFill = capColor ?? bowColor
   const gazeX = clampGaze(gaze?.x ?? 0) * GAZE_RANGE
   const gazeY = clampGaze(gaze?.y ?? 0) * GAZE_RANGE
 
@@ -108,6 +132,37 @@ export function StickerBear({
 
         {/* Head */}
         <circle cx="16" cy="17" r="10.5" fill={FUR} />
+
+        {/* Nightcap — after the head so it covers the inner ears */}
+        {cap === 'nightcap' && (
+          <g className="bear-cap-settle">
+            {outline && (
+              <>
+                <path
+                  d={CAP_CONE}
+                  fill={capFill}
+                  stroke={outlineColor}
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d={CAP_BRIM}
+                  fill="#ffffff"
+                  stroke={outlineColor}
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                />
+                <circle {...CAP_POM} fill="#ffffff" stroke={outlineColor} strokeWidth="3" />
+              </>
+            )}
+            <path d={CAP_CONE} fill={capFill} />
+            {CAP_SPARKLES.map((d) => (
+              <path key={d} d={d} fill={CAP_STAR} />
+            ))}
+            <path d={CAP_BRIM} fill="#ffffff" />
+            <circle {...CAP_POM} fill="#ffffff" />
+          </g>
+        )}
 
         {/* Bow */}
         <polygon points={BOW_LEFT} fill={bowColor} />

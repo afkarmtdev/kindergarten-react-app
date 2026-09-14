@@ -248,6 +248,29 @@
   }
 }
 
+/* Sticker bear nightcap — drops onto the head when the cap mounts (dark mode on).
+   transform-box: view-box so the origin is in the bear's own 32x32 units. */
+@keyframes bear-cap-settle {
+  from {
+    transform: translateY(-5px) rotate(-6deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.bear-cap-settle {
+  transform-box: view-box;
+  transform-origin: 16px 10px;
+  animation: bear-cap-settle 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bear-cap-settle {
+    animation: none;
+  }
+}
+
 /* Bottom sheet slide up */
 @keyframes slide-up {
   from {
