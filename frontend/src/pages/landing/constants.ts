@@ -42,6 +42,9 @@ export const KEYFRAMES = `
   .lp-slide-in     { animation: lp-slide-in   0.35s ease        both; }
   .lp-enter-1      { animation: lp-entrance   0.8s ease 0.18s   both; }
   .lp-enter-2      { animation: lp-entrance   0.8s ease 0.36s   both; }
+  .lp-fonts-pending .lp-enter-0,
+  .lp-fonts-pending .lp-enter-1,
+  .lp-fonts-pending .lp-enter-2 { animation-play-state: paused; }
   .lp-card-exit    { animation: lp-card-exit  0.15s ease        forwards; }
   .lp-card-enter   { animation: lp-card-enter 0.18s ease        both; }
   @keyframes lp-card-exit-back {
