@@ -340,6 +340,222 @@
   }
 }
 
+/* Music note doodle — the beamed pair sways in time about its base and two
+   tiny echo notes drift up off the beam and fade, like the train's smoke.
+   Gated on .doodle-live the same way. */
+@keyframes doodle-note-sway {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes doodle-note-echo {
+  0% {
+    transform: translate(0, 4px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(2px, -9px);
+    opacity: 0;
+  }
+}
+.doodle-music-note .note {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+.doodle-music-note .echo {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.doodle-live .doodle-music-note .note {
+  animation: doodle-note-sway 2.4s ease-in-out infinite;
+}
+.doodle-live .doodle-music-note .echo {
+  animation: doodle-note-echo 2.6s ease-out infinite;
+}
+.doodle-live .doodle-music-note .echo-2 {
+  animation-delay: -1.3s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .doodle-live .doodle-music-note .note,
+  .doodle-live .doodle-music-note .echo {
+    animation: none;
+  }
+}
+
+/* Duck doodle — a subtle swim: the duck bobs a couple of units and rocks two
+   degrees, while the two ripples slide sideways half a cycle apart. Gated on
+   .doodle-live the same way as the train. */
+@keyframes doodle-duck-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(1.5px) rotate(-2deg);
+  }
+}
+@keyframes doodle-duck-ripple {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateX(2.5px);
+    opacity: 1;
+  }
+}
+.doodle-duck .body,
+.doodle-duck .ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.doodle-live .doodle-duck .body {
+  animation: doodle-duck-bob 3.2s ease-in-out infinite;
+}
+.doodle-live .doodle-duck .ripple {
+  animation: doodle-duck-ripple 3.2s ease-in-out infinite;
+}
+.doodle-live .doodle-duck .ripple-2 {
+  animation-delay: -1.6s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .doodle-live .doodle-duck .body,
+  .doodle-live .doodle-duck .ripple {
+    animation: none;
+  }
+}
+
+/* Apple doodle — somebody keeps biting it. Three outlines (whole, one bite,
+   two bites) take turns over a 7s cycle with hard cuts at each chomp, the body
+   squashes for a beat as the bite lands and two crumbs fly off, then a fresh
+   apple fades back in. Gated on .doodle-live like the train; at rest only the
+   whole outline shows. */
+@keyframes doodle-apple-whole {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  40.1%,
+  90% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes doodle-apple-bite-1 {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  40.1%,
+  70% {
+    opacity: 1;
+  }
+  70.1%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes doodle-apple-bite-2 {
+  0%,
+  70% {
+    opacity: 0;
+  }
+  70.1%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes doodle-apple-chomp {
+  0%,
+  38%,
+  45%,
+  68%,
+  75%,
+  100% {
+    transform: none;
+  }
+  40%,
+  70% {
+    transform: scale(0.92, 1.05) rotate(-4deg);
+  }
+}
+@keyframes doodle-apple-crumb {
+  0%,
+  39%,
+  56%,
+  69%,
+  86%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  41%,
+  71% {
+    opacity: 1;
+    transform: translate(1px, -1px);
+  }
+  55%,
+  85% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+.doodle-apple .body,
+.doodle-apple .crumb {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.doodle-apple .bite-1,
+.doodle-apple .bite-2,
+.doodle-apple .crumb {
+  opacity: 0;
+}
+.doodle-apple .crumb {
+  --dx: 7px;
+  --dy: -5px;
+}
+.doodle-apple .crumb-2 {
+  --dx: 6px;
+  --dy: 5px;
+}
+.doodle-live .doodle-apple .whole {
+  animation: doodle-apple-whole 7s linear infinite;
+}
+.doodle-live .doodle-apple .bite-1 {
+  animation: doodle-apple-bite-1 7s linear infinite;
+}
+.doodle-live .doodle-apple .bite-2 {
+  animation: doodle-apple-bite-2 7s linear infinite;
+}
+.doodle-live .doodle-apple .body {
+  animation: doodle-apple-chomp 7s ease-in-out infinite;
+}
+.doodle-live .doodle-apple .crumb {
+  animation: doodle-apple-crumb 7s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .doodle-live .doodle-apple .whole,
+  .doodle-live .doodle-apple .bite-1,
+  .doodle-live .doodle-apple .bite-2,
+  .doodle-live .doodle-apple .body,
+  .doodle-live .doodle-apple .crumb {
+    animation: none;
+  }
+}
+
 /* Ladybird doodle — the bug flies along its dotted trail with a CSS motion
    path (coordinates are the SVG's own 64x48 user units), head first thanks to
    offset-rotate. At rest, and in browsers without motion paths, it sits at the
