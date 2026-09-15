@@ -1,7 +1,8 @@
 // Bear family for the portal login — papa (blue bow) and mama (pink bow,
 // eyelashes) leaning in over a smaller grinning cub. Three StickerBears in a
 // row; `size` is the total width. `eyeState` and `gaze` apply to the parents
-// only; the cub keeps grinning (arc eyes have no pupils to move).
+// only; the cub keeps grinning (arc eyes have no pupils to move). On Malaysia
+// Day the cub is the one waving the flag.
 import {
   StickerBear,
   BEAR_BOW_BLUE,
@@ -9,6 +10,7 @@ import {
   type BearEyeState,
   type BearGaze,
 } from '@/components/ui/StickerBear'
+import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 
 export function PortalBearFamily({
   size = 96,
@@ -19,6 +21,7 @@ export function PortalBearFamily({
   eyeState?: BearEyeState
   gaze?: BearGaze
 }) {
+  const malaysiaDay = useMalaysiaDay()
   const parent = size * 0.42
   const cub = size * 0.32
   return (
@@ -33,7 +36,7 @@ export function PortalBearFamily({
         />
       </div>
       <div style={{ marginBottom: -size * 0.02 }}>
-        <StickerBear size={cub} mood="grin" tilt={0} />
+        <StickerBear size={cub} mood="grin" tilt={0} flag={malaysiaDay ? 'malaysia' : 'none'} />
       </div>
       <div style={{ marginLeft: -size * 0.04 }}>
         <StickerBear

@@ -271,6 +271,32 @@
   }
 }
 
+/* Sticker bear flag (Malaysia Day) — the raised arm waves the Jalur Gemilang
+   about the paw a handful of times when it mounts, then holds still so no
+   infinite animation is left running in the navbar or sidebar. */
+@keyframes bear-flag-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(7deg);
+  }
+  75% {
+    transform: rotate(-7deg);
+  }
+}
+.bear-flag-wave {
+  transform-box: view-box;
+  transform-origin: 29.6px 13.4px;
+  animation: bear-flag-wave 1.1s ease-in-out 6 both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bear-flag-wave {
+    animation: none;
+  }
+}
+
 /* Toy train doodle — wheels spin and smoke puffs drift up, but only while the
    FloatingDoodle wrapper marks it .doodle-live (near the viewport), so an
    off-screen train holds no GPU layer. transform-box: fill-box makes each

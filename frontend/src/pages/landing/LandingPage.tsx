@@ -34,6 +34,7 @@ import { useLandingContent } from '@/hooks/useLandingContent'
 import { useFontsReady } from '@/hooks/useFontsReady'
 import { useSettledOrTimeout } from '@/hooks/useSettledOrTimeout'
 import { StickerBear } from '@/components/ui/StickerBear'
+import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
@@ -95,6 +96,7 @@ const STAT_TINTS = { students: 'sky', staff: 'mint', classes: 'butter', rating: 
 export function LandingPage() {
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
+  const malaysiaDay = useMalaysiaDay()
   const { logoUrl, schoolName } = useSchoolInfo({ public: true })
   // Hero background effects (mesh drift, shooting stars, floating shapes) only
   // run while the hero is near the viewport — see useInViewport.
@@ -274,7 +276,11 @@ export function LandingPage() {
                 </span>
               }
             >
-              <StickerBear size={40} cap={darkMode ? 'nightcap' : 'none'} />
+              <StickerBear
+                size={40}
+                cap={darkMode ? 'nightcap' : 'none'}
+                flag={malaysiaDay ? 'malaysia' : 'none'}
+              />
             </CoinFlipLogo>
             <span
               className={`font-fun font-bold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${

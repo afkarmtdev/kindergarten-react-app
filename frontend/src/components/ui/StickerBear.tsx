@@ -16,6 +16,9 @@
 //             (admin bear in dark mode). It settles in with the bear-cap-settle
 //             animation from index.css whenever it mounts.
 //   capColor  cap fill; defaults to the bow colour so it matches the tile.
+//   flag      'malaysia' raises a paw from behind the head holding the Jalur
+//             Gemilang, waved a few times on mount (bear-flag-wave in
+//             index.css). Every bear gets it for Malaysia Day week via useMalaysiaDay.
 
 export type BearEyeState = 'open' | 'half' | 'closed'
 export type BearMood = 'smile' | 'grin'
@@ -24,6 +27,7 @@ export interface BearGaze {
   y: number
 }
 export type BearCap = 'none' | 'nightcap'
+export type BearFlag = 'none' | 'malaysia'
 
 // How far (in viewBox units) a pupil may slide from centre at gaze 1.
 const GAZE_RANGE = 1.1
@@ -56,6 +60,38 @@ function sparklePath(x: number, y: number, r: number) {
 }
 const CAP_SPARKLES = [sparklePath(13.6, 5.6, 1.3), sparklePath(19.2, 3.6, 0.95)]
 
+// Flag arm: drawn before the ears and head so the shoulder disappears behind
+// the head and the paw pokes out past the right ear. The pole leans 13deg and
+// the flag hangs off its top in a rotated local frame (x along the fly, y down
+// the hoist) so the Jalur Gemilang itself is plain axis-aligned rects.
+const ARM_PATH = 'M21.5 19.5 C25.5 19.6 28.6 17.6 29.6 13.6'
+const ARM_WIDTH = 3.4
+const PAW = { cx: 29.6, cy: 13.4, r: 2.4 }
+const POLE = { x1: 28.9, y1: 16.2, x2: 32.2, y2: 2 }
+const POLE_COLOR = '#8B5A2B'
+const FLAG_TRANSFORM = `translate(${POLE.x2} ${POLE.y2}) rotate(13)`
+const FLAG_W = 9
+const FLAG_H = 5.6
+const FLAG_STRIPES = 14
+const FLAG_RED = '#CC0001'
+const FLAG_BLUE = '#010066'
+const FLAG_YELLOW = '#FFCC00'
+const STRIPE_H = FLAG_H / FLAG_STRIPES
+// Canton covers the top seven stripes and half the fly, like the real flag.
+const CANTON = { w: FLAG_W / 2, h: STRIPE_H * 7 }
+
+// Fourteen-point star (one point per state and territory) centred on (cx, cy).
+function starPoints(cx: number, cy: number, outer: number, inner: number, points = 14) {
+  const pts: string[] = []
+  for (let i = 0; i < points * 2; i++) {
+    const r = i % 2 === 0 ? outer : inner
+    const a = -Math.PI / 2 + (i * Math.PI) / points
+    pts.push(`${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`)
+  }
+  return pts.join(' ')
+}
+const FLAG_STAR = starPoints(3.15, 1.4, 0.85, 0.42)
+
 interface StickerBearProps {
   size?: number
   eyeState?: BearEyeState
@@ -68,6 +104,7 @@ interface StickerBearProps {
   gaze?: BearGaze
   cap?: BearCap
   capColor?: string
+  flag?: BearFlag
   className?: string
 }
 
@@ -83,6 +120,7 @@ export function StickerBear({
   gaze,
   cap = 'none',
   capColor,
+  flag = 'none',
   className,
 }: StickerBearProps) {
   const happy = mood === 'grin'
@@ -122,6 +160,60 @@ export function StickerBear({
               strokeLinejoin="round"
             />
           </>
+        )}
+
+        {/* Flag arm — before the ears and head so the shoulder hides behind them */}
+        {flag === 'malaysia' && (
+          <g className="bear-flag-wave">
+            {outline && (
+              <>
+                <path
+                  d={ARM_PATH}
+                  fill="none"
+                  stroke={outlineColor}
+                  strokeWidth={ARM_WIDTH + 3}
+                  strokeLinecap="round"
+                />
+                <line {...POLE} stroke={outlineColor} strokeWidth="4.3" strokeLinecap="round" />
+                <g transform={FLAG_TRANSFORM}>
+                  <rect
+                    width={FLAG_W}
+                    height={FLAG_H}
+                    fill={outlineColor}
+                    stroke={outlineColor}
+                    strokeWidth="3"
+                    strokeLinejoin="round"
+                  />
+                </g>
+                <circle cx={PAW.cx} cy={PAW.cy} r={PAW.r + 1.5} fill={outlineColor} />
+              </>
+            )}
+            <path
+              d={ARM_PATH}
+              fill="none"
+              stroke={FUR}
+              strokeWidth={ARM_WIDTH}
+              strokeLinecap="round"
+            />
+            <line {...POLE} stroke={POLE_COLOR} strokeWidth="1.3" strokeLinecap="round" />
+            <g transform={FLAG_TRANSFORM}>
+              {Array.from({ length: FLAG_STRIPES }, (_, i) => (
+                <rect
+                  key={i}
+                  y={i * STRIPE_H}
+                  width={FLAG_W}
+                  height={STRIPE_H + 0.02}
+                  fill={i % 2 === 0 ? FLAG_RED : '#ffffff'}
+                />
+              ))}
+              <rect width={CANTON.w} height={CANTON.h} fill={FLAG_BLUE} />
+              <circle cx="1.45" cy="1.4" r="0.95" fill={FLAG_YELLOW} />
+              <circle cx="1.82" cy="1.24" r="0.8" fill={FLAG_BLUE} />
+              <polygon points={FLAG_STAR} fill={FLAG_YELLOW} />
+            </g>
+            <circle cx={PAW.cx} cy={PAW.cy} r={PAW.r} fill={FUR} />
+            <circle cx={PAW.cx} cy={PAW.cy} r="0.95" fill={EAR_INNER} />
+          </g>
         )}
 
         {/* Ears */}
