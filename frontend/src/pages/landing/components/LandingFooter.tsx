@@ -1,14 +1,18 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
 import { StickerBear } from '@/components/ui/StickerBear'
+import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
 import { useT } from '@/hooks/useT'
+import { useSettingsStore } from '@/store/settingsStore'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
 import { VENDOR } from '@/lib/version'
 import { StarField } from './StarField'
 
 export function LandingFooter() {
   const t = useT()
+  const darkMode = useSettingsStore((s) => s.darkMode)
+  const malaysiaDay = useMalaysiaDay()
   const { schoolName, address, phone, email, operatingHours, facebookUrl, instagramUrl, logoUrl } =
     useSchoolInfo({ public: true })
   const hasContact = address || phone || email
@@ -47,7 +51,11 @@ export function LandingFooter() {
                   className="w-10 h-10 rounded-lg object-contain bg-white p-0.5 flex-shrink-0"
                 />
               ) : (
-                <StickerBear size={32} />
+                <StickerBear
+                  size={32}
+                  cap={darkMode ? 'nightcap' : 'none'}
+                  flag={malaysiaDay ? 'malaysia' : 'none'}
+                />
               )}
               <span className="font-fun font-bold text-white text-lg">{schoolName}</span>
             </div>

@@ -215,7 +215,7 @@ kindergarten-app/
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
-│       │   │   ├── StickerBear.tsx    # THE mascot — sticker teddy SVG (same drawing as the .cursor-bear cursor); props size, eyeState, mood smile|grin, bowColor, tilt, outline, lashes
+│       │   │   ├── StickerBear.tsx    # THE mascot — sticker teddy SVG (same drawing as the .cursor-bear cursor); props size, eyeState, mood smile|grin, bowColor, tilt, outline, lashes, gaze (pupil offset, login pages), cap nightcap (starry sleeping cap, admin bear in dark mode), flag malaysia (raised paw waving the Jalur Gemilang, every bear 16 to 22 Sep via useMalaysiaDay)
 │       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
@@ -242,9 +242,9 @@ kindergarten-app/
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
 │       │   ├── landing/
 │       │   │   └── doodles/            # Hand-drawn SVG line-art (stroke 2, fill none) — Doodle<Shape>/<Animal> with size + color props
-│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin, delay, opacity, mdUp
-│       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,Circle,Zigzag,Triangle}.tsx  # Shapes, ~100–240px on the landing page
-│       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox}.tsx  # Animals, ~300–480px, hidden below md
+│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin, delay, opacity, mdUp, shrinkFrom, flip; adds .doodle-live while in view so a child's own CSS animation (train wheels/smoke) can gate on it
+│       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,HeartSparkle,Sparkle,Moon,Apple,PaperPlane,MusicNote,Puzzle,Circle,Triangle}.tsx  # Shapes, ~100–240px on the landing page; always outlined, never filled
+│       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox,Ladybird,Duck,Train}.tsx  # Animals + toy train, ~300–480px, shrunk below md; side-view ones face left — pass `flip` to FloatingDoodle when placed at a left edge
 │       │   ├── portal/
 │       │   │   ├── PortalBearFamily.tsx      # Portal login hero — papa (blue bow) + grinning cub + mama (pink bow, lashes), three StickerBears
 │       │   │   ├── PortalBearCub.tsx         # Small upright StickerBear for portal header menu + footer
@@ -262,6 +262,7 @@ kindergarten-app/
 │       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team)
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
 │       │   ├── useInViewport.ts  # Shared IntersectionObserver → true while an element is near the viewport; gates decorative infinite animations
+│       │   ├── useMalaysiaDay.ts # isMalaysiaDay(now) + useMalaysiaDay() — true 16 to 22 Sep local time (Malaysia Day week), re-checked each minute; localStorage kc-preview-malaysia-day=1 forces it; hands every StickerBear its flag
 │       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
 │       │   ├── api.ts             # Axios instance + all admin APIs; portalApi (separate instance with portal_token interceptor) + portalAuthApi + portalDataApi

@@ -5,6 +5,11 @@ import { useFadeIn } from '@/hooks/useFadeIn'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
 import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
+import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { DoodleTurtle } from '@/components/landing/doodles/DoodleTurtle'
+import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
+import { DoodleSparkle } from '@/components/landing/doodles/DoodleSparkle'
 
 export function LocationSection() {
   const t = useT()
@@ -29,6 +34,20 @@ export function LocationSection() {
       id="location"
       className="relative overflow-hidden bg-wash-sky pt-20 transition-colors duration-200"
     >
+      {/* Floating shapes — turtle tucked at the top-right corner, shrinks on phones */}
+      <FloatingDoodle position="top-8 right-8" animation="slow" shrinkFrom="top-right">
+        <DoodleTurtle size={380} color="#6BCB77" />
+      </FloatingDoodle>
+      <FloatingDoodle position="top-12 left-8" animation="spin" mdUp>
+        <DoodleStar size={112} color="#FFD93D" />
+      </FloatingDoodle>
+      <FloatingDoodle position="bottom-24 right-8" animation="alt" delay={1.4} mdUp>
+        <DoodleCloud size={204} color="#4D96FF" />
+      </FloatingDoodle>
+      <FloatingDoodle position="bottom-32 left-10" animation="float" delay={0.7}>
+        <DoodleSparkle size={92} color="#FF6B35" />
+      </FloatingDoodle>
+
       <div
         ref={ref}
         className={`relative max-w-7xl mx-auto px-4 sm:px-6 ${isVisible ? 'lp-fade-up' : 'opacity-0'}`}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { CheckCircle, Heart } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useFadeIn } from '@/hooks/useFadeIn'
 import { inquiriesApi } from '@/lib/api'
@@ -8,8 +8,10 @@ import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleHeart } from '@/components/landing/doodles/DoodleHeart'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
+import { DoodleBee } from '@/components/landing/doodles/DoodleBee'
 
 const CONFETTI_COLORS = ['#FF6B35', '#4D96FF', '#6BCB77', '#FFD93D', '#C77DFF', '#FF85A2']
 
@@ -102,17 +104,22 @@ export function InquiryForm({
     >
       <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
 
+      {/* Animal doodle — bee at the top-right, facing the form; shrinks on phones */}
+      <FloatingDoodle position="top-8 right-8" animation="alt" delay={0.5} shrinkFrom="top-right">
+        <DoodleBee size={300} color="#FFD93D" />
+      </FloatingDoodle>
       {/* Floating decorative shapes */}
       <FloatingDoodle position="top-8 left-6 text-ink-blush" opacity={0.25}>
-        <Heart size={192} fill="currentColor" stroke="currentColor" />
+        <DoodleHeart size={172} color="currentColor" />
       </FloatingDoodle>
       <FloatingDoodle
-        position="top-16 right-10 text-ink-blush"
-        animation="alt"
+        position="top-1/2 right-1/4 text-ink-blush"
+        animation="spin"
         delay={1.2}
         opacity={0.25}
+        mdUp
       >
-        <DoodleStar size={176} color="currentColor" />
+        <DoodleStar size={116} color="currentColor" />
       </FloatingDoodle>
       <FloatingDoodle
         position="bottom-32 left-12 text-ink-blush"
@@ -129,7 +136,7 @@ export function InquiryForm({
         opacity={0.25}
         mdUp
       >
-        <DoodleSpiral size={160} color="currentColor" />
+        <DoodleSpiral size={136} color="currentColor" />
       </FloatingDoodle>
 
       <div

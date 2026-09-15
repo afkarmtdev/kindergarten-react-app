@@ -8,6 +8,7 @@ import { APP_NAME, APP_VERSION } from '../../lib/version'
 import { usePageTitle } from '../../hooks/usePageTitle'
 import { PortalBearFamily } from '../../components/portal/PortalBearFamily'
 import { PortalBearCub } from '../../components/portal/PortalBearCub'
+import { useLoginBear } from '../../hooks/useLoginBear'
 
 export default function PortalLoginPage() {
   usePageTitle('Parent Portal')
@@ -22,6 +23,7 @@ export default function PortalLoginPage() {
   const [loading, setLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const bear = useLoginBear({ typed: accessCode, error })
 
   useEffect(() => {
     setMounted(true)
@@ -70,7 +72,7 @@ export default function PortalLoginPage() {
           className={`text-center mb-8 transition-all duration-500 ${mounted ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         >
           <div className="flex justify-center mb-4">
-            <PortalBearFamily size={100} />
+            <PortalBearFamily size={100} eyeState={bear.eyeState} gaze={bear.gaze} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{APP_NAME}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">{t('portalLogin')}</p>
@@ -93,6 +95,7 @@ export default function PortalLoginPage() {
                 type="text"
                 value={accessCode}
                 onChange={(e) => setAccessCode(e.target.value)}
+                {...bear.watchProps}
                 placeholder="KC-2024-1234"
                 required
                 autoComplete="username"
@@ -113,6 +116,7 @@ export default function PortalLoginPage() {
                 type="password"
                 value={pin}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                {...bear.hideProps}
                 placeholder="••••••"
                 required
                 autoComplete="current-password"

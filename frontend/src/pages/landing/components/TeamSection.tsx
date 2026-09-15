@@ -5,7 +5,7 @@ import { StickerBadge } from './StickerBadge'
 import { Wave } from './Wave'
 import { DoodlePenguin } from '@/components/landing/doodles/DoodlePenguin'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
-import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
+import { DoodleMusicNote } from '@/components/landing/doodles/DoodleMusicNote'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
 import type { ResolvedTeamMember } from '@/hooks/useLandingContent'
@@ -69,15 +69,18 @@ export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
       >
         <DoodlePenguin size={380} color="#4D96FF" />
       </FloatingDoodle>
-      {/* A few shapes at the edges */}
-      <FloatingDoodle position="top-10 left-8" animation="spin" mdUp>
-        <DoodleStar size={160} color="#FF6B35" />
+      {/* A few shapes at the edges. The music note sways on its own, so no drift. */}
+      <FloatingDoodle position="top-10 left-8" animation="none" mdUp>
+        <DoodleMusicNote size={190} color="#FF6B35" />
       </FloatingDoodle>
       <FloatingDoodle position="top-1/3 right-1/4" animation="float" delay={1.3} mdUp>
-        <DoodleFlower size={176} color="#6BCB77" />
+        <DoodleFlower size={132} color="#6BCB77" />
       </FloatingDoodle>
-      <FloatingDoodle position="bottom-32 right-1/4" animation="float" delay={0.3}>
-        <DoodleCloud size={200} color="#4D96FF" />
+      <FloatingDoodle position="top-1/2 right-8 -translate-y-1/2" animation="float" delay={0.3}>
+        <DoodleCloud size={224} color="#4D96FF" />
+      </FloatingDoodle>
+      <FloatingDoodle position="bottom-32 right-16" animation="slow" delay={1.1} mdUp>
+        <DoodleCloud size={108} color="#4D96FF" />
       </FloatingDoodle>
       <div
         ref={fadeIn.ref}

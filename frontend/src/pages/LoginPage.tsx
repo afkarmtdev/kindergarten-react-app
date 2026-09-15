@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useSettingsStore } from '@/store/settingsStore'
 import { APP_VERSION, APP_NAME } from '@/lib/version'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useLoginBear } from '@/hooks/useLoginBear'
 
 export function LoginPage() {
   usePageTitle('Admin Login')
@@ -18,6 +19,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [sessionExpired, setSessionExpired] = useState(false)
+  const bear = useLoginBear({ typed: email, error })
 
   useEffect(() => {
     if (sessionStorage.getItem('auth_expired')) {
@@ -53,7 +55,7 @@ export function LoginPage() {
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-6 sm:p-10 border-2 border-transparent dark:border-gray-800">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-kinder-orange rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 dark:shadow-orange-900/30">
-              <AdminBearIcon size={40} />
+              <AdminBearIcon size={40} eyeState={bear.eyeState} gaze={bear.gaze} />
             </div>
             <h1 className="text-2xl font-fun font-bold text-gray-900 dark:text-gray-100">
               {APP_NAME} Admin
@@ -88,6 +90,7 @@ export function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  {...bear.watchProps}
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-kinder-orange focus:border-transparent transition-all text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   placeholder="admin@kindercare.edu"
                   required
@@ -108,6 +111,7 @@ export function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  {...bear.hideProps}
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-kinder-orange focus:border-transparent transition-all text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   placeholder="••••••••"
                   required

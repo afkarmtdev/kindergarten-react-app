@@ -6,6 +6,8 @@ const ANIMATION = {
   alt: 'lp-float-alt',
   slow: 'lp-float-slow',
   spin: 'lp-spin-slow',
+  /** No drift at all — for doodles that animate themselves, like the train. */
+  none: '',
 } as const
 
 export type FloatingDoodleAnimation = keyof typeof ANIMATION
@@ -46,6 +48,11 @@ export interface FloatingDoodleProps {
    * animals so phones still get one per section, tucked at this corner.
    */
   shrinkFrom?: FloatingDoodleShrinkFrom
+  /**
+   * Mirror the doodle horizontally. The side-view animals are drawn facing
+   * left, so flip the ones placed at a section's left edge to face the content.
+   */
+  flip?: boolean
   children: ReactNode
 }
 
@@ -62,6 +69,7 @@ export function FloatingDoodle({
   opacity = 0.25,
   mdUp = false,
   shrinkFrom,
+  flip = false,
   children,
 }: FloatingDoodleProps) {
   const ref = useRef<HTMLDivElement>(null)
@@ -74,10 +82,11 @@ export function FloatingDoodle({
       aria-hidden="true"
     >
       <div
-        className={inView ? ANIMATION[animation] : undefined}
+        className={inView ? `${ANIMATION[animation]} doodle-live`.trim() : undefined}
         style={{ opacity, animationDelay: delay > 0 ? `-${delay}s` : undefined }}
       >
-        {children}
+        {/* Own element for the mirror so it never fights the animation's transform */}
+        {flip ? <div className="-scale-x-100">{children}</div> : children}
       </div>
     </div>
   )

@@ -34,6 +34,7 @@ import { useLandingContent } from '@/hooks/useLandingContent'
 import { useFontsReady } from '@/hooks/useFontsReady'
 import { useSettledOrTimeout } from '@/hooks/useSettledOrTimeout'
 import { StickerBear } from '@/components/ui/StickerBear'
+import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
 import { ArtworkCardSkeleton } from '@/pages/art-wall/components/ArtworkCardSkeleton'
@@ -71,10 +72,14 @@ import { DoodleMonkey } from '@/components/landing/doodles/DoodleMonkey'
 import { DoodleElephant } from '@/components/landing/doodles/DoodleElephant'
 import { DoodleWhale } from '@/components/landing/doodles/DoodleWhale'
 import { DoodleCat } from '@/components/landing/doodles/DoodleCat'
-import { DoodleTurtle } from '@/components/landing/doodles/DoodleTurtle'
+import { DoodleBunny } from '@/components/landing/doodles/DoodleBunny'
 import { DoodleHeart } from '@/components/landing/doodles/DoodleHeart'
-import { DoodleCircle } from '@/components/landing/doodles/DoodleCircle'
-import { DoodleZigzag } from '@/components/landing/doodles/DoodleZigzag'
+import { DoodleHeartSparkle } from '@/components/landing/doodles/DoodleHeartSparkle'
+import { DoodlePuzzle } from '@/components/landing/doodles/DoodlePuzzle'
+import { DoodlePaperPlane } from '@/components/landing/doodles/DoodlePaperPlane'
+import { DoodleSparkle } from '@/components/landing/doodles/DoodleSparkle'
+import { DoodleApple } from '@/components/landing/doodles/DoodleApple'
+import { DoodleLadybird } from '@/components/landing/doodles/DoodleLadybird'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 
 const STAT_LABEL_KEYS = {
@@ -94,6 +99,7 @@ const STAT_TINTS = { students: 'sky', staff: 'mint', classes: 'butter', rating: 
 export function LandingPage() {
   const t = useT()
   const { darkMode, lang, toggleDark, setLang } = useSettingsStore()
+  const malaysiaDay = useMalaysiaDay()
   const { logoUrl, schoolName } = useSchoolInfo({ public: true })
   // Hero background effects (mesh drift, shooting stars, floating shapes) only
   // run while the hero is near the viewport — see useInViewport.
@@ -273,7 +279,11 @@ export function LandingPage() {
                 </span>
               }
             >
-              <StickerBear size={40} />
+              <StickerBear
+                size={40}
+                cap={darkMode ? 'nightcap' : 'none'}
+                flag={malaysiaDay ? 'malaysia' : 'none'}
+              />
             </CoinFlipLogo>
             <span
               className={`font-fun font-bold text-gray-900 dark:text-white tracking-tight max-w-[200px] md:max-w-xs truncate block ${
@@ -495,7 +505,7 @@ export function LandingPage() {
           aria-hidden="true"
         >
           <div className={heroAnim('lp-float')} style={{ opacity: 0.6 }}>
-            <DoodleStar size={208} color="#FFD93D" />
+            <DoodleStar size={120} color="#FFD93D" />
           </div>
         </div>
 
@@ -527,7 +537,7 @@ export function LandingPage() {
           aria-hidden="true"
         >
           <div className={heroAnim('lp-float-alt')} style={{ opacity: 0.4, animationDelay: '-2s' }}>
-            <DoodleSpiral size={176} color="#C77DFF" />
+            <DoodleSpiral size={160} color="#C77DFF" />
           </div>
         </div>
 
@@ -539,7 +549,7 @@ export function LandingPage() {
             className={heroAnim('lp-float-slow')}
             style={{ opacity: 0.45, animationDelay: '-1.2s' }}
           >
-            <Heart size={128} fill="#FF85A2" stroke="#FF85A2" />
+            <DoodleHeart size={100} color="#FF6B35" />
           </div>
         </div>
 
@@ -670,18 +680,18 @@ export function LandingPage() {
           className="relative overflow-hidden bg-white dark:bg-gray-950 pt-24 transition-colors duration-200"
         >
           <StarField variant="b" />
-          <FloatingDoodle position="top-10 left-6" animation="slow" shrinkFrom="top-left">
+          <FloatingDoodle position="top-10 left-6" animation="slow" shrinkFrom="top-left" flip>
             <DoodleElephant size={380} color="#4D96FF" />
           </FloatingDoodle>
-          {/* A few shapes at the edges */}
-          <FloatingDoodle position="top-12 right-1/4" animation="alt" delay={0.5} mdUp>
-            <DoodleCloud size={208} color="#4D96FF" />
+          {/* Shapes in the side margins, clear of the card grid */}
+          <FloatingDoodle position="top-10 right-10" animation="alt" delay={0.5} mdUp>
+            <DoodleCloud size={216} color="#C77DFF" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.8}>
-            <DoodleZigzag size={152} color="#6BCB77" />
+          <FloatingDoodle position="bottom-24 left-12" animation="alt" delay={1.8}>
+            <DoodlePuzzle size={112} color="#6BCB77" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-1/3 right-1/4" animation="float" delay={0.9} mdUp>
-            <DoodleFlower size={168} color="#FF85A2" />
+          <FloatingDoodle position="bottom-36 right-12" animation="float" delay={0.9} mdUp>
+            <DoodleFlower size={156} color="#FFD93D" />
           </FloatingDoodle>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-16">
@@ -745,18 +755,29 @@ export function LandingPage() {
       {testimonials.length > 0 && (
         <section className="relative overflow-hidden bg-wash-sky pt-24 transition-colors duration-200">
           <StarField variant="b" />
-          {/* Floating decorative shapes */}
-          <FloatingDoodle position="top-10 left-1/3" animation="spin">
-            <DoodleStar size={128} color="#FF6B35" />
+          {/* Animal doodle — shrunk on phones like every other section's animal */}
+          <FloatingDoodle
+            position="top-6 left-8"
+            animation="slow"
+            delay={1.4}
+            shrinkFrom="top-left"
+          >
+            <DoodleLadybird size={440} color="#FF6B35" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-1/4 right-1/4" animation="alt" delay={0.7} mdUp>
+          {/* Shapes in the side margins, clear of the carousel */}
+          <FloatingDoodle position="top-8 right-12" animation="alt" delay={0.7} mdUp>
             <DoodleCloud size={200} color="#C77DFF" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-1/4 left-1/3" animation="alt" delay={1.1}>
-            <DoodleZigzag size={144} color="#4D96FF" />
+          <FloatingDoodle
+            position="top-1/2 right-20 -translate-y-1/2"
+            animation="none"
+            opacity={0.35}
+            mdUp
+          >
+            <DoodleApple size={144} color="#6BCB77" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-20 right-20" animation="spin" opacity={0.25}>
-            <Star size={36} fill="#FFD93D" stroke="#FFD93D" />
+          <FloatingDoodle position="bottom-16 left-10" animation="alt" delay={1.1}>
+            <DoodleHeartSparkle size={104} color="#FF85A2" />
           </FloatingDoodle>
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
@@ -805,16 +826,11 @@ export function LandingPage() {
           delay={2}
           shrinkFrom="top-right"
         >
-          <DoodleDino size={360} color="#C77DFF" />
+          <DoodleDino size={360} color="#6BCB77" />
         </FloatingDoodle>
-        <FloatingDoodle position="top-1/4 left-1/4" animation="spin" mdUp>
-          <DoodleSun size={160} color="#FF6B35" />
-        </FloatingDoodle>
-        <FloatingDoodle position="top-1/2 right-1/4" animation="slow" delay={2.5}>
-          <DoodleCircle size={112} color="#4D96FF" />
-        </FloatingDoodle>
-        <FloatingDoodle position="bottom-1/4 left-1/2" animation="alt" delay={0.3} mdUp>
-          <DoodleZigzag size={152} color="#C77DFF" />
+        {/* Sun sits two-thirds down the left edge, well clear of the megaphone above it */}
+        <FloatingDoodle position="top-2/3 left-12 -translate-y-1/2" animation="spin" mdUp>
+          <DoodleSun size={124} color="#FF6B35" />
         </FloatingDoodle>
 
         <div
@@ -941,14 +957,15 @@ export function LandingPage() {
       {content.stats.show && (
         <section className="relative overflow-hidden bg-wash-peach transition-colors duration-200">
           <StarField variant="b" />
-          <FloatingDoodle position="top-6 left-8" animation="slow" shrinkFrom="top-left">
-            <DoodleCat size={300} color="#FF6B35" />
+          {/* Cat sits top-right so it does not stack under the team penguin on the left edge */}
+          <FloatingDoodle position="top-6 right-8" animation="slow" shrinkFrom="top-right">
+            <DoodleCat size={300} color="#4D96FF" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-8 right-1/4" animation="alt" delay={0.8}>
-            <DoodleHeart size={120} color="#FF85A2" />
+          <FloatingDoodle position="top-8 left-1/4" animation="alt" delay={0.8}>
+            <DoodleHeart size={100} color="#C77DFF" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-6 left-1/4" animation="float" delay={2.2}>
-            <DoodleSpiral size={136} color="#FFD93D" />
+          <FloatingDoodle position="bottom-6 right-1/4" animation="float" delay={2.2}>
+            <DoodleSpiral size={164} color="#FFD93D" />
           </FloatingDoodle>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
             <div className="text-center mb-10 sm:mb-14">
@@ -1008,13 +1025,14 @@ export function LandingPage() {
           <DoodleWhale size={400} color="#4D96FF" />
         </FloatingDoodle>
         <FloatingDoodle position="top-6 left-1/4" animation="spin" mdUp>
-          <DoodleStar size={144} color="#FFD93D" />
+          <DoodleStar size={108} color="#FFD93D" />
         </FloatingDoodle>
-        <FloatingDoodle position="bottom-1/4 left-1/4" animation="float" delay={1.9} mdUp>
-          <DoodleFlower size={160} color="#FF85A2" />
+        {/* Bottom corners, outside the photo grid */}
+        <FloatingDoodle position="bottom-32 left-8" animation="float" delay={1.9} mdUp>
+          <DoodleFlower size={188} color="#C77DFF" />
         </FloatingDoodle>
-        <FloatingDoodle position="bottom-10 right-1/4" animation="spin">
-          <DoodleCircle size={112} color="#FF6B35" />
+        <FloatingDoodle position="bottom-28 right-10" animation="spin" delay={1.2} mdUp>
+          <DoodleSpiral size={132} color="#6BCB77" />
         </FloatingDoodle>
         <div
           ref={galleryFadeIn.ref}
@@ -1165,16 +1183,18 @@ export function LandingPage() {
           {/* Glimmering stars — dark mode only, outside the cork border */}
           <StarField variant="a" />
           <FloatingDoodle position="top-10 left-8" animation="float" shrinkFrom="top-left">
-            <DoodleTurtle size={380} color="#6BCB77" />
+            <DoodleBunny size={340} color="#6BCB77" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-6 left-1/3" animation="spin" mdUp>
-            <DoodleStar size={128} color="#C77DFF" />
+          {/* Shapes spread down the section's side margins — the turtle holds the
+              top-left, so the rest sit at the middle and bottom, outside the board */}
+          <FloatingDoodle position="top-1/2 right-10" animation="spin" mdUp>
+            <DoodleSparkle size={104} color="#C77DFF" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-28 right-1/4" animation="slow" delay={2.0} mdUp>
-            <DoodleCloud size={184} color="#4D96FF" />
+          <FloatingDoodle position="bottom-44 left-10" animation="alt" delay={1.0}>
+            <DoodlePaperPlane size={136} color="#FF6B35" />
           </FloatingDoodle>
-          <FloatingDoodle position="top-40 right-12" animation="alt" delay={1.0}>
-            <DoodleZigzag size={144} color="#FF6B35" />
+          <FloatingDoodle position="bottom-32 right-8" animation="slow" delay={2.0} mdUp>
+            <DoodleCloud size={212} color="#4D96FF" />
           </FloatingDoodle>
           <div
             ref={artWallFadeIn.ref}
