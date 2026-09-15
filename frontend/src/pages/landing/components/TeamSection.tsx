@@ -8,6 +8,9 @@ import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 import { DoodleMusicNote } from '@/components/landing/doodles/DoodleMusicNote'
 import { DoodleFlower } from '@/components/landing/doodles/DoodleFlower'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
+import { SectionBackdrop } from './SectionBackdrop'
+import { SpotlightGlow } from './SpotlightGlow'
+import { CrayonWord } from './CrayonWord'
 import type { ResolvedTeamMember } from '@/hooks/useLandingContent'
 
 export interface TeamSectionProps {
@@ -46,20 +49,23 @@ function initials(name: string): string {
     .join('')
 }
 
-/** Splits "Meet the team" into ["Meet the ", "team"] so the last word can be the bright one. */
-function splitLastWord(title: string): [string, string] {
-  const idx = title.lastIndexOf(' ')
-  return idx === -1 ? ['', title] : [title.slice(0, idx + 1), title.slice(idx + 1)]
-}
-
 /** "Meet the team" — the adults a parent will actually meet at the gate, as prints taped to the wall. */
 export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
   const t = useT()
   const fadeIn = useFadeIn()
-  const [titleStart, titleHighlight] = splitLastWord(t('teamTitle'))
 
   return (
-    <section className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200">
+    <section className="relative lp-clip bg-wash-lavender pt-24 transition-colors duration-200">
+      <SectionBackdrop tint="lavender" pattern="stars">
+        <SpotlightGlow
+          position="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          color="#FF85A2"
+          size={680}
+        />
+        <FloatingDoodle ghost position="top-1/2 right-[-120px] -translate-y-1/2" mdUp>
+          <DoodleFlower size={640} color="#6BCB77" />
+        </FloatingDoodle>
+      </SectionBackdrop>
       {/* Phones: top-left beside the heading, since the member cards are opaque */}
       <FloatingDoodle
         position="top-6 -left-6 md:top-auto md:bottom-36 md:left-8"
@@ -93,25 +99,12 @@ export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-            {titleStart}
-            <span className="relative inline-block text-kinder-orange">
-              {titleHighlight}
-              <svg
-                className="absolute -bottom-1.5 left-0 w-full"
-                viewBox="0 0 110 12"
-                preserveAspectRatio="none"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 8 C 30 2, 60 10, 107 4"
-                  stroke="#FFD93D"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
+            <CrayonWord
+              text={t('teamTitle')}
+              variant="underline"
+              color="#FFD93D"
+              wordClassName="text-kinder-orange"
+            />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
             {t('teamSubtitle')}

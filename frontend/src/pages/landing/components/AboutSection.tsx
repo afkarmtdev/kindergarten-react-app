@@ -8,6 +8,8 @@ import { PhotoLightbox } from './PhotoLightbox'
 import { StoryChapter, type StoryChapterTone } from './StoryChapter'
 import { DoodleOwl } from '@/components/landing/doodles/DoodleOwl'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { SectionBackdrop } from './SectionBackdrop'
+import { SpotlightGlow, TITLE_GLOW_HEIGHT } from './SpotlightGlow'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
@@ -173,8 +175,19 @@ export function AboutSection({
   return (
     <section
       id="about"
-      className="relative overflow-hidden bg-wash-butter dark:bg-wash-ocean pt-24 transition-colors duration-200"
+      className="relative lp-clip bg-wash-butter dark:bg-wash-ocean pt-24 transition-colors duration-200"
     >
+      <SectionBackdrop tint="butter" darkTint="ocean" pattern="lines">
+        <SpotlightGlow
+          position="top-0 left-1/2 -translate-x-1/2"
+          color="#FF6B35"
+          size={640}
+          height={TITLE_GLOW_HEIGHT}
+        />
+        <FloatingDoodle ghost position="top-1/3 right-[-160px]" mdUp>
+          <DoodleStar size={720} color="#FF6B35" />
+        </FloatingDoodle>
+      </SectionBackdrop>
       {/* Animal doodle — shrunk on phones like every other section's animal */}
       <FloatingDoodle position="top-12 right-8" animation="float" shrinkFrom="top-right">
         <DoodleOwl size={380} color="#C77DFF" />

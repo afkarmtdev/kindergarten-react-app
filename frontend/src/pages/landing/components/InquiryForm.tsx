@@ -7,6 +7,9 @@ import { inquiriesApi } from '@/lib/api'
 import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { SectionBackdrop } from './SectionBackdrop'
+import { SpotlightGlow, TITLE_GLOW_HEIGHT } from './SpotlightGlow'
+import { CrayonWord } from './CrayonWord'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleHeart } from '@/components/landing/doodles/DoodleHeart'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
@@ -100,9 +103,20 @@ export function InquiryForm({
   return (
     <section
       id="contact"
-      className="relative overflow-hidden bg-wash-blush pt-24 transition-colors duration-200"
+      className="relative lp-clip bg-wash-blush pt-24 transition-colors duration-200"
     >
       <style dangerouslySetInnerHTML={{ __html: CONFETTI_CSS }} />
+      <SectionBackdrop tint="blush" pattern="lines">
+        <SpotlightGlow
+          position="top-0 left-1/2 -translate-x-1/2"
+          color="#C77DFF"
+          size={620}
+          height={TITLE_GLOW_HEIGHT}
+        />
+        <FloatingDoodle ghost position="top-1/2 right-[-160px] -translate-y-1/2" mdUp>
+          <DoodleFlower size={680} color="#FF85A2" />
+        </FloatingDoodle>
+      </SectionBackdrop>
 
       {/* Animal doodle — bee at the top-right, facing the form; shrinks on phones */}
       <FloatingDoodle position="top-8 right-8" animation="alt" delay={0.5} shrinkFrom="top-right">
@@ -150,7 +164,7 @@ export function InquiryForm({
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-            {t('inquiryTitle')}
+            <CrayonWord text={t('inquiryTitle')} color="#FFD93D" />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-3">
             {t('inquirySubtitle')}

@@ -8,6 +8,10 @@ import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
 import { StarField } from './StarField'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { DoodleSun } from '@/components/landing/doodles/DoodleSun'
+import { SectionBackdrop } from './SectionBackdrop'
+import { SpotlightGlow, TITLE_GLOW_HEIGHT } from './SpotlightGlow'
+import { CrayonWord } from './CrayonWord'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleDuck } from '@/components/landing/doodles/DoodleDuck'
@@ -70,8 +74,20 @@ export function CareersSection() {
   return (
     <section
       id="careers"
-      className="relative overflow-hidden bg-wash-mint pt-24 transition-colors duration-200"
+      className="relative lp-clip bg-wash-mint pt-24 transition-colors duration-200"
     >
+      <SectionBackdrop tint="mint" pattern="grid">
+        <SpotlightGlow
+          position="top-0 left-1/2 -translate-x-1/2"
+          color="#FFD93D"
+          darkColor="#5ED6E0"
+          size={620}
+          height={TITLE_GLOW_HEIGHT}
+        />
+        <FloatingDoodle ghost position="bottom-[-100px] right-[-120px]" mdUp>
+          <DoodleSun size={640} color="#FF6B35" />
+        </FloatingDoodle>
+      </SectionBackdrop>
       <StarField variant="a" />
       {/* Duck — top-left, mirrored to face into the page; shrinks on phones.
           No drift: it swims on its own (bob + ripples, see index.css). */}
@@ -97,7 +113,7 @@ export function CareersSection() {
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-            {t('weAreHiring')}
+            <CrayonWord text={t('weAreHiring')} color="#FFD93D" />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-3 max-w-2xl mx-auto">
             {t('careersSubtitle')}
@@ -185,7 +201,7 @@ export function CareersSection() {
       </div>
 
       <div className="mt-16">
-        <Wave variant="scallop" fillClassName="fill-kinder-pink" />
+        <Wave variant="scallop" fillClassName="fill-kinder-pink dark:fill-wash-blush" />
       </div>
 
       {/* Job detail modal */}

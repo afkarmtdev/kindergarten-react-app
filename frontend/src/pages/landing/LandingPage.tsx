@@ -81,6 +81,10 @@ import { DoodleSparkle } from '@/components/landing/doodles/DoodleSparkle'
 import { DoodleApple } from '@/components/landing/doodles/DoodleApple'
 import { DoodleLadybird } from '@/components/landing/doodles/DoodleLadybird'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { SectionBackdrop } from './components/SectionBackdrop'
+import { SpotlightGlow, TITLE_GLOW_HEIGHT } from './components/SpotlightGlow'
+import { OutlineWatermark } from './components/OutlineWatermark'
+import { CrayonWord } from './components/CrayonWord'
 
 const STAT_LABEL_KEYS = {
   students: 'statsStudentsLabel',
@@ -163,18 +167,18 @@ export function LandingPage() {
   // Order: hero → story → programmes → testimonials → notices → team → numbers
   //        → gallery → artists → enquiry → careers → promise strip
   const WHITE_FILL = 'fill-white dark:fill-gray-950'
+  // The promise strip is a bright pink poster band in light; in dark it drops to the
+  // blush nebula tint so it sits inside the galaxy instead of glowing on top of it.
+  const PROMISE_FILL = 'fill-kinder-pink dark:fill-wash-blush'
   const hasTestimonials = testimonials.length > 0
   const afterFeaturesFill = hasTestimonials ? 'fill-wash-sky' : 'fill-wash-lavender'
   const afterAboutFill = content.features.show ? WHITE_FILL : afterFeaturesFill
-  const afterHeroFill = content.about.show
-    ? 'fill-wash-butter dark:fill-wash-ocean'
-    : afterAboutFill
-  const afterTeamFill = content.stats.show ? 'fill-wash-peach' : WHITE_FILL
+  const afterTeamFill = content.stats.show ? 'fill-wash-peach dark:fill-wash-ocean' : WHITE_FILL
   const afterNoticesFill = content.team.show ? 'fill-wash-lavender' : afterTeamFill
-  const afterInquiryFill = hasCareers ? 'fill-wash-mint' : 'fill-kinder-pink'
-  // The hero's mesh gradient (galaxy in dark) meets the next band as a hard seam,
-  // so melt the bottom of the hero into whatever colour that next band is.
-  // A short fade that starts around the monkey doodle's feet, in both modes.
+  const afterInquiryFill = hasCareers ? 'fill-wash-mint' : PROMISE_FILL
+  // The hero has no scallop wave: its mesh gradient (galaxy in dark) melts into
+  // whatever colour the next band is through this bottom fade, so the join is
+  // seamless. A short fade that starts around the monkey doodle's feet, in both modes.
   const afterHeroFade = content.about.show
     ? 'to-wash-butter dark:to-wash-ocean'
     : content.features.show
@@ -249,7 +253,7 @@ export function LandingPage() {
   }, [lightboxIndex, galleryItems.length])
 
   return (
-    <div className="cursor-bear min-h-screen bg-white dark:bg-gray-950 font-display overflow-x-hidden transition-colors duration-200">
+    <div className="cursor-bear min-h-screen bg-white dark:bg-gray-950 font-display lp-clip-x transition-colors duration-200">
       {/* Inject keyframe CSS */}
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES }} />
 
@@ -368,7 +372,7 @@ export function LandingPage() {
       <section
         ref={heroRef}
         id={content.about.show ? 'home' : 'about'}
-        className="relative overflow-hidden"
+        className="relative lp-clip"
       >
         {/* Mesh gradient background — light mode */}
         <div
@@ -392,6 +396,17 @@ export function LandingPage() {
           }
           aria-hidden="true"
         />
+
+        {/* ── Bottom fade — blends the mesh into the next band. Sits UNDER the
+            grain so the speckle runs through the join instead of stopping on a
+            flat strip and restarting at the next section's top edge. ── */}
+        <div
+          className={`absolute inset-x-0 bottom-0 h-32 pointer-events-none bg-gradient-to-b from-transparent ${afterHeroFade}`}
+          aria-hidden="true"
+        />
+
+        {/* Paper grain over the mesh and the fade, under everything else */}
+        <SectionBackdrop tint="neutral" />
 
         {/* ── Nebula glow blobs — dark mode only, cool-toned depth ── */}
         <div
@@ -490,12 +505,6 @@ export function LandingPage() {
             animationDelay: '7.5s',
             animationFillMode: 'backwards',
           }}
-          aria-hidden="true"
-        />
-
-        {/* ── Bottom fade — blends the hero into the next band ── */}
-        <div
-          className={`absolute inset-x-0 bottom-0 h-32 pointer-events-none bg-gradient-to-b from-transparent ${afterHeroFade}`}
           aria-hidden="true"
         />
 
@@ -650,8 +659,6 @@ export function LandingPage() {
             ) : null}
           </div>
         </div>
-
-        <Wave variant="scallop" fillClassName={afterHeroFill} />
       </section>
 
       {/* ════════════════════════════════════════════════════════
@@ -677,8 +684,21 @@ export function LandingPage() {
       {content.features.show && (
         <section
           id="programs"
-          className="relative overflow-hidden bg-white dark:bg-gray-950 pt-24 transition-colors duration-200"
+          className="relative lp-clip bg-white dark:bg-gray-950 pt-24 transition-colors duration-200"
         >
+          <SectionBackdrop tint="neutral" pattern="dots">
+            <SpotlightGlow
+              position="top-0 left-1/2 -translate-x-1/2"
+              color="#C77DFF"
+              size={600}
+              height={TITLE_GLOW_HEIGHT}
+            />
+            <SpotlightGlow position="bottom-10 left-[-120px]" color="#4D96FF" size={480} />
+            <OutlineWatermark text="ABC" position="top-10 right-[-2rem]" rotate={-6} />
+            <FloatingDoodle ghost position="bottom-[-120px] right-1/4" mdUp>
+              <DoodleCloud size={640} color="#4D96FF" />
+            </FloatingDoodle>
+          </SectionBackdrop>
           <StarField variant="b" />
           <FloatingDoodle position="top-10 left-6" animation="slow" shrinkFrom="top-left" flip>
             <DoodleElephant size={380} color="#4D96FF" />
@@ -701,7 +721,7 @@ export function LandingPage() {
                 </StickerBadge>
               </div>
               <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-                {t('featuresTitle')}
+                <CrayonWord text={t('featuresTitle')} color="#FFD93D" />
               </h2>
               <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto">
                 {t('featuresSubtitle')}
@@ -753,7 +773,21 @@ export function LandingPage() {
           TESTIMONIALS — what parents say
       ════════════════════════════════════════════════════════ */}
       {testimonials.length > 0 && (
-        <section className="relative overflow-hidden bg-wash-sky pt-24 transition-colors duration-200">
+        <section className="relative lp-clip bg-wash-sky pt-24 transition-colors duration-200">
+          <SectionBackdrop tint="sky" pattern="hearts">
+            <SpotlightGlow
+              position="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              color="#FF85A2"
+              size={720}
+            />
+            <FloatingDoodle
+              ghost
+              position="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              mdUp
+            >
+              <DoodleHeart size={760} color="#FF85A2" />
+            </FloatingDoodle>
+          </SectionBackdrop>
           <StarField variant="b" />
           {/* Animal doodle — shrunk on phones like every other section's animal */}
           <FloatingDoodle
@@ -791,7 +825,7 @@ export function LandingPage() {
                 </StickerBadge>
               </div>
               <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('testimonialsTitle')}
+                <CrayonWord text={t('testimonialsTitle')} color="#FF85A2" />
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
                 {t('testimonialsSubtitle', { school: schoolName })}
@@ -812,8 +846,16 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="notices"
-        className="relative overflow-hidden bg-wash-lavender pt-24 transition-colors duration-200"
+        className="relative lp-clip bg-wash-lavender pt-24 transition-colors duration-200"
       >
+        <SectionBackdrop tint="lavender" pattern="grid">
+          <SpotlightGlow
+            position="top-0 left-1/2 -translate-x-1/2"
+            color="#4D96FF"
+            size={600}
+            height={TITLE_GLOW_HEIGHT}
+          />
+        </SectionBackdrop>
         <StarField variant="a" />
         {/* Floating decorative shapes */}
         <FloatingDoodle position="top-8 left-8 text-ink-lavender" opacity={0.25}>
@@ -843,7 +885,7 @@ export function LandingPage() {
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-            {t('noticesTitle')}
+            <CrayonWord text={t('noticesTitle')} color="#FFD93D" />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
             {t('noticesSubtitle', { school: schoolName })}
@@ -955,7 +997,19 @@ export function LandingPage() {
           STATS — the school's own numbers (Settings > Website > Numbers)
       ════════════════════════════════════════════════════════ */}
       {content.stats.show && (
-        <section className="relative overflow-hidden bg-wash-peach transition-colors duration-200">
+        <section className="relative lp-clip bg-wash-peach dark:bg-wash-ocean transition-colors duration-200">
+          {/* Peach in light; steel-blue ocean in dark, since a warm tint under a
+              yellow glow and orange gingham reads as brown against the galaxy. */}
+          <SectionBackdrop tint="peach" darkTint="ocean" pattern="gingham">
+            <SpotlightGlow
+              position="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              color="#FFD93D"
+              darkColor="#C77DFF"
+              size={680}
+            />
+            {/* The "123" is this section's ghost layer: far parallax, no spiral behind it */}
+            <OutlineWatermark text="123" position="bottom-6 left-[-1rem]" rotate={5} ghost />
+          </SectionBackdrop>
           <StarField variant="b" />
           {/* Cat sits top-right so it does not stack under the team penguin on the left edge */}
           <FloatingDoodle position="top-6 right-8" animation="slow" shrinkFrom="top-right">
@@ -975,7 +1029,7 @@ export function LandingPage() {
                 </StickerBadge>
               </div>
               <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-                {t('statsTitle')}
+                <CrayonWord text={t('statsTitle')} color="#4D96FF" />
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg max-w-xl mx-auto mt-4">
                 {t('statsSubtitle', { school: schoolName })}
@@ -1013,8 +1067,20 @@ export function LandingPage() {
       ════════════════════════════════════════════════════════ */}
       <section
         id="gallery"
-        className="relative overflow-hidden bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
+        className="relative lp-clip bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
       >
+        <SectionBackdrop tint="neutral" pattern="polka">
+          <SpotlightGlow
+            position="top-0 left-1/2 -translate-x-1/2"
+            color="#4D96FF"
+            size={640}
+            height={TITLE_GLOW_HEIGHT}
+          />
+          <SpotlightGlow position="bottom-0 right-[-80px]" color="#FFD93D" size={520} />
+          <FloatingDoodle ghost position="top-[-80px] left-1/2 -translate-x-1/2" mdUp>
+            <DoodleCloud size={800} color="#4D96FF" />
+          </FloatingDoodle>
+        </SectionBackdrop>
         <StarField variant="a" />
         <FloatingDoodle
           position="top-8 right-10"
@@ -1044,7 +1110,7 @@ export function LandingPage() {
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-            {t('galleryTitle')}
+            <CrayonWord text={t('galleryTitle')} color="#4D96FF" />
           </h2>
           <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
             {t('gallerySubtitle')}
@@ -1178,8 +1244,19 @@ export function LandingPage() {
       {artWallItems.length > 0 && (
         <section
           ref={artWallHeadingRef}
-          className="relative overflow-hidden bg-white dark:bg-gray-950 pt-16 md:pt-24 transition-colors duration-200"
+          className="relative lp-clip bg-white dark:bg-gray-950 pt-16 md:pt-24 transition-colors duration-200"
         >
+          <SectionBackdrop tint="neutral" pattern="dots">
+            <SpotlightGlow
+              position="top-0 left-1/2 -translate-x-1/2"
+              color="#FF85A2"
+              size={600}
+              height={TITLE_GLOW_HEIGHT}
+            />
+            <FloatingDoodle ghost position="top-1/2 right-[-140px] -translate-y-1/2" mdUp>
+              <DoodleHeartSparkle size={560} color="#FF85A2" />
+            </FloatingDoodle>
+          </SectionBackdrop>
           {/* Glimmering stars — dark mode only, outside the cork border */}
           <StarField variant="a" />
           <FloatingDoodle position="top-10 left-8" animation="float" shrinkFrom="top-left">
@@ -1206,7 +1283,7 @@ export function LandingPage() {
               </StickerBadge>
             </div>
             <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-              {t('ourLittleArtists')}
+              <CrayonWord text={t('ourLittleArtists')} color="#FF85A2" />
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
               {t('artWallLandingSubtitle')}
@@ -1294,8 +1371,11 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           PROMISE STRIP — the poster's "safe · caring · nurturing" band
       ════════════════════════════════════════════════════════ */}
-      <div className="bg-kinder-pink text-white py-5 px-4">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-fun font-semibold text-lg sm:text-2xl text-center">
+      <div className="relative lp-clip bg-kinder-pink dark:bg-wash-blush text-white py-5 px-4 transition-colors duration-200">
+        {/* Grain on the band too, so the texture the wave carries in does not stop on a
+            flat strip at the base of the bumps and restart at the next section */}
+        <SectionBackdrop tint="blush" />
+        <div className="relative max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-fun font-semibold text-lg sm:text-2xl text-center">
           <Heart size={20} fill="white" stroke="white" aria-hidden="true" />
           <span>{t('stripSafe')}</span>
           <span className="opacity-70" aria-hidden="true">

@@ -13,19 +13,19 @@ Booba's airy structure and scalloped section edges, with the warmth of the Whats
 
 Existing brand brights stay untouched: `kinder-orange #FF6B35`, `kinder-blue #4D96FF`, `kinder-green #6BCB77`, `kinder-yellow #FFD93D`, `kinder-purple #C77DFF`, `kinder-pink #FF85A2`.
 
-New section-wash tokens (light -> dark), same hue in both modes:
+New section-wash tokens (light -> dark). Light keeps each hue as a pastel. Dark is a nebula tint at the lightness and chroma of the night-sky navy: sky and lavender keep their hue, while the warm hues are pulled toward the cosmic side (mint -> teal, blush -> magenta-violet) or dropped to a warm charcoal (peach, butter), because a dark orange, yellow, pink or green at full chroma reads as brown, olive, maroon or chalkboard against the galaxy (retuned 2026-09-16):
 
-| Wash     | Light     | Dark      | Wash text (light -> dark) |
-| -------- | --------- | --------- | ------------------------- |
-| sky      | `#E3EEFF` | `#16233F` | `#2F6FD6` -> `#7EB3FF`    |
-| mint     | `#E4F5E7` | `#10291D` | `#3E9D4C` -> `#7ED88A`    |
-| butter   | `#FFF6D6` | `#332A12` | `#D9A400` -> `#FFD93D`    |
-| blush    | `#FFE6EC` | `#3A1B2A` | `#E0567A` -> `#FF9CB5`    |
-| lavender | `#F1E4FF` | `#2A1F45` | `#9B4FE0` -> `#D3A4FF`    |
-| peach    | `#FFE9DF` | `#3A2216` | `#E85D22` -> `#FF8A5B`    |
-| ocean    | `#DEF4F6` | `#20303A` | `#1E8A96` -> `#5ED6E0`    |
+| Wash     | Light     | Dark      | Dark reads as       | Wash text (light -> dark) |
+| -------- | --------- | --------- | ------------------- | ------------------------- |
+| sky      | `#E3EEFF` | `#16233F` | night navy          | `#2F6FD6` -> `#7EB3FF`    |
+| mint     | `#E4F5E7` | `#072A2E` | deep teal           | `#3E9D4C` -> `#7ED88A`    |
+| butter   | `#FFF6D6` | `#272219` | warm charcoal       | `#D9A400` -> `#FFD93D`    |
+| blush    | `#FFE6EC` | `#31173E` | magenta-violet plum | `#E0567A` -> `#FF9CB5`    |
+| lavender | `#F1E4FF` | `#2A1F45` | violet              | `#9B4FE0` -> `#D3A4FF`    |
+| peach    | `#FFE9DF` | `#2C1F1C` | warm charcoal       | `#E85D22` -> `#FF8A5B`    |
+| ocean    | `#DEF4F6` | `#0C2A3E` | steel blue          | `#1E8A96` -> `#5ED6E0`    |
 
-Exception: the landing Our Story section is butter in light but `dark:bg-wash-ocean` in dark, because butter's dark tint reads as mud behind long copy; its lead-in waves carry the same `dark:fill-wash-ocean`.
+Exceptions on the landing page, where a wash fills a whole band: Our Story is butter in light but `dark:bg-wash-ocean` in dark, and the Numbers band is peach in light but `dark:bg-wash-ocean` in dark, because the warm charcoals read as mud under a section's glow and pattern. Their lead-in waves carry the same `dark:fill-wash-ocean`, and `SectionBackdrop` takes `darkTint="ocean"` so the pattern ink follows. The promise strip is `kinder-pink` in light and `dark:bg-wash-blush` in dark (a bright pink band glows on top of the galaxy instead of sitting inside it); the careers wave feeding it carries the same `dark:fill-wash-blush`. `SpotlightGlow` takes `darkColor` for the same reason: a yellow glow over a night tint turns it green or brown, so the numbers band glows purple and careers glows cyan in dark.
 
 Grounds: page `#FFFAF5` -> `gray-950`, cards `#FFFFFF` -> `gray-900`, borders `#ECDED0` -> `gray-800`, ink `#342A22` -> `gray-50`. These already exist as the warm-gray CSS variables in `frontend/src/index.css`.
 

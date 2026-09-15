@@ -6,6 +6,9 @@ import { formatOperatingHours } from '@/lib/formatOperatingHours'
 import { Wave } from './Wave'
 import { StickerBadge } from './StickerBadge'
 import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
+import { SectionBackdrop } from './SectionBackdrop'
+import { SpotlightGlow, TITLE_GLOW_HEIGHT } from './SpotlightGlow'
+import { CrayonWord } from './CrayonWord'
 import { DoodleTurtle } from '@/components/landing/doodles/DoodleTurtle'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
@@ -32,8 +35,19 @@ export function LocationSection() {
   return (
     <section
       id="location"
-      className="relative overflow-hidden bg-wash-sky pt-20 transition-colors duration-200"
+      className="relative lp-clip bg-wash-sky pt-20 transition-colors duration-200"
     >
+      <SectionBackdrop tint="sky" pattern="polka">
+        <SpotlightGlow
+          position="top-0 left-1/2 -translate-x-1/2"
+          color="#6BCB77"
+          size={620}
+          height={TITLE_GLOW_HEIGHT}
+        />
+        <FloatingDoodle ghost position="top-1/2 left-[-160px] -translate-y-1/2" mdUp>
+          <DoodleCloud size={720} color="#4D96FF" />
+        </FloatingDoodle>
+      </SectionBackdrop>
       {/* Floating shapes — turtle tucked at the top-right corner, shrinks on phones */}
       <FloatingDoodle position="top-8 right-8" animation="slow" shrinkFrom="top-right">
         <DoodleTurtle size={380} color="#6BCB77" />
@@ -59,7 +73,7 @@ export function LocationSection() {
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-            {t('locationTitle')}
+            <CrayonWord text={t('locationTitle')} color="#FFD93D" />
           </h2>
           <p className="text-gray-700 dark:text-gray-300 text-base sm:text-lg">
             {t('locationSubtitle')}

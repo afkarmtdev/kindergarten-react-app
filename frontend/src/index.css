@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Titan+One&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,7 +19,12 @@
     --color-gray-900: 52 42 34; /* #342A22 — warm darkest */
     --color-gray-950: 30 24 18; /* #1E1812 — near-black warm */
 
-    /* ── Warm Storybook section washes (light = pastel, dark = nebula tint of same hue) ── */
+    /* ── Warm Storybook section washes (light = pastel, dark = nebula tint) ──
+       Dark washes sit at the lightness and chroma of the night-sky navy so every
+       band reads as galaxy. Sky and lavender keep their hue; the warm hues are
+       pulled toward the cosmic side (teal, plum, dusky rose) at lower chroma,
+       because a dark orange, yellow, pink or green at full chroma reads as mud,
+       olive, maroon or chalkboard against the starry base. */
     --wash-sky: 227 238 255; /* #E3EEFF */
     --wash-mint: 228 245 231; /* #E4F5E7 */
     --wash-butter: 255 246 214; /* #FFF6D6 */
@@ -37,12 +42,12 @@
   }
   html.dark {
     --wash-sky: 22 35 63; /* #16233F */
-    --wash-mint: 16 41 29; /* #10291D */
-    --wash-butter: 51 42 18; /* #332A12 */
-    --wash-blush: 58 27 42; /* #3A1B2A */
+    --wash-mint: 7 42 46; /* #072A2E — deep teal, not forest green */
+    --wash-butter: 39 34 25; /* #272219 — warm charcoal, not olive */
+    --wash-blush: 49 23 62; /* #31173E — magenta-violet, not maroon */
     --wash-lavender: 42 31 69; /* #2A1F45 */
-    --wash-peach: 58 34 22; /* #3A2216 */
-    --wash-ocean: 32 48 58; /* #20303A */
+    --wash-peach: 44 31 28; /* #2C1F1C — warm charcoal, not brown */
+    --wash-ocean: 12 42 62; /* #0C2A3E — steel blue */
     --ink-sky: 126 179 255; /* #7EB3FF */
     --ink-mint: 126 216 138; /* #7ED88A */
     --ink-butter: 255 217 61; /* #FFD93D */
@@ -731,4 +736,186 @@
    page background between them. */
 section:has(.lp-wave) + * {
   margin-top: -1px;
+}
+
+/* ── Landing backdrop layers — see pages/landing/components/SectionBackdrop.tsx ──
+   Everything here is static and paints once: tiled images, tiled gradients and
+   masks. No infinite animation lives in this block. */
+
+/* Paper grain: one 160px SVG noise tile. Black speckles on the light washes,
+   white speckles on the dark nebula tints, both at a few percent opacity. */
+.lp-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+html.dark .lp-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* Spotlight glow (SpotlightGlow.tsx): a closest-side radial blob in one bright per
+   mode, so a section lit yellow on its pastel wash can be lit purple or cyan on its
+   night tint instead of turning brown or green. */
+.lp-glow {
+  background: radial-gradient(ellipse closest-side, var(--lp-glow), transparent);
+}
+html.dark .lp-glow {
+  background: radial-gradient(ellipse closest-side, var(--lp-glow-dark), transparent);
+}
+
+/* Wash patterns: drawn in currentColor so the section's ink colour tints them. */
+.lp-pat-dots {
+  background-image: radial-gradient(currentColor 1.4px, transparent 1.6px);
+  background-size: 22px 22px;
+}
+.lp-pat-polka {
+  background-image:
+    radial-gradient(currentColor 3px, transparent 3.5px),
+    radial-gradient(currentColor 3px, transparent 3.5px);
+  background-size: 48px 48px;
+  background-position:
+    0 0,
+    24px 24px;
+}
+.lp-pat-lines {
+  background-image: repeating-linear-gradient(180deg, currentColor 0 1.5px, transparent 1.5px 32px);
+}
+.lp-pat-grid {
+  background-image:
+    linear-gradient(currentColor 1px, transparent 1px),
+    linear-gradient(90deg, currentColor 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.lp-pat-gingham {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, currentColor 55%, transparent) 0 14px,
+      transparent 14px 28px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, currentColor 55%, transparent) 0 14px,
+      transparent 14px 28px
+    );
+}
+/* Wash patterns dissolve before a section's edges (WashPattern wraps its tile
+   in this layer). The bottom fade is longer because the 88px scallop wave sits
+   there and the texture should be gone before the bumps start. */
+.lp-pat-fade {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black 8rem,
+    black calc(100% - 12rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black 8rem,
+    black calc(100% - 12rem),
+    transparent 100%
+  );
+}
+/* Paper grain over a wave's bumps, masked to the wave path (Wave.tsx sets the
+   mask image inline from the same path data the SVG draws). */
+.lp-wave-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+/* Shape patterns: a currentColor fill seen through a tiled SVG mask. */
+.lp-pat-stars,
+.lp-pat-hearts {
+  background-color: currentColor;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+.lp-pat-stars {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath transform='translate(14 14) scale(6)' d='M0,-1 L0.1,-0.1 L1,0 L0.1,0.1 L0,1 L-0.1,0.1 L-1,0 L-0.1,-0.1 Z' fill='black'/%3E%3Cpath transform='translate(42 42) scale(4)' d='M0,-1 L0.1,-0.1 L1,0 L0.1,0.1 L0,1 L-0.1,0.1 L-1,0 L-0.1,-0.1 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath transform='translate(14 14) scale(6)' d='M0,-1 L0.1,-0.1 L1,0 L0.1,0.1 L0,1 L-0.1,0.1 L-1,0 L-0.1,-0.1 Z' fill='black'/%3E%3Cpath transform='translate(42 42) scale(4)' d='M0,-1 L0.1,-0.1 L1,0 L0.1,0.1 L0,1 L-0.1,0.1 L-1,0 L-0.1,-0.1 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 56px 56px;
+  mask-size: 56px 56px;
+}
+.lp-pat-hearts {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='black' stroke-width='2.5' stroke-linejoin='round'%3E%3Cpath transform='translate(7 7) scale(0.44)' d='M16 28 C12 24 3 18 3 11 C3 7 6 4 10 4 C13 4 15 6 16 8 C17 6 19 4 22 4 C26 4 29 7 29 11 C29 18 20 24 16 28Z'/%3E%3Cpath transform='translate(37 37) scale(0.32)' d='M16 28 C12 24 3 18 3 11 C3 7 6 4 10 4 C13 4 15 6 16 8 C17 6 19 4 22 4 C26 4 29 7 29 11 C29 18 20 24 16 28Z'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='black' stroke-width='2.5' stroke-linejoin='round'%3E%3Cpath transform='translate(7 7) scale(0.44)' d='M16 28 C12 24 3 18 3 11 C3 7 6 4 10 4 C13 4 15 6 16 8 C17 6 19 4 22 4 C26 4 29 7 29 11 C29 18 20 24 16 28Z'/%3E%3Cpath transform='translate(37 37) scale(0.32)' d='M16 28 C12 24 3 18 3 11 C3 7 6 4 10 4 C13 4 15 6 16 8 C17 6 19 4 22 4 C26 4 29 7 29 11 C29 18 20 24 16 28Z'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size: 56px 56px;
+  mask-size: 56px 56px;
+}
+/* Giant outlined watermark text (OutlineWatermark). Fill goes transparent but
+   `color` stays, so the stroke can keep using currentColor. */
+.lp-outline-text {
+  -webkit-text-stroke: 2px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Crayon highlight behind a heading's last word (CrayonWord): the stroke draws
+   itself in once the word scrolls into view. pathLength is 1 on the path. */
+.lp-crayon path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.lp-crayon-draw path {
+  animation: lp-crayon-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+@keyframes lp-crayon-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-crayon path {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}
+
+/* Scroll parallax for doodle layers (FloatingDoodle `parallax`). Driven by the
+   element's own view timeline, so it costs nothing between scroll events and
+   needs no JS. Near shapes outrun the page, far (ghost) shapes lag behind it.
+   `view()` walks up to the nearest scroll container, so every ancestor between
+   the doodle and the document must clip with `lp-clip`, never overflow:hidden. */
+@keyframes lp-drift-near {
+  from {
+    transform: translateY(32px);
+  }
+  to {
+    transform: translateY(-32px);
+  }
+}
+@keyframes lp-drift-far {
+  from {
+    transform: translateY(-20px);
+  }
+  to {
+    transform: translateY(20px);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .lp-drift-near {
+      animation: lp-drift-near linear both;
+      animation-timeline: view();
+    }
+    .lp-drift-far {
+      animation: lp-drift-far linear both;
+      animation-timeline: view();
+    }
+  }
+}
+/* overflow: clip paints like hidden but does not create a scroll container, which
+   is what lets the view() timelines above reach the document. Browsers without
+   clip keep hidden. */
+.lp-clip {
+  overflow: hidden;
+  overflow: clip;
+}
+.lp-clip-x {
+  overflow-x: hidden;
+  overflow-x: clip;
 }

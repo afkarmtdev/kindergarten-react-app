@@ -65,6 +65,8 @@ export default {
         display: ['Nunito', 'sans-serif'],
         body: ['Nunito', 'sans-serif'],
         fun: ['Fredoka', 'Nunito', 'sans-serif'],
+        // Fat bubble letters, single weight — only for the outlined landing watermarks ("ABC", "123")
+        bubble: ['Titan One', 'Fredoka', 'cursive'],
       },
       borderRadius: {
         xl: '1rem',
