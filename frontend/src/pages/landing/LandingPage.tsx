@@ -694,7 +694,11 @@ export function LandingPage() {
               height={TITLE_GLOW_HEIGHT}
             />
             <SpotlightGlow position="bottom-10 left-[-120px]" color="#4D96FF" size={480} />
-            <OutlineWatermark text="ABC" position="top-10 right-[-2rem]" rotate={-6} />
+            <OutlineWatermark
+              text="ABC"
+              position="bottom-10 md:bottom-auto md:top-10 right-[-2rem]"
+              rotate={-6}
+            />
             <FloatingDoodle ghost position="bottom-[-120px] right-1/4" mdUp>
               <DoodleCloud size={640} color="#4D96FF" />
             </FloatingDoodle>
@@ -1018,7 +1022,7 @@ export function LandingPage() {
           <FloatingDoodle position="top-8 left-1/4" animation="alt" delay={0.8}>
             <DoodleHeart size={100} color="#C77DFF" />
           </FloatingDoodle>
-          <FloatingDoodle position="bottom-6 right-1/4" animation="float" delay={2.2}>
+          <FloatingDoodle position="bottom-6 right-1/4" animation="float" delay={2.2} mdUp>
             <DoodleSpiral size={164} color="#FFD93D" />
           </FloatingDoodle>
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
