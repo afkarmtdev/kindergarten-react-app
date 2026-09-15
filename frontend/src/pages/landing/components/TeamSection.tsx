@@ -74,13 +74,13 @@ export function TeamSection({ members, waveFillClassName }: TeamSectionProps) {
         <DoodleMusicNote size={190} color="#FF6B35" />
       </FloatingDoodle>
       <FloatingDoodle position="top-1/3 right-1/4" animation="float" delay={1.3} mdUp>
-        <DoodleFlower size={176} color="#6BCB77" />
+        <DoodleFlower size={132} color="#6BCB77" />
       </FloatingDoodle>
       <FloatingDoodle position="top-1/2 right-8 -translate-y-1/2" animation="float" delay={0.3}>
-        <DoodleCloud size={200} color="#4D96FF" />
+        <DoodleCloud size={224} color="#4D96FF" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-32 right-16" animation="slow" delay={1.1} mdUp>
-        <DoodleCloud size={150} color="#4D96FF" />
+        <DoodleCloud size={108} color="#4D96FF" />
       </FloatingDoodle>
       <div
         ref={fadeIn.ref}

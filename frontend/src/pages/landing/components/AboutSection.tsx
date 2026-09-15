@@ -11,7 +11,6 @@ import { FloatingDoodle } from '@/components/landing/doodles/FloatingDoodle'
 import { DoodleStar } from '@/components/landing/doodles/DoodleStar'
 import { DoodleSpiral } from '@/components/landing/doodles/DoodleSpiral'
 import { DoodleCloud } from '@/components/landing/doodles/DoodleCloud'
-import { DoodleZigzag } from '@/components/landing/doodles/DoodleZigzag'
 import type { LucideIcon } from 'lucide-react'
 
 export interface AboutSectionProps {
@@ -185,14 +184,10 @@ export function AboutSection({
         <DoodleCloud size={208} color="#4D96FF" />
       </FloatingDoodle>
       <FloatingDoodle position="top-1/2 left-1/4" animation="alt" delay={2.6} mdUp>
-        <DoodleSpiral size={160} color="#6BCB77" />
+        <DoodleSpiral size={136} color="#6BCB77" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-1/4 right-1/4" animation="float" delay={1.9}>
-        <DoodleStar size={120} color="#FF6B35" />
-      </FloatingDoodle>
-      {/* Below lg the principal photo is centred, so the zigzag hugs the left edge there */}
-      <FloatingDoodle position="bottom-32 -left-12 lg:left-1/3" animation="alt" delay={0.9}>
-        <DoodleZigzag size={160} color="#FF85A2" />
+        <DoodleStar size={96} color="#FF6B35" />
       </FloatingDoodle>
 
       <div

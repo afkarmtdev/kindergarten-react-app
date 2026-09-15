@@ -80,10 +80,10 @@ export function CareersSection() {
       </FloatingDoodle>
       {/* Two small shapes pinned to the right-hand corners, clear of the cards */}
       <FloatingDoodle position="top-8 right-8" animation="spin" mdUp>
-        <DoodleStar size={128} color="#FFD93D" />
+        <DoodleStar size={104} color="#FFD93D" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-28 right-10" animation="slow" delay={0.8} mdUp>
-        <DoodleCloud size={160} color="#4D96FF" />
+        <DoodleCloud size={192} color="#4D96FF" />
       </FloatingDoodle>
       <div
         ref={ref}

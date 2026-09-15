@@ -39,13 +39,13 @@ export function LocationSection() {
         <DoodleTurtle size={380} color="#6BCB77" />
       </FloatingDoodle>
       <FloatingDoodle position="top-12 left-8" animation="spin" mdUp>
-        <DoodleStar size={128} color="#FFD93D" />
+        <DoodleStar size={112} color="#FFD93D" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-24 right-8" animation="alt" delay={1.4} mdUp>
-        <DoodleCloud size={184} color="#4D96FF" />
+        <DoodleCloud size={204} color="#4D96FF" />
       </FloatingDoodle>
       <FloatingDoodle position="bottom-32 left-10" animation="float" delay={0.7}>
-        <DoodleSparkle size={128} color="#FF6B35" />
+        <DoodleSparkle size={92} color="#FF6B35" />
       </FloatingDoodle>
 
       <div

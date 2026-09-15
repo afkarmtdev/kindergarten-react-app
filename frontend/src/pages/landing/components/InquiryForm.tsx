@@ -110,7 +110,7 @@ export function InquiryForm({
       </FloatingDoodle>
       {/* Floating decorative shapes */}
       <FloatingDoodle position="top-8 left-6 text-ink-blush" opacity={0.25}>
-        <DoodleHeart size={192} color="currentColor" />
+        <DoodleHeart size={172} color="currentColor" />
       </FloatingDoodle>
       <FloatingDoodle
         position="top-1/2 right-1/4 text-ink-blush"
@@ -119,7 +119,7 @@ export function InquiryForm({
         opacity={0.25}
         mdUp
       >
-        <DoodleStar size={176} color="currentColor" />
+        <DoodleStar size={116} color="currentColor" />
       </FloatingDoodle>
       <FloatingDoodle
         position="bottom-32 left-12 text-ink-blush"
@@ -136,7 +136,7 @@ export function InquiryForm({
         opacity={0.25}
         mdUp
       >
-        <DoodleSpiral size={160} color="currentColor" />
+        <DoodleSpiral size={136} color="currentColor" />
       </FloatingDoodle>
 
       <div
