@@ -2,7 +2,8 @@
 // eyelashes) leaning in over a smaller grinning cub. Three StickerBears in a
 // row; `size` is the total width. `eyeState` and `gaze` apply to the parents
 // only; the cub keeps grinning (arc eyes have no pupils to move). On Malaysia
-// Day the cub is the one waving the flag.
+// Day the cub is the one waving the flag; the cub sits above the parents so
+// the flag waves in front of mama's ear instead of vanishing behind it.
 import {
   StickerBear,
   BEAR_BOW_BLUE,
@@ -35,7 +36,7 @@ export function PortalBearFamily({
           gaze={gaze}
         />
       </div>
-      <div style={{ marginBottom: -size * 0.02 }}>
+      <div className="relative z-10" style={{ marginBottom: -size * 0.02 }}>
         <StickerBear size={cub} mood="grin" tilt={0} flag={malaysiaDay ? 'malaysia' : 'none'} />
       </div>
       <div style={{ marginLeft: -size * 0.04 }}>
