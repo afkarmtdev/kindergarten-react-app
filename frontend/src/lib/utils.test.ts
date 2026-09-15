@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
-import { isBirthdayToday } from './utils'
+import { isBirthdayToday, splitLastWord } from './utils'
 
 describe('isBirthdayToday', () => {
   afterEach(() => {
@@ -51,5 +51,23 @@ describe('isBirthdayToday', () => {
     vi.setSystemTime(new Date(2024, 1, 29)) // Feb 29, 2024 (leap year)
 
     expect(isBirthdayToday('2020-02-29')).toBe(true)
+  })
+})
+
+describe('splitLastWord', () => {
+  test('splits off the last word and keeps the trailing space on the head', () => {
+    expect(splitLastWord('Meet the team')).toEqual(['Meet the ', 'team'])
+  })
+
+  test('returns an empty head for a single word', () => {
+    expect(splitLastWord('Programmes')).toEqual(['', 'Programmes'])
+  })
+
+  test('only splits on the final space', () => {
+    expect(splitLastWord('Apa kata ibu bapa')).toEqual(['Apa kata ibu ', 'bapa'])
+  })
+
+  test('handles an empty string', () => {
+    expect(splitLastWord('')).toEqual(['', ''])
   })
 })

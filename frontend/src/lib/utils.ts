@@ -8,3 +8,12 @@ export function isBirthdayToday(dob: string): boolean {
   const [, month, day] = dob.split('-')
   return parseInt(month, 10) === today.getMonth() + 1 && parseInt(day, 10) === today.getDate()
 }
+
+/**
+ * Splits "Meet the team" into ["Meet the ", "team"] so a heading's last word
+ * can carry an accent. A single word comes back as ["", word].
+ */
+export function splitLastWord(title: string): [string, string] {
+  const idx = title.lastIndexOf(' ')
+  return idx === -1 ? ['', title] : [title.slice(0, idx + 1), title.slice(idx + 1)]
+}

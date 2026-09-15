@@ -8,6 +8,7 @@ import { useSettingsStore } from '@/store/settingsStore'
 import { formatOperatingHours } from '@/lib/formatOperatingHours'
 import { VENDOR } from '@/lib/version'
 import { StarField } from './StarField'
+import { SectionBackdrop } from './SectionBackdrop'
 
 export function LandingFooter() {
   const t = useT()
@@ -36,8 +37,10 @@ export function LandingFooter() {
 
   return (
     <footer className="relative overflow-hidden bg-gray-900 dark:bg-gray-950 py-12 sm:py-16 pb-32 sm:pb-16 lg:pb-16 font-display">
+      {/* Grain so the texture the wave above carries in runs on into the footer */}
+      <SectionBackdrop tint="neutral" />
       <StarField className="" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
           {/* Column 1 — Brand */}
           <div>

@@ -107,7 +107,7 @@ kindergarten-app/
 │       │   │   ├── LandingPage.tsx  # Public marketing page — order: hero, our story, programmes, testimonials, notices, team, numbers, gallery+lightbox, art wall, enquiry form (#contact), careers (mint band), promise strip, location, footer
 │       │   │   ├── constants.ts     # FEATURES, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
 │       │   │   └── components/
-│       │   │       ├── Wave.tsx            # SVG decorative wave divider
+│       │   │       ├── Wave.tsx            # SVG scallop divider painted in the NEXT section colour; WaveGrain lays paper grain over the bumps so texture runs through the join
 │       │   │       ├── StatCounter.tsx     # Animated number counter with intersection observer
 │       │   │       ├── WhatsAppButton.tsx  # Fixed bottom-left WhatsApp link (when configured)
 │       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours
@@ -117,7 +117,13 @@ kindergarten-app/
 │       │   │       ├── StoryChapter.tsx    # One stop on the Our Story path: icon tile, label, title, body; photo on the opposite side, alternating by index
 │       │   │       ├── TeamSection.tsx     # "Meet the team" — member cards with photo/name/role (school-written)
 │       │   │       ├── LandingArtCard.tsx  # Art wall grid preview card
-│       │   │       └── TestimonialCarousel.tsx # Auto-advancing carousel; prev/next peek cards + arrow buttons + progress dots
+│       │   │       ├── TestimonialCarousel.tsx # Auto-advancing carousel; prev/next peek cards + arrow buttons + progress dots
+│       │   │       ├── SectionBackdrop.tsx # Layered section background (first child of every landing section): grain → wash pattern → children (glows, watermark, ghost doodles)
+│       │   │       ├── PaperGrain.tsx      # Tiled SVG noise at ~6%; black speckles in light, white in dark (.lp-grain)
+│       │   │       ├── WashPattern.tsx     # Faint currentColor pattern: dots|polka|lines|grid|gingham|stars|hearts (.lp-pat-*); fades out near section edges (.lp-pat-fade)
+│       │   │       ├── SpotlightGlow.tsx   # Radial-gradient blob in a brand bright behind a heading/card cluster (no filter blur); closest-side ellipse, height capped to the section; title glows use top-0 + height={TITLE_GLOW_HEIGHT} (340px ellipse centred on the title); keep glows inside the section so they never clip flat; optional darkColor swaps the bright in dark mode (.lp-glow CSS vars)
+│       │   │       ├── OutlineWatermark.tsx # Giant outlined Titan One (`font-bubble`) bubble-letter text ("ABC", "123") at ~5%; `ghost` makes it the section's far layer (FloatingDoodle ghost parallax) in place of an oversized shape, as the numbers section does
+│       │   │       └── CrayonWord.tsx      # Heading helper: highlighter swipe or underline behind the last word, draws in on first view
 │       │   ├── dashboard/
 │       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays + charts
 │       │   │   └── components/
@@ -242,7 +248,7 @@ kindergarten-app/
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
 │       │   ├── landing/
 │       │   │   └── doodles/            # Hand-drawn SVG line-art (stroke 2, fill none) — Doodle<Shape>/<Animal> with size + color props
-│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin, delay, opacity, mdUp, shrinkFrom, flip; adds .doodle-live while in view so a child's own CSS animation (train wheels/smoke) can gate on it
+│       │   │       ├── FloatingDoodle.tsx  # Absolute + animated wrapper: position (Tailwind classes), animation float|alt|slow|spin|none, delay, opacity, mdUp, shrinkFrom, flip, ghost (far depth layer: 0.07 opacity, static, 2 to 3x size), parallax none|near|far (scroll-driven view() drift, md+, motion-safe); adds .doodle-live while in view so a child's own CSS animation (train wheels/smoke) can gate on it
 │       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,HeartSparkle,Sparkle,Moon,Apple,PaperPlane,MusicNote,Puzzle,Circle,Triangle}.tsx  # Shapes, ~100–240px on the landing page; always outlined, never filled
 │       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox,Ladybird,Duck,Train}.tsx  # Animals + toy train, ~300–480px, shrunk below md; side-view ones face left — pass `flip` to FloatingDoodle when placed at a left edge
 │       │   ├── portal/
@@ -363,15 +369,18 @@ All list endpoints return paginated responses:
 
 **Warm Storybook** is the visual language (adopted September 2026). Full reference, token table, and the design canvas link live in `docs/design/warm-storybook/README.md`.
 
-- Fonts: Nunito for body and labels; **Fredoka (`font-fun`) for page titles, section headings, and big numbers**. Page `<h1>`: `font-fun font-bold text-2xl md:text-3xl`.
+- Fonts: Nunito for body and labels; **Fredoka (`font-fun`) for page titles, section headings, and big numbers**. Page `<h1>`: `font-fun font-bold text-2xl md:text-3xl`. Titan One (`font-bubble`, fat bubble letters, single weight) is reserved for the outlined landing watermarks via `OutlineWatermark`; never use it for readable text.
 - Brand brights: `kinder-orange` (#FF6B35), `kinder-blue` (#4D96FF), `kinder-green` (#6BCB77), `kinder-yellow` (#FFD93D), `kinder-purple` (#C77DFF), `kinder-pink` (#FF85A2). Use them for buttons, stickers, icon strokes, and chart series only — never as full section backgrounds.
-- **Section washes** (`bg-wash-sky|mint|butter|blush|lavender|peach|ocean`) with matching **ink** text colours (`text-ink-*`): CSS-var driven, pastel in light and a deep nebula tint of the same hue in dark, so they need no `dark:` variant. Icon tiles are `rounded-2xl` with a wash background and the matching ink icon; map blue→sky, purple→lavender, green→mint, orange→peach, yellow→butter, pink→blush.
+- **Section washes** (`bg-wash-sky|mint|butter|blush|lavender|peach|ocean`) with matching **ink** text colours (`text-ink-*`): CSS-var driven, pastel in light and a nebula tint in dark, so they need no `dark:` variant. Dark tints sit at the lightness and chroma of the night-sky navy: sky and lavender keep their hue, mint goes deep teal, blush goes magenta-violet, and peach and butter drop to warm charcoals, because a dark orange, yellow, pink or green at full chroma reads as brown, olive, maroon or chalkboard against the galaxy. Icon tiles are `rounded-2xl` with a wash background and the matching ink icon; map blue→sky, purple→lavender, green→mint, orange→peach, yellow→butter, pink→blush.
+- **Warm washes never fill a whole dark landing band**: a section that is butter or peach in light takes `dark:bg-wash-ocean` plus `<SectionBackdrop tint=... darkTint="ocean">`, and its lead-in wave carries `dark:fill-wash-ocean` (Our Story and Numbers do this). The promise strip is `bg-kinder-pink dark:bg-wash-blush` and the wave feeding it matches. Give `SpotlightGlow` a `darkColor` (purple or cyan) whenever its light colour is yellow, since yellow over a night tint turns green or brown.
+- **The hero has no scallop wave**: it melts into the next band through the `afterHeroFade` bottom gradient, so the hero-to-story join is seamless in both modes. Every other section join uses a visible scallop.
 - Border radius: heavy use of `rounded-2xl`, `rounded-3xl`
 - Cards: `bg-white dark:bg-gray-900 rounded-3xl p-6 border-2 border-gray-200 dark:border-gray-800` (no drop shadow except floating chips)
 - Primary action buttons: `bg-kinder-orange text-white px-5 py-2.5 rounded-full font-extrabold`; secondary: white pill with `border-2 border-gray-200 dark:border-gray-800`
 - Sticker badges: `StickerBadge` (`pages/landing/components/StickerBadge.tsx`) — bright fill, Fredoka uppercase, white border (gray-900 in dark), slight rotation. At most one per section.
 - Landing page section joins use `<Wave variant="scallop" fillClassName="fill-<next section colour>" />` — the wave is painted in the NEXT section's colour. Prefer `fillClassName` (Tailwind `fill-*` utilities follow the tokens) over literal `fill`. The wrapper carries the `lp-wave` class and a rule in `index.css` (`section:has(.lp-wave) + *`) pulls the next block up 1px so fractional device pixels on phones never show a hairline between wave and band. The scallop variant draws 6 bumps below `md` and 18 from `md` up so phones do not get a row of spikes.
 - **Infinite decorative animations must be gated on visibility**: every element that runs an infinite CSS animation (floating doodles, star fields, hero mesh drift, shooting stars) only carries its animation class while `useInViewport(ref)` is true. Each running animation holds its own GPU layer even when scrolled far off screen, and iOS Safari evicts and silently reloads the page once too many pile up. `FloatingDoodle` and `StarField` already do this — wrap new decorative animation in them rather than adding raw `lp-float`/`lp-twinkle` classes. Never animate `background-position` on large elements (full repaint every frame); move a `::before` layer with `transform` instead, as the hero mesh gradient does.
+- **Landing section depth stack**: every landing section is `relative lp-clip` (never `overflow-hidden`: `lp-clip` uses `overflow: clip`, which paints the same but does not create a scroll container, so the doodles' `animation-timeline: view()` parallax can reach the document) and starts with `<SectionBackdrop tint=... pattern=...>` holding its glows, watermark and ghost doodles, then `StarField`, then the mid `FloatingDoodle`s, then the `relative` content wrappers, then the `Wave` (whose wrapper is `position: relative` so it paints above the backdrop). Three depths: ghost (`<FloatingDoodle ghost>` — 2 to 3x size, 0.07 opacity, static, parallax `far`), mid (normal doodles, parallax `near`), near (cards). Everything in the backdrop is static tiled CSS; the only motion is the scroll-driven drift, which is compositor-only, md+, motion-safe and still gated on `useInViewport`. Headings use `<CrayonWord text={t('key')} color=... />` for the accent on the last word, one per section, in a bright that contrasts with the wash (never yellow on butter).
 - **Dark mode keeps the starry galaxy**: mesh gradient + purple/teal/pink glows + `StarField` behind the landing hero and inside sky-tinted bands; faint stars across the portal; inside the admin welcome banner only.
 - Skeleton animation: CSS `animate-shimmer` defined in `index.css` using `bg-[length:200%_100%]`
 - All components are fully dark-mode aware using Tailwind `dark:` variants

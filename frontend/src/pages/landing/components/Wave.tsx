@@ -23,6 +23,19 @@ const SCALLOP_MOBILE =
 
 type WaveVariant = keyof typeof WAVE_PATHS
 
+/** Paper grain clipped to a wave path, so the bumps carry the next section's texture. */
+function WaveGrain({ d, className = '' }: { d: string; className?: string }) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 88' preserveAspectRatio='none'><path d='${d}'/></svg>`
+  const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+  return (
+    <div
+      className={`lp-wave-grain lp-grain opacity-[0.07] dark:opacity-[0.06] ${className}`}
+      style={{ WebkitMaskImage: mask, maskImage: mask }}
+      aria-hidden="true"
+    />
+  )
+}
+
 /**
  * Decorative section divider. The wave is painted in the colour of the NEXT section,
  * so it sits at the bottom of a section and "bites" into it.
@@ -36,6 +49,13 @@ type WaveVariant = keyof typeof WAVE_PATHS
  * section edge lands on a fractional device pixel on phones and both the wave
  * and the next band get an anti-aliased half-covered row there, which shows as
  * a hairline of page background between them.
+ *
+ * The wrapper is position:relative so it paints in DOM order, above the
+ * section's absolutely-positioned backdrop layers (grain, patterns):
+ * the bumps stay in the next section's colour and the gaps between them
+ * show this section's paper. A `WaveGrain` layer masked to the same path
+ * lays the paper grain over the bumps too, so the texture runs unbroken from
+ * one band into the next instead of the wave reading as a flat cut-out.
  */
 export function Wave({
   fill,
@@ -50,7 +70,7 @@ export function Wave({
     fill: fillClassName ? undefined : fill,
   }
   return (
-    <div className="lp-wave" style={{ lineHeight: 0, display: 'block' }}>
+    <div className="lp-wave" style={{ lineHeight: 0, display: 'block', position: 'relative' }}>
       <svg
         viewBox="0 0 1440 88"
         xmlns="http://www.w3.org/2000/svg"
@@ -74,6 +94,14 @@ export function Wave({
           <path d={WAVE_PATHS[variant]} {...pathProps} className={fillClassName} />
         )}
       </svg>
+      {variant === 'scallop' ? (
+        <>
+          <WaveGrain d={SCALLOP_MOBILE} className="md:hidden" />
+          <WaveGrain d={WAVE_PATHS.scallop} className="hidden md:block" />
+        </>
+      ) : (
+        <WaveGrain d={WAVE_PATHS[variant]} />
+      )}
     </div>
   )
 }
