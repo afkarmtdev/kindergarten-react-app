@@ -3,7 +3,7 @@ import {
   CURTAIN_HANDOFF_KEY,
   clearCurtainHandoff,
   hasCurtainHandoff,
-  isLandingPath,
+  isCurtainPath,
   markCurtainHandoff,
 } from './reloadCurtain'
 
@@ -29,13 +29,19 @@ const throwingStorage = {
   },
 }
 
-describe('isLandingPath', () => {
-  test('only the landing page gets the curtain', () => {
-    expect(isLandingPath('/')).toBe(true)
-    expect(isLandingPath('')).toBe(true)
-    expect(isLandingPath('/admin')).toBe(false)
-    expect(isLandingPath('/admin/login')).toBe(false)
-    expect(isLandingPath('/portal')).toBe(false)
+describe('isCurtainPath', () => {
+  test('the landing page and the admin app get the curtain', () => {
+    expect(isCurtainPath('/')).toBe(true)
+    expect(isCurtainPath('')).toBe(true)
+    expect(isCurtainPath('/admin')).toBe(true)
+    expect(isCurtainPath('/admin/login')).toBe(true)
+    expect(isCurtainPath('/admin/students/abc')).toBe(true)
+  })
+
+  test('the portal and unknown paths keep the plain reload', () => {
+    expect(isCurtainPath('/portal')).toBe(false)
+    expect(isCurtainPath('/portal/login')).toBe(false)
+    expect(isCurtainPath('/administrator')).toBe(false)
   })
 })
 

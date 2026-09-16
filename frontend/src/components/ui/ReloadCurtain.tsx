@@ -9,7 +9,7 @@ import {
 } from '@/lib/reloadCurtain'
 
 /**
- * Full-screen sky-wash curtain shown while the landing page reloads from the
+ * Full-screen sky-wash curtain shown while the landing page or admin app reloads from the
  * update banner. Two halves, played by two different builds of the app:
  *
  *   enter  Old build, right after the Reload tap. The curtain drops from the top

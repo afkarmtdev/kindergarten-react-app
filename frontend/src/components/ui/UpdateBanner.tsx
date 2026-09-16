@@ -3,15 +3,15 @@ import { RefreshCw } from 'lucide-react'
 import { useT } from '../../hooks/useT'
 import { useVersionCheck } from '../../hooks/useVersionCheck'
 import { ReloadCurtain } from './ReloadCurtain'
-import { CURTAIN_ENTER_MIN_MS, isLandingPath, markCurtainHandoff } from '@/lib/reloadCurtain'
+import { CURTAIN_ENTER_MIN_MS, isCurtainPath, markCurtainHandoff } from '@/lib/reloadCurtain'
 
 /**
  * Top-of-page strip shown when a newer build is deployed. Rendered once at the app root
  * so every page — landing, login, admin, portal — gets the same update path.
  *
- * On the landing page the Reload tap also drops the ReloadCurtain over the page and
+ * On the landing page and in the admin app the Reload tap also drops the ReloadCurtain and
  * leaves a sessionStorage flag so the new build can lift the same curtain after the
- * reload (ReloadCurtainHandoff). Admin and portal pages keep the plain spinner.
+ * reload (ReloadCurtainHandoff). The parent portal keeps the plain spinner.
  */
 export function UpdateBanner() {
   const [reloading, setReloading] = useState(false)
@@ -33,7 +33,7 @@ export function UpdateBanner() {
           disabled={reloading}
           onClick={() => {
             setReloading(true)
-            if (!isLandingPath(window.location.pathname)) {
+            if (!isCurtainPath(window.location.pathname)) {
               applyUpdate()
               return
             }
