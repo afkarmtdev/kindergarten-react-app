@@ -60,14 +60,19 @@ function sparklePath(x: number, y: number, r: number) {
 }
 const CAP_SPARKLES = [sparklePath(13.6, 5.6, 1.3), sparklePath(19.2, 3.6, 0.95)]
 
-// Flag arm: drawn before the ears and head so the shoulder disappears behind
-// the head and the paw pokes out past the right ear. The pole leans 13deg and
-// the flag hangs off its top in a rotated local frame (x along the fly, y down
-// the hoist) so the Jalur Gemilang itself is plain axis-aligned rects.
-const ARM_PATH = 'M21.5 19.5 C25.5 19.6 28.6 17.6 29.6 13.6'
+// Flag arm: drawn before the ears, head and bow. The bear is only a head, so
+// the arm has to read as coming from a torso below it: the shoulder starts
+// under the bow at the bottom right of the head, the upper arm reaches out
+// sideways and the forearm bends up so the paw sits beside the cheek, never
+// the ear. The pole leans 13deg and the flag hangs off its top in a rotated
+// local frame (x along the fly, y down the hoist) so the Jalur Gemilang itself
+// is plain axis-aligned rects. The wave rotates about the shoulder, so keep the
+// start of ARM_PATH in sync with the .bear-flag-wave transform-origin in
+// index.css; it must stay behind the bow or the root shows mid-wave.
+const ARM_PATH = 'M19.5 27 C25 28.5 30.5 25.5 30.2 18.8'
 const ARM_WIDTH = 3.4
-const PAW = { cx: 29.6, cy: 13.4, r: 2.4 }
-const POLE = { x1: 28.9, y1: 16.2, x2: 32.2, y2: 2 }
+const PAW = { cx: 30.2, cy: 18.8, r: 2.4 }
+const POLE = { x1: 29.6, y1: 21.4, x2: 32.9, y2: 7 }
 const POLE_COLOR = '#8B5A2B'
 const FLAG_TRANSFORM = `translate(${POLE.x2} ${POLE.y2}) rotate(13)`
 const FLAG_W = 9
@@ -162,7 +167,7 @@ export function StickerBear({
           </>
         )}
 
-        {/* Flag arm — before the ears and head so the shoulder hides behind them */}
+        {/* Flag arm — before the ears, head and bow so the shoulder hides behind them */}
         {flag === 'malaysia' && (
           <g className="bear-flag-wave">
             {outline && (

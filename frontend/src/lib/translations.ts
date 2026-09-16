@@ -583,6 +583,8 @@ export const translations = {
     updateReload: 'Reload now',
     updateReloading: 'Reloading...',
     updateDismiss: 'Dismiss',
+    updateCurtainFetching: 'Fetching the new storybook',
+    updateCurtainReady: 'All new and shiny!',
 
     // Testimonials
     testimonials: 'Testimonials',
@@ -1629,6 +1631,8 @@ export const translations = {
     updateReload: 'Muat semula',
     updateReloading: 'Memuat semula...',
     updateDismiss: 'Abaikan',
+    updateCurtainFetching: 'Mengambil buku cerita baharu',
+    updateCurtainReady: 'Semuanya baharu dan berkilat!',
 
     // Testimonials
     testimonials: 'Testimoni',
