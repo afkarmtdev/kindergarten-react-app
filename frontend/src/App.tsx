@@ -11,6 +11,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { CuteLoader } from '@/components/ui/Skeletons'
 import { UpdateBanner } from '@/components/ui/UpdateBanner'
+import { ReloadCurtainHandoff } from '@/components/ui/ReloadCurtainHandoff'
 // Public pages stay eager — they are the first routes users hit
 import { LandingPage } from '@/pages/landing/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -449,6 +450,8 @@ export default function App() {
       />
       {/* New-build banner — one instance for every page, public and private */}
       <UpdateBanner />
+      {/* Lifts the reload curtain the previous build left down (landing page only) */}
+      <ReloadCurtainHandoff />
       {/* Devtools only in development */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
