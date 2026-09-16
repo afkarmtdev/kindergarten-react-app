@@ -142,7 +142,7 @@ export function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
-          {APP_NAME} Management System · Secured by Supabase Auth
+          {APP_NAME} Management System
         </p>
         <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-1">v{APP_VERSION}</p>
         <div className="text-center mt-4">
