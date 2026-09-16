@@ -136,8 +136,13 @@ app.get('/api/public/school-info', async (c) => {
       'id, school_name, address, phone, email, logo_url, whatsapp_number, operating_hours, google_maps_embed_url, facebook_url, instagram_url, principal_name, registration_number, landing_content, updated_at'
     )
     .limit(1)
-    .single()
-  if (error) return c.json({ data: null }, 200)
+    .maybeSingle()
+  // A missing row is a fresh install (null, 200). A real failure must be a 500
+  // so the landing page retries instead of caching the built-in copy for a day.
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch public school info')
+    return c.json({ error: 'Failed to fetch school info' }, 500)
+  }
   return c.json({ data })
 })
 

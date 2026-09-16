@@ -181,14 +181,14 @@ export function mergeLandingContent(raw: unknown): LandingContent {
 }
 
 /**
- * Picks the text for the current language. Falls back to English, then to
+ * Picks the text for the current language. Falls back to the other language, then to
  * the built-in default so a half-filled form never shows a blank.
  */
 export function pickText(text: BilingualText, lang: 'en' | 'ms', fallback: string): string {
   const preferred = text[lang].trim()
   if (preferred) return preferred
-  const english = text.en.trim()
-  if (english) return english
+  const other = text[lang === 'en' ? 'ms' : 'en'].trim()
+  if (other) return other
   return fallback
 }
 

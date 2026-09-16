@@ -24,7 +24,7 @@ function isOperatingHours(val: unknown): val is OperatingHours {
 export function useSchoolInfo(options?: { public?: boolean }) {
   const isPublic = options?.public === true
 
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: isPublic ? ['school-info', 'public'] : ['school-info'],
     queryFn: isPublic ? () => schoolInfoApi.getPublic() : () => schoolInfoApi.get(),
     staleTime: isPublic ? 24 * 60 * 60 * 1000 : 5 * 60 * 1000,
@@ -34,7 +34,9 @@ export function useSchoolInfo(options?: { public?: boolean }) {
   const landingContent = useMemo(() => mergeLandingContent(info?.landing_content), [info])
 
   return {
-    isLoaded: data !== undefined,
+    // Settled: the school's copy is in, or the request gave up. Only then may
+    // UI that would otherwise show the built-in fallback copy render it.
+    isLoaded: data !== undefined || isError,
     schoolName: info?.school_name || APP_NAME,
     landingContent,
     address: info?.address ?? '',

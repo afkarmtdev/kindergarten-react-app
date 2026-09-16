@@ -62,6 +62,10 @@ describe('pickText', () => {
     expect(pickText({ en: 'Hello', ms: '  ' }, 'ms', 'default')).toBe('Hello')
   })
 
+  test('falls back to Malay when English is blank', () => {
+    expect(pickText({ en: '', ms: 'tumbuh besar' }, 'en', 'default')).toBe('tumbuh besar')
+  })
+
   test('falls back to the default when both are blank', () => {
     expect(pickText({ en: '', ms: '' }, 'en', 'default')).toBe('default')
   })

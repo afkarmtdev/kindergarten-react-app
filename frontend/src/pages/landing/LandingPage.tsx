@@ -115,8 +115,10 @@ export function LandingPage() {
   const [showTop, setShowTop] = useState(false)
   // Hold the hero entrance until fonts AND the school's copy are in. Either
   // arriving mid-animation reflows the h1, which iOS Safari paints as ghost text.
+  // The wait is long enough to cover a slow mobile connection; a request that
+  // fails settles isLoaded on its own, so the timeout only guards a hang.
   const fontsReady = useFontsReady()
-  const contentReady = useSettledOrTimeout(content.isLoaded)
+  const contentReady = useSettledOrTimeout(content.isLoaded, 8000)
   const heroReady = fontsReady && contentReady
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -586,12 +588,17 @@ export function LandingPage() {
               <h1 className="lp-enter-1 font-fun text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-[1.05] tracking-tight mb-6">
                 <span className="block">{content.hero.headlineStart}</span>
                 <span className="relative inline-block text-kinder-orange mx-1">
-                  <TypedText
-                    key={content.hero.headlineHighlight}
-                    text={content.hero.headlineHighlight}
-                    delay={800}
-                    speed={80}
-                  />
+                  {/* Never type the built-in placeholder: wait for the school's word. */}
+                  {content.isLoaded ? (
+                    <TypedText
+                      key={content.hero.headlineHighlight}
+                      text={content.hero.headlineHighlight}
+                      delay={800}
+                      speed={80}
+                    />
+                  ) : (
+                    ' '
+                  )}
                   <svg
                     className="absolute -bottom-2 left-0 w-full"
                     viewBox="0 0 200 14"
