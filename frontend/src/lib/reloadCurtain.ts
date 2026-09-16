@@ -1,9 +1,10 @@
 /**
  * Reload curtain hand-off.
  *
- * When the landing page reloads from the update banner, `ReloadCurtain` drops a
- * sky-wash curtain over the page while the new service worker installs (0.5 to
- * 12 s), and the hard reload that follows wipes the DOM. To hide the white flash
+ * When the landing page or the admin app reloads from the update banner,
+ * `ReloadCurtain` drops a sky-wash curtain over the page while the new service
+ * worker installs (0.5 to 12 s), and the hard reload that follows wipes the
+ * DOM. To hide the white flash
  * the old build leaves a flag in sessionStorage; the new build finds it on its
  * first render, paints the same curtain already down, and lifts it.
  *
@@ -34,9 +35,14 @@ export const CURTAIN_BLINK_FOR_MS = 160
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
-/** The curtain plays on the public landing page only. */
-export function isLandingPath(pathname: string): boolean {
-  return pathname === '/' || pathname === ''
+/**
+ * Where the curtain plays: the public landing page and the admin app (login
+ * included). The parent portal keeps the plain spinner.
+ */
+export function isCurtainPath(pathname: string): boolean {
+  return (
+    pathname === '/' || pathname === '' || pathname === '/admin' || pathname.startsWith('/admin/')
+  )
 }
 
 /** Old build, just before it reloads: leave the flag for the new build. */
