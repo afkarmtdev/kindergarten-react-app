@@ -1,0 +1,52 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "A · Morning briefing",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 960
+    },
+    {
+      "file": "ClassroomWall.dc.html",
+      "title": "B · Classroom wall",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 960
+    },
+    { "file": "DayPlan.dc.html", "title": "C · Day plan", "x": 3120, "y": 0, "w": 1440, "h": 960 }
+  ],
+  "annotations": [
+    {
+      "id": "note-brief",
+      "x": 0,
+      "y": -300,
+      "w": 620,
+      "text": "Admin dashboard: three warmer directions\nSame sidebar, same Warm Storybook tokens (Fredoka + Nunito, cream ground, 2px borders, pastel washes). What changes is what the page is about. Today's dashboard is a stat row, a fee row, two charts and three panels, which is the shape every admin template has. Each direction below replaces the numbers-first layout with something a teacher would actually read at 9am. Names and numbers are sample data."
+    },
+    {
+      "id": "note-a",
+      "x": 0,
+      "y": -120,
+      "w": 560,
+      "text": "A · Morning briefing\nThe day told in sentences: who is in, who is away, whose birthday it is. The numbers live inside the prose. The only boxes are things you can act on (a short to-do list, the faces of who is in, fees as one sentence with a bar). Charts move to a Reports page.\nTradeoff: the copy has to be generated from data, so the backend writes the sentences."
+    },
+    {
+      "id": "note-b",
+      "x": 1560,
+      "y": -140,
+      "w": 560,
+      "text": "B · Classroom wall\nThe staff-room noticeboard: a register sheet, a birthday sticker, a lined notes card, fee reminders with faces, the newest artwork pinned, enquiries as letters in the tray. Slight rotations, pushpins, dotted board. Numbers are demoted to one line at the bottom.\nTradeoff: busiest of the three and it bends the no-shadow rule for the pinned notes. The notes card is a new feature (staff day notes)."
+    },
+    {
+      "id": "note-c",
+      "x": 3120,
+      "y": -120,
+      "w": 560,
+      "text": "C · Day plan\nCalm and editorial. The left column is the day as a timeline (register taken, snack, nap, reports due, pick-up) with the current step highlighted. The right column is one card per class with the children's faces, who is away, and whether the daily report is written. Things waiting on you is a plain three-line list.\nTradeoff: least playful, but the fastest to scan and the closest to how a day actually runs."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

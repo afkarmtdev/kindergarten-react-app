@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Nunito', 'Segoe UI', sans-serif; background: #FDF6F0; }
+    a { color: #FF6B35; text-decoration: none; } a:hover { color: #e96908; }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 960px; display: flex; background: #FDF6F0; color: #342A22; font-family: 'Nunito', 'Segoe UI', sans-serif;">
+
+  <div style="width: 256px; flex-shrink: 0; background: #FFFAF5; border-right: 2px solid #ECDED0; display: flex; flex-direction: column; padding: 20px 16px; gap: 22px;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 4px 8px;">
+      <div style="width: 40px; height: 40px; border-radius: 13px; background: #FF6B35; display: flex; align-items: center; justify-content: center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFAF5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="6" r="2.5"></circle><circle cx="12" cy="13" r="7"></circle><circle cx="9.5" cy="12" r="0.8" fill="#FFFAF5"></circle><circle cx="14.5" cy="12" r="0.8" fill="#FFFAF5"></circle><path d="M10.5 15.5c.8.8 2.2.8 3 0"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column;"><span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 21px; line-height: 1; color: #342A22;">KinderCare</span><span style="font-size: 11px; font-weight: 700; color: #948272; margin-top: 3px;">Admin</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: #FFE9DF; color: #E85D22; font-weight: 800; font-size: 14px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"></rect><rect x="14" y="3" width="7" height="5" rx="2"></rect><rect x="14" y="12" width="7" height="9" rx="2"></rect><rect x="3" y="16" width="7" height="5" rx="2"></rect></svg>
+        <span>Dashboard</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #B2A08E; padding: 0 12px 4px;">People</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M21.5 19c0-2.5-2-4.5-4.5-4.5"></path></svg><span>Students</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-6 9 6v11"></path><path d="M9 21v-6h6v6"></path></svg><span>Classes</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"></path><path d="M16 11l2 2 4-4"></path></svg><span>Parents</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #B2A08E; padding: 0 12px 4px;">Daily</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"></rect><path d="M8 2v4M16 2v4M3 10h18"></path><path d="M9 15l2 2 4-4"></path></svg><span>Attendance</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3"></rect><path d="M9 3v2h6V3M9 11h6M9 15h4"></path></svg><span>Daily Reports</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4M12 16h.01"></path></svg><span>Incidents</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #B2A08E; padding: 0 12px 4px;">Finance</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"></rect><path d="M3 10h18M16 15h2"></path></svg><span>Fees</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #B2A08E; padding: 0 12px 4px;">Content</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"></path><path d="M17 9a4 4 0 0 1 0 6"></path></svg><span>Announcements</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M21 16l-5-5-9 8"></path></svg><span>Gallery</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-2 0-3 3 0 4-1a9 9 0 0 0-6-12z"></path><circle cx="8" cy="10" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="16" cy="10" r="1"></circle></svg><span>Art Wall</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15c2 0 3-1.5 3-3V8H5v4h3c0 1-1 2-2 2z"></path><path d="M15 15c2 0 3-1.5 3-3V8h-4v4h3c0 1-1 2-2 2z"></path></svg><span>Testimonials</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #B2A08E; padding: 0 12px 4px;">Other</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l3-8h12l3 8v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="M3 13h5l2 3h4l2-3h5"></path></svg><span>Inquiries</span><span style="margin-left: auto; background: #FF6B35; color: #FFFFFF; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px;">3</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"></rect><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"></path></svg><span>Careers</span></div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; color: #625448; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg><span>Settings</span></div>
+    </div>
+
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 16px; background: #FFFFFF; border: 2px solid #ECDED0;">
+      <div style="width: 36px; height: 36px; border-radius: 999px; background: #E3EEFF; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; color: #2F6FD6;">TA</div>
+      <div style="display: flex; flex-direction: column; min-width: 0;"><span style="font-size: 13px; font-weight: 800; color: #342A22;">Teacher Aina</span><span style="font-size: 11px; font-weight: 600; color: #948272;">Sign out</span></div>
+    </div>
+  </div>
+
+
+  <div style="flex-grow: 1; padding: 40px 44px; display: flex; gap: 36px; min-width: 0;">
+
+    <div style="width: 400px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #948272;">Friday, 12 September</span>
+        <h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.1; color: #342A22;">Today at Sunflower</h1>
+        <span style="font-size: 15px; font-weight: 600; color: #625448;">It is 10:20. Snack is next, and it is a birthday one.</span>
+      </div>
+
+      <div style="background: #FFFFFF; border: 2px solid #ECDED0; border-radius: 24px; padding: 24px 22px 4px; position: relative;">
+        <div style="position: absolute; left: 105px; top: 40px; bottom: 40px; width: 2px; background: #F3EAE0;"></div>
+        <div style="position: relative;">
+          <div style="display: flex; gap: 16px; padding: 4px 0 26px; position: relative;">
+        <div style="width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 800; color: #948272; padding-top: 7px; text-align: right;">7:30</div>
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #6BCB77; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; padding-top: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #342A22;">Gates open</span>
+          
+        </div>
+      </div>
+          <div style="display: flex; gap: 16px; padding: 4px 0 26px; position: relative;">
+        <div style="width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 800; color: #948272; padding-top: 7px; text-align: right;">9:00</div>
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #6BCB77; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; padding-top: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #342A22;">Register taken</span>
+          <span style="font-size: 13px; font-weight: 600; color: #78685A; line-height: 1.45;">24 in. Mei Wen away, Rayyan excused, Daniel late.</span>
+        </div>
+      </div>
+          <div style="display: flex; gap: 16px; padding: 4px 0 26px; position: relative;">
+        <div style="width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 800; color: #948272; padding-top: 7px; text-align: right;">10:30</div>
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #FF6B35; box-shadow: 0 0 0 6px #FFE9DF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M5 21v-7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7"></path><path d="M12 12V8M9 12V9M15 12V9"></path><path d="M12 5c0-1 1-2 1-3-1 1-2 2-2 3a1 1 0 0 0 1 1 1 1 0 0 0 1-1"></path></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; padding-top: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #342A22;">Snack and Nur Zara’s cake</span>
+          <span style="font-size: 13px; font-weight: 600; color: #78685A; line-height: 1.45;">Her mum is bringing it at 10. Photos for the gallery.</span>
+        </div>
+      </div>
+          <div style="display: flex; gap: 16px; padding: 4px 0 26px; position: relative;">
+        <div style="width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 800; color: #948272; padding-top: 7px; text-align: right;">12:00</div>
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #FFFFFF; border: 2px solid #ECDED0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B2A08E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; padding-top: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #625448;">Lunch, then nap</span>
+          
+        </div>
+      </div>
+          <div style="display: flex; gap: 16px; padding: 4px 0 26px; position: relative;">
+        <div style="width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 800; color: #948272; padding-top: 7px; text-align: right;">15:30</div>
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #FFFFFF; border: 2px solid #ECDED0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B2A08E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3"></rect><path d="M9 3v2h6V3M9 11h6M9 15h4"></path></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; padding-top: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #625448;">Daily reports due</span>
+          <span style="font-size: 13px; font-weight: 600; color: #78685A; line-height: 1.45;">Little Stars still to write.</span>
+        </div>
+      </div>
+          <div style="display: flex; gap: 16px; padding: 4px 0 26px; position: relative;">
+        <div style="width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 800; color: #948272; padding-top: 7px; text-align: right;">17:00</div>
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #FFFFFF; border: 2px solid #ECDED0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B2A08E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M21.5 19c0-2.5-2-4.5-4.5-4.5"></path></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 3px; padding-top: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #625448;">Pick-up</span>
+          <span style="font-size: 13px; font-weight: 600; color: #78685A; line-height: 1.45;">Sports day kit list goes home in bags.</span>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 18px; color: #342A22;">Waiting on you</span>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 700; color: #625448;">
+          <div style="display: flex; align-items: center; gap: 10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E85D22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"></rect><path d="M3 10h18M16 15h2"></path></svg><span style="flex-grow: 1;">Two fee reminders, RM 720 in total</span><span style="font-size: 13px; font-weight: 800; color: #FF6B35; white-space: nowrap;">Send &rarr;</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 8l9 6 9-6"></path></svg><span style="flex-grow: 1;">Three enquiries, newest from Puan Farah</span><span style="font-size: 13px; font-weight: 800; color: #FF6B35; white-space: nowrap;">Reply &rarr;</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9B4FE0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-2 0-3 3 0 4-1a9 9 0 0 0-6-12z"></path><circle cx="8" cy="10" r="1"></circle><circle cx="12" cy="7" r="1"></circle><circle cx="16" cy="10" r="1"></circle></svg><span style="flex-grow: 1;">Two portfolio entries need a photo</span><span style="font-size: 13px; font-weight: 800; color: #FF6B35; white-space: nowrap;">Open &rarr;</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 6px;">
+        <span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; color: #342A22;">Classes</span>
+        <span style="background: #FF6B35; color: #FFFFFF; font-weight: 800; font-size: 14px; padding: 12px 22px; border-radius: 999px; box-shadow: 0 6px 16px rgba(255,107,53,0.30); white-space: nowrap;">Take the register</span>
+      </div>
+      <div style="background: #FFFFFF; border: 2px solid #ECDED0; border-radius: 24px; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 14px; background: #FFF6D6; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D9A400" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; color: #342A22;">Sunflower</span>
+            <span style="font-size: 13px; font-weight: 600; color: #78685A;">Teacher Aina &middot; 9 of 10 in &middot; Mei is away</span>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; color: #3E9D4C; background: #E4F5E7; padding: 4px 10px; border-radius: 999px; white-space: nowrap; ">Daily report written</span>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; padding: 2px 0 2px 2px;"><div title="AH" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE6EC; color: #E0567A; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">AH</div><div title="DR" style="width: 34px; height: 34px; border-radius: 999px; background: #E3EEFF; color: #2F6FD6; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #FFD93D;">DR</div><div title="HI" style="width: 34px; height: 34px; border-radius: 999px; background: #F1E4FF; color: #9B4FE0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">HI</div><div title="NZ" style="width: 34px; height: 34px; border-radius: 999px; background: #FFF6D6; color: #D9A400; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">NZ</div><div title="MW" style="width: 34px; height: 34px; border-radius: 999px; background: #E4F5E7; color: #3E9D4C; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #FF85A2;">MW</div><div title="AP" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE9DF; color: #E85D22; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">AP</div><div title="SL" style="width: 34px; height: 34px; border-radius: 999px; background: #E3EEFF; color: #2F6FD6; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">SL</div><div title="IH" style="width: 34px; height: 34px; border-radius: 999px; background: #E4F5E7; color: #3E9D4C; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">IH</div><div title="CT" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE6EC; color: #E0567A; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">CT</div><div title="ZI" style="width: 34px; height: 34px; border-radius: 999px; background: #F1E4FF; color: #9B4FE0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">ZI</div></div>
+        <div style="display: flex; gap: 10px;"><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Register</span><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Daily report</span><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Portfolio</span></div>
+      </div>
+      <div style="background: #FFFFFF; border: 2px solid #ECDED0; border-radius: 24px; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 14px; background: #E3EEFF; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; color: #342A22;">Rainbow</span>
+            <span style="font-size: 13px; font-weight: 600; color: #78685A;">Teacher Suraya &middot; 7 of 8 in &middot; Rayyan is excused</span>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; color: #3E9D4C; background: #E4F5E7; padding: 4px 10px; border-radius: 999px; white-space: nowrap; ">Daily report written</span>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; padding: 2px 0 2px 2px;"><div title="EW" style="width: 34px; height: 34px; border-radius: 999px; background: #E3EEFF; color: #2F6FD6; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">EW</div><div title="BA" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE6EC; color: #E0567A; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">BA</div><div title="KR" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE9DF; color: #E85D22; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">KR</div><div title="AS" style="width: 34px; height: 34px; border-radius: 999px; background: #F1E4FF; color: #9B4FE0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">AS</div><div title="RA" style="width: 34px; height: 34px; border-radius: 999px; background: #E4F5E7; color: #3E9D4C; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #4D96FF;">RA</div><div title="JH" style="width: 34px; height: 34px; border-radius: 999px; background: #FFF6D6; color: #D9A400; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">JH</div><div title="AH" style="width: 34px; height: 34px; border-radius: 999px; background: #E3EEFF; color: #2F6FD6; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">AH</div><div title="NR" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE6EC; color: #E0567A; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">NR</div></div>
+        <div style="display: flex; gap: 10px;"><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Register</span><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Daily report</span><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Portfolio</span></div>
+      </div>
+      <div style="background: #FFFFFF; border: 2px solid #ECDED0; border-radius: 24px; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 14px; background: #E4F5E7; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3E9D4C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; color: #342A22;">Little Stars</span>
+            <span style="font-size: 13px; font-weight: 600; color: #78685A;">Teacher Priya &middot; 8 of 8 in &middot; Everyone is in</span>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; color: #E85D22; background: #FFE9DF; padding: 4px 10px; border-radius: 999px; white-space: nowrap; ">Daily report to do</span>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; padding: 2px 0 2px 2px;"><div title="OF" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE9DF; color: #E85D22; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">OF</div><div title="HY" style="width: 34px; height: 34px; border-radius: 999px; background: #F1E4FF; color: #9B4FE0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">HY</div><div title="LL" style="width: 34px; height: 34px; border-radius: 999px; background: #E3EEFF; color: #2F6FD6; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">LL</div><div title="IC" style="width: 34px; height: 34px; border-radius: 999px; background: #FFE6EC; color: #E0567A; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">IC</div><div title="DI" style="width: 34px; height: 34px; border-radius: 999px; background: #E4F5E7; color: #3E9D4C; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">DI</div><div title="MN" style="width: 34px; height: 34px; border-radius: 999px; background: #FFF6D6; color: #D9A400; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">MN</div><div title="AH" style="width: 34px; height: 34px; border-radius: 999px; background: #E3EEFF; color: #2F6FD6; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">AH</div><div title="QB" style="width: 34px; height: 34px; border-radius: 999px; background: #F1E4FF; color: #9B4FE0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; flex-shrink: 0; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #6BCB77;">QB</div></div>
+        <div style="display: flex; gap: 10px;"><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Register</span><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Daily report</span><span style="background: #FFFFFF; color: #342A22; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 999px; border: 2px solid #ECDED0; white-space: nowrap;">Portfolio</span></div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 14px; padding: 18px 26px; background: #E3EEFF; border-radius: 20px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2F6FD6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M14 7h7v7"></path></svg>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #625448;">This month so far: attendance 94%, fees 85% collected. Both a little up on August.</span>
+        <span style="font-size: 13px; font-weight: 800; color: #FF6B35; white-space: nowrap;">Reports &rarr;</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
