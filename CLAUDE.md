@@ -271,7 +271,7 @@ kindergarten-app/
 │       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team)
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
 │       │   ├── useInViewport.ts  # Shared IntersectionObserver → true while an element is near the viewport; gates decorative infinite animations
-│       │   ├── useMalaysiaDay.ts # isMalaysiaDay(now) + useMalaysiaDay() — true 16 to 22 Sep local time (Malaysia Day week), re-checked each minute; localStorage kc-preview-malaysia-day=1 forces it; hands every StickerBear its flag
+│       │   ├── useMalaysiaDay.ts # isMalaysiaDay(now) + useMalaysiaDay() — true 16 to 22 Sep local time (Malaysia Day week), plus a one-off 2026 extension through 6 Oct, re-checked each minute; localStorage kc-preview-malaysia-day=1 forces it; hands every StickerBear its flag
 │       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
 │       │   ├── api.ts             # Axios instance + all admin APIs; portalApi (separate instance with portal_token interceptor) + portalAuthApi + portalDataApi

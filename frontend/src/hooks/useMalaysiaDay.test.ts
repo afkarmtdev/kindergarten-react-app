@@ -12,13 +12,25 @@ describe('isMalaysiaDay', () => {
     expect(isMalaysiaDay(new Date(2026, 8, 22, 23, 59))).toBe(true)
   })
 
-  test('false before the 16th and after the 22nd', () => {
+  test('false before the 16th and after the 22nd in a normal year', () => {
     expect(isMalaysiaDay(new Date(2026, 8, 15, 23, 59))).toBe(false)
-    expect(isMalaysiaDay(new Date(2026, 8, 23))).toBe(false)
+    expect(isMalaysiaDay(new Date(2027, 8, 23))).toBe(false)
   })
 
   test('false in the same date range of other months', () => {
     expect(isMalaysiaDay(new Date(2026, 7, 16))).toBe(false)
     expect(isMalaysiaDay(new Date(2026, 9, 18))).toBe(false)
+  })
+
+  test('2026 keeps the flag up two more weeks, through 6 October', () => {
+    expect(isMalaysiaDay(new Date(2026, 8, 23))).toBe(true)
+    expect(isMalaysiaDay(new Date(2026, 8, 30, 12))).toBe(true)
+    expect(isMalaysiaDay(new Date(2026, 9, 6, 23, 59))).toBe(true)
+    expect(isMalaysiaDay(new Date(2026, 9, 7))).toBe(false)
+  })
+
+  test('the two-week extension is 2026 only', () => {
+    expect(isMalaysiaDay(new Date(2025, 8, 30))).toBe(false)
+    expect(isMalaysiaDay(new Date(2027, 9, 1))).toBe(false)
   })
 })
