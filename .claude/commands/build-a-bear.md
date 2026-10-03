@@ -1,26 +1,28 @@
-TRIGGER when: user mentions AdminBear, bear mascot, AdminBearIcon, AdminBearLogo, AdminBearSpeechBubble, idle animation, sidebar bear, bear eyes, zzz bubble, or asks to add, modify, or fix the bear in any way.
+TRIGGER when: user mentions the mascot, Little seed, the parrot, StickerParrot, Mascot.tsx, AdminBear, bear mascot, AdminBearIcon, AdminBearLogo, AdminBearSpeechBubble, idle animation, sidebar mascot or bear, mascot eyes, zzz bubble, or asks to add, modify, or fix the mascot in any way.
 
-# build-a-bear — Admin Bear Mascot
+# build-a-bear — Admin Mascot
+
+The app mascot is **Little seed**, the sticker parrot (`components/ui/StickerParrot.tsx`), rendered everywhere through `components/ui/Mascot.tsx`. The sticker teddy (`components/ui/StickerBear.tsx`) is archived; see `docs/design/mascot-archive/README.md`. The admin wrappers keep their historical "Bear" names.
 
 The AdminBear is a 3-file system. Each file has a single responsibility — never collapse them.
 
 ## File Map
 
-| File                        | Path                | Role                                                                                    |
-| --------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
-| `AdminBearIcon.tsx`         | `components/admin/` | Thin wrapper around `components/ui/StickerBear.tsx` (blue bow). No state, no animation. |
-| `AdminBearLogo.tsx`         | `components/admin/` | Idle doze easter egg. Wraps Icon + Bubble with 4-state machine.                         |
-| `AdminBearSpeechBubble.tsx` | `components/admin/` | Admin-only speech bubble. Renders zzz or wake message.                                  |
+| File                        | Path                | Role                                                                                             |
+| --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------ |
+| `AdminBearIcon.tsx`         | `components/admin/` | Thin wrapper around `Mascot` from `components/ui/Mascot.tsx` (blue bow). No state, no animation. |
+| `AdminBearLogo.tsx`         | `components/admin/` | Idle doze easter egg. Wraps Icon + Bubble with 4-state machine.                                  |
+| `AdminBearSpeechBubble.tsx` | `components/admin/` | Admin-only speech bubble. Renders zzz or wake message.                                           |
 
 ## AdminBearIcon
 
-- Renders `<StickerBear size eyeState bowColor={BEAR_BOW_BLUE} />` — the drawing lives in `components/ui/StickerBear.tsx` (viewBox `32×32`, round sticker teddy, same shapes as the `.cursor-bear` cursor in `index.css`). Change the face there, never here.
-- Blue bow (`#4D96FF`) because the admin bear always sits on a kinder-orange tile; every other bear uses the default orange bow.
-- Prop `eyeState?: 'open' | 'half' | 'closed'` (type `BearEyeState` from StickerBear):
+- Renders `<Mascot size eyeState gaze bowColor={MASCOT_BOW_BLUE} cap flag />` — the drawing lives in the active mascot, `components/ui/StickerParrot.tsx` (viewBox `32×32`, the sticker parrot on the bear's grid, same shapes as the `.cursor-mascot` cursor in `index.css`). Change the face there, never here, and never import `StickerParrot` or `StickerBear` directly.
+- Blue bow (`MASCOT_BOW_BLUE`, the school's `#1A50A8` for the parrot) because the admin mascot always sits on a kinder-orange tile; every other mascot uses the default orange bow. The parrot's knot turns orange on blue leaves; its nightcap is always head blue with orange sparkles (the approved drawing), whatever the bow colour.
+- Prop `eyeState?: 'open' | 'half' | 'closed'` (type `MascotEyeState` from Mascot):
   - `open` → round eyes, `r=1.4`
   - `half` → flattened ellipses `ry=0.8` (droopy)
   - `closed` → gentle downward arcs (relaxed lids)
-- StickerBear also has `mood="grin"` (happy arc eyes + tongue, the hover cursor) — not used by the admin bear.
+- The mascot also has `mood="grin"` (happy arc eyes, beak open with tongue, the hover cursor) — not used by the admin mascot.
 - Used in: AdminBearLogo (desktop sidebar), AdminLayout mobile top bar, LoginPage
 
 ## AdminBearLogo — 4-State Idle Machine

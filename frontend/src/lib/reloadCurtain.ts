@@ -21,15 +21,15 @@ export const CURTAIN_HANDOFF_KEY = 'kc-curtain'
 
 /**
  * How long the old build keeps the curtain down before it asks for the reload,
- * so the drop (620 ms) and the bear pop (300 ms delay + 520 ms) finish even when
+ * so the drop (620 ms) and the mascot pop (300 ms delay + 520 ms) finish even when
  * there is no waiting worker and the reload would otherwise be instant.
  */
 export const CURTAIN_ENTER_MIN_MS = 1100
 
-/** How long the exit curtain shows the grinning bear before it lifts. */
+/** How long the exit curtain shows the grinning mascot before it lifts. */
 export const CURTAIN_EXIT_HOLD_MS = 900
 
-/** How often the waiting bear blinks, and for how long the eyes stay shut. */
+/** How often the waiting mascot blinks, and for how long the eyes stay shut. */
 export const CURTAIN_BLINK_EVERY_MS = 3200
 export const CURTAIN_BLINK_FOR_MS = 160
 

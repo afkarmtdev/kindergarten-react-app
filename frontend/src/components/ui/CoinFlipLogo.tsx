@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface CoinFlipLogoProps {
-  /** Front face content (e.g. bear mascot icon) */
+  /** Front face content (e.g. the mascot icon) */
   children: React.ReactNode
   /** Tailwind classes for the front face container (size, bg, rounding) */
   frontClassName: string
@@ -90,7 +90,7 @@ export function CoinFlipLogo({
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* Front — bear mascot */}
+        {/* Front — mascot */}
         <div className={frontClassName} style={{ backfaceVisibility: 'hidden' }}>
           {children}
         </div>

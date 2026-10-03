@@ -37,7 +37,7 @@ export function UpdateBanner() {
               applyUpdate()
               return
             }
-            // Let the curtain drop and the bear land before the reload can fire;
+            // Let the curtain drop and the mascot land before the reload can fire;
             // with no waiting worker applyUpdate() reloads instantly.
             markCurtainHandoff(window.sessionStorage)
             setCurtain(true)

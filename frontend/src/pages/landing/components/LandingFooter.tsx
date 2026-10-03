@@ -1,5 +1,5 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
-import { StickerBear } from '@/components/ui/StickerBear'
+import { Mascot } from '@/components/ui/Mascot'
 import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 import { SecretArcade } from '@/components/landing/SecretArcade'
 import { useSchoolInfo } from '@/hooks/useSchoolInfo'
@@ -54,7 +54,7 @@ export function LandingFooter() {
                   className="w-10 h-10 rounded-lg object-contain bg-white p-0.5 flex-shrink-0"
                 />
               ) : (
-                <StickerBear
+                <Mascot
                   size={32}
                   cap={darkMode ? 'nightcap' : 'none'}
                   flag={malaysiaDay ? 'malaysia' : 'none'}
