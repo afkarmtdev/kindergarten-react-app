@@ -11,7 +11,7 @@ export function NotFoundPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
       <div className="text-center max-w-md">
-        {/* Bear with question marks */}
+        {/* Mascot with question marks */}
         <div className="relative inline-block mb-6">
           <div className="animate-bounce" style={{ animationDuration: '2s' }}>
             <AdminBearIcon size={80} eyeState="half" />

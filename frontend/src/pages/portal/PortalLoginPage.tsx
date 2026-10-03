@@ -67,7 +67,7 @@ export default function PortalLoginPage() {
       </button>
 
       <div className="w-full max-w-sm">
-        {/* Header with bear family */}
+        {/* Header with mascot family */}
         <div
           className={`text-center mb-8 transition-all duration-500 ${mounted ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         >

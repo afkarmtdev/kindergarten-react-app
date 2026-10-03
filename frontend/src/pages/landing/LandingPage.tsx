@@ -33,7 +33,7 @@ import { CORK_STYLE, CORK_STYLE_DARK } from '@/pages/art-wall/constants'
 import { useLandingContent } from '@/hooks/useLandingContent'
 import { useFontsReady } from '@/hooks/useFontsReady'
 import { useSettledOrTimeout } from '@/hooks/useSettledOrTimeout'
-import { StickerBear } from '@/components/ui/StickerBear'
+import { Mascot } from '@/components/ui/Mascot'
 import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 import { Wave } from './components/Wave'
 import { ArtworkCard } from '@/pages/art-wall/components/ArtworkCard'
@@ -256,7 +256,7 @@ export function LandingPage() {
   }, [lightboxIndex, galleryItems.length])
 
   return (
-    <div className="cursor-bear min-h-screen bg-white dark:bg-gray-950 font-display lp-clip-x transition-colors duration-200">
+    <div className="cursor-mascot min-h-screen bg-white dark:bg-gray-950 font-display lp-clip-x transition-colors duration-200">
       {/* Inject keyframe CSS */}
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES }} />
 
@@ -286,7 +286,7 @@ export function LandingPage() {
                 </span>
               }
             >
-              <StickerBear
+              <Mascot
                 size={40}
                 cap={darkMode ? 'nightcap' : 'none'}
                 flag={malaysiaDay ? 'malaysia' : 'none'}

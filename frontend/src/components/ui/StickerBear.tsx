@@ -1,3 +1,9 @@
+// ARCHIVED (October 2026): the app mascot is now the sticker parrot "Little
+// seed" (StickerParrot.tsx). This file is kept unchanged so the bear can come
+// back: swap the export in Mascot.tsx for the bear one quoted in its comment
+// (same props, so no consumer changes), then follow
+// docs/design/mascot-archive/README.md for the favicon, PWA icons and cursor.
+//
 // Sticker teddy — the KinderCare mascot. Same drawing as the landing-page bear
 // cursor in index.css (.cursor-bear): round fur-brown head, peach muzzle, pink
 // cheeks, a bow under the chin and a white die-cut edge so it reads as a sticker

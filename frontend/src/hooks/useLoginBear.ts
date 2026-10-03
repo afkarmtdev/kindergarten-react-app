@@ -1,10 +1,10 @@
-// Drives the bear on the admin and portal login pages. Spread `watchProps`
+// Drives the mascot on the admin and portal login pages. Spread `watchProps`
 // onto the identifier input and `hideProps` onto the secret input; pass the
 // current identifier text and the error string. Returns the eye state and
-// gaze to hand to StickerBear.
+// gaze to hand to Mascot.
 //
 //   const bear = useLoginBear({ typed: email, error })
-//   <StickerBear eyeState={bear.eyeState} gaze={bear.gaze} />
+//   <Mascot eyeState={bear.eyeState} gaze={bear.gaze} />
 //   <input {...bear.watchProps} />   // email / access code
 //   <input {...bear.hideProps} />    // password / PIN
 import { useEffect, useState } from 'react'

@@ -1,7 +1,7 @@
 // True for Malaysia Day week (16 to 22 September inclusive, local time), and in
 // 2026 for two more weeks after it, through 6 October.
 // Re-checked every minute so a tab left open overnight picks the flag up and
-// puts it down on its own. Used to hand the sticker bear its Jalur Gemilang for the week.
+// puts it down on its own. Used to hand the mascot its Jalur Gemilang for the week.
 //
 // Preview on any other day from the browser console, then reload:
 //   localStorage.setItem('kc-preview-malaysia-day', '1')

@@ -116,6 +116,10 @@ kindergarten-app/
 │       └── types/
 │           └── index.ts       # Student, AttendanceRecord, ClassRoom, AdminUser, GalleryItem, Announcement
 │
+├── docs/
+│   └── design/
+│       └── mascot-archive/    # Archived sticker bear: bear/ holds its favicon.svg, favicon.ico and PWA PNGs as shipped; README.md lists what is archived where and the steps to bring the bear back
+│
 ├── frontend/
 │   └── src/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
@@ -240,14 +244,16 @@ kindergarten-app/
 │       │   └── settingsStore.ts      # darkMode (bool), lang ('en'|'ms'), persisted to localStorage
 │       ├── components/
 │       │   ├── ui/
-│       │   │   ├── StickerBear.tsx    # THE mascot — sticker teddy SVG (same drawing as the .cursor-bear cursor); props size, eyeState, mood smile|grin, bowColor, tilt, outline, lashes, gaze (pupil offset, login pages), cap nightcap (starry sleeping cap, admin bear in dark mode), flag malaysia (raised paw waving the Jalur Gemilang, every bear 16 to 22 Sep via useMalaysiaDay)
+│       │   │   ├── Mascot.tsx         # THE mascot switch point — re-exports the active drawing as Mascot, MASCOT_BOW_DEFAULT|BLUE|PINK and MascotEyeState|Mood|Gaze|Cap|Flag; every consumer imports from here, never from StickerParrot/StickerBear; one edit switches mascots
+│       │   │   ├── StickerParrot.tsx  # ACTIVE mascot — "Little seed" sticker parrot SVG (same drawing as the .cursor-mascot cursor): blue head, white two-lobed face mask, orange hooked beak, sprout on the crown (hidden under the nightcap), bow of two leaves; same props as the bear: size, eyeState, mood smile|grin (beak opens), bowColor (knot contrasts), tilt, outline, lashes, gaze, cap nightcap, flag malaysia (darker wing with a round tip gripping the pole)
+│       │   │   ├── StickerBear.tsx    # ARCHIVED mascot — sticker teddy SVG (same drawing as the archived .cursor-bear cursor), unchanged so it can come back via Mascot.tsx; see docs/design/mascot-archive/README.md
 │       │   │   ├── Skeletons.tsx      # StudentCardSkeleton, ClassCardSkeleton, AnnouncementCardSkeleton, TableRowSkeleton, StatCardSkeleton, CuteLoader (rotating fun messages), EmptyState
 │       │   │   ├── Pagination.tsx     # Smart pagination with ellipsis, dark mode aware
 │       │   │   ├── SearchBar.tsx      # Debounced 350ms, dark mode aware
 │       │   │   ├── ErrorBoundary.tsx  # Class component; wraps each admin page in App.tsx; shows "Try again" card
 │       │   │   ├── ImageCropDialog.tsx # Crop step (react-easy-crop) shown between picking a photo and uploading; shape = square|round|landscape|banner
 │       │   │   ├── UpdateBanner.tsx   # New-build strip (useVersionCheck); on the landing page and in the admin app the Reload tap also drops ReloadCurtain and leaves the sessionStorage hand-off flag
-│       │   │   ├── ReloadCurtain.tsx  # Sky-wash curtain with flipped scallop hem + blinking StickerBear; phase enter (old build, holds while the SW installs) | exit (new build, grin then lift)
+│       │   │   ├── ReloadCurtain.tsx  # Sky-wash curtain with flipped scallop hem + blinking Mascot; phase enter (old build, holds while the SW installs) | exit (new build, grin then lift)
 │       │   │   └── ReloadCurtainHandoff.tsx # Mounted once in App.tsx; consumes the hand-off flag on first render and plays the exit curtain over the fresh build's first paint
 │       │   ├── admin/
 │       │   │   ├── StudentModal.tsx       # Add/Edit student form — full validation, dark mode, i18n
@@ -265,7 +271,7 @@ kindergarten-app/
 │       │   │   ├── MoodPicker.tsx         # 4-button mood selector (happy/okay/tired/upset) with lucide icons
 │       │   │   ├── PortfolioEntryModal.tsx      # Add/Edit portfolio entry — domain, observation, photo, term, date
 │       │   │   ├── GeneratePortalAccessModal.tsx # Generate access code + set PIN for parent portal; copy-to-clipboard
-│       │   │   ├── AdminBearIcon.tsx      # Thin wrapper: StickerBear with a blue bow (sits on the orange tile); eyeState?: 'open'|'half'|'closed'
+│       │   │   ├── AdminBearIcon.tsx      # Thin wrapper: Mascot with a blue bow (sits on the orange tile); eyeState?: 'open'|'half'|'closed'
 │       │   │   ├── AdminBearSpeechBubble.tsx  # Admin-only bubble; variant: 'sleeping'|'waking'|'hidden'; sleeping animates z/z/Z
 │       │   │   └── AdminBearLogo.tsx      # Idle doze easter egg — wraps AdminBearIcon + AdminBearSpeechBubble with 4-state machine
 │       │   ├── landing/
@@ -274,8 +280,8 @@ kindergarten-app/
 │       │   │       ├── Doodle{Star,Cloud,Sun,Flower,Spiral,Heart,HeartSparkle,Sparkle,Moon,Apple,PaperPlane,MusicNote,Puzzle,Circle,Triangle}.tsx  # Shapes, ~100–240px on the landing page; always outlined, never filled
 │       │   │       └── Doodle{Dino,Monkey,Elephant,Whale,Giraffe,Bunny,Cat,Owl,Turtle,Fish,Bee,Penguin,Fox,Ladybird,Duck,Train}.tsx  # Animals + toy train, ~300–480px, shrunk below md; side-view ones face left — pass `flip` to FloatingDoodle when placed at a left edge
 │       │   ├── portal/
-│       │   │   ├── PortalBearFamily.tsx      # Portal login hero — papa (blue bow) + grinning cub + mama (pink bow, lashes), three StickerBears
-│       │   │   ├── PortalBearCub.tsx         # Small upright StickerBear for portal header menu + footer
+│       │   │   ├── PortalBearFamily.tsx      # Portal login hero — papa (blue bow) + grinning little one + mama (pink bow, lashes), three Mascots
+│       │   │   ├── PortalBearCub.tsx         # Small upright Mascot for portal header menu + footer
 │       │   │   └── PortalProtectedRoute.tsx  # Redirects to /portal/login if no parent token
 │       │   └── layout/
 │       │       ├── AdminLayout.tsx     # Sidebar nav + mobile hamburger drawer + settings panel + Outlet; uses AdminBearLogo (desktop) + AdminBearIcon (mobile)
@@ -291,7 +297,7 @@ kindergarten-app/
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
 │       │   ├── useInViewport.ts  # Shared IntersectionObserver → true while an element is near the viewport; gates decorative infinite animations
 │       │   ├── useMediaQuery.ts  # useSyncExternalStore over matchMedia → true while a CSS media query matches
-│       │   ├── useMalaysiaDay.ts # isMalaysiaDay(now) + useMalaysiaDay() — true 16 to 22 Sep local time (Malaysia Day week), plus a one-off 2026 extension through 6 Oct, re-checked each minute; localStorage kc-preview-malaysia-day=1 forces it; hands every StickerBear its flag
+│       │   ├── useMalaysiaDay.ts # isMalaysiaDay(now) + useMalaysiaDay() — true 16 to 22 Sep local time (Malaysia Day week), plus a one-off 2026 extension through 6 Oct, re-checked each minute; localStorage kc-preview-malaysia-day=1 forces it; hands every Mascot its flag
 │       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
 │       │   ├── api.ts             # Axios instance + all admin APIs; portalApi (separate instance with portal_token interceptor) + portalAuthApi + portalDataApi
@@ -829,13 +835,13 @@ Printable finance documents — invoices, overdue notices, enrollment letters, c
 - [ ] Per-school landing page — current LandingPage is already data-driven; add `hero_title`, `hero_subtitle`, `cta_text`, `primary_color` to `school_info`/`school_branding`; scope public API calls by school slug. Phase 2: curated theme variants (`LandingTheme = 'default' | 'minimal' | 'modern'`) — each a different section layout using the same data.
 - [ ] Plan-based feature gating — `plan` (`'free'|'basic'|'pro'`) + `plan_expires_at` columns on `schools` table. Backend: `PLAN_LIMITS` config (free: 20 students / 1 class / no exports; basic: unlimited / all core; pro: + custom landing + custom domain). Enforce at creation routes (count + reject), export routes (403), auth middleware (expiry check). Frontend: disabled buttons with upgrade tooltip, usage counter on dashboard ("18/20 students"), expiry banner at 7 days. Payment collection manual at first (bank transfer / ToyyibPay link, admin updates `plan_expires_at`); automate with ToyyibPay/Billplz webhooks at ~30+ schools.
 
-## Mascot (Sticker Teddy)
+## Mascot (Little Seed)
 
-`components/ui/StickerBear.tsx` is the one drawing of the mascot: the same round sticker teddy used as the landing-page cursor (`.cursor-bear` in `index.css`). Every bear in the app renders it — admin sidebar/login/404 (`AdminBearIcon`, blue bow), landing navbar (front face of the flip logo; school logo is the back) + footer, portal family + cub, and `public/favicon.svg` (PWA PNGs are regenerated from it with `bunx pwa-assets-generator --preset minimal-2023 public/favicon.svg` from `frontend/`). Never draw a second bear; add a prop to `StickerBear` instead. The full-body pixel bear in `components/landing/bear/BaseBearMascot.tsx` is unused and kept only for a future full-body mascot.
+The mascot is **Little seed**, the sticker parrot Tadika Arif Ilmu chose in October 2026: `components/ui/StickerParrot.tsx`, the same drawing as the landing-page cursor (`.cursor-mascot` in `index.css`). Everything renders it through `components/ui/Mascot.tsx`, which re-exports the active drawing under neutral names (`Mascot`, `MASCOT_BOW_DEFAULT|BLUE|PINK`, `MascotEyeState|Mood|Gaze|Cap|Flag`); never import `StickerParrot` or `StickerBear` directly. It appears in the admin sidebar/login/404 (`AdminBearIcon`, blue bow), landing navbar (front face of the flip logo; school logo is the back) + footer, portal family + cub, the reload curtain, and `public/favicon.svg` (PWA PNGs and `favicon.ico` are regenerated from it with `bunx pwa-assets-generator --preset minimal-2023 public/favicon.svg` from `frontend/`). Never draw a second mascot; add a prop to the active mascot instead (switching back to the bear then needs the same prop on `StickerBear`, since `Mascot.tsx` relies on both taking the same props). The sticker teddy is archived, not deleted: `components/ui/StickerBear.tsx`, the `.cursor-bear` rules and the bear's icons in `docs/design/mascot-archive/bear/`; bringing it back is one edit in `Mascot.tsx` plus the icon and cursor steps in `docs/design/mascot-archive/README.md`. Older names (`AdminBearIcon`, `PortalBearFamily`, `useLoginBear`, the `bear-cap-settle` and `bear-flag-wave` classes) still say "bear" and work with either mascot. The full-body pixel bear in `components/landing/bear/BaseBearMascot.tsx` is unused and kept only for a future full-body mascot.
 
 ## Admin Bear (Sidebar Easter Egg)
 
-Full implementation details — eye states, idle machine timing, critical timer pattern, bubble positioning, mobile vs desktop rules — live in the `/build-a-bear` skill (`.claude/commands/build-a-bear.md`). Use `/build-a-bear` whenever modifying the bear mascot.
+Full implementation details — eye states, idle machine timing, critical timer pattern, bubble positioning, mobile vs desktop rules — live in the `/build-a-bear` skill (`.claude/commands/build-a-bear.md`). Use `/build-a-bear` whenever modifying the mascot or the admin mascot.
 
 ## Known Conventions
 

@@ -1,12 +1,12 @@
-// Pure logic for the login-page bear: what the eyes do given what the user is
+// Pure logic for the login-page mascot: what the eyes do given what the user is
 // doing in the form. Kept out of the hook so it can be tested without React.
 //
 //   watching  the identifier field (email / access code) has focus:
 //             pupils slide left-to-right as the text grows, looking down at it
 //   hiding    the secret field (password / PIN) has focus: eyes go half-lidded,
-//             the bear politely not looking
+//             the mascot politely not looking
 //   oops      a login just failed: eyes squeeze shut for a moment
-import type { BearEyeState, BearGaze } from '@/components/ui/StickerBear'
+import type { MascotEyeState, MascotGaze } from '@/components/ui/Mascot'
 
 export interface LoginBearInput {
   watching: boolean
@@ -16,14 +16,14 @@ export interface LoginBearInput {
 }
 
 export interface LoginBearLook {
-  eyeState: BearEyeState
-  gaze: BearGaze
+  eyeState: MascotEyeState
+  gaze: MascotGaze
 }
 
 // Characters that span the pupils from far left to far right. Matches roughly
 // how many characters fit in the login inputs before they scroll.
 export const GAZE_SPAN_CHARS = 22
-// Pupils look slightly down while the bear reads the field.
+// Pupils look slightly down while the mascot reads the field.
 const READING_Y = 0.35
 // How long the eyes stay shut after a failed attempt.
 export const OOPS_MS = 1600

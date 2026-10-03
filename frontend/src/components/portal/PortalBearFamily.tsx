@@ -1,16 +1,16 @@
-// Bear family for the portal login — papa (blue bow) and mama (pink bow,
-// eyelashes) leaning in over a smaller grinning cub. Three StickerBears in a
+// Mascot family for the portal login — papa (blue bow) and mama (pink bow,
+// eyelashes) leaning in over a smaller grinning little one. Three Mascots in a
 // row; `size` is the total width. `eyeState` and `gaze` apply to the parents
-// only; the cub keeps grinning (arc eyes have no pupils to move). On Malaysia
-// Day the cub is the one waving the flag; the cub sits above the parents so
-// the flag waves in front of mama's ear instead of vanishing behind it.
+// only; the little one keeps grinning (arc eyes have no pupils to move). On
+// Malaysia Day the little one is the one waving the flag; it sits above the
+// parents so the flag waves in front of mama's head instead of vanishing behind it.
 import {
-  StickerBear,
-  BEAR_BOW_BLUE,
-  BEAR_BOW_PINK,
-  type BearEyeState,
-  type BearGaze,
-} from '@/components/ui/StickerBear'
+  Mascot,
+  MASCOT_BOW_BLUE,
+  MASCOT_BOW_PINK,
+  type MascotEyeState,
+  type MascotGaze,
+} from '@/components/ui/Mascot'
 import { useMalaysiaDay } from '@/hooks/useMalaysiaDay'
 
 export function PortalBearFamily({
@@ -19,8 +19,8 @@ export function PortalBearFamily({
   gaze,
 }: {
   size?: number
-  eyeState?: BearEyeState
-  gaze?: BearGaze
+  eyeState?: MascotEyeState
+  gaze?: MascotGaze
 }) {
   const malaysiaDay = useMalaysiaDay()
   const parent = size * 0.42
@@ -28,21 +28,21 @@ export function PortalBearFamily({
   return (
     <div className="flex items-end justify-center" style={{ width: size }} aria-hidden="true">
       <div style={{ marginRight: -size * 0.04 }}>
-        <StickerBear
+        <Mascot
           size={parent}
-          bowColor={BEAR_BOW_BLUE}
+          bowColor={MASCOT_BOW_BLUE}
           tilt={-10}
           eyeState={eyeState}
           gaze={gaze}
         />
       </div>
       <div className="relative z-10" style={{ marginBottom: -size * 0.02 }}>
-        <StickerBear size={cub} mood="grin" tilt={0} flag={malaysiaDay ? 'malaysia' : 'none'} />
+        <Mascot size={cub} mood="grin" tilt={0} flag={malaysiaDay ? 'malaysia' : 'none'} />
       </div>
       <div style={{ marginLeft: -size * 0.04 }}>
-        <StickerBear
+        <Mascot
           size={parent}
-          bowColor={BEAR_BOW_PINK}
+          bowColor={MASCOT_BOW_PINK}
           tilt={10}
           lashes
           eyeState={eyeState}

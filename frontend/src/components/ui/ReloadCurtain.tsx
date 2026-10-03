@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { StickerBear, type BearEyeState } from './StickerBear'
+import { Mascot, type MascotEyeState } from './Mascot'
 import { Wave } from '@/pages/landing/components/Wave'
 import { useT } from '@/hooks/useT'
 import {
@@ -13,11 +13,11 @@ import {
  * update banner. Two halves, played by two different builds of the app:
  *
  *   enter  Old build, right after the Reload tap. The curtain drops from the top
- *          with a scalloped hem, the bear pops in and blinks while the service
+ *          with a scalloped hem, the mascot pops in and blinks while the service
  *          worker installs. It holds for as long as that takes; the page reload
  *          unmounts it.
  *   exit   New build, first render (see ReloadCurtainHandoff). The curtain is
- *          already down, the bear grins, then the whole thing lifts away and
+ *          already down, the mascot grins, then the whole thing lifts away and
  *          calls onDone.
  *
  * The hem is the landing page scallop Wave flipped upside down so it hangs off
@@ -26,10 +26,10 @@ import {
  */
 export function ReloadCurtain({ phase, onDone }: { phase: 'enter' | 'exit'; onDone?: () => void }) {
   const t = useT()
-  const [eyeState, setEyeState] = useState<BearEyeState>('open')
+  const [eyeState, setEyeState] = useState<MascotEyeState>('open')
   const [lifting, setLifting] = useState(false)
 
-  // Waiting bear blinks every few seconds so the hold never reads as frozen.
+  // Waiting mascot blinks every few seconds so the hold never reads as frozen.
   useEffect(() => {
     if (phase !== 'enter') return
     let closeTimer: ReturnType<typeof setTimeout> | undefined
@@ -69,7 +69,7 @@ export function ReloadCurtain({ phase, onDone }: { phase: 'enter' | 'exit'; onDo
     >
       <div className="flex flex-1 flex-col items-center justify-center gap-6 bg-wash-sky px-6 text-center">
         <div className={phase === 'enter' ? 'reload-curtain-bear' : 'reload-curtain-bear-grin'}>
-          <StickerBear
+          <Mascot
             size={128}
             eyeState={eyeState}
             mood={phase === 'exit' ? 'grin' : 'smile'}
