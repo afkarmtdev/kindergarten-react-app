@@ -25,6 +25,7 @@ export const landingHeroSchema = z.object({
   headline_highlight: bilingual.default({ en: '', ms: '' }),
   headline_end: bilingual.default({ en: '', ms: '' }),
   subtitle: bilingual.default({ en: '', ms: '' }),
+  video_url: optionalUrl,
 })
 
 export const landingAboutSchema = z.object({
@@ -92,6 +93,7 @@ export function sanitiseLandingPatch(patch: LandingContentPatch): LandingContent
       headline_highlight: cleanBilingual(patch.hero.headline_highlight),
       headline_end: cleanBilingual(patch.hero.headline_end),
       subtitle: cleanBilingual(patch.hero.subtitle),
+      video_url: patch.hero.video_url,
     }
   }
   if (patch.about) {

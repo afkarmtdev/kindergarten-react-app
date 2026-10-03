@@ -13,7 +13,7 @@ export function PortalAccessCard({
   const t = useT()
   const [copied, setCopied] = useState(false)
   const hasCode = !!linkedParent?.access_code
-  const hasPin = !!linkedParent?.portal_pin_hash
+  const hasPin = !!linkedParent?.has_pin
   const isActive = hasCode && hasPin
 
   function copyCode() {

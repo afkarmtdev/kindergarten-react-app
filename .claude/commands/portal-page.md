@@ -54,7 +54,10 @@ portal.get('/<resource>', async (c) => {
     .order('created_at', { ascending: false })
     .range(from, to)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch <resource>')
+    return c.json({ error: 'Failed to fetch <resource>' }, 500) // never error.message
+  }
 
   return c.json({
     data: data ?? [],

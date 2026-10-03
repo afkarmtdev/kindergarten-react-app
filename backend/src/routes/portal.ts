@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { createHash } from 'crypto'
 import { supabase } from '../db/supabase'
 import { MAX_DEVICE_SESSIONS } from '../lib/constants'
+import { hasLiveStudent } from '../lib/parentLinks'
 
 // All routes here are protected by parentMiddleware in index.ts
 // c.get('parentId') and c.get('parentChildIds') are always set
@@ -39,12 +40,13 @@ app.get('/me', async (c) => {
   const { data: links } = await supabase
     .from('parent_students')
     .select(
-      'relationship, students(id, full_name, date_of_birth, gender, photo_url, classrooms(name))'
+      'relationship, students(id, full_name, date_of_birth, gender, photo_url, deleted_at, classrooms(name))'
     )
     .eq('parent_id', parentId)
     .is('deleted_at', null)
 
-  const children = (links ?? []).map((link: Record<string, unknown>) => {
+  // A soft-deleted student keeps its link row; leave it out of the children list
+  const children = (links ?? []).filter(hasLiveStudent).map((link: Record<string, unknown>) => {
     const student = link.students as {
       id: string
       full_name: string

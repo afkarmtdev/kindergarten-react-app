@@ -6,6 +6,7 @@ import { schoolInfoApi } from '@/lib/api'
 import { useT } from '@/hooks/useT'
 import { supabase } from '@/lib/supabaseClient'
 import { compressImage } from '@/lib/compressImage'
+import { SCHOOL_MEDIA_BUCKET } from '@/lib/uploadSchoolMedia'
 import { ImageCropDialog } from '@/components/ui/ImageCropDialog'
 import { parseFieldErrors } from '@/lib/parseFieldErrors'
 import type { DayKey, OperatingHours } from '@/types'
@@ -133,12 +134,12 @@ export function SchoolInfoSection() {
     setUploading(true)
     try {
       const compressed = await compressImage(file, 400, 0.9)
-      const path = `logo-${Date.now()}.jpg`
+      const path = `logo/logo-${Date.now()}.jpg`
       const { error } = await supabase.storage
-        .from('school-logo')
+        .from(SCHOOL_MEDIA_BUCKET)
         .upload(path, compressed, { upsert: true })
       if (error) throw error
-      const { data: urlData } = supabase.storage.from('school-logo').getPublicUrl(path)
+      const { data: urlData } = supabase.storage.from(SCHOOL_MEDIA_BUCKET).getPublicUrl(path)
       set('logo_url', urlData.publicUrl)
     } catch {
       toast.error('Logo upload failed. Please try again.')

@@ -56,6 +56,7 @@ import { StarField } from './components/StarField'
 import { AboutSection } from './components/AboutSection'
 import { TeamSection } from './components/TeamSection'
 import { TestimonialCarousel } from './components/TestimonialCarousel'
+import { HeroMedia } from './components/HeroMedia'
 import {
   KEYFRAMES,
   NOTICE_CATEGORY_COLORS,
@@ -638,32 +639,11 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Right column — gallery photo (if available) or bear mascot */}
-            {galleryItems.length > 0 ? (
-              <div className="hidden lg:block lp-enter-2 relative">
-                <svg width="0" height="0" className="absolute">
-                  <defs>
-                    <clipPath id="hero-blob" clipPathUnits="objectBoundingBox">
-                      <path d="M0.5,0.02 C0.73,0.02 0.92,0.1 0.97,0.3 C1.02,0.5 0.95,0.7 0.85,0.85 C0.75,0.95 0.6,0.99 0.45,0.98 C0.3,0.97 0.12,0.9 0.05,0.73 C-0.02,0.55 0.01,0.35 0.1,0.2 C0.2,0.08 0.35,0.02 0.5,0.02" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                <div
-                  className="w-full aspect-square max-w-lg mx-auto"
-                  style={{ clipPath: 'url(#hero-blob)' }}
-                >
-                  <img
-                    src={galleryItems[0].photo_url}
-                    alt="School life"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div
-                  className="absolute inset-0 max-w-lg mx-auto aspect-square rounded-full border-4 border-dashed border-kinder-yellow/30 -z-10 scale-110"
-                  aria-hidden="true"
-                />
-              </div>
-            ) : null}
+            {/* Right column — school video, else first gallery photo */}
+            <HeroMedia
+              videoUrl={content.hero.videoUrl}
+              photoUrl={galleryItems[0]?.photo_url ?? null}
+            />
           </div>
         </div>
       </section>

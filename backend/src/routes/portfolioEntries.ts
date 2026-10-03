@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const portfolioEntries = new Hono()
 
@@ -40,7 +41,10 @@ portfolioEntries.get('/', zValidator('query', querySchema), async (c) => {
   if (term) query = query.eq('term', term)
 
   const { data, error, count } = await query
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch portfolio entries')
+    return c.json({ error: 'Failed to fetch portfolio entries' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -69,7 +73,10 @@ portfolioEntries.get('/:studentId/report/:term', async (c) => {
       .single(),
   ])
 
-  if (entriesResult.error) return c.json({ error: entriesResult.error.message }, 500)
+  if (entriesResult.error) {
+    logger.error({ error: entriesResult.error.message }, 'Failed to fetch portfolio report')
+    return c.json({ error: 'Failed to fetch portfolio report' }, 500)
+  }
 
   return c.json({
     entries: entriesResult.data ?? [],
@@ -89,7 +96,10 @@ portfolioEntries.post('/', zValidator('json', entrySchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create portfolio entry')
+    return c.json({ error: 'Failed to create portfolio entry' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -105,7 +115,10 @@ portfolioEntries.put('/:id', zValidator('json', entrySchema.partial()), async (c
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update portfolio entry')
+    return c.json({ error: 'Failed to update portfolio entry' }, 500)
+  }
   return c.json(data)
 })
 
@@ -117,7 +130,10 @@ portfolioEntries.delete('/:id', async (c) => {
     .update(auditDelete(c))
     .eq('id', id)
     .is('deleted_at', null)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete portfolio entry')
+    return c.json({ error: 'Failed to delete portfolio entry' }, 500)
+  }
   return c.json({ message: 'Entry deleted' })
 })
 

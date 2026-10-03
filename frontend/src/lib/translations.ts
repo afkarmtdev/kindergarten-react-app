@@ -140,6 +140,9 @@ export const translations = {
     uploadPhoto: 'Upload photo',
     changePhoto: 'Change photo',
     removePhoto: 'Remove photo',
+    uploadVideo: 'Upload video',
+    replaceVideo: 'Replace video',
+    removeVideo: 'Remove video',
     uploading: 'Uploading...',
     cropPhoto: 'Adjust photo',
     cropHint: 'Drag to reposition, scroll or pinch to zoom.',
@@ -173,6 +176,8 @@ export const translations = {
     heroPart2: 'ideas',
     heroSubtitle:
       'A warm, loving kindergarten where curiosity is celebrated, friendships are formed, and every child discovers the joy of learning.',
+    heroVideoSoundOn: 'Turn video sound on',
+    heroVideoSoundOff: 'Mute video',
     bookTour: 'Book a Tour',
     ourPrograms: 'Our Programs',
     stripSafe: 'A safe',
@@ -402,6 +407,9 @@ export const translations = {
     settingsHeroHeadlineEnd: 'Headline (end)',
     settingsHeroSubtitle: 'Subtitle',
     settingsHeroPreview: 'Preview',
+    settingsHeroVideo: 'Hero video (optional)',
+    settingsHeroVideoHint:
+      'Replaces the round photo beside the headline. A short MP4 of 10 to 30 seconds, up to {mb} MB. It plays silently on a loop and visitors can turn the sound on. Shown on computers and landscape tablets; phones skip it to save data.',
     settingsStoryDesc:
       'Tell parents who you are: your story, how you teach, and a word from the principal.',
     settingsFoundedYear: 'Founded year',
@@ -1185,6 +1193,9 @@ export const translations = {
     uploadPhoto: 'Muat naik foto',
     changePhoto: 'Tukar foto',
     removePhoto: 'Buang foto',
+    uploadVideo: 'Muat naik video',
+    replaceVideo: 'Tukar video',
+    removeVideo: 'Buang video',
     uploading: 'Memuat naik...',
     cropPhoto: 'Laraskan foto',
     cropHint: 'Seret untuk ubah kedudukan, skrol atau cubit untuk zum.',
@@ -1218,6 +1229,8 @@ export const translations = {
     heroPart2: 'dengan idea',
     heroSubtitle:
       'Tadika yang mesra dan penuh kasih sayang di mana rasa ingin tahu dirai, persahabatan terbentuk, dan setiap kanak-kanak menemui kegembiraan pembelajaran.',
+    heroVideoSoundOn: 'Hidupkan bunyi video',
+    heroVideoSoundOff: 'Senyapkan video',
     bookTour: 'Tempah Lawatan',
     ourPrograms: 'Program Kami',
     stripSafe: 'Selamat',
@@ -1448,6 +1461,9 @@ export const translations = {
     settingsHeroHeadlineEnd: 'Tajuk (penghujung)',
     settingsHeroSubtitle: 'Subtajuk',
     settingsHeroPreview: 'Pratonton',
+    settingsHeroVideo: 'Video utama (pilihan)',
+    settingsHeroVideoHint:
+      'Menggantikan foto bulat di sebelah tajuk. MP4 pendek 10 hingga 30 saat, maksimum {mb} MB. Dimainkan tanpa bunyi secara berulang dan pelawat boleh menghidupkan bunyi. Dipaparkan pada komputer dan tablet mendatar; telefon tidak memuatkannya untuk menjimatkan data.',
     settingsStoryDesc:
       'Ceritakan siapa anda kepada ibu bapa: kisah anda, cara anda mengajar, dan pesanan pengetua.',
     settingsFoundedYear: 'Tahun ditubuhkan',

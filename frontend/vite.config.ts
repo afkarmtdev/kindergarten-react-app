@@ -85,6 +85,12 @@ export default defineConfig({
             },
           },
           {
+            // Hero videos stream with Range requests; a CacheFirst copy of the full file breaks
+            // seeking and Safari playback, and would park ~20 MB in the image cache.
+            urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*\.(mp4|webm)(\?.*)?$/i,
+            handler: 'NetworkOnly',
+          },
+          {
             urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*/i,
             handler: 'CacheFirst',
             options: {

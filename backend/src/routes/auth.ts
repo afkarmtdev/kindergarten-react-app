@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
+import { logger } from '../lib/logger'
 
 const auth = new Hono()
 
@@ -51,7 +52,10 @@ auth.post('/login', zValidator('json', loginSchema), async (c) => {
     password,
   })
 
-  if (error) return c.json({ error: error.message }, 401)
+  if (error) {
+    logger.warn({ error: error.message }, 'Admin login failed')
+    return c.json({ error: 'Invalid email or password' }, 401)
+  }
 
   return c.json({
     user: data.user,

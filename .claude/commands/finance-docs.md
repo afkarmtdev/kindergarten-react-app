@@ -323,11 +323,16 @@ fees.get(
     const { param } = c.req.valid('query')
     const { data, error } = await supabase
       .from('fee_records')
-      .select('..., students(full_name, class_name, parent_name)')
+      .select(
+        '..., students(full_name, classrooms(name, academic_year), parent_students(deleted_at, parents(full_name, deleted_at)))'
+      )
       .is('deleted_at', null) // always exclude soft-deleted records
     // filters...
-    if (error) return c.json({ error: error.message }, 500)
-    // aggregate in JS
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch my report')
+      return c.json({ error: 'Failed to fetch my report' }, 500) // never error.message
+    }
+    // flattenStudentClass(row.students) → class_name + parent_name; aggregate in JS
     return c.json({ result })
   }
 )

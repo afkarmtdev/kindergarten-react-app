@@ -242,6 +242,8 @@ export interface LandingHero {
   headline_highlight: BilingualText
   headline_end: BilingualText
   subtitle: BilingualText
+  /** Short muted loop shown in the hero blob instead of the first gallery photo. */
+  video_url: string | null
 }
 
 export interface LandingAbout {
@@ -410,7 +412,7 @@ export interface Parent extends AuditFields {
   email: string | null
   phone: string
   access_code: string | null
-  portal_pin_hash?: string | null
+  has_pin?: boolean // only from GET /parents/by-student/:id; the PIN hash never leaves the server
   created_at: string
   // Populated via join in list/detail responses
   children?: ParentChild[]

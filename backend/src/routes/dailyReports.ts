@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditUpsert, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const dailyReports = new Hono()
 
@@ -41,7 +42,10 @@ dailyReports.get('/', zValidator('query', querySchema), async (c) => {
   if (class_id) studentQuery = studentQuery.eq('class_id', class_id)
 
   const { data: students, error: studentError, count } = await studentQuery
-  if (studentError) return c.json({ error: studentError.message }, 500)
+  if (studentError) {
+    logger.error({ error: studentError.message }, 'Failed to fetch students for daily reports')
+    return c.json({ error: 'Failed to fetch daily reports' }, 500)
+  }
 
   if (!students || students.length === 0) {
     return c.json({
@@ -60,7 +64,10 @@ dailyReports.get('/', zValidator('query', querySchema), async (c) => {
     .eq('report_date', date)
     .in('student_id', studentIds)
 
-  if (reportError) return c.json({ error: reportError.message }, 500)
+  if (reportError) {
+    logger.error({ error: reportError.message }, 'Failed to fetch daily reports')
+    return c.json({ error: 'Failed to fetch daily reports' }, 500)
+  }
 
   const reportMap = new Map((reports ?? []).map((r) => [r.student_id, r]))
 
@@ -101,7 +108,10 @@ dailyReports.put('/:studentId/:date', zValidator('json', reportSchema), async (c
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to save daily report')
+    return c.json({ error: 'Failed to save daily report' }, 500)
+  }
   return c.json(data)
 })
 
@@ -113,7 +123,10 @@ dailyReports.delete('/:id', async (c) => {
     .update(auditDelete(c))
     .eq('id', id)
     .is('deleted_at', null)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete daily report')
+    return c.json({ error: 'Failed to delete daily report' }, 500)
+  }
   return c.json({ message: 'Report deleted' })
 })
 

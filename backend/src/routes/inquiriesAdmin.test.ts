@@ -187,6 +187,6 @@ describe('PUT /:id/status — update inquiry status', () => {
 
     expect(res.status).toBe(500)
     const json = await res.json()
-    expect(json.error).toBe('update failed')
+    expect(json.error).toBe('Failed to update inquiry status')
   })
 })

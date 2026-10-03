@@ -5,6 +5,8 @@ import { createHash } from 'crypto'
 import { sign } from 'hono/jwt'
 import { supabase } from '../db/supabase'
 import { MAX_DEVICE_SESSIONS } from '../lib/constants'
+import { logger } from '../lib/logger'
+import { hasLiveStudent } from '../lib/parentLinks'
 
 const app = new Hono()
 
@@ -131,6 +133,7 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
   })
 
   if (sessionError) {
+    logger.error({ error: sessionError.message }, 'Failed to create parent session')
     return c.json({ error: 'Failed to create session' }, 500)
   }
 
@@ -138,12 +141,13 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
   const { data: links } = await supabase
     .from('parent_students')
     .select(
-      'relationship, students(id, full_name, date_of_birth, gender, photo_url, classrooms(name))'
+      'relationship, students(id, full_name, date_of_birth, gender, photo_url, deleted_at, classrooms(name))'
     )
     .eq('parent_id', parent.id)
     .is('deleted_at', null)
 
-  const children = (links ?? []).map((link: Record<string, unknown>) => {
+  // A soft-deleted student keeps its link row; leave it out of the children list
+  const children = (links ?? []).filter(hasLiveStudent).map((link: Record<string, unknown>) => {
     const student = link.students as {
       id: string
       full_name: string

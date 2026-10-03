@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
+import { logger } from '../lib/logger'
 
 const inquiries = new Hono()
 
@@ -46,7 +47,10 @@ inquiries.post('/', zValidator('json', inquirySchema), async (c) => {
   }
   const body = sanitiseStrings(c.req.valid('json'))
   const { error } = await supabase.from('inquiries').insert(body)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to submit inquiry')
+    return c.json({ error: 'Failed to submit inquiry' }, 500)
+  }
   return c.json({ success: true }, 201)
 })
 

@@ -12,6 +12,10 @@ import students from './students'
 
 beforeEach(() => clearMockResponses())
 
+// Path ids must be UUIDs (routes return 400 otherwise)
+const SID = '00000000-0000-0000-0000-0000000000a1'
+const MISSING_ID = '00000000-0000-0000-0000-0000000000ff'
+
 // ── GET /count — Active student count ─────────────────────────────────────────
 
 describe('GET /count — active student count', () => {
@@ -298,7 +302,7 @@ describe('GET /:id — single student', () => {
       error: null,
     })
 
-    const res = await students.request('/abc-123')
+    const res = await students.request(`/${SID}`)
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -308,13 +312,66 @@ describe('GET /:id — single student', () => {
     expect(json.attendance).toHaveLength(1)
   })
 
+  test('skips unlinked and deleted parents', async () => {
+    setMockResponse('students', {
+      data: {
+        id: '1',
+        full_name: 'Ali',
+        parent_students: [
+          {
+            deleted_at: '2026-10-01T00:00:00Z',
+            parents: { full_name: 'Unlinked', email: 'u@test.com', phone: '1', deleted_at: null },
+          },
+          {
+            deleted_at: null,
+            parents: {
+              full_name: 'Deleted',
+              email: 'd@test.com',
+              phone: '2',
+              deleted_at: '2026-10-01T00:00:00Z',
+            },
+          },
+          {
+            deleted_at: null,
+            parents: { full_name: 'Siti', email: 'siti@test.com', phone: '013', deleted_at: null },
+          },
+        ],
+      },
+      error: null,
+    })
+
+    const res = await students.request(`/${SID}`)
+    const json = await res.json()
+    expect(json.parent).toEqual({ full_name: 'Siti', email: 'siti@test.com', phone: '013' })
+  })
+
+  test('returns parent null when the only parent was unlinked', async () => {
+    setMockResponse('students', {
+      data: {
+        id: '1',
+        full_name: 'Ali',
+        parent_students: [
+          {
+            deleted_at: '2026-10-01T00:00:00Z',
+            parents: { full_name: 'Abu', email: 'abu@test.com', phone: '012', deleted_at: null },
+          },
+        ],
+      },
+      error: null,
+    })
+
+    const res = await students.request(`/${SID}`)
+    const json = await res.json()
+    expect(json.parent).toBeNull()
+  })
+
   test('returns 404 when not found', async () => {
     setMockResponse('students', {
       data: null,
       error: { message: 'Row not found' },
     })
 
-    const res = await students.request('/nonexistent')
+    const res = await students.request(`/${MISSING_ID}`)
     expect(res.status).toBe(404)
   })
 })
@@ -353,6 +410,12 @@ describe('POST / — create student', () => {
     expect(res.status).toBe(201)
     const json = await res.json()
     expect(json.full_name).toBe('Ali bin Abu')
+    // The insert is read back before the link exists; the response still shows the parent
+    expect(json.parent).toEqual({
+      full_name: 'Abu bin Ahmad',
+      email: 'abu@example.com',
+      phone: '0123456789',
+    })
   })
 
   test('rejects missing required fields', async () => {
@@ -399,6 +462,26 @@ describe('POST / — create student', () => {
     })
 
     expect(res.status).toBe(400)
+  })
+
+  test('returns a generic 500 without the database message', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: {
+        message:
+          'null value in column "parent_name" of relation "students" violates not-null constraint',
+      },
+    })
+
+    const res = await students.request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(validStudent),
+    })
+
+    expect(res.status).toBe(500)
+    const json = await res.json()
+    expect(json.error).toBe('Failed to create student')
   })
 })
 
@@ -447,6 +530,70 @@ describe('POST / — parent auto-link', () => {
     })
 
     expect(res.status).toBe(201)
+  })
+
+  test('restores a deleted parent without old portal access and re-activates the link', async () => {
+    setMockResponse('students', { data: { id: 'new-1', ...validStudent }, error: null })
+    setMockResponse('parents', {
+      data: { id: 'existing-parent', deleted_at: '2026-10-01T00:00:00Z' },
+      error: null,
+    })
+    setMockResponse('parent_students', { data: null, error: null })
+
+    // Spy on what the route writes to parents and parent_students
+    const writes: { table: string; method: string; args: unknown[] }[] = []
+    const originalFrom = mockSupabase.from
+    mockSupabase.from = (table: string) => {
+      const chain = originalFrom(table)
+      for (const method of ['update', 'upsert']) {
+        chain[method] = (...args: unknown[]) => {
+          writes.push({ table, method, args })
+          return chain
+        }
+      }
+      return chain
+    }
+
+    try {
+      const res = await students.request('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validStudent),
+      })
+      expect(res.status).toBe(201)
+    } finally {
+      mockSupabase.from = originalFrom
+    }
+
+    expect(writes).toEqual([
+      {
+        table: 'parents',
+        method: 'update',
+        args: [
+          {
+            full_name: 'Abu bin Ahmad',
+            phone: '0123456789',
+            deleted_at: null,
+            deleted_by: null,
+            access_code: null,
+            portal_pin_hash: null,
+          },
+        ],
+      },
+      {
+        table: 'parent_students',
+        method: 'upsert',
+        args: [
+          {
+            parent_id: 'existing-parent',
+            student_id: 'new-1',
+            deleted_at: null,
+            deleted_by: null,
+          },
+          { onConflict: 'parent_id,student_id' },
+        ],
+      },
+    ])
   })
 })
 
@@ -497,6 +644,43 @@ describe('POST /bulk — bulk import', () => {
     expect(json.failed[0].reason).toContain('full_name')
   })
 
+  test('reports an unknown class on its CSV row number', async () => {
+    setMockResponse('classrooms', {
+      data: [{ id: '00000000-0000-0000-0000-000000000001', name: 'Rose' }],
+      error: null,
+    })
+    setMockResponse('students', { data: [{ id: 'new-1' }], error: null })
+    setMockResponse('parents', { data: { id: 'parent-1' }, error: null })
+    setMockResponse('parent_students', { data: null, error: null })
+
+    const row = {
+      gender: 'male',
+      class_name: 'Rose',
+      parent_name: 'Abu',
+      parent_email: 'abu@test.com',
+      parent_phone: '012',
+    }
+    const res = await students.request('/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        students: [
+          { ...row, full_name: '' }, // CSV row 2: fails validation
+          { ...row, full_name: 'Ali' }, // CSV row 3: imported
+          { ...row, full_name: 'Siti', class_name: 'Lotus' }, // CSV row 4: unknown class
+        ],
+      }),
+    })
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.imported).toBe(1)
+    expect(json.failed).toEqual([
+      { row: 2, reason: 'full_name is required' },
+      { row: 4, reason: "class_name 'Lotus' not found in classrooms" },
+    ])
+  })
+
   test('returns error for empty students array', async () => {
     const res = await students.request('/bulk', {
       method: 'POST',
@@ -517,7 +701,7 @@ describe('PUT /:id — update student', () => {
       error: null,
     })
 
-    const res = await students.request('/1', {
+    const res = await students.request(`/${SID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ full_name: 'Ali Updated' }),
@@ -532,7 +716,7 @@ describe('PUT /:id — update student', () => {
       error: { message: 'update failed — connection lost' },
     })
 
-    const res = await students.request('/1', {
+    const res = await students.request(`/${SID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ full_name: 'Ali Updated' }),
@@ -540,7 +724,7 @@ describe('PUT /:id — update student', () => {
 
     expect(res.status).toBe(500)
     const json = await res.json()
-    expect(json.error).toBe('update failed — connection lost')
+    expect(json.error).toBe('Failed to update student')
   })
 })
 
@@ -561,7 +745,7 @@ describe('PUT /:id — parent auto-link on update', () => {
     setMockResponse('parents', { data: { id: 'parent-1' }, error: null })
     setMockResponse('parent_students', { data: null, error: null })
 
-    const res = await students.request('/1', {
+    const res = await students.request(`/${SID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -580,13 +764,179 @@ describe('PUT /:id — parent auto-link on update', () => {
       error: null,
     })
 
-    const res = await students.request('/1', {
+    const res = await students.request(`/${SID}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ full_name: 'Ali Updated' }),
     })
 
     expect(res.status).toBe(200)
+  })
+
+  // Records update/upsert calls on parents + parent_students while `run` executes
+  async function spyParentWrites(run: () => Response | Promise<Response>) {
+    const writes: { table: string; method: string; args: unknown[] }[] = []
+    const originalFrom = mockSupabase.from
+    mockSupabase.from = (table: string) => {
+      const chain = originalFrom(table)
+      if (table === 'parents' || table === 'parent_students') {
+        for (const method of ['update', 'upsert']) {
+          chain[method] = (...args: unknown[]) => {
+            writes.push({ table, method, args })
+            return chain
+          }
+        }
+      }
+      return chain
+    }
+    try {
+      return { res: await run(), writes }
+    } finally {
+      mockSupabase.from = originalFrom
+    }
+  }
+
+  const putParent = (email: string) =>
+    students.request(`/${SID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parent_name: 'Siti', parent_email: email, parent_phone: '013' }),
+    })
+
+  const shownParentLink = {
+    created_at: '2026-01-01T00:00:00Z',
+    deleted_at: null,
+    parents: { id: 'parent-old', email: 'Old@Test.com', deleted_at: null },
+  }
+
+  test('a new email replaces the shown parent on this student and keeps its place', async () => {
+    setMockResponse('students', {
+      data: { id: '1', full_name: 'Ali', parent_students: [shownParentLink] },
+      error: null,
+    })
+    setMockResponse('parents', { data: { id: 'parent-new', deleted_at: null }, error: null })
+
+    const { res, writes } = await spyParentWrites(() => putParent('siti@test.com'))
+
+    expect(res.status).toBe(200)
+    expect(writes).toEqual([
+      { table: 'parents', method: 'update', args: [{ full_name: 'Siti', phone: '013' }] },
+      {
+        table: 'parent_students',
+        method: 'upsert',
+        args: [
+          {
+            parent_id: 'parent-new',
+            student_id: SID,
+            deleted_at: null,
+            deleted_by: null,
+            created_at: '2026-01-01T00:00:00Z',
+          },
+          { onConflict: 'parent_id,student_id' },
+        ],
+      },
+      {
+        table: 'parent_students',
+        method: 'update',
+        args: [{ deleted_at: expect.any(String), deleted_by: null }],
+      },
+    ])
+  })
+
+  test('the same email (any case) keeps the parent and only updates its details', async () => {
+    setMockResponse('students', {
+      data: { id: '1', full_name: 'Ali', parent_students: [shownParentLink] },
+      error: null,
+    })
+    setMockResponse('parents', { data: { id: 'parent-old', deleted_at: null }, error: null })
+
+    const { res, writes } = await spyParentWrites(() => putParent('old@test.com'))
+
+    expect(res.status).toBe(200)
+    expect(writes.map((w) => `${w.table}.${w.method}`)).toEqual([
+      'parents.update',
+      'parent_students.upsert',
+    ])
+    expect(writes[1].args[0]).not.toHaveProperty('created_at')
+  })
+
+  const emaillessLink = {
+    ...shownParentLink,
+    parents: { id: 'parent-old', email: null, deleted_at: null },
+  }
+
+  test('an emailless shown parent gets the entered email instead of being replaced', async () => {
+    setMockResponse('students', {
+      data: { id: SID, full_name: 'Ali', parent_students: [emaillessLink] },
+      error: null,
+    })
+
+    // parents: the email lookup finds nobody, then the fill-in update returns the shown parent
+    const parentsSingles = [
+      { data: null, error: { message: 'no rows', code: 'PGRST116' } },
+      { data: { id: 'parent-old' }, error: null },
+    ]
+    const writes: { table: string; method: string; args: unknown[] }[] = []
+    const originalFrom = mockSupabase.from
+    mockSupabase.from = (table: string) => {
+      const chain = originalFrom(table)
+      if (table === 'parents') {
+        chain.single = () => Promise.resolve(parentsSingles.shift() ?? { data: null, error: null })
+      }
+      if (table === 'parents' || table === 'parent_students') {
+        for (const method of ['insert', 'update', 'upsert']) {
+          chain[method] = (...args: unknown[]) => {
+            writes.push({ table, method, args })
+            return chain
+          }
+        }
+      }
+      return chain
+    }
+
+    let res: Response
+    try {
+      res = await putParent('Siti@Test.com')
+    } finally {
+      mockSupabase.from = originalFrom
+    }
+
+    expect(res.status).toBe(200)
+    // No new parent and no unlink: the same parent now has an email
+    expect(writes.map((w) => `${w.table}.${w.method}`)).toEqual([
+      'parents.update',
+      'parent_students.upsert',
+    ])
+    expect(writes[0].args[0]).toEqual({ full_name: 'Siti', email: 'siti@test.com', phone: '013' })
+  })
+
+  test('an emailless shown parent is replaced when the email belongs to another parent', async () => {
+    setMockResponse('students', {
+      data: { id: SID, full_name: 'Ali', parent_students: [emaillessLink] },
+      error: null,
+    })
+    setMockResponse('parents', { data: { id: 'parent-other', deleted_at: null }, error: null })
+
+    const { res, writes } = await spyParentWrites(() => putParent('siti@test.com'))
+
+    expect(res.status).toBe(200)
+    expect(writes.map((w) => `${w.table}.${w.method}`)).toEqual([
+      'parents.update',
+      'parent_students.upsert',
+      'parent_students.update', // the emailless parent is unlinked from this student
+    ])
+  })
+
+  test('returns 404 and leaves parents alone when the student does not exist', async () => {
+    setMockResponse('students', {
+      data: null,
+      error: { message: 'JSON object requested, multiple (or no) rows returned', code: 'PGRST116' },
+    })
+
+    const { res, writes } = await spyParentWrites(() => putParent('siti@test.com'))
+
+    expect(res.status).toBe(404)
+    expect(writes).toEqual([])
   })
 })
 
@@ -596,7 +946,7 @@ describe('DELETE /:id — delete student', () => {
   test('returns success message', async () => {
     setMockResponse('students', { data: null, error: null })
 
-    const res = await students.request('/1', { method: 'DELETE' })
+    const res = await students.request(`/${SID}`, { method: 'DELETE' })
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -609,7 +959,7 @@ describe('DELETE /:id — delete student', () => {
       error: { message: 'foreign key violation' },
     })
 
-    const res = await students.request('/1', { method: 'DELETE' })
+    const res = await students.request(`/${SID}`, { method: 'DELETE' })
     expect(res.status).toBe(500)
   })
 
@@ -620,7 +970,7 @@ describe('DELETE /:id — delete student', () => {
     // The route treats no-error as success — this verifies that behaviour.
     setMockResponse('students', { data: null, error: null, count: 0 })
 
-    const res = await students.request('/already-deleted-id', { method: 'DELETE' })
+    const res = await students.request(`/${MISSING_ID}`, { method: 'DELETE' })
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -633,132 +983,11 @@ describe('DELETE /:id — delete student', () => {
       error: { message: 'DB write failed' },
     })
 
-    const res = await students.request('/bad-id', { method: 'DELETE' })
+    const res = await students.request(`/${MISSING_ID}`, { method: 'DELETE' })
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('DB write failed')
-  })
-})
-
-// ── POST /:id/access-code — generate access code ───────────────────────────
-
-describe('POST /:id/access-code — generate access code', () => {
-  test('generates and returns access code', async () => {
-    setMockResponse('students', {
-      data: { id: '1', access_code: 'KC-2026-1234' },
-      error: null,
-    })
-
-    const res = await students.request('/1/access-code', { method: 'POST' })
-    expect(res.status).toBe(200)
-
-    const json = await res.json()
-    expect(json.access_code).toBe('KC-2026-1234')
-  })
-
-  test('returns 500 on non-unique database error', async () => {
-    setMockResponse('students', {
-      data: null,
-      error: { message: 'some database error' },
-    })
-
-    const res = await students.request('/1/access-code', { method: 'POST' })
-    expect(res.status).toBe(500)
-  })
-})
-
-// ── PUT /:id/portal-pin — set portal PIN ────────────────────────────────────
-
-describe('PUT /:id/portal-pin — set portal PIN', () => {
-  test('sets PIN and returns ok', async () => {
-    setMockResponse('students', { data: null, error: null })
-
-    const res = await students.request('/1/portal-pin', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: '123456' }),
-    })
-
-    expect(res.status).toBe(200)
-    const json = await res.json()
-    expect(json.ok).toBe(true)
-  })
-
-  test('rejects non-6-digit PIN', async () => {
-    const res = await students.request('/1/portal-pin', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: '12345' }),
-    })
-    expect(res.status).toBe(400)
-  })
-
-  test('rejects non-numeric PIN', async () => {
-    const res = await students.request('/1/portal-pin', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: 'abcdef' }),
-    })
-    expect(res.status).toBe(400)
-  })
-
-  test('returns 500 on database error', async () => {
-    setMockResponse('students', {
-      data: null,
-      error: { message: 'update failed' },
-    })
-
-    const res = await students.request('/1/portal-pin', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin: '654321' }),
-    })
-
-    expect(res.status).toBe(500)
-  })
-})
-
-// ── DELETE /:id/portal-access — revoke portal access ────────────────────────
-
-describe('DELETE /:id/portal-access — revoke portal access', () => {
-  test('revokes access and returns ok', async () => {
-    setMockResponse('students', { data: null, error: null })
-    setMockResponse('parent_sessions', { data: null, error: null })
-
-    const res = await students.request('/1/portal-access', { method: 'DELETE' })
-    expect(res.status).toBe(200)
-
-    const json = await res.json()
-    expect(json.ok).toBe(true)
-  })
-
-  test('returns 500 on student update error', async () => {
-    setMockResponse('students', {
-      data: null,
-      error: { message: 'student update failed' },
-    })
-    setMockResponse('parent_sessions', { data: null, error: null })
-
-    const res = await students.request('/1/portal-access', { method: 'DELETE' })
-    expect(res.status).toBe(500)
-
-    const json = await res.json()
-    expect(json.error).toBe('student update failed')
-  })
-
-  test('returns 500 on session delete error', async () => {
-    setMockResponse('students', { data: null, error: null })
-    setMockResponse('parent_sessions', {
-      data: null,
-      error: { message: 'session delete failed' },
-    })
-
-    const res = await students.request('/1/portal-access', { method: 'DELETE' })
-    expect(res.status).toBe(500)
-
-    const json = await res.json()
-    expect(json.error).toBe('session delete failed')
+    expect(json.error).toBe('Failed to delete student')
   })
 })
 
@@ -779,7 +1008,7 @@ describe('GET /:id/timeline — student timeline', () => {
   test('returns empty events when student has no activity', async () => {
     setTimelineMocks()
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -798,7 +1027,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline?limit=20')
+    const res = await students.request(`/${SID}/timeline?limit=20`)
     expect(res.status).toBe(200)
 
     const json = await res.json()
@@ -824,7 +1053,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     const json = await res.json()
 
     expect(json.events.length).toBe(1)
@@ -844,7 +1073,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     const json = await res.json()
 
     expect(json.events.length).toBe(2)
@@ -868,7 +1097,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     const json = await res.json()
 
     expect(json.events.length).toBe(1)
@@ -886,7 +1115,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     const json = await res.json()
 
     expect(json.events.length).toBe(1)
@@ -910,7 +1139,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     const json = await res.json()
 
     expect(json.events.length).toBe(2)
@@ -941,7 +1170,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline')
+    const res = await students.request(`/${SID}/timeline`)
     const json = await res.json()
 
     expect(json.events.length).toBe(3)
@@ -965,12 +1194,12 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline?limit=2')
+    const res = await students.request(`/${SID}/timeline?limit=2`)
     const json = await res.json()
 
     expect(json.events.length).toBe(2)
     expect(json.has_more).toBe(true)
-    expect(json.next_cursor).toBe('2026-03-09')
+    expect(json.next_cursor).toBe('2026-03-09|1') // one event of 03-09 shown so far
   })
 
   test('has_more is false when all events fit in one page', async () => {
@@ -981,7 +1210,7 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline?limit=20')
+    const res = await students.request(`/${SID}/timeline?limit=20`)
     const json = await res.json()
 
     expect(json.events.length).toBe(1)
@@ -989,12 +1218,12 @@ describe('GET /:id/timeline — student timeline', () => {
   })
 
   test('rejects limit above 50', async () => {
-    const res = await students.request('/abc-123/timeline?limit=51')
+    const res = await students.request(`/${SID}/timeline?limit=51`)
     expect(res.status).toBe(400)
   })
 
   test('rejects limit below 1', async () => {
-    const res = await students.request('/abc-123/timeline?limit=0')
+    const res = await students.request(`/${SID}/timeline?limit=0`)
     expect(res.status).toBe(400)
   })
 
@@ -1006,11 +1235,68 @@ describe('GET /:id/timeline — student timeline', () => {
       },
     })
 
-    const res = await students.request('/abc-123/timeline?before=2026-03-01')
+    const res = await students.request(`/${SID}/timeline?before=2026-03-01`)
     expect(res.status).toBe(200)
 
     const json = await res.json()
     expect(json.events.length).toBe(1)
     expect(json.events[0].date).toBe('2026-02-28')
+  })
+
+  test('a "date|n" cursor returns the rest of that day instead of skipping it', async () => {
+    setTimelineMocks({
+      attendance: { data: [{ date: '2026-03-09', status: 'present' }], error: null },
+      daily_reports: {
+        data: [{ id: 'd1', report_date: '2026-03-09', mood: 'happy', activity_note: null }],
+        error: null,
+      },
+    })
+
+    // Page 1 ended after the 03-09 attendance event; the daily report on 03-09 is still due
+    const res = await students.request(`/${SID}/timeline?before=2026-03-09|1`)
+    const json = await res.json()
+    expect(json.events.map((e: { type: string }) => e.type)).toEqual(['daily_report'])
+  })
+
+  test('an artwork without artwork_date is placed on its upload day', async () => {
+    setTimelineMocks({
+      art_wall: {
+        data: [
+          { id: 'a1', caption: 'Rainbow', artwork_date: null, created_at: '2026-03-05T08:00:00Z' },
+        ],
+        error: null,
+      },
+    })
+
+    const res = await students.request(`/${SID}/timeline`)
+    const json = await res.json()
+    expect(json.events).toEqual([
+      { type: 'artwork', date: '2026-03-05', title: 'Rainbow', subtitle: undefined },
+    ])
+  })
+
+  test('rejects a malformed cursor', async () => {
+    const res = await students.request(`/${SID}/timeline?before=yesterday`)
+    expect(res.status).toBe(400)
+  })
+})
+
+// ── Path id validation ───────────────────────────────────────────────────────
+
+describe('malformed :id', () => {
+  test.each([
+    ['GET', '/not-a-uuid'],
+    ['GET', '/not-a-uuid/timeline'],
+    ['PUT', '/not-a-uuid'],
+    ['DELETE', '/not-a-uuid'],
+  ])('%s %s returns 400 without touching the database', async (method, path) => {
+    const res = await students.request(path, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: method === 'PUT' ? JSON.stringify({ full_name: 'Ali' }) : undefined,
+    })
+    expect(res.status).toBe(400)
+    const json = await res.json()
+    expect(json.error).toBe('Invalid ID')
   })
 })

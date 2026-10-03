@@ -6,6 +6,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { auditUpdate } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const inquiriesAdmin = new Hono()
 
@@ -38,7 +39,10 @@ inquiriesAdmin.get('/', zValidator('query', paginationSchema), async (c) => {
   if (to) query = query.lte('created_at', to + 'T23:59:59')
 
   const { data, count, error } = await query.range((page - 1) * limit, page * limit - 1)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch inquiries')
+    return c.json({ error: 'Failed to fetch inquiries' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -68,7 +72,10 @@ inquiriesAdmin.put('/:id/status', zValidator('json', statusSchema), async (c) =>
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update inquiry status')
+    return c.json({ error: 'Failed to update inquiry status' }, 500)
+  }
   return c.json(data)
 })
 

@@ -82,6 +82,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
     headline_highlight: EMPTY_TEXT,
     headline_end: EMPTY_TEXT,
     subtitle: EMPTY_TEXT,
+    video_url: null,
   },
   about: {
     enabled: false,
@@ -155,6 +156,7 @@ export function mergeLandingContent(raw: unknown): LandingContent {
       headline_highlight: mergeText(hero.headline_highlight, d.hero.headline_highlight),
       headline_end: mergeText(hero.headline_end, d.hero.headline_end),
       subtitle: mergeText(hero.subtitle, d.hero.subtitle),
+      video_url: typeof hero.video_url === 'string' ? hero.video_url : null,
     },
     about: {
       enabled: about.enabled === true,

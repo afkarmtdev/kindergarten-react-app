@@ -56,7 +56,7 @@ describe('POST /login', () => {
 
     expect(res.status).toBe(401)
     const json = await res.json()
-    expect(json.error).toBe('Invalid login credentials')
+    expect(json.error).toBe('Invalid email or password')
   })
 
   test('rejects missing email', async () => {

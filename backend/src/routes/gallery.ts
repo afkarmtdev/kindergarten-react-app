@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { stripHtml } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const gallery = new Hono()
 
@@ -39,7 +40,10 @@ gallery.get('/', zValidator('query', paginationSchema), async (c) => {
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch gallery')
+    return c.json({ error: 'Failed to fetch gallery' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -62,7 +66,7 @@ gallery.get('/:id', async (c) => {
     .is('deleted_at', null)
     .single()
 
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) return c.json({ error: 'Photo not found' }, 404)
   return c.json(data)
 })
 
@@ -76,7 +80,10 @@ gallery.post('/', zValidator('json', gallerySchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to add photo')
+    return c.json({ error: 'Failed to add photo' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -93,7 +100,10 @@ gallery.put('/:id', zValidator('json', gallerySchema.partial()), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update photo')
+    return c.json({ error: 'Failed to update photo' }, 500)
+  }
   return c.json(data)
 })
 
@@ -106,7 +116,10 @@ gallery.delete('/:id', async (c) => {
     .eq('id', id)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete photo')
+    return c.json({ error: 'Failed to delete photo' }, 500)
+  }
   return c.json({ message: 'Gallery item deleted' })
 })
 

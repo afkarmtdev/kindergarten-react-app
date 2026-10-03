@@ -4,12 +4,17 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
+import { activeParent, hasLiveStudent, type ParentLink } from '../lib/parentLinks'
+import { orIlike } from '../lib/search'
+import { isValidUUID } from '../lib/validation'
 
 const parents = new Hono()
 
 const parentSchema = z.object({
   full_name: z.string().min(1),
-  email: z.string().email().optional().nullable(),
+  // Stored lower-cased: the student form finds parents by lower-cased email (upsertParentLink)
+  email: z.string().trim().toLowerCase().email().optional().nullable(),
   phone: z.string().min(1),
 })
 
@@ -27,26 +32,36 @@ parents.get('/', zValidator('query', paginationSchema), async (c) => {
 
   let query = supabase
     .from('parents')
-    .select('id, full_name, email, phone, access_code, created_at, parent_students(id)', {
-      count: 'exact',
-    })
+    .select(
+      'id, full_name, email, phone, access_code, created_at, parent_students(id, deleted_at, students(deleted_at))',
+      { count: 'exact' }
+    )
     .is('deleted_at', null)
     .order('full_name')
     .range(from, to)
 
   if (search) {
-    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`)
+    query = query.or(orIlike(['full_name', 'email', 'phone'], search))
   }
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch parents')
+    return c.json({ error: 'Failed to fetch parents' }, 500)
+  }
 
   const mapped = (data ?? []).map((row: Record<string, unknown>) => {
     const { parent_students, ...rest } = row as {
-      parent_students?: { id: string }[]
+      parent_students?: {
+        id: string
+        deleted_at: string | null
+        students: { deleted_at: string | null } | null
+      }[]
     } & Record<string, unknown>
-    return { ...rest, children_count: parent_students?.length ?? 0 }
+    // Unlinked links and deleted students both keep their rows; count neither
+    const children_count = (parent_students ?? []).filter(hasLiveStudent).length
+    return { ...rest, children_count }
   })
 
   return c.json({
@@ -60,26 +75,41 @@ parents.get('/', zValidator('query', paginationSchema), async (c) => {
   })
 })
 
+type ParentRow = ParentLink<Record<string, unknown>>
+
 // GET parent by student ID (for student profile portal access card)
 parents.get('/by-student/:studentId', async (c) => {
   const { studentId } = c.req.param()
+  if (!isValidUUID(studentId)) return c.json({ error: 'Invalid ID' }, 400)
 
-  const { data: link, error } = await supabase
+  // All live links, so a deleted parent on one link cannot hide a live parent on another
+  const { data: links, error } = await supabase
     .from('parent_students')
-    .select('parents(id, full_name, email, phone, access_code, portal_pin_hash, created_at)')
+    .select(
+      'created_at, deleted_at, parents(id, full_name, email, phone, access_code, portal_pin_hash, created_at, deleted_at)'
+    )
     .eq('student_id', studentId)
-    .limit(1)
-    .single()
+    .is('deleted_at', null)
 
-  if (error || !link) return c.json({ data: null })
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch parent for student')
+    return c.json({ data: null })
+  }
 
-  const parent = (link as Record<string, unknown>).parents as Record<string, unknown> | null
-  return c.json({ data: parent ?? null })
+  // parents is many-to-one (an object), but untyped supabase-js infers nested selects as arrays
+  const parentLinks = (links ?? []).map((link: Record<string, unknown>) => link as ParentRow)
+  const parent = activeParent(parentLinks)
+  if (!parent) return c.json({ data: null })
+
+  // Only whether a PIN is set leaves the server, never the hash
+  const { portal_pin_hash, ...rest } = parent
+  return c.json({ data: { ...rest, has_pin: !!portal_pin_hash } })
 })
 
 // GET single parent with linked children
 parents.get('/:id', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
 
   const { data: parent, error } = await supabase
     .from('parents')
@@ -93,10 +123,12 @@ parents.get('/:id', async (c) => {
   // Fetch linked children via parent_students join
   const { data: links } = await supabase
     .from('parent_students')
-    .select('relationship, students(id, full_name, photo_url, classrooms(name))')
+    .select('relationship, students(id, full_name, photo_url, deleted_at, classrooms(name))')
     .eq('parent_id', id)
+    .is('deleted_at', null)
 
-  const children = (links ?? []).map((link: Record<string, unknown>) => {
+  // A soft-deleted student keeps its link row; leave it out of the children list
+  const children = (links ?? []).filter(hasLiveStudent).map((link: Record<string, unknown>) => {
     const student = link.students as {
       id: string
       full_name: string
@@ -124,13 +156,17 @@ parents.post('/', zValidator('json', parentSchema), async (c) => {
     .select('id, full_name, email, phone, access_code, created_at')
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create parent')
+    return c.json({ error: 'Failed to create parent' }, 500)
+  }
   return c.json(data, 201)
 })
 
 // PUT update parent
 parents.put('/:id', zValidator('json', parentSchema.partial()), async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const body = sanitiseStrings(c.req.valid('json'))
 
   const { data, error } = await supabase
@@ -140,26 +176,36 @@ parents.put('/:id', zValidator('json', parentSchema.partial()), async (c) => {
     .select('id, full_name, email, phone, access_code, created_at')
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update parent')
+    return c.json({ error: 'Failed to update parent' }, 500)
+  }
   return c.json(data)
 })
 
 // DELETE parent
 parents.delete('/:id', async (c) => {
   const { id } = c.req.param()
-  const { error } = await supabase
-    .from('parents')
-    .update(auditDelete(c))
-    .eq('id', id)
-    .is('deleted_at', null)
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
 
-  if (error) return c.json({ error: error.message }, 500)
+  // Also log the parent out: the portal middleware trusts any live session, and login
+  // already refuses deleted parents, so removing the sessions ends their portal access
+  const [{ error }, { error: sessionError }] = await Promise.all([
+    supabase.from('parents').update(auditDelete(c)).eq('id', id).is('deleted_at', null),
+    supabase.from('parent_sessions').delete().eq('parent_id', id),
+  ])
+
+  if (error || sessionError) {
+    logger.error({ error: (error ?? sessionError)?.message }, 'Failed to delete parent')
+    return c.json({ error: 'Failed to delete parent' }, 500)
+  }
   return c.json({ message: 'Parent deleted' })
 })
 
 // POST /:id/access-code — generate a unique access code for a parent
 parents.post('/:id/access-code', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
 
   // Generate KC-YYYY-NNNN format; retry up to 5 times on collision
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -177,7 +223,8 @@ parents.post('/:id/access-code', async (c) => {
     if (!error && data) return c.json({ access_code: data.access_code })
     // If unique constraint violation, retry; otherwise bail
     if (error && !error.message.includes('unique')) {
-      return c.json({ error: error.message }, 500)
+      logger.error({ error: error.message }, 'Failed to generate access code')
+      return c.json({ error: 'Failed to generate access code' }, 500)
     }
   }
 
@@ -198,13 +245,17 @@ parents.put(
   ),
   async (c) => {
     const { id } = c.req.param()
+    if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
     const { pin } = c.req.valid('json')
 
     const hash = await Bun.password.hash(pin)
 
     const { error } = await supabase.from('parents').update({ portal_pin_hash: hash }).eq('id', id)
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to set PIN')
+      return c.json({ error: 'Failed to set PIN' }, 500)
+    }
     return c.json({ ok: true })
   }
 )
@@ -212,14 +263,21 @@ parents.put(
 // DELETE /:id/portal-access — revoke all parent portal access
 parents.delete('/:id/portal-access', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
 
   const [{ error: parentError }, { error: sessionError }] = await Promise.all([
     supabase.from('parents').update({ access_code: null, portal_pin_hash: null }).eq('id', id),
     supabase.from('parent_sessions').delete().eq('parent_id', id),
   ])
 
-  if (parentError) return c.json({ error: parentError.message }, 500)
-  if (sessionError) return c.json({ error: sessionError.message }, 500)
+  if (parentError) {
+    logger.error({ error: parentError.message }, 'Failed to revoke portal access')
+    return c.json({ error: 'Failed to revoke portal access' }, 500)
+  }
+  if (sessionError) {
+    logger.error({ error: sessionError.message }, 'Failed to delete parent sessions')
+    return c.json({ error: 'Failed to revoke portal access' }, 500)
+  }
 
   return c.json({ ok: true })
 })
@@ -239,6 +297,7 @@ parents.post(
   ),
   async (c) => {
     const { id } = c.req.param()
+    if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
     const { student_id, relationship } = c.req.valid('json')
 
     // Validate student exists
@@ -253,13 +312,21 @@ parents.post(
       return c.json({ error: 'Student not found' }, 404)
     }
 
+    // Upsert so a pair that was unlinked before (soft-deleted row) is re-activated
+    // instead of hitting unique(parent_id, student_id)
     const { data, error } = await supabase
       .from('parent_students')
-      .insert({ parent_id: id, student_id, relationship })
+      .upsert(
+        { parent_id: id, student_id, relationship, deleted_at: null, deleted_by: null },
+        { onConflict: 'parent_id,student_id' }
+      )
       .select()
       .single()
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to link student')
+      return c.json({ error: 'Failed to link student' }, 500)
+    }
     return c.json(data, 201)
   }
 )
@@ -267,6 +334,7 @@ parents.post(
 // DELETE /:parentId/unlink-student/:studentId — remove link between parent and student
 parents.delete('/:parentId/unlink-student/:studentId', async (c) => {
   const { parentId, studentId } = c.req.param()
+  if (!isValidUUID(parentId) || !isValidUUID(studentId)) return c.json({ error: 'Invalid ID' }, 400)
 
   const { error } = await supabase
     .from('parent_students')
@@ -275,13 +343,17 @@ parents.delete('/:parentId/unlink-student/:studentId', async (c) => {
     .eq('student_id', studentId)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to unlink student')
+    return c.json({ error: 'Failed to unlink student' }, 500)
+  }
   return c.json({ message: 'Student unlinked' })
 })
 
 // GET /:id/sessions — list active portal sessions for a parent (admin)
 parents.get('/:id/sessions', async (c) => {
   const { id } = c.req.param()
+  if (!isValidUUID(id)) return c.json({ error: 'Invalid ID' }, 400)
   const now = new Date().toISOString()
 
   const { data, error } = await supabase
@@ -291,13 +363,17 @@ parents.get('/:id/sessions', async (c) => {
     .gt('expires_at', now)
     .order('created_at', { ascending: false })
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch sessions')
+    return c.json({ error: 'Failed to fetch sessions' }, 500)
+  }
   return c.json({ data: data ?? [] })
 })
 
 // DELETE /:id/sessions/:sessionId — revoke a specific session (admin)
 parents.delete('/:id/sessions/:sessionId', async (c) => {
   const { id, sessionId } = c.req.param()
+  if (!isValidUUID(id) || !isValidUUID(sessionId)) return c.json({ error: 'Invalid ID' }, 400)
 
   // Verify session belongs to this parent
   const { data: session } = await supabase
@@ -311,7 +387,10 @@ parents.delete('/:id/sessions/:sessionId', async (c) => {
 
   const { error } = await supabase.from('parent_sessions').delete().eq('id', sessionId)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to revoke session')
+    return c.json({ error: 'Failed to revoke session' }, 500)
+  }
   return c.json({ ok: true })
 })
 

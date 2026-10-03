@@ -104,7 +104,7 @@ describe('GET / — list classes', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('connection refused')
+    expect(json.error).toBe('Failed to fetch classes')
   })
 
   test('defaults to page 1 and limit 9 when not specified', async () => {
@@ -188,7 +188,7 @@ describe('GET /:id — single class', () => {
     expect(res.status).toBe(404)
 
     const json = await res.json()
-    expect(json.error).toBe('Row not found')
+    expect(json.error).toBe('Class not found')
   })
 })
 
@@ -261,7 +261,7 @@ describe('POST / — create class', () => {
 
     expect(res.status).toBe(500)
     const json = await res.json()
-    expect(json.error).toBe('duplicate key')
+    expect(json.error).toBe('Failed to create class')
   })
 })
 
@@ -539,7 +539,7 @@ describe('DELETE /:id — delete class', () => {
     expect(res.status).toBe(500)
 
     const json = await res.json()
-    expect(json.error).toBe('foreign key violation')
+    expect(json.error).toBe('Failed to delete class')
   })
 })
 
