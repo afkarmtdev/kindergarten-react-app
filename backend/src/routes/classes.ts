@@ -5,6 +5,7 @@ import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 import { logger } from '../lib/logger'
+import { orIlike } from '../lib/search'
 
 const classes = new Hono()
 
@@ -54,13 +55,16 @@ classes.get('/', zValidator('query', paginationSchema), async (c) => {
     .range(from, to)
 
   if (search) {
-    query = query.or(`name.ilike.%${search}%,teacher_name.ilike.%${search}%`)
+    query = query.or(orIlike(['name', 'teacher_name'], search))
   }
   if (status) query = query.eq('status', status)
 
   const { data: classData, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch classes')
+    return c.json({ error: 'Failed to fetch classes' }, 500)
+  }
 
   // Count students per class using class_id FK
   const classIds = (classData ?? []).map((cls) => cls.id)
@@ -102,7 +106,7 @@ classes.get('/:id', async (c) => {
     .is('deleted_at', null)
     .single()
 
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) return c.json({ error: 'Class not found' }, 404)
 
   const { data: students } = await supabase
     .from('students')
@@ -123,7 +127,10 @@ classes.post('/', zValidator('json', classSchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create class')
+    return c.json({ error: 'Failed to create class' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -139,7 +146,10 @@ classes.put('/:id', zValidator('json', classSchema.partial()), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update class')
+    return c.json({ error: 'Failed to update class' }, 500)
+  }
   return c.json(data)
 })
 
@@ -152,7 +162,10 @@ classes.delete('/:id', async (c) => {
     .eq('id', id)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete class')
+    return c.json({ error: 'Failed to delete class' }, 500)
+  }
   return c.json({ message: 'Class deleted' })
 })
 
@@ -185,7 +198,10 @@ classes.post('/:id/graduate', zValidator('json', graduateSchema), async (c) => {
     .in('id', student_ids)
     .is('deleted_at', null)
 
-  if (gradError) return c.json({ error: gradError.message }, 500)
+  if (gradError) {
+    logger.error({ error: gradError.message }, 'Failed to graduate students')
+    return c.json({ error: 'Failed to graduate class' }, 500)
+  }
 
   // Reassign remaining students if destination provided
   let reassigned_count = 0
@@ -207,7 +223,10 @@ classes.post('/:id/graduate', zValidator('json', graduateSchema), async (c) => {
       .in('id', reassign_student_ids)
       .is('deleted_at', null)
 
-    if (reassignError) return c.json({ error: reassignError.message }, 500)
+    if (reassignError) {
+      logger.error({ error: reassignError.message }, 'Failed to reassign students')
+      return c.json({ error: 'Failed to graduate class' }, 500)
+    }
     reassigned_count = reassign_student_ids.length
   }
 
@@ -217,7 +236,10 @@ classes.post('/:id/graduate', zValidator('json', graduateSchema), async (c) => {
     .update({ status: 'graduated', ...auditUpdate(c) })
     .eq('id', id)
 
-  if (classGradError) return c.json({ error: classGradError.message }, 500)
+  if (classGradError) {
+    logger.error({ error: classGradError.message }, 'Failed to mark class graduated')
+    return c.json({ error: 'Failed to graduate class' }, 500)
+  }
 
   return c.json({
     message: 'Class graduated',

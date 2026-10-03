@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { resolveNextSerial, assembleNumber, type DocumentSegment } from '../lib/documentNumbering'
 import { auditCreate, getActor } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const documentNumbering = new Hono()
 
@@ -57,7 +58,10 @@ documentNumbering.put('/:type', zValidator('json', configSchema), async (c) => {
       .eq('document_type', type)
       .select()
       .single()
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to update document numbering')
+      return c.json({ error: 'Failed to save document numbering' }, 500)
+    }
     return c.json({ data })
   }
 
@@ -66,7 +70,10 @@ documentNumbering.put('/:type', zValidator('json', configSchema), async (c) => {
     .insert({ document_type: type, segments, current_serial: 0, ...auditCreate(c) })
     .select()
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create document numbering')
+    return c.json({ error: 'Failed to save document numbering' }, 500)
+  }
   return c.json({ data }, 201)
 })
 

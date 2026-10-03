@@ -166,7 +166,7 @@ describe('GET /api/daily-reports — error handling', () => {
     const res = await app.request(`/api/daily-reports?date=${DATE}`)
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('DB down')
+    expect(body.error).toBe('Failed to fetch daily reports')
   })
 
   test('returns 500 when daily_reports query fails', async () => {
@@ -176,7 +176,7 @@ describe('GET /api/daily-reports — error handling', () => {
     const res = await app.request(`/api/daily-reports?date=${DATE}`)
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('Report fetch failed')
+    expect(body.error).toBe('Failed to fetch daily reports')
   })
 })
 
@@ -278,7 +278,7 @@ describe('PUT /api/daily-reports/:studentId/:date — error handling', () => {
     const res = await put(`/api/daily-reports/${STUDENT_ID}/${DATE}`, { mood: 'happy' })
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('Upsert failed')
+    expect(body.error).toBe('Failed to save daily report')
   })
 })
 
@@ -300,6 +300,6 @@ describe('DELETE /api/daily-reports/:id', () => {
     const res = await app.request('/api/daily-reports/some-id', { method: 'DELETE' })
     expect(res.status).toBe(500)
     const body = await res.json()
-    expect(body.error).toBe('Delete failed')
+    expect(body.error).toBe('Failed to delete daily report')
   })
 })

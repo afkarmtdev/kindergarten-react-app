@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
+import { orIlike } from '../lib/search'
 
 const artWall = new Hono()
 
@@ -39,12 +41,15 @@ artWall.get('/', zValidator('query', paginationSchema), async (c) => {
     .range(from, to)
 
   if (search) {
-    query = query.or(`caption.ilike.%${search}%,student_name.ilike.%${search}%`)
+    query = query.or(orIlike(['caption', 'student_name'], search))
   }
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch artwork')
+    return c.json({ error: 'Failed to fetch artwork' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -79,7 +84,10 @@ artWall.get('/by-student/:studentId', zValidator('query', paginationSchema), asy
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch student artwork')
+    return c.json({ error: 'Failed to fetch artwork' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -102,7 +110,7 @@ artWall.get('/:id', async (c) => {
     .eq('id', id)
     .single()
 
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) return c.json({ error: 'Artwork not found' }, 404)
   return c.json(data)
 })
 
@@ -130,7 +138,10 @@ artWall.post('/', zValidator('json', artWallSchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create artwork')
+    return c.json({ error: 'Failed to create artwork' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -160,7 +171,10 @@ artWall.put('/:id', zValidator('json', artWallSchema.partial()), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update artwork')
+    return c.json({ error: 'Failed to update artwork' }, 500)
+  }
   return c.json(data)
 })
 
@@ -173,7 +187,10 @@ artWall.delete('/:id', async (c) => {
     .eq('id', id)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete artwork')
+    return c.json({ error: 'Failed to delete artwork' }, 500)
+  }
   return c.json({ message: 'Art wall item deleted' })
 })
 

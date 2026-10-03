@@ -78,13 +78,6 @@ export const studentsApi = {
         failed: { row: number; reason: string }[]
       }>('/students/bulk', { students })
       .then((r) => r.data),
-  // Portal access management
-  generateAccessCode: (id: string) =>
-    api.post(`/students/${id}/access-code`).then((r) => r.data as { access_code: string }),
-  setPortalPin: (id: string, pin: string) =>
-    api.put(`/students/${id}/portal-pin`, { pin }).then((r) => r.data),
-  revokePortalAccess: (id: string) =>
-    api.delete(`/students/${id}/portal-access`).then((r) => r.data),
   getTimeline: (id: string, params?: { limit?: number; before?: string }) =>
     api.get(`/students/${id}/timeline`, { params }).then(
       (r) =>

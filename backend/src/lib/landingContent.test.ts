@@ -15,6 +15,18 @@ describe('landingContentPatchSchema', () => {
     const parsed = landingContentPatchSchema.parse({ hero: { tagline: { en: 'Hi' } } })
     expect(parsed.hero?.tagline).toEqual({ en: 'Hi', ms: '' })
     expect(parsed.hero?.subtitle).toEqual({ en: '', ms: '' })
+    expect(parsed.hero?.video_url).toBeNull()
+  })
+
+  test('accepts an https hero video and rejects anything else', () => {
+    const ok = 'https://x.supabase.co/storage/v1/object/public/school-media/hero/a.mp4'
+    expect(landingContentPatchSchema.parse({ hero: { video_url: ok } }).hero?.video_url).toBe(ok)
+    expect(
+      landingContentPatchSchema.safeParse({ hero: { video_url: 'http://x.test/a.mp4' } }).success
+    ).toBe(false)
+    expect(
+      landingContentPatchSchema.safeParse({ hero: { video_url: 'javascript:alert(1)' } }).success
+    ).toBe(false)
   })
 
   test('rejects unknown feature keys', () => {
@@ -60,6 +72,12 @@ describe('sanitiseLandingPatch', () => {
     expect(clean.about?.story.en).toBe('Our Story')
     expect(clean.team?.members[0].name).toBe('Cikgu')
     expect(clean.team?.members[0].role.en).toBe('Lead')
+  })
+
+  test('keeps the hero video url', () => {
+    const video_url = 'https://x.test/hero/a.mp4'
+    const patch = landingContentPatchSchema.parse({ hero: { video_url } })
+    expect(sanitiseLandingPatch(patch).hero?.video_url).toBe(video_url)
   })
 
   test('de-duplicates feature keys while preserving order', () => {

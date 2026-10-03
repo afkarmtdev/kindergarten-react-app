@@ -44,17 +44,17 @@ VITE_SUPABASE_PUBLISHABLE_KEY=  # sb_publishable_... from Supabase dashboard →
 2. Run migrations in order from `supabase/migrations/` via the SQL Editor
 3. Create these **public** storage buckets:
 
-| Bucket                 | Used for                     |
-| ---------------------- | ---------------------------- |
-| `student-photos`       | Student profile photos       |
-| `gallery-photos`       | Landing page gallery         |
-| `announcement-banners` | Announcement banners         |
-| `testimonial-avatars`  | Testimonial avatars          |
-| `artwork-photos`       | Art wall artwork             |
-| `portfolio-photos`     | Portfolio entries            |
-| `resumes`              | Job applications             |
-| `school-logo`          | School branding              |
-| `payment-proofs`       | Fee payment proofs (private) |
+| Bucket                 | Used for                                                                    |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `student-photos`       | Student profile photos                                                      |
+| `gallery-photos`       | Landing page gallery                                                        |
+| `announcement-banners` | Announcement banners                                                        |
+| `testimonial-avatars`  | Testimonial avatars                                                         |
+| `artwork-photos`       | Art wall artwork                                                            |
+| `portfolio-photos`     | Portfolio entries                                                           |
+| `resumes`              | Job applications                                                            |
+| `school-media`         | Logo, website photos, hero video (created by its migration, no manual step) |
+| `payment-proofs`       | Fee payment proofs (private)                                                |
 
 ## Project Structure
 

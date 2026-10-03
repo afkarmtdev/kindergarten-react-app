@@ -58,6 +58,7 @@ export function useLandingContent() {
         headlineHighlight: pick(hero.headline_highlight, t('heroHighlight')),
         headlineEnd: pick(hero.headline_end, t('heroPart2')),
         subtitle: pick(hero.subtitle, t('heroSubtitle')),
+        videoUrl: hero.video_url,
       },
       about: {
         show: aboutHasContent,

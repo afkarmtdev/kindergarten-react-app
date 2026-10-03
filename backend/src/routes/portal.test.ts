@@ -72,6 +72,27 @@ describe('GET /me — parent profile', () => {
     expect(json.data.children[0].relationship).toBe('parent')
   })
 
+  test('leaves out a soft-deleted child', async () => {
+    setMockResponse('parents', {
+      data: { id: PARENT_ID, full_name: 'Ali', email: null, phone: '012' },
+      error: null,
+    })
+    setMockResponse('parent_students', {
+      data: [
+        { relationship: 'parent', students: { id: CHILD_1, full_name: 'Ahmad', deleted_at: null } },
+        {
+          relationship: 'parent',
+          students: { id: CHILD_2, full_name: 'Gone', deleted_at: '2026-10-01T00:00:00Z' },
+        },
+      ],
+      error: null,
+    })
+
+    const res = await app.request('/me')
+    const json = await res.json()
+    expect(json.data.children.map((child: { id: string }) => child.id)).toEqual([CHILD_1])
+  })
+
   test('returns 404 when parent not found', async () => {
     setMockResponse('parents', { data: null, error: { message: 'not found' } })
 

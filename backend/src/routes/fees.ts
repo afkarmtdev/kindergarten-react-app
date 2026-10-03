@@ -12,24 +12,24 @@ import { deriveStatus, monthRange } from '../lib/fees'
 import { generateNextNumber } from './documentNumbering'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
 import { logger } from '../lib/logger'
+import { activeParent, type ParentLink } from '../lib/parentLinks'
 
 // Flatten nested classrooms + parent_students joins on a student sub-object
 function flattenStudentClass(
   s:
     | ({
         classrooms?: { name?: string; academic_year?: string } | null
-        parent_students?: { parents?: { full_name?: string } | null }[]
+        parent_students?: ParentLink<{ full_name?: string }>[]
       } & Record<string, unknown>)
     | null
     | undefined
 ): Record<string, unknown> | null {
   if (!s) return null
   const { classrooms, parent_students, ...rest } = s
-  const parentLink = Array.isArray(parent_students) ? parent_students[0] : undefined
   return {
     ...rest,
     class_name: classrooms?.name ? `${classrooms.name} (${classrooms.academic_year ?? ''})` : null,
-    parent_name: parentLink?.parents?.full_name ?? null,
+    parent_name: activeParent(parent_students)?.full_name ?? null,
   }
 }
 
@@ -108,7 +108,10 @@ feePlans.get(
     if (search) query = query.ilike('name', `%${search}%`)
 
     const { data, error, count } = await query
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch fee plans')
+      return c.json({ error: 'Failed to fetch fee plans' }, 500)
+    }
     return c.json({
       data: data ?? [],
       meta: { total: count ?? 0, page, limit, totalPages: Math.ceil((count ?? 0) / limit) },
@@ -123,7 +126,10 @@ feePlans.post('/', zValidator('json', planSchema), async (c) => {
     .insert({ ...body, ...auditCreate(c) })
     .select()
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create fee plan')
+    return c.json({ error: 'Failed to create fee plan' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -136,7 +142,10 @@ feePlans.put('/:id', zValidator('json', planSchema.partial()), async (c) => {
     .eq('id', id)
     .select()
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update fee plan')
+    return c.json({ error: 'Failed to update fee plan' }, 500)
+  }
   return c.json(data)
 })
 
@@ -147,7 +156,10 @@ feePlans.delete('/:id', async (c) => {
     .update(auditDelete(c))
     .eq('id', id)
     .is('deleted_at', null)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete fee plan')
+    return c.json({ error: 'Failed to delete fee plan' }, 500)
+  }
   return c.json({ message: 'Fee plan deleted' })
 })
 
@@ -248,7 +260,10 @@ fees.get('/export', async (c) => {
   }
 
   const { data, error } = await query
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to export fees')
+    return c.json({ error: 'Failed to export fees' }, 500)
+  }
 
   const header =
     'Student Name,Class,Type,Description,Due Date,Amount Owed,Discount,Amount Paid,Status,Receipt Number'
@@ -285,7 +300,7 @@ fees.get('/statement/:studentId', async (c) => {
     supabase
       .from('students')
       .select(
-        'full_name, classrooms(name, academic_year), date_of_birth, parent_students(parents(full_name))'
+        'full_name, classrooms(name, academic_year), date_of_birth, parent_students(deleted_at, parents(full_name, deleted_at))'
       )
       .eq('id', studentId)
       .is('deleted_at', null)
@@ -300,7 +315,10 @@ fees.get('/statement/:studentId', async (c) => {
       .order('due_date', { ascending: true }),
   ])
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch fee statement')
+    return c.json({ error: 'Failed to fetch fee statement' }, 500)
+  }
 
   const total_paid = (records ?? []).reduce((s, r) => s + Number(r.amount_paid), 0)
   return c.json({
@@ -343,7 +361,10 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
   }
 
   const { data: students, error: studentsError } = await studentQuery
-  if (studentsError) return c.json({ error: studentsError.message }, 500)
+  if (studentsError) {
+    logger.error({ error: studentsError.message }, 'Failed to fetch students for fee generation')
+    return c.json({ error: 'Failed to generate fees' }, 500)
+  }
   if (!students || students.length === 0) {
     return c.json({ error: 'No students found for the selected target' }, 400)
   }
@@ -361,7 +382,10 @@ fees.post('/generate', zValidator('json', generateSchema), async (c) => {
   }))
 
   const { data, error } = await supabase.from('fee_records').insert(records).select()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to generate fees')
+    return c.json({ error: 'Failed to generate fees' }, 500)
+  }
   return c.json({ created: data?.length ?? 0 }, 201)
 })
 
@@ -388,7 +412,7 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
   let query = supabase
     .from('fee_records')
     .select(
-      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))',
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(deleted_at, parents(full_name, deleted_at)))',
       { count: 'exact' }
     )
     .is('deleted_at', null)
@@ -404,7 +428,10 @@ fees.get('/', zValidator('query', listSchema), async (c) => {
   }
 
   const { data, error, count } = await query
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch fee records')
+    return c.json({ error: 'Failed to fetch fee records' }, 500)
+  }
   return c.json({
     data: (data ?? []).map((r) => ({
       ...r,
@@ -423,10 +450,13 @@ fees.post('/', zValidator('json', recordSchema), async (c) => {
     .from('fee_records')
     .insert({ ...body, amount_paid: 0, status, ...auditCreate(c) })
     .select(
-      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(deleted_at, parents(full_name, deleted_at)))'
     )
     .single()
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create fee record')
+    return c.json({ error: 'Failed to create fee record' }, 500)
+  }
   return c.json(
     { ...data, students: flattenStudentClass((data as { students?: StudentSubrow })?.students) },
     201
@@ -464,7 +494,10 @@ fees.get(
       .is('deleted_at', null)
       .order('full_name', { ascending: true })
 
-    if (studentsError) return c.json({ error: studentsError.message }, 500)
+    if (studentsError) {
+      logger.error({ error: studentsError.message }, 'Failed to fetch students for class sheet')
+      return c.json({ error: 'Failed to fetch class sheet' }, 500)
+    }
     if (!students || students.length === 0) {
       return c.json({
         class_name,
@@ -487,7 +520,10 @@ fees.get(
       .lte('due_date', end)
       .order('due_date', { ascending: true })
 
-    if (recordsError) return c.json({ error: recordsError.message }, 500)
+    if (recordsError) {
+      logger.error({ error: recordsError.message }, 'Failed to fetch fee records for class sheet')
+      return c.json({ error: 'Failed to fetch class sheet' }, 500)
+    }
 
     const recordsByStudent: Record<string, typeof records> = {}
     for (const r of records ?? []) {
@@ -546,7 +582,10 @@ fees.get(
       .gte('due_date', start)
       .lte('due_date', end)
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch monthly report')
+      return c.json({ error: 'Failed to fetch monthly report' }, 500)
+    }
 
     const all = records ?? []
 
@@ -685,7 +724,10 @@ fees.get(
       .gte('due_date', `${year}-01-01`)
       .lte('due_date', `${year}-12-31`)
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to fetch annual report')
+      return c.json({ error: 'Failed to fetch annual report' }, 500)
+    }
 
     const records = data ?? []
     const today = new Date().toISOString().split('T')[0]
@@ -748,12 +790,12 @@ fees.get('/:id', async (c) => {
   const { data, error } = await supabase
     .from('fee_records')
     .select(
-      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(deleted_at, parents(full_name, deleted_at)))'
     )
     .eq('id', id)
     .is('deleted_at', null)
     .single()
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) return c.json({ error: 'Fee record not found' }, 404)
   return c.json({
     ...data,
     students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
@@ -809,11 +851,14 @@ fees.put('/:id/payment', zValidator('json', paymentSchema), async (c) => {
     })
     .eq('id', id)
     .select(
-      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
+      '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(deleted_at, parents(full_name, deleted_at)))'
     )
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to record payment')
+    return c.json({ error: 'Failed to record payment' }, 500)
+  }
   return c.json({
     ...data,
     students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
@@ -881,11 +926,14 @@ fees.put(
       .update({ ...body, status, ...auditUpdate(c) })
       .eq('id', id)
       .select(
-        '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(parents(full_name)))'
+        '*, students(full_name, classrooms(name, academic_year), photo_url, parent_students(deleted_at, parents(full_name, deleted_at)))'
       )
       .single()
 
-    if (error) return c.json({ error: error.message }, 500)
+    if (error) {
+      logger.error({ error: error.message }, 'Failed to update fee record')
+      return c.json({ error: 'Failed to update fee record' }, 500)
+    }
     return c.json({
       ...data,
       students: flattenStudentClass((data as { students?: StudentSubrow })?.students),
@@ -909,7 +957,10 @@ fees.delete('/:id', async (c) => {
   }
 
   const { error } = await supabase.from('fee_records').update(auditDelete(c)).eq('id', id)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete fee record')
+    return c.json({ error: 'Failed to delete fee record' }, 500)
+  }
   return c.json({ message: 'Fee record deleted' })
 })
 

@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
+import { orIlike } from '../lib/search'
 
 const announcements = new Hono()
 
@@ -38,7 +40,7 @@ announcements.get('/', zValidator('query', paginationSchema), async (c) => {
     .range(from, to)
 
   if (search) {
-    query = query.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
+    query = query.or(orIlike(['title', 'body'], search))
   }
   if (category) {
     query = query.eq('category', category)
@@ -46,7 +48,10 @@ announcements.get('/', zValidator('query', paginationSchema), async (c) => {
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch announcements')
+    return c.json({ error: 'Failed to fetch announcements' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -69,7 +74,7 @@ announcements.get('/:id', async (c) => {
     .eq('id', id)
     .single()
 
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) return c.json({ error: 'Announcement not found' }, 404)
   return c.json(data)
 })
 
@@ -83,7 +88,10 @@ announcements.post('/', zValidator('json', announcementSchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create announcement')
+    return c.json({ error: 'Failed to create announcement' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -100,7 +108,10 @@ announcements.put('/:id', zValidator('json', announcementSchema.partial()), asyn
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update announcement')
+    return c.json({ error: 'Failed to update announcement' }, 500)
+  }
   return c.json(data)
 })
 
@@ -113,7 +124,10 @@ announcements.delete('/:id', async (c) => {
     .eq('id', id)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete announcement')
+    return c.json({ error: 'Failed to delete announcement' }, 500)
+  }
   return c.json({ message: 'Announcement deleted' })
 })
 

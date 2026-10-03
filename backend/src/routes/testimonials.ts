@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const testimonials = new Hono()
 
@@ -32,7 +33,10 @@ testimonials.get('/public', async (c) => {
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false })
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch public testimonials')
+    return c.json({ error: 'Failed to fetch testimonials' }, 500)
+  }
   return c.json({ data: data ?? [] })
 })
 
@@ -56,7 +60,10 @@ testimonials.get('/', zValidator('query', paginationSchema), async (c) => {
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch testimonials')
+    return c.json({ error: 'Failed to fetch testimonials' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -79,7 +86,7 @@ testimonials.get('/:id', async (c) => {
     .eq('id', id)
     .single()
 
-  if (error) return c.json({ error: error.message }, 404)
+  if (error) return c.json({ error: 'Testimonial not found' }, 404)
   return c.json(data)
 })
 
@@ -93,7 +100,10 @@ testimonials.post('/', zValidator('json', testimonialSchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to create testimonial')
+    return c.json({ error: 'Failed to create testimonial' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -110,7 +120,10 @@ testimonials.put('/:id', zValidator('json', testimonialSchema.partial()), async 
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to update testimonial')
+    return c.json({ error: 'Failed to update testimonial' }, 500)
+  }
   return c.json(data)
 })
 
@@ -123,7 +136,10 @@ testimonials.delete('/:id', async (c) => {
     .eq('id', id)
     .is('deleted_at', null)
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to delete testimonial')
+    return c.json({ error: 'Failed to delete testimonial' }, 500)
+  }
   return c.json({ message: 'Testimonial deleted' })
 })
 

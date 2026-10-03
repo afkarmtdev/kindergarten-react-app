@@ -2,6 +2,7 @@ import { createMiddleware } from 'hono/factory'
 import { verify } from 'hono/jwt'
 import { createHash } from 'crypto'
 import { supabase } from '../db/supabase'
+import { hasLiveStudent } from '../lib/parentLinks'
 
 export const parentMiddleware = createMiddleware(async (c, next) => {
   const token = c.req.header('Authorization')?.replace('Bearer ', '')
@@ -45,11 +46,14 @@ export const parentMiddleware = createMiddleware(async (c, next) => {
   // Fetch child student IDs for this parent
   const { data: links } = await supabase
     .from('parent_students')
-    .select('student_id')
+    .select('student_id, students(deleted_at)')
     .eq('parent_id', session.parent_id)
     .is('deleted_at', null)
 
-  const childIds = (links ?? []).map((l: { student_id: string }) => l.student_id)
+  // A soft-deleted student keeps its link row; its data must not stay reachable from the portal
+  const childIds = (links ?? [])
+    .filter(hasLiveStudent)
+    .map((l: { student_id: string }) => l.student_id)
 
   c.set('parentId', session.parent_id)
   c.set('parentChildIds', childIds)

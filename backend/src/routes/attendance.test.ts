@@ -360,7 +360,7 @@ describe('POST /bulk — bulk attendance', () => {
 
     expect(res.status).toBe(500)
     const json = await res.json()
-    expect(json.error).toBe('bulk upsert failed')
+    expect(json.error).toBe('Failed to save attendance')
   })
 })
 

@@ -35,6 +35,13 @@ describe('mergeLandingContent', () => {
     expect(merged.about.photo_urls).toEqual(['https://x.test/a.jpg'])
   })
 
+  test('keeps a stored hero video and nulls anything that is not a string', () => {
+    const url = 'https://x.test/hero/a.mp4'
+    expect(mergeLandingContent({ hero: { video_url: url } }).hero.video_url).toBe(url)
+    expect(mergeLandingContent({ hero: { video_url: 42 } }).hero.video_url).toBeNull()
+    expect(mergeLandingContent({ hero: {} }).hero.video_url).toBeNull()
+  })
+
   test('falls back to hidden for an unknown stats mode', () => {
     expect(mergeLandingContent({ stats: { mode: 'sometimes' } }).stats.mode).toBe('hidden')
   })

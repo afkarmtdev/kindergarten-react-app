@@ -109,6 +109,6 @@ describe('PUT /:studentId/:term — upsert report card comments', () => {
 
     expect(res.status).toBe(500)
     const json = await res.json()
-    expect(json.error).toBe('upsert failed')
+    expect(json.error).toBe('Failed to save portfolio report')
   })
 })

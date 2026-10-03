@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Star } from 'lucide-react'
 import { useT } from '@/hooks/useT'
 import { useLandingSection } from '@/hooks/useLandingSection'
@@ -6,13 +7,15 @@ import { translations } from '@/lib/translations'
 import { pickText } from '@/lib/landingContent'
 import { WebsiteSectionCard } from './WebsiteSectionCard'
 import { BilingualField } from './BilingualField'
+import { HeroVideoUpload } from './HeroVideoUpload'
 
-/** Settings > Website > Hero Copy — the tagline, headline and subtitle in the school's words. */
+/** Settings > Website > Hero Copy — the tagline, headline, subtitle and optional clip in the school's words. */
 export function WebsiteHeroSection() {
   const t = useT()
   const lang = useSettingsStore((s) => s.lang)
   const { value, update, isDirty, isLoading, hasSchoolInfo, save, isSaving } =
     useLandingSection('hero')
+  const [uploading, setUploading] = useState(false)
 
   const en = translations.en
   const ms = translations.ms
@@ -32,6 +35,7 @@ export function WebsiteHeroSection() {
       hasSchoolInfo={hasSchoolInfo}
       isDirty={isDirty}
       isSaving={isSaving}
+      saveDisabled={uploading}
       onSave={save}
     >
       {/* Live preview */}
@@ -88,6 +92,11 @@ export function WebsiteHeroSection() {
         placeholderMs={ms.heroSubtitle}
         multiline
         hint={t('settingsBlankKeepsDefault')}
+      />
+      <HeroVideoUpload
+        value={value.video_url}
+        onChange={(video_url) => update({ video_url })}
+        onUploadingChange={setUploading}
       />
     </WebsiteSectionCard>
   )

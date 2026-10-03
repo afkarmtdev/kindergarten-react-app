@@ -11,6 +11,17 @@ Every time new knowledge surfaces during a session — a discovered pattern, a c
 **Use this decision tree:**
 
 ```
+Is it about one module — how it works, a gotcha, a bug's root cause,
+a data-flow detail, an open issue (students, fees, portal, landing...)?
+  YES → Update that module's skill file in .claude/commands/<module>.md,
+         creating it if the module has none. Do this every time, in the
+         same session, without asking (standing user preference).
+         If the lesson also exposes a wrong pattern in a shared template
+         skill (new-route, new-migration, portal-page...), fix that skill
+         too so the pattern stops spreading.
+
+  NO ↓
+
 Is it a reusable, invocable task with complex/arcane steps
 that would be easy to forget or get wrong?
   YES → Create or update a skill file in .claude/commands/
@@ -37,13 +48,16 @@ but not universal enough for CLAUDE.md?
 
 **Quick reference:**
 
-| Where                       | What goes here                                                                         |
-| --------------------------- | -------------------------------------------------------------------------------------- |
-| `CLAUDE.md`                 | Stable conventions, architecture, design system, security rules, project structure     |
-| `memory/`                   | Session learnings, debugging wins, user preferences, narrowly scoped patterns          |
-| `.claude/commands/skill.md` | Complex repeatable tasks — scaffold a page, build the bear mascot, add a backend route |
+| Where                          | What goes here                                                                         |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `.claude/commands/<module>.md` | Everything learned about one module — flow, gotchas, bug causes, open issues           |
+| `.claude/commands/skill.md`    | Complex repeatable tasks — scaffold a page, build the bear mascot, add a backend route |
+| `CLAUDE.md`                    | Stable conventions, architecture, design system, security rules, project structure     |
+| `memory/`                      | Cross-module session learnings, user preferences, tooling workarounds                  |
 
-**When in doubt, say so.** If new knowledge comes up and it's unclear where it belongs, tell the user which bucket you think it fits and why, then ask for confirmation before writing.
+**When in doubt, say so.** If new knowledge comes up and it's unclear where it belongs, tell the user which bucket you think it fits and why, then ask for confirmation before writing. Module knowledge is never in doubt: it goes in the module's skill file.
+
+**Module skill file shape:** first line `TRIGGER when: ...` naming the module's pages, routes, tables and keywords; then `# <module> — <title>`; then sections in this order: Files, Data flow, Gotchas, Open issues, Change log (dated one-liners). Keep it about how the module works now, not a diary.
 
 ## Tech Stack
 
@@ -67,7 +81,7 @@ kindergarten-app/
 │       ├── index.ts           # Hono app entry, CORS, middleware registration, public endpoints
 │       ├── routes/
 │       │   ├── auth.ts        # POST /api/auth/login (rate-limited), /logout, GET /me
-│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender, status); POST /bulk; GET /:id/timeline (cursor-paginated); portal access management
+│       │   ├── students.ts    # CRUD + paginated GET (?page, limit, search, class_id, gender, status); POST /bulk; GET /:id/timeline (cursor-paginated); portal access lives on parents.ts
 │       │   ├── attendance.ts  # GET by date (paginated), bulk POST, stats summary, trend
 │       │   ├── classes.ts     # CRUD + paginated GET (?page, limit, search)
 │       │   ├── gallery.ts           # CRUD + paginated GET (?page, limit, search)
@@ -93,7 +107,10 @@ kindergarten-app/
 │       │   ├── logger.ts      # pino instance (pino-pretty in dev, JSON in prod)
 │       │   ├── sanitise.ts    # stripHtml(str) + sanitiseStrings(obj) — applied before all inserts
 │       │   ├── landingContent.ts # Zod schema + sanitiser + merge for school_info.landing_content — tested independently
-│       │   └── fees.ts        # Pure functions: deriveStatus(), monthRange() — tested independently
+│       │   ├── fees.ts        # Pure functions: deriveStatus(), monthRange() — tested independently
+│       │   ├── parentLinks.ts # activeParent() (earliest live link, skips unlinked/deleted parents) + hasLiveStudent() for nested parent_students selects — tested
+│       │   ├── timeline.ts    # Student timeline cursor ("date|n") parse + merge-and-page — tested
+│       │   └── search.ts      # orIlike(columns, search): quoted PostgREST `or` filter for list search — tested
 │       ├── db/
 │       │   └── supabase.ts    # Supabase service-role client
 │       └── types/
@@ -123,7 +140,8 @@ kindergarten-app/
 │       │   │       ├── WashPattern.tsx     # Faint currentColor pattern: dots|polka|lines|grid|gingham|stars|hearts (.lp-pat-*); fades out near section edges (.lp-pat-fade)
 │       │   │       ├── SpotlightGlow.tsx   # Radial-gradient blob in a brand bright behind a heading/card cluster (no filter blur); closest-side ellipse, height capped to the section; title glows use top-0 + height={TITLE_GLOW_HEIGHT} (340px ellipse centred on the title); keep glows inside the section so they never clip flat; optional darkColor swaps the bright in dark mode (.lp-glow CSS vars)
 │       │   │       ├── OutlineWatermark.tsx # Giant outlined Titan One (`font-bubble`) bubble-letter text ("ABC", "123") at ~5%; `ghost` makes it the section's far layer (FloatingDoodle ghost parallax) in place of an oversized shape, as the numbers section does
-│       │   │       └── CrayonWord.tsx      # Heading helper: highlighter swipe or underline behind the last word, draws in on first view
+│       │   │       ├── CrayonWord.tsx      # Heading helper: highlighter swipe or underline behind the last word, draws in on first view
+│       │   │       └── HeroMedia.tsx       # Hero right column (lg+): school video (muted loop, sound toggle, gallery photo as poster) or first gallery photo, in the blob clip; <video> not mounted below lg, plays only in viewport, reduced motion = still frame
 │       │   ├── dashboard/
 │       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays + charts
 │       │   │   └── components/
@@ -172,7 +190,8 @@ kindergarten-app/
 │       │   │       ├── DocumentNumberingSection.tsx  # Segment builder + preview + save
 │       │   │       ├── SchoolInfoSection.tsx         # Logo upload, school name, address, phone, email
 │       │   │       ├── AppearanceSection.tsx         # Dark mode toggle + EN/BM language picker
-│       │   │       ├── WebsiteHeroSection.tsx        # Website > Hero Copy — bilingual tagline/headline/subtitle + live preview
+│       │   │       ├── WebsiteHeroSection.tsx        # Website > Hero Copy — bilingual tagline/headline/subtitle + live preview + optional hero video
+│       │   │       ├── HeroVideoUpload.tsx           # Hero video tile: MP4/WebM up to HERO_VIDEO_MAX_MB, uploads as-is (no crop) to school-media/hero/, looping preview
 │       │   │       ├── WebsiteStorySection.tsx       # Website > Our Story — toggle, founded year, story, approach, principal message/photo, 3 photos
 │       │   │       ├── WebsiteStatsSection.tsx       # Website > Numbers — live/manual/hidden mode + values
 │       │   │       ├── WebsiteProgrammesSection.tsx  # Website > Programmes — pick + order the 6 built-in feature cards
@@ -180,7 +199,7 @@ kindergarten-app/
 │       │   │       ├── WebsiteSectionCard.tsx        # Shared card chrome for Website panels (heading, loading, save bar, "save General first" notice)
 │       │   │       ├── BilingualField.tsx            # One label, EN + BM inputs (text or textarea)
 │       │   │       ├── ToggleSwitch.tsx              # Pill switch row with label
-│       │   │       └── PhotoUploadTile.tsx           # Dashed upload tile → school-logo bucket via lib/uploadSchoolMedia.ts
+│       │   │       └── PhotoUploadTile.tsx           # Dashed upload tile → school-media bucket via lib/uploadSchoolMedia.ts
 │       │   ├── testimonials/
 │       │   │   ├── TestimonialsPage.tsx # Grid, 9/page, search, add/edit modal wired
 │       │   │   └── components/
@@ -271,6 +290,7 @@ kindergarten-app/
 │       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team)
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
 │       │   ├── useInViewport.ts  # Shared IntersectionObserver → true while an element is near the viewport; gates decorative infinite animations
+│       │   ├── useMediaQuery.ts  # useSyncExternalStore over matchMedia → true while a CSS media query matches
 │       │   ├── useMalaysiaDay.ts # isMalaysiaDay(now) + useMalaysiaDay() — true 16 to 22 Sep local time (Malaysia Day week), plus a one-off 2026 extension through 6 Oct, re-checked each minute; localStorage kc-preview-malaysia-day=1 forces it; hands every StickerBear its flag
 │       │   └── useAttendanceRealtime.ts # Supabase realtime subscription for live attendance updates
 │       ├── lib/
@@ -279,7 +299,8 @@ kindergarten-app/
 │       │   ├── translations.ts    # Full EN/MS translation map (~160 keys)
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
 │       │   ├── landingContent.ts  # DEFAULT_LANDING_CONTENT, mergeLandingContent(), pickText(), resolveStats(), FEATURE_META — tested
-│       │   ├── uploadSchoolMedia.ts # Uploads principal/about/team photos to school-logo bucket under a folder prefix
+│       │   ├── uploadSchoolMedia.ts # SCHOOL_MEDIA_BUCKET; uploads principal/about/team photos to it under a folder prefix; uploadHeroVideo() puts the hero clip under hero/
+│       │   ├── heroVideo.ts       # checkHeroVideo() (MP4/WebM, HERO_VIDEO_MAX_MB = 20) + heroVideoExtension() — tested
 │       │   ├── cropImage.ts       # CROP_SHAPES (aspect per display shape), cropImageFile() canvas crop → JPEG — tested
 │       │   ├── reloadCurtain.ts   # isCurtainPath() (landing + /admin/*), markCurtainHandoff(), hasCurtainHandoff() (pure, StrictMode-safe), clearCurtainHandoff() + curtain timings — tested
 │       │   └── version.ts         # APP_VERSION + APP_NAME (brand name single source of truth)
@@ -313,6 +334,7 @@ All tables with business data include **audit columns** (see Audit Trail section
 ```sql
 students       (id, full_name, date_of_birth, gender, class_id→classrooms, status[active|graduated|inactive], parent_name, parent_email, parent_phone, photo_url, access_code UNIQUE, portal_pin_hash, created_at, +audit)
                NOTE: class_name is NOT stored — derive via .select('*, classrooms(name)') join, then flattenClassroom() in backend
+               NOTE: parent_name/parent_email/parent_phone are legacy and nullable (never written by the API) — parent info lives in parents via parent_students
 classrooms     (id, name, academic_year, status[active|graduated], teacher_name, capacity, created_at, +audit)
 attendance     (id, student_id→students, date, status[present|absent|late|excused], notes, recorded_by, created_at, +audit)
                UNIQUE(student_id, date); has audit columns but NO soft-delete (daily records are overwritten, not deleted)
@@ -333,6 +355,7 @@ fee_records        (id, student_id→students, type, description, amount_owed, a
                    RLS: authenticated only
                    Status derivation (backend): waived if discount>=owed; paid if paid>=(owed-discount); partial if paid>0; unpaid otherwise
 parents            (id, full_name, email UNIQUE, phone, access_code UNIQUE, portal_pin_hash, created_at, +audit)
+                   email is stored trimmed + lower-cased (the student form finds parents by it); portal_pin_hash never leaves the server (API sends has_pin)
                    Parent-level portal accounts; one parent can have multiple children
 parent_students    (id, parent_id→parents, student_id→students, relationship[parent|guardian|step_parent|other], created_at, deleted_at, deleted_by)
                    Junction table; soft-delete for unlinking audit
@@ -342,7 +365,7 @@ inquiries          (id, parent_name, child_name, child_age, phone, message, stat
                    Public INSERT (rate-limited); authenticated SELECT + PUT status
 school_info        (id, school_name, address, phone, email, logo_url, principal_name, registration_number, whatsapp_number, operating_hours jsonb, google_maps_embed_url, facebook_url, instagram_url, landing_content jsonb, updated_at, created_by, modified_by)
                    Single-row config; no soft-delete
-                   landing_content = { hero, about, stats, features, team } — see LandingContent in packages/types; validated by backend/src/lib/landingContent.ts
+                   landing_content = { hero (incl. video_url), about, stats, features, team } — see LandingContent in packages/types; validated by backend/src/lib/landingContent.ts
 daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at, +audit)
                    UNIQUE(student_id, report_date); RLS: authenticated only
 portfolio_entries  (id, student_id→students, domain[physical|cognitive|language|social_emotional|creative], observation, photo_url, term, recorded_by, entry_date, created_at, +audit)
@@ -502,7 +525,7 @@ This project runs on the **free tier**. Key limits:
 
 - 500 MB database storage, 1 GB file storage, 50 MB max upload size
 - No automatic backups / point-in-time recovery
-- Seven Storage buckets required (all must be created as **public** in the Supabase dashboard):
+- Storage buckets (all **public** except `payment-proofs`; create them in the Supabase dashboard unless a migration says it creates them):
   - `student-photos` — student profile photo uploads (StudentModal)
   - `gallery-photos` — landing page gallery photo uploads (GalleryModal)
   - `announcement-banners` — announcement banner image uploads (AnnouncementModal)
@@ -510,7 +533,8 @@ This project runs on the **free tier**. Key limits:
   - `artwork-photos` — art wall artwork uploads (ArtWallModal); compressed before upload
   - `portfolio-photos` — portfolio entry photo uploads (PortfolioEntryModal)
   - `resumes` — job application resume uploads (ApplicationFormModal); PDF/DOC/DOCX, 5 MB limit; anon upload + authenticated read/delete
-  - `school-logo` — school logo (SchoolInfoSection) AND landing identity photos under folder prefixes `principal/`, `about/`, `team/` (Settings > Website via `lib/uploadSchoolMedia.ts`); one bucket so no extra setup is needed
+  - `school-media` (`SCHOOL_MEDIA_BUCKET` in `lib/uploadSchoolMedia.ts`) — everything the school uploads for its website, by folder prefix: `logo/` (SchoolInfoSection), `principal/`, `about/`, `team/` (Settings > Website), `hero/` video (MP4/WebM, 20 MB cap, `cacheControl` 1 year). Created by migration `20261003120000_storage_school_media.sql`, not the dashboard: public, 25 MB file size limit (above the app's 20 MB check so its friendly error fires first), allowed MIME types `image/jpeg, video/mp4, video/webm` (every image is re-encoded to JPEG by the crop/compress step before upload). The hero clip autoplays for every desktop visitor, so it is the biggest egress cost on the free tier — keep it short
+  - `school-logo` — **legacy, read-only in practice**: held the logo and website photos before `school-media`. Nothing uploads to it any more, but keep the bucket and its policies, because URLs saved in `school_info` (logo_url, landing_content photos) may still point at it
 
 ## Environment Variables
 
@@ -652,7 +676,7 @@ Student learning portfolio with KSPK domain observations and termly report cards
 
 Unified chronological activity feed on the student profile page. Aggregates events from 6 data sources into one paginated stream.
 
-- Backend: `GET /students/:id/timeline` — parallel `Promise.all` across attendance, portfolio entries, art wall, fee records, portfolio reports, daily reports. Cursor-based pagination (`before` param). Each query hits `student_id` index, returns max `limit+1` rows — scales to 100K+ records per table.
+- Backend: `GET /students/:id/timeline` — parallel `Promise.all` across attendance, portfolio entries, art wall, fee records, portfolio reports, daily reports, incidents. Cursor `before=<date>|<n>` (continue from that day, skipping the n events of it already shown; a plain date still means strictly before). Each query hits the `student_id` index and returns at most `limit + 1 + n` rows, except art wall, which is fetched whole (optional `artwork_date` falls back to the upload day, which SQL cannot order on). Merge and paging live in `lib/timeline.ts`.
 - Frontend: `StudentTimeline.tsx` — `useInfiniteQuery` with "Load more" button. Events grouped by month, color-coded cards with left border per type. Attendance streaks collapsed ("Present for 5 days" instead of 5 separate entries). Icon tooltips translated via `useT()`.
 - Types: `TimelineEvent { type, date, title, subtitle? }` in `packages/types`
 - Event types: `attendance` (green), `portfolio` (purple), `artwork` (pink), `fee_payment` (orange), `report_card` (blue), `daily_report` (yellow)
@@ -819,7 +843,7 @@ Full implementation details — eye states, idle machine timing, critical timer 
 
 - **Releasing**: use `/deploy` (`.claude/commands/deploy.md`) — bumps the version, commits, pushes the feature branch, merges into `develop`, then `develop` into `main`, and lists manual follow-ups (migrations, seeds, buckets, env vars).
 - **Version bump — always update both files in sync**: `frontend/src/lib/version.ts` (bundled into JS) AND `frontend/public/version.json` (served live, never cached). Vite forbids importing from `public/` as a JS module, so they cannot share a source — bump both manually.
-- **Build updates (PWA)**: `vite-plugin-pwa` runs in `prompt` mode with `clientsClaim: true`. `useVersionCheck` (mounted once via `UpdateBanner` in `App.tsx`, so every page including the landing page gets it) wraps `useRegisterSW` — a waiting service worker OR a `version.json` mismatch shows the banner; the button sends SKIP_WAITING and reloads on `controlling`. Checks run hourly, on `visibilitychange`, and on `pageshow` (iOS Safari restores tabs from bfcache without a navigation). `navigateFallbackAllowlist` limits the precached offline shell to `/admin` and `/portal`; public routes always fetch `index.html` from the network. Do not add `registerSW.js` or a second `useRegisterSW` call — each registration adds page-lifetime listeners. **Reload curtain**: on the landing page and every `/admin` route (`isCurtainPath`; the portal is excluded), the Reload tap drops `ReloadCurtain` (phase `enter`, holds indefinitely because the wait is 0.5 to 12 s), writes `kc-curtain` to sessionStorage and defers `applyUpdate()` by `CURTAIN_ENTER_MIN_MS` so the drop is seen even when no worker is waiting and the reload would be instant; `ReloadCurtainHandoff` in `App.tsx` finds the flag on the new build's first render and plays phase `exit` so the hard reload's white flash is covered. To preview the exit half without a deploy, run `sessionStorage.setItem('kc-curtain','1'); location.reload()` in the console on `/` or any admin page.
+- **Build updates (PWA)**: `vite-plugin-pwa` runs in `prompt` mode with `clientsClaim: true`. `useVersionCheck` (mounted once via `UpdateBanner` in `App.tsx`, so every page including the landing page gets it) wraps `useRegisterSW` — a waiting service worker OR a `version.json` mismatch shows the banner; the button sends SKIP_WAITING and reloads on `controlling`. Checks run hourly, on `visibilitychange`, and on `pageshow` (iOS Safari restores tabs from bfcache without a navigation). `navigateFallbackAllowlist` limits the precached offline shell to `/admin` and `/portal`; public routes always fetch `index.html` from the network. Supabase Storage is runtime-cached CacheFirst, except `.mp4`/`.webm` which are `NetworkOnly` (video streams with Range requests; a cached full copy breaks Safari playback) — keep that rule above the Storage rule, since Workbox takes the first match. Do not add `registerSW.js` or a second `useRegisterSW` call — each registration adds page-lifetime listeners. **Reload curtain**: on the landing page and every `/admin` route (`isCurtainPath`; the portal is excluded), the Reload tap drops `ReloadCurtain` (phase `enter`, holds indefinitely because the wait is 0.5 to 12 s), writes `kc-curtain` to sessionStorage and defers `applyUpdate()` by `CURTAIN_ENTER_MIN_MS` so the drop is seen even when no worker is waiting and the reload would be instant; `ReloadCurtainHandoff` in `App.tsx` finds the flag on the new build's first render and plays phase `exit` so the hard reload's white flash is covered. To preview the exit half without a deploy, run `sessionStorage.setItem('kc-curtain','1'); location.reload()` in the console on `/` or any admin page.
 - **Hosting — Railway + `serve`**: the frontend service runs `npx serve frontend/dist -s` from the repo root (Railway custom start command), so Railpack's Caddy is NOT used. Cache headers live in `frontend/public/serve.json` — Vite copies `public/` into `dist/`, which is where `serve` reads its config. Rules are applied in order and later matches override earlier ones: `**` is `no-cache`, icons/images 1h, `assets/**` immutable. `-s` keeps the SPA fallback to `index.html`.
 
 - **One component, one purpose, one file** — every React component goes in its own `.tsx` file with a single exported component. Never define multiple exported components in one file.
@@ -852,6 +876,7 @@ Full implementation details — eye states, idle machine timing, critical timer 
 - **No `console.log` in backend routes** — use `logger` from `lib/logger.ts` (pino). `logger.error({ error: error.message }, 'context')` for errors, `logger.info()` for informational. Route files never use `console.log`.
 - **Generic error messages to clients** — never expose `error.message` from Supabase/PostgreSQL in API responses. Log the real error with `logger.error()`, return a human-friendly generic message: `c.json({ error: 'Failed to fetch students' }, 500)`. Postgres errors can leak table names, column names, and constraint details.
 - **UUID validation on path params** — all route handlers using `:id` or `:studentId` params must validate with `isValidUUID()` from `lib/validation.ts` before querying. Return 400 on invalid UUID, not 500 from Postgres.
+- **List search goes through `orIlike()`** (`lib/search.ts`) for multi-column search, or `.ilike(col, `%${search}%`)` for one column. Never interpolate raw search text into `.or()`: a comma or bracket in the search breaks the PostgREST filter.
 - **Public endpoints must use explicit SELECT columns** — never `.select('*')` on public-facing (anon) queries. Always list columns explicitly and exclude audit columns (`created_by`, `modified_by`, `deleted_by`, `deleted_at`, `modified_at`) to prevent leaking admin user IDs.
 - **Rate limiting on public POST endpoints** — all unauthenticated POST routes (inquiries, job applications, portal login) must have rate limiting using the in-memory Map pattern. Typical limits: 3-10 requests per IP per 10 minutes.
 - **Storage bucket path scoping** — anon upload RLS policies must scope uploads to a specific folder prefix (e.g. `(storage.foldername(name))[1] = 'applications'`). Never allow unrestricted bucket-wide uploads from anonymous users.

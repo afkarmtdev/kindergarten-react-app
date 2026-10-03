@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS parent_sessions (
 ALTER TABLE parent_sessions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admin manages parent sessions" ON parent_sessions
   FOR ALL TO authenticated USING (true);
+-- Real databases also carry a legacy parent_sessions.student_id column from before 002.
+-- It was NOT NULL until 20261003140000_parent_sessions_parent_scoped.sql; nothing writes it now.
 
 -- Daily activity reports
 CREATE TABLE IF NOT EXISTS daily_reports (
@@ -242,9 +244,9 @@ app.route('/api/portal', portalRoute)
 
    All portal pages: `React.lazy()` + `<Suspense fallback={<CuteLoader />}>`. Wrap `<App>` with `<ParentAuthProvider>`.
 
-8. `frontend/src/components/admin/GeneratePortalAccessModal.tsx` — shows the generated access code + PIN input + copy-to-clipboard. Opens from StudentProfilePage "Portal Access" card.
+8. `frontend/src/components/admin/GeneratePortalAccessModal.tsx` — takes a `parentId`; shows the generated access code + PIN input + copy-to-clipboard; generate / set PIN / revoke all go through `parentsApi` (`/api/parents/:id/...`). Opens from the student profile "Portal Access" card.
 
-9. Add "Portal Access" section to `frontend/src/pages/student-profile/StudentProfilePage.tsx` — shows current access_code or "Not set"; buttons: Generate Code / Reset PIN / Revoke Access.
+9. `frontend/src/pages/student-profile/components/PortalAccessCard.tsx` — the student profile looks up the linked parent with `parentsApi.getByStudent(studentId)` (query key `['parent-by-student']`) and shows that parent's access_code or "Not set"; buttons: Generate Code / Reset PIN / Revoke Access. There are no student-level portal endpoints.
 
 ---
 
@@ -411,3 +413,31 @@ domainCreative / 'Creative' / 'Kreativiti'
 - Access code uniqueness: retry generation if insert fails with unique constraint violation
 - PIN must be exactly 6 digits — validate at both backend (zod) and frontend (input maxLength=6, pattern=\d{6})
 - Update the checklist in `memory/parent-portal-plan.md` as each phase is completed
+- **Portal login fails with "Failed to create session"** when `parent_sessions.student_id` is still `NOT NULL` on the database: login inserts `parent_id` only (`routes/parentAuth.ts`). Fix is migration `20261003140000_parent_sessions_parent_scoped.sql` (Step 5 of `002_parents.sql`, which was left commented out). Steps 6 and 7 of 002 (drop legacy columns) are still not run.
+- **Revoke by parent, never by student.** Sessions carry no `student_id`, so anything that deletes sessions must filter on `parent_id` (`DELETE /api/parents/:id/portal-access`, `DELETE /api/parents/:id/sessions/:sessionId`).
+- **Every read of `parent_students` must skip unlinked rows.** Unlink is a soft delete. Top-level reads add `.is('deleted_at', null)`; nested selects (`parent_students(deleted_at, parents(..., deleted_at))`) cannot be filtered that way and must go through `activeParent()` in `backend/src/lib/parentLinks.ts`, which also skips deleted parents and returns the **earliest** live link (select `created_at` on the link).
+- **Every children list must skip soft-deleted students**: select `students(..., deleted_at)` and filter with `hasLiveStudent()` (`lib/parentLinks.ts`). This covers `parentMiddleware` (`parentChildIds`, which gates every portal data route), portal `/me`, the login response, `GET /parents/:id` and `children_count`. A deleted student keeps its link row, so without the filter its data stays readable from the portal.
+- **Parent emails are stored trimmed + lower-cased** (`parentSchema` in `parents.ts`, `upsertParentLink` in `students.ts`). The student form finds parents by lower-cased email; a mixed-case email made it create a duplicate parent. Migration `20261003150000_parents_lowercase_emails.sql` fixed old rows, skipping case-duplicates (query in the file lists them for a manual merge).
+- **`portal_pin_hash` never leaves the server.** `GET /parents/by-student/:studentId` sends `has_pin: boolean`; `Parent.has_pin` in `packages/types`.
+- **Deleting a parent must also delete their `parent_sessions`.** `parentMiddleware` accepts any live session without checking the parent is deleted (only login does), so before 2026-10-03 a deleted parent stayed logged in until the session expired. `DELETE /parents/:id` now removes the sessions; do the same in any new path that deletes or merges parents.
+- Hono context vars (`user`, `parentId`, `parentChildIds`) are typed in `backend/src/types/hono.d.ts`; add new middleware vars there.
+- **Linking always upserts** on `(parent_id, student_id)` with `deleted_at: null, deleted_by: null` (`POST /:id/link-student`, `upsertParentLink` in `students.ts`). A plain insert fails on a pair that was unlinked before, because the soft-deleted row still holds the unique key.
+- A deleted parent whose email is entered again on a student form is restored with `access_code` and `portal_pin_hash` cleared; reviving it must never bring back old portal access.
+
+---
+
+## Open issues
+
+- None known.
+
+---
+
+## Change log
+
+- 2026-10-03: `parent_sessions` made parent-scoped on the database (migration `20261003140000`); portal login was failing.
+- 2026-10-03: Removed unused student-level portal routes from `students.ts`; portal access is managed only in `parents.ts`.
+- 2026-10-03: `parents.ts` errors made generic + logged; the real message is in the backend log only.
+- 2026-10-03: Admin reads now skip unlinked links and deleted parents (`activeParent`, `.is('deleted_at', null)` on `GET /:id` children, `children_count`); `link-student` upserts so relinking works.
+- 2026-10-03: Deleted students no longer appear in children lists or reach the portal (`hasLiveStudent`, middleware `parentChildIds`); `by-student` returns `has_pin` instead of the PIN hash; parent emails lower-cased on save + migration `20261003150000`; Hono context vars typed.
+- 2026-10-03: Migration `20261003160000_merge_case_duplicate_parents.sql` merges case-duplicate parents (kept record: live, has portal access, lower-case email, oldest; links and live sessions move to it) and removes sessions of deleted parents; `DELETE /parents/:id` logs the parent out; all `:id` params validated.
+- 2026-10-03: Migrations `20261003150000` and `20261003160000` applied to the live database; the merge found 0 case-duplicate parents (all emails were lower-cased by `150000`).

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditUpsert } from '../lib/audit'
+import { logger } from '../lib/logger'
 
 const portfolioReports = new Hono()
 
@@ -32,7 +33,10 @@ portfolioReports.put('/:studentId/:term', zValidator('json', reportSchema), asyn
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to save portfolio report')
+    return c.json({ error: 'Failed to save portfolio report' }, 500)
+  }
   return c.json(data)
 })
 

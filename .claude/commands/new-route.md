@@ -17,6 +17,7 @@ import { Hono } from 'hono'
 import { supabase } from '../db/supabase'
 import { sanitiseStrings } from '../lib/sanitise'
 import { auditCreate, auditUpdate, auditDelete } from '../lib/audit'
+import { logger } from '../lib/logger'
 // For upsert routes, also import: auditUpsert
 ```
 
@@ -79,6 +80,15 @@ Rules:
 - Guard soft-delete with `.is('deleted_at', null)` to prevent re-deleting already-deleted records
 - Exceptions (no soft-delete): `parent_sessions`, `attendance`, config tables (`document_numbering`, `school_info`)
 
+**Search** (`?search=`): never interpolate it into `.or()` — a comma or bracket breaks the PostgREST filter and the list fails. Use the quoting helper:
+
+```ts
+import { orIlike } from '../lib/search'
+
+if (search) query = query.or(orIlike(['name', 'teacher_name'], search)) // several columns
+if (search) query = query.ilike('full_name', `%${search}%`) // one column
+```
+
 ## Step 3 — Input Sanitisation (Required on Every POST/PUT)
 
 ```ts
@@ -91,15 +101,19 @@ Never pass raw request body to Supabase.
 
 ## Step 4 — Error Handling
 
-No `console.log` in route files. Return error responses:
+No `console.log` in route files. **Never put `error.message` in a response** — Postgres messages leak table, column and constraint names (it had spread to almost every route; all fixed 2026-10-03). Log the real error, return a short generic message:
 
 ```ts
-try {
-  // ...
-} catch (_err) {
-  return c.json({ error: 'Failed to process request' }, 500)
+if (error) {
+  logger.error({ error: error.message }, 'Failed to create <resource>')
+  return c.json({ error: 'Failed to create <resource>' }, 500)
 }
+
+// Single-row GET: no log, plain 404
+if (error || !data) return c.json({ error: '<Resource> not found' }, 404)
 ```
+
+Wording: `Failed to fetch|create|update|delete|save <resource>`. Tests assert the generic text (`expect(json.error).toBe('Failed to create <resource>')`), never the mocked DB message.
 
 ## Step 5 — Register in index.ts
 
@@ -182,6 +196,36 @@ Cover at minimum:
 - POST (valid body → 201, missing fields → 400, DB error → 500)
 - PUT (update, partial update)
 - DELETE / soft-delete (success message, DB error)
+
+**Asserting what the route writes**: the mock does not record calls, so to check an insert/update/upsert payload (e.g. that `deleted_at: null` is sent), wrap `mockSupabase.from` for the test and restore it in `finally`:
+
+```ts
+const calls: unknown[][] = []
+const originalFrom = mockSupabase.from
+mockSupabase.from = (table: string) => {
+  const chain = originalFrom(table)
+  if (table === '<table>') {
+    chain.upsert = (...args: unknown[]) => {
+      calls.push(args)
+      return chain
+    }
+  }
+  return chain
+}
+try {
+  // request...
+} finally {
+  mockSupabase.from = originalFrom
+}
+expect(calls).toEqual([
+  [
+    {
+      /* payload */
+    },
+    { onConflict: 'a,b' },
+  ],
+])
+```
 
 **Test setup**: mock user must include `id` for audit trail:
 

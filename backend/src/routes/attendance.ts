@@ -45,7 +45,10 @@ attendance.get('/date/:date', zValidator('query', datePageSchema), async (c) => 
 
   const { data, error, count } = await query
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch attendance')
+    return c.json({ error: 'Failed to fetch attendance' }, 500)
+  }
 
   // Flatten classrooms join on nested students object
   const mapped = (data ?? []).map((rec) => {
@@ -89,7 +92,10 @@ attendance.get('/student/:studentId', async (c) => {
   if (toDate) query = query.lte('date', toDate)
 
   const { data, error, count } = await query
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to fetch student attendance')
+    return c.json({ error: 'Failed to fetch attendance' }, 500)
+  }
 
   return c.json({
     data: data ?? [],
@@ -112,7 +118,10 @@ attendance.post('/', zValidator('json', attendanceSchema), async (c) => {
     .select()
     .single()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to save attendance')
+    return c.json({ error: 'Failed to save attendance' }, 500)
+  }
   return c.json(data, 201)
 })
 
@@ -129,7 +138,10 @@ attendance.post('/bulk', async (c) => {
     .upsert(records, { onConflict: 'student_id,date' })
     .select()
 
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to bulk save attendance')
+    return c.json({ error: 'Failed to save attendance' }, 500)
+  }
   return c.json(data, 201)
 })
 

@@ -269,6 +269,7 @@ Add to the existing route file (`backend/src/routes/<resource>.ts`):
 ```ts
 import { auditCreate } from '../lib/audit'
 import { sanitiseStrings } from '../lib/sanitise'
+import { logger } from '../lib/logger'
 
 const bulkSchema = z.object({
   <resource>: z.array(z.object({
@@ -291,7 +292,10 @@ resource.post('/bulk', zValidator('json', bulkSchema), async (c) => {
   if (valid.length === 0) return c.json({ imported: 0, failed })
 
   const { error } = await supabase.from('<table>').insert(valid)
-  if (error) return c.json({ error: error.message }, 500)
+  if (error) {
+    logger.error({ error: error.message }, 'Failed to bulk import <resource>')
+    return c.json({ error: 'Failed to import <resource>' }, 500) // never error.message
+  }
 
   return c.json({ imported: valid.length, failed }, 201)
 })
