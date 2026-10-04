@@ -284,12 +284,19 @@ export interface LandingTeam {
   members: TeamMember[]
 }
 
+export interface LandingRegistration {
+  enabled: boolean
+  /** Image of the QR code visitors scan to open the school's own enrolment form. */
+  qr_url: string | null
+}
+
 export interface LandingContent {
   hero: LandingHero
   about: LandingAbout
   stats: LandingStats
   features: LandingFeatures
   team: LandingTeam
+  registration: LandingRegistration
 }
 
 export interface PublicStats {

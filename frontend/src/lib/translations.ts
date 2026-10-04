@@ -217,6 +217,13 @@ export const translations = {
     // Landing page — CTA
     scheduleVisit: 'Schedule a Visit',
 
+    // Landing page — Register (the school's enrolment QR)
+    registerNow: 'Register Now',
+    registerTitle: 'Scan to register',
+    registerSubtitle: 'Scan the QR code with your phone camera to open our enrolment form.',
+    registerScanMe: 'Scan me',
+    registerQrAlt: 'QR code for the {school} enrolment form',
+
     // Landing page — Gallery
     galleryTitle: 'Little Moments, Big Smiles',
     gallerySubtitle: 'A peek into our colourful, joyful classrooms',
@@ -393,6 +400,7 @@ export const translations = {
     settingsNavStats: 'Numbers',
     settingsNavProgrammes: 'Programmes',
     settingsNavTeam: 'Team',
+    settingsNavRegistration: 'Registration QR',
     settingsWebsiteSaved: 'Website content saved',
     settingsWebsiteNeedsGeneral: 'Save your school details under General first.',
     settingsShowSection: 'Show this section on the website',
@@ -441,6 +449,11 @@ export const translations = {
     settingsMemberName: 'Name',
     settingsMemberRole: 'Role',
     settingsNoMembers: 'No team members yet.',
+    settingsRegistrationDesc:
+      'The QR code visitors scan to open your enrolment form. It gets its own section, and the Register Now buttons take visitors to it.',
+    settingsRegistrationQr: 'QR code image',
+    settingsRegistrationQrHint:
+      'Keep the whole code and its white border inside the crop. The section and the Register Now buttons stay hidden until a code is uploaded.',
 
     // Landing page — Our Story + Team
     aboutBadge: 'Our Story',
@@ -644,6 +657,9 @@ export const translations = {
     // Landing page — Inquiry form
     inquiryTitle: 'Interested in enrolling?',
     inquirySubtitle: 'Fill in the form below and we will get in touch with you.',
+    // Shown instead while the register band sits above the form
+    inquiryTourTitle: 'Book a tour or ask a question',
+    inquiryTourSubtitle: 'Not ready to register yet? Leave your details and we will get in touch.',
     inquiryParentName: 'Your Name',
     inquiryChildName: "Child's Name",
     inquiryChildAge: "Child's Age",
@@ -1271,6 +1287,14 @@ export const translations = {
     // Landing page — CTA
     scheduleVisit: 'Jadualkan Lawatan',
 
+    // Landing page — Register (the school's enrolment QR)
+    registerNow: 'Daftar Sekarang',
+    registerTitle: 'Imbas untuk mendaftar',
+    registerSubtitle:
+      'Imbas kod QR dengan kamera telefon anda untuk membuka borang pendaftaran kami.',
+    registerScanMe: 'Imbas saya',
+    registerQrAlt: 'Kod QR borang pendaftaran {school}',
+
     // Landing page — Gallery
     galleryTitle: 'Detik Kecil, Senyuman Besar',
     gallerySubtitle: 'Sekilas pandang bilik darjah kami yang ceria',
@@ -1447,6 +1471,7 @@ export const translations = {
     settingsNavStats: 'Angka',
     settingsNavProgrammes: 'Program',
     settingsNavTeam: 'Pasukan',
+    settingsNavRegistration: 'QR Pendaftaran',
     settingsWebsiteSaved: 'Kandungan laman web disimpan',
     settingsWebsiteNeedsGeneral: 'Simpan butiran sekolah di bahagian Umum dahulu.',
     settingsShowSection: 'Paparkan bahagian ini di laman web',
@@ -1496,6 +1521,11 @@ export const translations = {
     settingsMemberName: 'Nama',
     settingsMemberRole: 'Peranan',
     settingsNoMembers: 'Belum ada ahli pasukan.',
+    settingsRegistrationDesc:
+      'Kod QR yang diimbas pelawat untuk membuka borang pendaftaran anda. Ia dipaparkan dalam bahagian tersendiri, dan butang Daftar Sekarang membawa pelawat ke situ.',
+    settingsRegistrationQr: 'Imej kod QR',
+    settingsRegistrationQrHint:
+      'Pastikan keseluruhan kod dan jidar putihnya berada dalam bingkai pangkasan. Bahagian ini dan butang Daftar Sekarang kekal tersembunyi sehingga kod dimuat naik.',
 
     // Landing page — Our Story + Team
     aboutBadge: 'Kisah Kami',
@@ -1700,6 +1730,10 @@ export const translations = {
     // Landing page — Inquiry form
     inquiryTitle: 'Berminat untuk mendaftar?',
     inquirySubtitle: 'Isi borang di bawah dan kami akan menghubungi anda.',
+    // Shown instead while the register band sits above the form
+    inquiryTourTitle: 'Tempah lawatan atau tanya soalan',
+    inquiryTourSubtitle:
+      'Belum bersedia untuk mendaftar? Tinggalkan butiran anda dan kami akan menghubungi anda.',
     inquiryParentName: 'Nama Anda',
     inquiryChildName: 'Nama Anak',
     inquiryChildAge: 'Umur Anak',

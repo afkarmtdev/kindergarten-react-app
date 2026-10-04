@@ -11,6 +11,7 @@ import { WebsiteStorySection } from './components/WebsiteStorySection'
 import { WebsiteStatsSection } from './components/WebsiteStatsSection'
 import { WebsiteProgrammesSection } from './components/WebsiteProgrammesSection'
 import { WebsiteTeamSection } from './components/WebsiteTeamSection'
+import { WebsiteRegistrationSection } from './components/WebsiteRegistrationSection'
 
 type NavSection = {
   labelKey: TranslationKey
@@ -30,6 +31,7 @@ const NAV_SECTIONS: NavSection[] = [
       { key: 'website-programmes', labelKey: 'settingsNavProgrammes' },
       { key: 'website-team', labelKey: 'settingsNavTeam' },
       { key: 'website-stats', labelKey: 'settingsNavStats' },
+      { key: 'website-registration', labelKey: 'settingsNavRegistration' },
     ],
   },
   {
@@ -49,6 +51,7 @@ function renderContent(key: string) {
   if (key === 'website-stats') return <WebsiteStatsSection />
   if (key === 'website-programmes') return <WebsiteProgrammesSection />
   if (key === 'website-team') return <WebsiteTeamSection />
+  if (key === 'website-registration') return <WebsiteRegistrationSection />
   if (key === 'receipt') return <DocumentNumberingSection documentType="receipt" />
   if (key === 'theme') return <AppearanceSection />
   return null

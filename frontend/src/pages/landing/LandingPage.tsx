@@ -46,6 +46,7 @@ import { StickerBadge } from './components/StickerBadge'
 import { MobileCTABar } from './components/MobileCTABar'
 import { WhatsAppButton } from './components/WhatsAppButton'
 import { InquiryForm } from './components/InquiryForm'
+import { RegisterSection } from './components/RegisterSection'
 import { CoinFlipLogo } from '@/components/ui/CoinFlipLogo'
 import type { Announcement } from '@/types'
 import { CareersSection } from './components/CareersSection'
@@ -168,7 +169,7 @@ export function LandingPage() {
   // Section chain below the hero: each closing wave is painted in the NEXT
   // visible section's colour, so work out the order once here.
   // Order: hero → story → programmes → testimonials → notices → team → numbers
-  //        → gallery → artists → enquiry → careers → promise strip
+  //        → gallery → artists → register → enquiry → careers → promise strip
   const WHITE_FILL = 'fill-white dark:fill-gray-950'
   // The promise strip is a bright pink poster band in light; in dark it drops to the
   // blush nebula tint so it sits inside the galaxy instead of glowing on top of it.
@@ -178,6 +179,10 @@ export function LandingPage() {
   const afterAboutFill = content.features.show ? WHITE_FILL : afterFeaturesFill
   const afterTeamFill = content.stats.show ? 'fill-wash-peach dark:fill-wash-ocean' : WHITE_FILL
   const afterNoticesFill = content.team.show ? 'fill-wash-lavender' : afterTeamFill
+  // The last white band (gallery, or artists when there is artwork) runs into the
+  // register band when the school has a QR code up, else straight into the enquiry.
+  const INQUIRY_FILL = 'fill-wash-blush'
+  const afterArtFill = content.registration.show ? 'fill-wash-sky' : INQUIRY_FILL
   const afterInquiryFill = hasCareers ? 'fill-wash-mint' : PROMISE_FILL
   // The hero has no scallop wave: its mesh gradient (galaxy in dark) melts into
   // whatever colour the next band is through this bottom fade, so the join is
@@ -189,6 +194,13 @@ export function LandingPage() {
       : hasTestimonials
         ? 'to-wash-sky'
         : 'to-wash-lavender'
+
+  // Programme cards: three to a row from lg, two from md, one on phones. Four cards
+  // go two by two in a narrower block, since three plus one reads as a leftover.
+  const featuresTwoUp = content.features.cards.length === 4
+  const featureCardWidth = featuresTwoUp
+    ? 'w-full md:w-[calc(50%-0.75rem)]'
+    : 'w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]'
 
   const {
     data: artWallInfiniteData,
@@ -623,18 +635,20 @@ export function LandingPage() {
                 {content.hero.subtitle}
               </p>
 
+              {/* With a registration QR up, registering leads and the tour steps down
+                  to the second button; three pills do not fit the column. */}
               <div className="lp-enter-2 relative z-30 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16">
                 <a
-                  href="#contact"
+                  href={content.registration.show ? '#register' : '#contact'}
                   className="bg-kinder-orange text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg shadow-lg shadow-orange-200 dark:shadow-orange-900/40 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-900/50 hover:bg-orange-600 transition-all duration-200 text-center"
                 >
-                  {t('bookTour')}
+                  {content.registration.show ? t('registerNow') : t('bookTour')}
                 </a>
                 <a
-                  href="#programs"
+                  href={content.registration.show ? '#contact' : '#programs'}
                   className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-6 sm:px-10 py-3 sm:py-4 rounded-full font-extrabold text-base sm:text-lg hover:-translate-y-1.5 hover:border-kinder-orange hover:text-kinder-orange dark:hover:border-kinder-orange dark:hover:text-kinder-orange transition-all duration-200 text-center"
                 >
-                  {t('ourPrograms')}
+                  {content.registration.show ? t('bookTour') : t('ourPrograms')}
                 </a>
               </div>
             </div>
@@ -719,11 +733,19 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div ref={featuresFadeIn.ref} className="grid md:grid-cols-3 gap-6 md:items-start">
+            {/* Centred rows, so a last row of one or two cards sits in the middle instead
+                of leaving a hole. items-start: opening one card must not stretch its row. */}
+            <div
+              ref={featuresFadeIn.ref}
+              className={`flex flex-wrap justify-center items-start gap-6 ${
+                featuresTwoUp ? 'lg:max-w-4xl lg:mx-auto' : ''
+              }`}
+            >
               {content.features.cards.map(
                 ({ key, icon, color, titleKey, descKey, expandedKey }, idx) => (
                   <FeatureCard
                     key={key}
+                    featureKey={key}
                     icon={icon}
                     color={color}
                     titleKey={titleKey}
@@ -731,7 +753,7 @@ export function LandingPage() {
                     expandedKey={expandedKey}
                     badge={
                       idx === 0 ? (
-                        <StickerBadge color="bg-kinder-pink" textColor="text-white" rotate={8}>
+                        <StickerBadge color="bg-kinder-pink" textColor="text-white" rotate={-8}>
                           {t('badgePopular')}
                         </StickerBadge>
                       ) : idx === 3 ? (
@@ -744,7 +766,9 @@ export function LandingPage() {
                         </StickerBadge>
                       ) : undefined
                     }
-                    className={featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'}
+                    className={`${featureCardWidth} ${
+                      featuresFadeIn.isVisible ? 'lp-fade-up' : 'opacity-0'
+                    }`}
                     style={
                       featuresFadeIn.isVisible ? { animationDelay: `${idx * 100}ms` } : undefined
                     }
@@ -1056,9 +1080,13 @@ export function LandingPage() {
       {/* ════════════════════════════════════════════════════════
           GALLERY — horizontal scroll strip
       ════════════════════════════════════════════════════════ */}
+      {/* With no artwork the gallery is the last white band and closes with its own
+          wave, which has to sit flush on the bottom edge: no padding under it. */}
       <section
         id="gallery"
-        className="relative lp-clip bg-white dark:bg-gray-950 py-20 transition-colors duration-200"
+        className={`relative lp-clip bg-white dark:bg-gray-950 pt-20 ${
+          artWallItems.length === 0 ? '' : 'pb-20'
+        } transition-colors duration-200`}
       >
         <SectionBackdrop tint="neutral" pattern="polka">
           <SpotlightGlow
@@ -1224,7 +1252,7 @@ export function LandingPage() {
 
         {artWallItems.length === 0 && (
           <div className="mt-16">
-            <Wave variant="scallop" fillClassName="fill-wash-blush" />
+            <Wave variant="scallop" fillClassName={afterArtFill} />
           </div>
         )}
       </section>
@@ -1350,12 +1378,23 @@ export function LandingPage() {
           </div>
 
           <div className="mt-16">
-            <Wave variant="scallop" fillClassName="fill-wash-blush" />
+            <Wave variant="scallop" fillClassName={afterArtFill} />
           </div>
         </section>
       )}
 
-      <InquiryForm waveFillClassName={afterInquiryFill} />
+      {/* ════════════════════════════════════════════════════════
+          REGISTER — the school's enrolment QR (Settings > Website > Registration QR)
+      ════════════════════════════════════════════════════════ */}
+      {content.registration.show && (
+        <RegisterSection
+          qrUrl={content.registration.qrUrl}
+          schoolName={schoolName}
+          waveFillClassName={INQUIRY_FILL}
+        />
+      )}
+
+      <InquiryForm waveFillClassName={afterInquiryFill} afterRegister={content.registration.show} />
 
       <CareersSection />
 
@@ -1402,7 +1441,7 @@ export function LandingPage() {
       <WhatsAppButton />
 
       {/* ── Mobile sticky CTA bar ── */}
-      <MobileCTABar />
+      <MobileCTABar showRegister={content.registration.show} />
 
       {/* ── Gallery lightbox ── */}
       {lightboxIndex !== null && galleryItems.length > 0 && (

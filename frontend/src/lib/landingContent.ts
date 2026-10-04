@@ -98,6 +98,7 @@ export const DEFAULT_LANDING_CONTENT: LandingContent = {
   stats: { mode: 'hidden', students: 0, staff: 0, classes: 0, rating: 0 },
   features: { enabled: [...FEATURE_KEYS] },
   team: { enabled: false, members: [] },
+  registration: { enabled: false, qr_url: null },
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -129,6 +130,7 @@ export function mergeLandingContent(raw: unknown): LandingContent {
   const stats = isRecord(raw.stats) ? raw.stats : {}
   const features = isRecord(raw.features) ? raw.features : {}
   const team = isRecord(raw.team) ? raw.team : {}
+  const registration = isRecord(raw.registration) ? raw.registration : {}
 
   const mode = stats.mode
   const statsMode: LandingStats['mode'] =
@@ -179,6 +181,10 @@ export function mergeLandingContent(raw: unknown): LandingContent {
     },
     features: { enabled },
     team: { enabled: team.enabled === true, members },
+    registration: {
+      enabled: registration.enabled === true,
+      qr_url: typeof registration.qr_url === 'string' ? registration.qr_url : null,
+    },
   }
 }
 

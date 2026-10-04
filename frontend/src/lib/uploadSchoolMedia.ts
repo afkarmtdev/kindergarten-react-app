@@ -10,7 +10,7 @@ import { heroVideoExtension } from '@/lib/heroVideo'
  */
 export const SCHOOL_MEDIA_BUCKET = 'school-media'
 
-export type SchoolMediaFolder = 'principal' | 'about' | 'team'
+export type SchoolMediaFolder = 'principal' | 'about' | 'team' | 'registration'
 
 function uniqueName(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -20,7 +20,10 @@ function publicUrl(path: string): string {
   return supabase.storage.from(SCHOOL_MEDIA_BUCKET).getPublicUrl(path).data.publicUrl
 }
 
-/** Uploads a school identity photo (principal, story photos, team members) and returns its URL. */
+/**
+ * Uploads a school identity image (principal, story photos, team members, the
+ * registration QR code) and returns its URL.
+ */
 export async function uploadSchoolMedia(file: File, folder: SchoolMediaFolder): Promise<string> {
   const compressed = await compressImage(file, 1000, 0.85)
   const path = `${folder}/${uniqueName()}.jpg`

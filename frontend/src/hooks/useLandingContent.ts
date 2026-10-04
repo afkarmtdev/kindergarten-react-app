@@ -30,7 +30,7 @@ export function useLandingContent() {
   })
 
   return useMemo(() => {
-    const { hero, about, stats, features, team } = landingContent
+    const { hero, about, stats, features, team, registration } = landingContent
     const pick = (text: { en: string; ms: string }, fallback = '') => pickText(text, lang, fallback)
 
     const aboutStory = pick(about.story)
@@ -73,6 +73,10 @@ export function useLandingContent() {
       stats: { show: statTiles.length > 0, tiles: statTiles },
       features: { show: featureCards.length > 0, cards: featureCards },
       team: { show: team.enabled && members.length > 0, members },
+      registration: {
+        show: registration.enabled && registration.qr_url !== null,
+        qrUrl: registration.qr_url ?? '',
+      },
     }
   }, [landingContent, lang, liveStats, t, schoolName, principalName, isLoaded])
 }

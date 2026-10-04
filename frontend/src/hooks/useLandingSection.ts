@@ -12,9 +12,9 @@ function responseStatus(err: unknown): number | undefined {
 
 /**
  * Local edit state for ONE section of landing_content (hero, about, stats,
- * features, team). Loads the stored value, tracks dirtiness, and saves only
- * that slice via PUT /api/school-info/landing so panels never clobber each
- * other.
+ * features, team, registration). Loads the stored value, tracks dirtiness, and
+ * saves only that slice via PUT /api/school-info/landing so panels never
+ * clobber each other.
  */
 export function useLandingSection<K extends keyof LandingContent>(key: K) {
   const t = useT()

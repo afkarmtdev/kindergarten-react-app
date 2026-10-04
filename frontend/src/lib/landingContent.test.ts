@@ -42,6 +42,18 @@ describe('mergeLandingContent', () => {
     expect(mergeLandingContent({ hero: {} }).hero.video_url).toBeNull()
   })
 
+  test('keeps a stored registration QR and defaults to off with no code', () => {
+    const qr_url = 'https://x.test/registration/a.jpg'
+    expect(mergeLandingContent({ registration: { enabled: true, qr_url } }).registration).toEqual({
+      enabled: true,
+      qr_url,
+    })
+    expect(
+      mergeLandingContent({ registration: { enabled: 'yes', qr_url: 42 } }).registration
+    ).toEqual({ enabled: false, qr_url: null })
+    expect(mergeLandingContent({ hero: {} }).registration).toEqual({ enabled: false, qr_url: null })
+  })
+
   test('falls back to hidden for an unknown stats mode', () => {
     expect(mergeLandingContent({ stats: { mode: 'sometimes' } }).stats.mode).toBe('hidden')
   })
