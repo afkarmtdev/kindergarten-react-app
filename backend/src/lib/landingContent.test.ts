@@ -52,6 +52,24 @@ describe('landingContentPatchSchema', () => {
     ).toBe(false)
   })
 
+  test('accepts an https registration QR and rejects anything else', () => {
+    const ok = 'https://x.supabase.co/storage/v1/object/public/school-media/registration/a.jpg'
+    const parsed = landingContentPatchSchema.parse({ registration: { enabled: true, qr_url: ok } })
+    expect(parsed.registration).toEqual({ enabled: true, qr_url: ok })
+    expect(landingContentPatchSchema.parse({ registration: {} }).registration).toEqual({
+      enabled: false,
+      qr_url: null,
+    })
+    expect(
+      landingContentPatchSchema.safeParse({ registration: { qr_url: 'http://x.test/a.jpg' } })
+        .success
+    ).toBe(false)
+    expect(
+      landingContentPatchSchema.safeParse({ registration: { qr_url: 'javascript:alert(1)' } })
+        .success
+    ).toBe(false)
+  })
+
   test('caps team size at 24 and about photos at 3', () => {
     const members = Array.from({ length: 25 }, (_, i) => ({ id: String(i), name: `T${i}` }))
     expect(landingContentPatchSchema.safeParse({ team: { members } }).success).toBe(false)
@@ -78,6 +96,12 @@ describe('sanitiseLandingPatch', () => {
     const video_url = 'https://x.test/hero/a.mp4'
     const patch = landingContentPatchSchema.parse({ hero: { video_url } })
     expect(sanitiseLandingPatch(patch).hero?.video_url).toBe(video_url)
+  })
+
+  test('keeps the registration section as sent', () => {
+    const registration = { enabled: true, qr_url: 'https://x.test/registration/a.jpg' }
+    const patch = landingContentPatchSchema.parse({ registration })
+    expect(sanitiseLandingPatch(patch)).toEqual({ registration })
   })
 
   test('de-duplicates feature keys while preserving order', () => {

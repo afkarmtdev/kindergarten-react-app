@@ -55,10 +55,17 @@ const CONFETTI_CSS = `
 interface InquiryFormProps {
   /** Colour of the next section — the closing wave is painted in it. */
   waveFillClassName?: string
+  /**
+   * The register band sits right above. Registering is covered there, so this
+   * form drops its "interested in enrolling?" pitch and reads as the tour and
+   * questions path, which is what the Book a Tour buttons landing here promise.
+   */
+  afterRegister?: boolean
 }
 
 export function InquiryForm({
   waveFillClassName = 'fill-white dark:fill-gray-950',
+  afterRegister = false,
 }: InquiryFormProps) {
   const t = useT()
   const { ref, isVisible } = useFadeIn()
@@ -164,10 +171,13 @@ export function InquiryForm({
             </StickerBadge>
           </div>
           <h2 className="font-fun text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-            <CrayonWord text={t('inquiryTitle')} color="#FFD93D" />
+            <CrayonWord
+              text={t(afterRegister ? 'inquiryTourTitle' : 'inquiryTitle')}
+              color="#FFD93D"
+            />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-3">
-            {t('inquirySubtitle')}
+            {t(afterRegister ? 'inquiryTourSubtitle' : 'inquirySubtitle')}
           </p>
         </div>
 

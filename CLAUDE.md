@@ -125,15 +125,18 @@ kindergarten-app/
 │       ├── App.tsx            # Router, QueryClient config (staleTime 30s, gcTime 5min, no refetchOnWindowFocus)
 │       ├── pages/
 │       │   ├── landing/
-│       │   │   ├── LandingPage.tsx  # Public marketing page — order: hero, our story, programmes, testimonials, notices, team, numbers, gallery+lightbox, art wall, enquiry form (#contact), careers (mint band), promise strip, location, footer
+│       │   │   ├── LandingPage.tsx  # Public marketing page — order: hero, our story, programmes, testimonials, notices, team, numbers, gallery+lightbox, art wall, register (#register, only when the school has a registration QR up), enquiry form (#contact), careers (mint band), promise strip, location, footer
 │       │   │   ├── constants.ts     # FEATURES, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
 │       │   │   └── components/
 │       │   │       ├── Wave.tsx            # SVG scallop divider painted in the NEXT section colour; WaveGrain lays paper grain over the bumps so texture runs through the join
 │       │   │       ├── StatCounter.tsx     # Animated number counter with intersection observer
+│       │   │       ├── FeatureCard.tsx     # Programme card: wash tile, white icon tile, corner doodle per feature key, tap to open the detail line; laid out by LandingPage in centred rows
 │       │   │       ├── WhatsAppButton.tsx  # Fixed bottom-left WhatsApp link (when configured)
 │       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours
 │       │   │       ├── LandingFooter.tsx   # Contact grid + hours + social links + copyright
-│       │   │       ├── InquiryForm.tsx     # Public enrollment enquiry form (rate-limited)
+│       │   │       ├── InquiryForm.tsx     # Public enrollment enquiry form (rate-limited); with `afterRegister` it reads as the book-a-tour and questions path
+│       │   │       ├── RegisterSection.tsx # "Scan to register" band (#register): the school's enrolment QR on a taped card; target of every Register Now button
+│       │   │       ├── MobileCTABar.tsx    # Phone bottom bar (below lg, after 600px of scroll): Book a Tour + Schedule a Visit, or Register Now + Book a Tour when a QR is up
 │       │   │       ├── AboutSection.tsx    # "Our Story" — up to 3 chapters (opened, how we teach, principal) along a dotted path + photos (school-written)
 │       │   │       ├── StoryChapter.tsx    # One stop on the Our Story path: icon tile, label, title, body; photo on the opposite side, alternating by index
 │       │   │       ├── TeamSection.tsx     # "Meet the team" — member cards with photo/name/role (school-written)
@@ -200,6 +203,7 @@ kindergarten-app/
 │       │   │       ├── WebsiteStatsSection.tsx       # Website > Numbers — live/manual/hidden mode + values
 │       │   │       ├── WebsiteProgrammesSection.tsx  # Website > Programmes — pick + order the 6 built-in feature cards
 │       │   │       ├── WebsiteTeamSection.tsx        # Website > Team — member list with photo/name/bilingual role
+│       │   │       ├── WebsiteRegistrationSection.tsx # Website > Registration QR — toggle + QR image upload (school-media/registration/)
 │       │   │       ├── WebsiteSectionCard.tsx        # Shared card chrome for Website panels (heading, loading, save bar, "save General first" notice)
 │       │   │       ├── BilingualField.tsx            # One label, EN + BM inputs (text or textarea)
 │       │   │       ├── ToggleSwitch.tsx              # Pill switch row with label
@@ -292,8 +296,8 @@ kindergarten-app/
 │       │   ├── useT.ts           # Translation hook: const t = useT(); t('key', { vars })
 │       │   ├── usePageTitle.ts   # Sets document.title — usePageTitle('Dashboard') → "Dashboard — KinderCare"
 │       │   ├── useSchoolInfo.ts  # Fetches school_info; useSchoolInfo({ public: true }) for unauthenticated contexts; exposes merged landingContent
-│       │   ├── useLandingContent.ts # Resolves landing_content for the current lang with fallbacks → hero strings, about, stats tiles, feature cards, team
-│       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team)
+│       │   ├── useLandingContent.ts # Resolves landing_content for the current lang with fallbacks → hero strings, about, stats tiles, feature cards, team, registration QR
+│       │   ├── useLandingSection.ts # Settings: local edit state + save for ONE landing_content section (hero|about|stats|features|team|registration)
 │       │   ├── useDiscardGuard.ts # Unsaved changes guard for modals
 │       │   ├── useInViewport.ts  # Shared IntersectionObserver → true while an element is near the viewport; gates decorative infinite animations
 │       │   ├── useMediaQuery.ts  # useSyncExternalStore over matchMedia → true while a CSS media query matches
@@ -305,7 +309,7 @@ kindergarten-app/
 │       │   ├── translations.ts    # Full EN/MS translation map (~160 keys)
 │       │   ├── utils.ts           # isBirthdayToday(dob) — timezone-safe month+day comparison
 │       │   ├── landingContent.ts  # DEFAULT_LANDING_CONTENT, mergeLandingContent(), pickText(), resolveStats(), FEATURE_META — tested
-│       │   ├── uploadSchoolMedia.ts # SCHOOL_MEDIA_BUCKET; uploads principal/about/team photos to it under a folder prefix; uploadHeroVideo() puts the hero clip under hero/
+│       │   ├── uploadSchoolMedia.ts # SCHOOL_MEDIA_BUCKET; uploads principal/about/team photos and the registration QR to it under a folder prefix; uploadHeroVideo() puts the hero clip under hero/
 │       │   ├── heroVideo.ts       # checkHeroVideo() (MP4/WebM, HERO_VIDEO_MAX_MB = 20) + heroVideoExtension() — tested
 │       │   ├── cropImage.ts       # CROP_SHAPES (aspect per display shape), cropImageFile() canvas crop → JPEG — tested
 │       │   ├── reloadCurtain.ts   # isCurtainPath() (landing + /admin/*), markCurtainHandoff(), hasCurtainHandoff() (pure, StrictMode-safe), clearCurtainHandoff() + curtain timings — tested
@@ -371,7 +375,7 @@ inquiries          (id, parent_name, child_name, child_age, phone, message, stat
                    Public INSERT (rate-limited); authenticated SELECT + PUT status
 school_info        (id, school_name, address, phone, email, logo_url, principal_name, registration_number, whatsapp_number, operating_hours jsonb, google_maps_embed_url, facebook_url, instagram_url, landing_content jsonb, updated_at, created_by, modified_by)
                    Single-row config; no soft-delete
-                   landing_content = { hero (incl. video_url), about, stats, features, team } — see LandingContent in packages/types; validated by backend/src/lib/landingContent.ts
+                   landing_content = { hero (incl. video_url), about, stats, features, team, registration (enabled + qr_url) } — see LandingContent in packages/types; validated by backend/src/lib/landingContent.ts
 daily_reports      (id, student_id→students, report_date date, meals_eaten, nap_minutes, toilet_count, mood, activity_note, photo_url, recorded_by, created_at, +audit)
                    UNIQUE(student_id, report_date); RLS: authenticated only
 portfolio_entries  (id, student_id→students, domain[physical|cognitive|language|social_emotional|creative], observation, photo_url, term, recorded_by, entry_date, created_at, +audit)
@@ -539,7 +543,7 @@ This project runs on the **free tier**. Key limits:
   - `artwork-photos` — art wall artwork uploads (ArtWallModal); compressed before upload
   - `portfolio-photos` — portfolio entry photo uploads (PortfolioEntryModal)
   - `resumes` — job application resume uploads (ApplicationFormModal); PDF/DOC/DOCX, 5 MB limit; anon upload + authenticated read/delete
-  - `school-media` (`SCHOOL_MEDIA_BUCKET` in `lib/uploadSchoolMedia.ts`) — everything the school uploads for its website, by folder prefix: `logo/` (SchoolInfoSection), `principal/`, `about/`, `team/` (Settings > Website), `hero/` video (MP4/WebM, 20 MB cap, `cacheControl` 1 year). Created by migration `20261003120000_storage_school_media.sql`, not the dashboard: public, 25 MB file size limit (above the app's 20 MB check so its friendly error fires first), allowed MIME types `image/jpeg, video/mp4, video/webm` (every image is re-encoded to JPEG by the crop/compress step before upload). The hero clip autoplays for every desktop visitor, so it is the biggest egress cost on the free tier — keep it short
+  - `school-media` (`SCHOOL_MEDIA_BUCKET` in `lib/uploadSchoolMedia.ts`) — everything the school uploads for its website, by folder prefix: `logo/` (SchoolInfoSection), `principal/`, `about/`, `team/`, `registration/` QR code (Settings > Website), `hero/` video (MP4/WebM, 20 MB cap, `cacheControl` 1 year). Created by migration `20261003120000_storage_school_media.sql`, not the dashboard: public, 25 MB file size limit (above the app's 20 MB check so its friendly error fires first), allowed MIME types `image/jpeg, video/mp4, video/webm` (every image is re-encoded to JPEG by the crop/compress step before upload). The hero clip autoplays for every desktop visitor, so it is the biggest egress cost on the free tier — keep it short
   - `school-logo` — **legacy, read-only in practice**: held the logo and website photos before `school-media`. Nothing uploads to it any more, but keep the bucket and its policies, because URLs saved in `school_info` (logo_url, landing_content photos) may still point at it
 
 ## Environment Variables

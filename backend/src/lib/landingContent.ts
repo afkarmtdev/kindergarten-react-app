@@ -68,6 +68,11 @@ export const landingTeamSchema = z.object({
     .default([]),
 })
 
+export const landingRegistrationSchema = z.object({
+  enabled: z.boolean().default(false),
+  qr_url: optionalUrl,
+})
+
 /** PUT body — every top-level section is optional so a Settings panel can save just its slice. */
 export const landingContentPatchSchema = z.object({
   hero: landingHeroSchema.optional(),
@@ -75,6 +80,7 @@ export const landingContentPatchSchema = z.object({
   stats: landingStatsSchema.optional(),
   features: landingFeaturesSchema.optional(),
   team: landingTeamSchema.optional(),
+  registration: landingRegistrationSchema.optional(),
 })
 
 export type LandingContentPatch = z.infer<typeof landingContentPatchSchema>
@@ -120,6 +126,7 @@ export function sanitiseLandingPatch(patch: LandingContentPatch): LandingContent
       })),
     }
   }
+  if (patch.registration) out.registration = { ...patch.registration }
   return out
 }
 
