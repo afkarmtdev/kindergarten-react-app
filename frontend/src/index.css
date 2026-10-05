@@ -904,6 +904,13 @@ html.dark .lp-glow {
   }
 }
 
+/* Numbers sentence (StatCounter): the two-line label sits on the giant numeral's
+   baseline. Bottom edges line up in browsers without `last baseline`. */
+.lp-last-baseline {
+  align-items: end;
+  align-items: last baseline;
+}
+
 /* Scroll parallax for doodle layers (FloatingDoodle `parallax`). Driven by the
    element's own view timeline, so it costs nothing between scroll events and
    needs no JS. Near shapes outrun the page, far (ghost) shapes lag behind it.
