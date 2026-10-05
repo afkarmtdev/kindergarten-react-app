@@ -129,7 +129,7 @@ kindergarten-app/
 │       │   │   ├── constants.ts     # FEATURES, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
 │       │   │   └── components/
 │       │   │       ├── Wave.tsx            # SVG scallop divider painted in the NEXT section colour; WaveGrain lays paper grain over the bumps so texture runs through the join
-│       │   │       ├── StatCounter.tsx     # One phrase of the numbers sentence: giant count-up numeral (starts on first view), crayon swipe under it, two-line label on its baseline; no card
+│       │   │       ├── StatCounter.tsx     # One phrase of the numbers sentence: giant count-up numeral (starts on first view), crayon swipe under it, two-line label on its baseline; no card; below md a full-width row hugging the left or (`flip`) right edge with its doodle on the free side
 │       │   │       ├── FeatureCard.tsx     # Programme card: wash tile, white icon tile, corner doodle per feature key, tap to open the detail line; laid out by LandingPage in centred rows
 │       │   │       ├── WhatsAppButton.tsx  # Fixed bottom-left WhatsApp link (when configured)
 │       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours

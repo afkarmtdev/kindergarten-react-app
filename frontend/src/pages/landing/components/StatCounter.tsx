@@ -7,8 +7,11 @@ import { CrayonStroke } from './CrayonStroke'
  * the label set beside it on the numeral's baseline, one word per line. There
  * is no card; the type sits straight on the section wash.
  *
- * Below md the phrase dissolves (`contents`) into the band's two-column grid,
- * so the numerals line up on their right edge and the labels on their left.
+ * Below md each phrase is a row of its own across the whole width, sized off
+ * the viewport, hugging the left edge or (`flip`) the right. The doodle takes
+ * the free side and drops out when the phrase leaves it no room: it wraps onto
+ * a second line, which the row's fixed height clips. From md the row dissolves
+ * (`contents`) and the phrase joins the band's sentence.
  */
 export function StatCounter({
   target,
@@ -16,6 +19,7 @@ export function StatCounter({
   label,
   color,
   accent,
+  flip = false,
   decimals = 0,
 }: {
   target: number
@@ -23,8 +27,10 @@ export function StatCounter({
   label: string
   /** Crayon swipe colour, a brand bright that contrasts with the section wash. */
   color: string
-  /** Small doodle perched above the label, from lg up. */
+  /** Small doodle: beside the phrase on phones, perched above the label from lg up. */
   accent?: ReactNode
+  /** Phones only: hug the right edge instead of the left, so the rows zig-zag. */
+  flip?: boolean
   /** Decimal places to show, e.g. 1 for a 4.9 star rating. */
   decimals?: number
 }) {
@@ -63,42 +69,59 @@ export function StatCounter({
   const [firstWord, ...otherWords] = label.split(' ')
 
   return (
-    <p className="contents md:flex lp-last-baseline md:gap-3 lg:gap-4 xl:gap-5">
-      <span
-        ref={ref}
-        className="relative isolate justify-self-end font-fun font-bold leading-[0.8] whitespace-nowrap tabular-nums text-[4.5rem] sm:text-[5.5rem] md:text-[6rem] lg:text-[8.5rem] xl:text-[10rem] text-gray-900 dark:text-white"
-      >
-        {/* The final value holds the width, so the sentence never reflows while
-            the digits count up; the counting copy is laid over it. */}
-        <span className="relative inline-block">
-          <span className="opacity-0">{target.toFixed(decimals)}</span>
-          <span aria-hidden="true" className="absolute inset-0 text-right select-none">
-            {count.toFixed(decimals)}
+    // The row's font size is the numeral's below md, so its height, its side
+    // padding (room for the swipe's overhang) and the phrase's bottom padding
+    // (room for the swipe below the baseline) all scale with the numeral.
+    <div
+      className={`flex flex-wrap items-center justify-between gap-x-4 overflow-hidden h-[1em] px-[0.1em] text-[length:min(26vw,7rem)] md:contents ${
+        flip ? 'flex-row-reverse' : ''
+      }`}
+    >
+      <p className="flex lp-last-baseline gap-4 md:gap-3 lg:gap-4 xl:gap-5 pb-[0.2em] md:pb-0">
+        <span
+          ref={ref}
+          className="relative isolate font-fun font-bold leading-[0.8] whitespace-nowrap tabular-nums md:text-[6rem] lg:text-[8.5rem] xl:text-[10rem] text-gray-900 dark:text-white"
+        >
+          {/* The final value holds the width, so the sentence never reflows while
+              the digits count up; the counting copy is laid over it. */}
+          <span className="relative inline-block">
+            <span className="opacity-0">{target.toFixed(decimals)}</span>
+            <span aria-hidden="true" className="absolute inset-0 text-right select-none">
+              {count.toFixed(decimals)}
+            </span>
           </span>
+          {suffix.trim() !== '' && (
+            <span aria-hidden="true" className="ml-[0.06em] text-[0.4em] align-top text-ink-butter">
+              {suffix.trim()}
+            </span>
+          )}
+          <CrayonStroke
+            color={color}
+            drawn={seen}
+            className="absolute -z-10 left-[-0.1em] bottom-[-0.17em] w-[calc(100%+0.2em)] h-[0.45em] opacity-60 dark:opacity-50"
+          />
+        </span>{' '}
+        <span className="relative font-fun font-semibold lowercase text-left leading-[1.05] text-2xl lg:text-3xl xl:text-4xl text-gray-700 dark:text-gray-300">
+          {accent && (
+            <span
+              aria-hidden="true"
+              className="hidden lg:block absolute bottom-full left-0 mb-2 xl:mb-3 rotate-12"
+            >
+              {accent}
+            </span>
+          )}
+          <span className="block">{firstWord}</span>
+          {otherWords.length > 0 && <span className="block">{otherWords.join(' ')}</span>}
         </span>
-        {suffix.trim() !== '' && (
-          <span aria-hidden="true" className="ml-[0.06em] text-[0.4em] align-top text-ink-butter">
-            {suffix.trim()}
-          </span>
-        )}
-        <CrayonStroke
-          color={color}
-          drawn={seen}
-          className="absolute -z-10 left-[-0.1em] bottom-[-0.17em] w-[calc(100%+0.2em)] h-[0.45em] opacity-60 dark:opacity-50"
-        />
-      </span>{' '}
-      <span className="relative font-fun font-semibold lowercase text-left leading-[1.05] text-xl sm:text-2xl lg:text-3xl xl:text-4xl text-gray-700 dark:text-gray-300">
-        {accent && (
-          <span
-            aria-hidden="true"
-            className="hidden lg:block absolute bottom-full left-0 mb-2 xl:mb-3 rotate-12"
-          >
-            {accent}
-          </span>
-        )}
-        <span className="block">{firstWord}</span>
-        {otherWords.length > 0 && <span className="block">{otherWords.join(' ')}</span>}
-      </span>
-    </p>
+      </p>
+      {accent && (
+        <span
+          aria-hidden="true"
+          className={`md:hidden shrink-0 ${flip ? '-rotate-12' : 'rotate-12'}`}
+        >
+          {accent}
+        </span>
+      )}
+    </div>
   )
 }

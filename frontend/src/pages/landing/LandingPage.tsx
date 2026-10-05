@@ -1055,12 +1055,13 @@ export function LandingPage() {
                 {t('statsSubtitle', { school: schoolName })}
               </p>
             </div>
-            {/* A sentence of giant type, not a row of cards. Phones: a two-column
-                stack, numerals right-aligned against their labels. From md the
-                phrases run on as one centred line and wrap where they have to
-                (longer BM labels, three-digit numbers, a fourth number). */}
-            <div className="lp-last-baseline grid grid-cols-[auto_auto] justify-center gap-x-3 gap-y-8 md:flex md:flex-wrap md:gap-x-10 md:gap-y-12 lg:gap-x-14 xl:gap-x-20">
-              {content.stats.tiles.map((tile) => {
+            {/* A sentence of giant type, not a row of cards. Phones: one phrase
+                per row across the full width, zig-zagging left and right.
+                From md the phrases run on as one centred line and wrap where
+                they have to (longer BM labels, three-digit numbers, a fourth
+                number). */}
+            <div className="flex flex-col gap-y-5 w-full max-w-sm mx-auto md:max-w-none md:flex-row md:flex-wrap md:items-end md:justify-center md:gap-x-10 md:gap-y-12 lg:gap-x-14 xl:gap-x-20">
+              {content.stats.tiles.map((tile, i) => {
                 const Doodle = STAT_DOODLES[tile.key]
                 return (
                   <StatCounter
@@ -1071,6 +1072,7 @@ export function LandingPage() {
                     label={t(STAT_LABEL_KEYS[tile.key])}
                     color={STAT_COLORS[tile.key]}
                     accent={<Doodle size={40} color={STAT_COLORS[tile.key]} />}
+                    flip={i % 2 === 1}
                   />
                 )
               })}
