@@ -129,7 +129,7 @@ kindergarten-app/
 │       │   │   ├── constants.ts     # FEATURES, GALLERY_PLACEHOLDERS, NOTICE_CATEGORY_COLORS/GRADIENTS, KEYFRAMES
 │       │   │   └── components/
 │       │   │       ├── Wave.tsx            # SVG scallop divider painted in the NEXT section colour; WaveGrain lays paper grain over the bumps so texture runs through the join
-│       │   │       ├── StatCounter.tsx     # Animated number counter with intersection observer
+│       │   │       ├── StatCounter.tsx     # One phrase of the numbers sentence: giant count-up numeral (starts on first view), crayon swipe under it, two-line label on its baseline; no card
 │       │   │       ├── FeatureCard.tsx     # Programme card: wash tile, white icon tile, corner doodle per feature key, tap to open the detail line; laid out by LandingPage in centred rows
 │       │   │       ├── WhatsAppButton.tsx  # Fixed bottom-left WhatsApp link (when configured)
 │       │   │       ├── LocationSection.tsx # Google Maps embed + contact + operating hours
@@ -148,6 +148,7 @@ kindergarten-app/
 │       │   │       ├── SpotlightGlow.tsx   # Radial-gradient blob in a brand bright behind a heading/card cluster (no filter blur); closest-side ellipse, height capped to the section; title glows use top-0 + height={TITLE_GLOW_HEIGHT} (340px ellipse centred on the title); keep glows inside the section so they never clip flat; optional darkColor swaps the bright in dark mode (.lp-glow CSS vars)
 │       │   │       ├── OutlineWatermark.tsx # Giant outlined Titan One (`font-bubble`) bubble-letter text ("ABC", "123") at ~5%; `ghost` makes it the section's far layer (FloatingDoodle ghost parallax) in place of an oversized shape, as the numbers section does
 │       │   │       ├── CrayonWord.tsx      # Heading helper: highlighter swipe or underline behind the last word, draws in on first view
+│       │   │       ├── CrayonStroke.tsx    # The crayon stroke SVG itself (highlight|underline); CrayonWord and StatCounter each position it with className
 │       │   │       ├── HeroMedia.tsx       # Hero right column (lg+): school video (muted loop, sound toggle, gallery photo as poster) or first gallery photo, in the blob clip; <video> not mounted below lg, plays only in viewport, reduced motion = still frame
 │       │   │       └── GalleryBlinds.tsx   # Gallery on phones (below md): up to 6 photos edge to edge as a stack of blinds, one open at 4:3 and the rest letterbox slivers, joined by scallop masks; tap a sliver to open it, tap the open photo for the lightbox
 │       │   ├── dashboard/

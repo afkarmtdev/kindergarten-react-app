@@ -16,10 +16,6 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
-  Users,
-  School,
-  Award,
   ChevronDown,
 } from 'lucide-react'
 import { useT } from '@/hooks/useT'
@@ -95,13 +91,21 @@ const STAT_LABEL_KEYS = {
   classes: 'statsClassesLabel',
   rating: 'statsRatingLabel',
 } as const
-const STAT_ICONS = {
-  students: GraduationCap,
-  staff: Users,
-  classes: School,
-  rating: Award,
+// Crayon swipe under each numeral and the doodle above its label. No blue on the
+// first three: the heading's own swipe is blue. No orange or yellow: they turn
+// brown over the dark ocean tint.
+const STAT_COLORS = {
+  students: '#6BCB77',
+  staff: '#C77DFF',
+  classes: '#FF85A2',
+  rating: '#4D96FF',
 } as const
-const STAT_TINTS = { students: 'sky', staff: 'mint', classes: 'butter', rating: 'blush' } as const
+const STAT_DOODLES = {
+  students: DoodleStar,
+  staff: DoodleHeart,
+  classes: DoodleApple,
+  rating: DoodleSparkle,
+} as const
 
 export function LandingPage() {
   const t = useT()
@@ -1037,7 +1041,7 @@ export function LandingPage() {
           <FloatingDoodle position="bottom-6 right-1/4" animation="float" delay={2.2} mdUp>
             <DoodleSpiral size={164} color="#FFD93D" />
           </FloatingDoodle>
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
             <div className="text-center mb-10 sm:mb-14">
               <div className="mb-5">
                 <StickerBadge color="bg-kinder-yellow" textColor="text-gray-900" rotate={-3}>
@@ -1051,26 +1055,25 @@ export function LandingPage() {
                 {t('statsSubtitle', { school: schoolName })}
               </p>
             </div>
-            <div
-              className={`grid gap-4 sm:gap-8 md:gap-12 ${
-                content.stats.tiles.length === 1
-                  ? 'grid-cols-1 max-w-xs mx-auto'
-                  : content.stats.tiles.length === 3
-                    ? 'grid-cols-1 sm:grid-cols-3'
-                    : 'grid-cols-2 md:grid-cols-4'
-              }`}
-            >
-              {content.stats.tiles.map((tile) => (
-                <StatCounter
-                  key={tile.key}
-                  target={tile.value}
-                  suffix={tile.suffix}
-                  decimals={tile.decimals}
-                  label={t(STAT_LABEL_KEYS[tile.key])}
-                  icon={STAT_ICONS[tile.key]}
-                  tint={STAT_TINTS[tile.key]}
-                />
-              ))}
+            {/* A sentence of giant type, not a row of cards. Phones: a two-column
+                stack, numerals right-aligned against their labels. From md the
+                phrases run on as one centred line and wrap where they have to
+                (longer BM labels, three-digit numbers, a fourth number). */}
+            <div className="lp-last-baseline grid grid-cols-[auto_auto] justify-center gap-x-3 gap-y-8 md:flex md:flex-wrap md:gap-x-10 md:gap-y-12 lg:gap-x-14 xl:gap-x-20">
+              {content.stats.tiles.map((tile) => {
+                const Doodle = STAT_DOODLES[tile.key]
+                return (
+                  <StatCounter
+                    key={tile.key}
+                    target={tile.value}
+                    suffix={tile.suffix}
+                    decimals={tile.decimals}
+                    label={t(STAT_LABEL_KEYS[tile.key])}
+                    color={STAT_COLORS[tile.key]}
+                    accent={<Doodle size={40} color={STAT_COLORS[tile.key]} />}
+                  />
+                )
+              })}
             </div>
           </div>
 
