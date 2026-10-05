@@ -148,7 +148,8 @@ kindergarten-app/
 │       │   │       ├── SpotlightGlow.tsx   # Radial-gradient blob in a brand bright behind a heading/card cluster (no filter blur); closest-side ellipse, height capped to the section; title glows use top-0 + height={TITLE_GLOW_HEIGHT} (340px ellipse centred on the title); keep glows inside the section so they never clip flat; optional darkColor swaps the bright in dark mode (.lp-glow CSS vars)
 │       │   │       ├── OutlineWatermark.tsx # Giant outlined Titan One (`font-bubble`) bubble-letter text ("ABC", "123") at ~5%; `ghost` makes it the section's far layer (FloatingDoodle ghost parallax) in place of an oversized shape, as the numbers section does
 │       │   │       ├── CrayonWord.tsx      # Heading helper: highlighter swipe or underline behind the last word, draws in on first view
-│       │   │       └── HeroMedia.tsx       # Hero right column (lg+): school video (muted loop, sound toggle, gallery photo as poster) or first gallery photo, in the blob clip; <video> not mounted below lg, plays only in viewport, reduced motion = still frame
+│       │   │       ├── HeroMedia.tsx       # Hero right column (lg+): school video (muted loop, sound toggle, gallery photo as poster) or first gallery photo, in the blob clip; <video> not mounted below lg, plays only in viewport, reduced motion = still frame
+│       │   │       └── GalleryBlinds.tsx   # Gallery on phones (below md): up to 6 photos edge to edge as a stack of blinds, one open at 4:3 and the rest letterbox slivers, joined by scallop masks; tap a sliver to open it, tap the open photo for the lightbox
 │       │   ├── dashboard/
 │       │   │   ├── DashboardPage.tsx    # Stats + today attendance + monthly summary + today's birthdays + charts
 │       │   │   └── components/
@@ -406,6 +407,8 @@ All list endpoints return paginated responses:
 
 **Warm Storybook** is the visual language (adopted September 2026). Full reference, token table, and the design canvas link live in `docs/design/warm-storybook/README.md`.
 
+**Design direction: niche and avant garde, never a popular template.** Applies to every session, subagent and teammate doing design work here. Before proposing a layout, name the stock pattern it would be and pick something else: dot-paginated card carousel, bento grid, glass cards, gradient-text centred hero, three-icon feature row, default component-library card grid, purple gradient blobs, marquee logo strip, emoji bullets, generic stats row. Build the idea out of this project's own language instead (scallop joins, paper grain, washes, doodles, stickers, the mascot). Worked example: the phone gallery is `GalleryBlinds`, photos edge to edge biting into each other with the section scallop, not a swipe carousel. The hard rules below (dark mode, mobile, animation gating, no emojis) still apply. When delegating design to a subagent, put this paragraph in the brief.
+
 - Fonts: Nunito for body and labels; **Fredoka (`font-fun`) for page titles, section headings, and big numbers**. Page `<h1>`: `font-fun font-bold text-2xl md:text-3xl`. Titan One (`font-bubble`, fat bubble letters, single weight) is reserved for the outlined landing watermarks via `OutlineWatermark`; never use it for readable text.
 - Brand brights: `kinder-orange` (#FF6B35), `kinder-blue` (#4D96FF), `kinder-green` (#6BCB77), `kinder-yellow` (#FFD93D), `kinder-purple` (#C77DFF), `kinder-pink` (#FF85A2). Use them for buttons, stickers, icon strokes, and chart series only — never as full section backgrounds.
 - **Section washes** (`bg-wash-sky|mint|butter|blush|lavender|peach|ocean`) with matching **ink** text colours (`text-ink-*`): CSS-var driven, pastel in light and a nebula tint in dark, so they need no `dark:` variant. Dark tints sit at the lightness and chroma of the night-sky navy: sky and lavender keep their hue, mint goes deep teal, blush goes magenta-violet, and peach and butter drop to warm charcoals, because a dark orange, yellow, pink or green at full chroma reads as brown, olive, maroon or chalkboard against the galaxy. Icon tiles are `rounded-2xl` with a wash background and the matching ink icon; map blue→sky, purple→lavender, green→mint, orange→peach, yellow→butter, pink→blush.
@@ -535,6 +538,7 @@ This project runs on the **free tier**. Key limits:
 
 - 500 MB database storage, 1 GB file storage, 50 MB max upload size
 - No automatic backups / point-in-time recovery
+- **When a task needs a new bucket, always give all four settings**: bucket name, public or private, file size limit (for example 2 MB for logos, 10 MB for photos), and allowed MIME types (for example `image/jpeg, image/png, image/webp`). Never leave the last two for the person creating it to guess.
 - Storage buckets (all **public** except `payment-proofs`; create them in the Supabase dashboard unless a migration says it creates them):
   - `student-photos` — student profile photo uploads (StudentModal)
   - `gallery-photos` — landing page gallery photo uploads (GalleryModal)
@@ -591,6 +595,7 @@ bun run test:frontend # Frontend only
 ```
 
 - Config files: `eslint.config.mjs` (root, flat config), `.prettierrc` (root), `.prettierignore`
+- **Never run `bun run format` (repo-wide prettier) from a Claude session.** Format only the files you touched: `bunx prettier --write --end-of-line auto <files>`. On a Windows checkout (`core.autocrlf=true`, CRLF in the working tree, LF in the index) the repo-wide pass rewrites line endings on roughly 330 untouched files, and on 15 Sep 2026 it also reflowed the minified design canvases under `docs/design/warm-storybook/*.dc.html` into 100K-line diffs. The pre-commit hook already formats staged files, so a repo-wide pass is never needed.
 - Pre-commit hook: `lefthook` → `lint-staged` + `bun run test` — staged files are linted/formatted AND all tests run on `git commit`
 - `lint-staged` config lives in root `package.json` under the `"lint-staged"` key
 - `useAuth.tsx` has `// eslint-disable-next-line react-refresh/only-export-components` — context + hook co-location is intentional, suppress is correct

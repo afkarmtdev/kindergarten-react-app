@@ -58,6 +58,7 @@ import { AboutSection } from './components/AboutSection'
 import { TeamSection } from './components/TeamSection'
 import { TestimonialCarousel } from './components/TestimonialCarousel'
 import { HeroMedia } from './components/HeroMedia'
+import { GalleryBlinds } from './components/GalleryBlinds'
 import {
   KEYFRAMES,
   NOTICE_CATEGORY_COLORS,
@@ -1085,7 +1086,7 @@ export function LandingPage() {
       <section
         id="gallery"
         className={`relative lp-clip bg-white dark:bg-gray-950 pt-20 ${
-          artWallItems.length === 0 ? '' : 'pb-20'
+          artWallItems.length === 0 ? '' : 'pb-14 md:pb-20'
         } transition-colors duration-200`}
       >
         <SectionBackdrop tint="neutral" pattern="polka">
@@ -1136,8 +1137,15 @@ export function LandingPage() {
           </p>
         </div>
 
-        {/* Mobile/tablet: horizontal scroll with arrows */}
-        <div className="lg:hidden relative group/gallery">
+        {/* Phones: the photos fill the band edge to edge as a stack of blinds */}
+        {galleryItems.length > 0 && (
+          <GalleryBlinds items={galleryItems} onOpen={setLightboxIndex} className="md:hidden" />
+        )}
+
+        {/* Tablet: horizontal scroll with arrows (phones too while the gallery is empty) */}
+        <div
+          className={`${galleryItems.length > 0 ? 'hidden md:block' : ''} lg:hidden relative group/gallery`}
+        >
           <button
             onClick={() => galleryScrollRef.current?.scrollBy({ left: -300, behavior: 'smooth' })}
             className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 opacity-70 group-hover/gallery:opacity-100 transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700"
@@ -1251,7 +1259,7 @@ export function LandingPage() {
         )}
 
         {artWallItems.length === 0 && (
-          <div className="mt-16">
+          <div className="mt-6 md:mt-16">
             <Wave variant="scallop" fillClassName={afterArtFill} />
           </div>
         )}
@@ -1479,7 +1487,8 @@ export function LandingPage() {
                 onClick={() =>
                   setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : galleryItems.length - 1))
                 }
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 text-white/70 hover:text-white transition-colors"
+                aria-label={t('previousPhoto')}
+                className="absolute left-1 sm:left-0 top-1/2 -translate-y-1/2 sm:-translate-x-12 rounded-full bg-black/40 sm:bg-transparent text-white/90 sm:text-white/70 hover:text-white transition-colors"
               >
                 <ChevronLeft size={36} />
               </button>
@@ -1490,7 +1499,8 @@ export function LandingPage() {
                 onClick={() =>
                   setLightboxIndex((i) => (i !== null && i < galleryItems.length - 1 ? i + 1 : 0))
                 }
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 text-white/70 hover:text-white transition-colors"
+                aria-label={t('nextPhoto')}
+                className="absolute right-1 sm:right-0 top-1/2 -translate-y-1/2 sm:translate-x-12 rounded-full bg-black/40 sm:bg-transparent text-white/90 sm:text-white/70 hover:text-white transition-colors"
               >
                 <ChevronRight size={36} />
               </button>

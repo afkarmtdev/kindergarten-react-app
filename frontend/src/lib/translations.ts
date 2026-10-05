@@ -227,6 +227,9 @@ export const translations = {
     // Landing page — Gallery
     galleryTitle: 'Little Moments, Big Smiles',
     gallerySubtitle: 'A peek into our colourful, joyful classrooms',
+    galleryShowPhoto: 'Show photo {n}',
+    galleryOpenPhoto: 'Open photo {n} full screen',
+    galleryMorePhotos: '+{n} more photos',
 
     // Student profile page
     backToStudents: 'Back to Students',
@@ -1298,6 +1301,9 @@ export const translations = {
     // Landing page — Gallery
     galleryTitle: 'Detik Kecil, Senyuman Besar',
     gallerySubtitle: 'Sekilas pandang bilik darjah kami yang ceria',
+    galleryShowPhoto: 'Tunjuk foto {n}',
+    galleryOpenPhoto: 'Buka foto {n} skrin penuh',
+    galleryMorePhotos: '+{n} foto lagi',
 
     // Student profile page
     backToStudents: 'Kembali ke Pelajar',

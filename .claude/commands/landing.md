@@ -40,6 +40,14 @@ Anchors: `#about` (Our Story, or the hero when Our Story is hidden), `#programs`
 
 **Programme cards.** The school picks and orders one to six built-in cards (Settings > Website > Programmes), so the band must look right for every count. `LandingPage.tsx` lays them out as centred flex rows, not a grid: three to a row from `lg`, two from `md`, one on phones, so a short last row sits in the middle. Four cards go two by two in a `max-w-4xl` block (`featuresTwoUp`). `FeatureCard` is a wash tile with a white icon tile, a corner doodle chosen by feature key (`DOODLE` map: apple, puzzle, music note, heart, sun, star), and a tap-to-open detail line. The first card carries the Popular sticker and the fourth the Loved one, both on the top-left corner.
 
+**Gallery, three layouts.** One list (`gallery-public`) and one lightbox (inline in `LandingPage.tsx`, `lightboxIndex` indexes the full list), laid out by width:
+
+- below `md`: `GalleryBlinds`, the photos edge to edge as a stack of blinds. The first `MAX_SLATS` (6) photos are slats; one is open at 4:3 (the gallery crop shape, so it shows whole) and the rest are 4rem letterbox slivers with a number and caption. Tapping a sliver opens it and closes the open one, so the stack never changes height; tapping the open photo opens the lightbox. Photos past the sixth are reached through the "+N more photos" pill, which opens the lightbox on the first hidden one.
+- `md` to `lg`: the horizontal snap strip with arrow buttons. Phones also get it while the gallery is empty, for the placeholder tiles.
+- `lg` and up: the masonry columns.
+
+The slats are joined the way landing bands are: each slat carries a CSS mask with scallop bumps along its top edge and a negative top margin of the same height (`SEAM`), so its bumps rise into the photo above. The last slat also has the bumps cut out of its bottom edge, so the section's real backdrop shows through rather than a painted white shape.
+
 **Registration QR.** The school uploads the QR code that opens its own enrolment form (Settings > Website > Registration QR: toggle + `PhotoUploadTile`, folder `registration`). It goes through the usual square crop and JPEG re-encode, which a QR survives. `RegisterSection` (`#register`, sky band, between the last white band and the enquiry form) shows it on a taped card. While it shows:
 
 - hero buttons become **Register Now** (`#register`) + **Book a Tour** (`#contact`); otherwise Book a Tour + Our Programs
@@ -65,6 +73,10 @@ The app never reads the code: it is an image, and the link inside it is not stor
 - **Programme cards stay the same height in a row by reserving two lines for the description** (`md:min-h-[3.25rem]`), not by stretching: the row is `items-start` so opening one card does not stretch its neighbours. A description that runs to three lines at `md` or wider would break the row again.
 - **Card doodles are sized per doodle, not uniformly.** The doodles are drawn on 32, 48 and 60 unit grids with a 2 unit stroke, so one shared pixel size gives the sun and heart a much heavier line than the puzzle or the note. `DOODLE` in `FeatureCard.tsx` holds a size and offset for each; keep the drawing above 100px from the card top, where the chevron button starts.
 - **The mascot cursor's size and hotspot change together.** `.cursor-mascot` in `index.css` is two data-URI SVGs (resting, and grinning over clickables), each with `width`/`height` inside the URI and a hotspot pair after it. The hotspot is in image pixels and must stay on the beak, viewBox point `16 18.75`: hotspot = `(x + 2) * size / 36`, `(y + 3.75) * size / 36`, so 48px gives `24 30`. Resize one without the other and clicks land beside the beak. Change both rules, and leave the archived `.cursor-bear` rules alone. Browsers drop a cursor image above 128px, and swap any cursor above 32px for the plain arrow while it overlaps the window edge.
+- **Design direction: niche and avant garde.** The user does not want any band to look like a popular vibe-coded template (card carousel with dots, bento grid, glass cards and the like). Build new layouts out of the page's own language (scallop joins, paper, washes, doodles), as `GalleryBlinds` does.
+- **`GalleryBlinds` heights must stay absolute lengths.** The open and closed heights are `calc(min(75vw, 26rem) + SEAM)` and `4rem`; the height transition only interpolates because both resolve to pixels. A percentage or `aspect-ratio` there makes the slats jump instead of glide. The open and closing slat use the same easing, so the overshoot of one cancels the other and the stack's total height never moves.
+- **A slat's mask is two or three layers that overlap by 1px** (scallop strip, solid body, and on the last slat the cut strip). Without the overlap a hairline of the photo below shows between the bumps and the body on fractional device pixels.
+- **A shape that must match the section's paper is cut with a mask, not painted white.** The gallery band has a polka pattern, grain and a yellow glow in its bottom corner, so a flat white scallop laid over the photo would show as a paler shape against the tinted paper next to it.
 - **A new `school-media` folder needs no migration:** the storage policies are bucket-wide for signed-in users, and the bucket only accepts `image/jpeg` and the two video types, so anything uploaded must go through the crop and compress step.
 
 ---
@@ -84,3 +96,4 @@ The app never reads the code: it is an image, and the link inside it is not stor
 - 2026-10-04: While the register band shows, the enquiry form reads "Book a tour or ask a question" instead of "Interested in enrolling?" (user approved); unchanged when no QR is up.
 - 2026-10-04: Programme cards redesigned: centred rows (no hole with five cards), equal heights, a corner doodle per card, round chevron button, stickers moved to the top-left, hover lift now works.
 - 2026-10-04: Mascot cursor enlarged from 40px to 48px (hotspot `20 25` to `24 30`).
+- 2026-10-05: Gallery on phones became `GalleryBlinds` (photos edge to edge, scallop joins); the strip stays for tablets. Gallery lightbox arrows moved inside the photo below `sm`, where they sat off screen.
